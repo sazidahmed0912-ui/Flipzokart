@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, CartItem, Product, Order } from '../types';
 import { MOCK_PRODUCTS } from '../constants';
-import { authService } from '../services/authService';
+import authService from '../services/authService';
 
 interface AppContextType {
   user: User | null;
@@ -111,8 +111,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const selectedVariants = (product as any).selectedVariants;
     const itemKey = getCartItemKey(product.id, selectedVariants);
 
-    setCart(prev => {
-      const existingIndex = prev.findIndex(item => getCartItemKey(item.id, item.selectedVariants) === itemKey);
+    setCart((prev: CartItem[]) => {
+      const existingIndex = prev.findIndex((item: CartItem) => getCartItemKey(item.id, item.selectedVariants) === itemKey);
       
       if (existingIndex > -1) {
         const nextCart = [...prev];
@@ -128,7 +128,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const removeFromCart = (cartItemKey: string) => {
-    setCart(prev => prev.filter(item => getCartItemKey(item.id, item.selectedVariants) !== cartItemKey));
+    setCart((prev: CartItem[]) => prev.filter((item: CartItem) => getCartItemKey(item.id, item.selectedVariants) !== cartItemKey));
   };
 
   const updateCartQuantity = (cartItemKey: string, quantity: number) => {
@@ -136,7 +136,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       removeFromCart(cartItemKey);
       return;
     }
-    setCart(prev => prev.map(item => 
+    setCart((prev: CartItem[]) => prev.map((item: CartItem) => 
       getCartItemKey(item.id, item.selectedVariants) === cartItemKey 
         ? { ...item, quantity } 
         : item

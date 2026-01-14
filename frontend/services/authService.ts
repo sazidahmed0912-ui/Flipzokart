@@ -1,6 +1,7 @@
 import { User } from "../types";
 
-const API_BASE_URL = "http://localhost:5000/api/auth";
+// ✅ ONLY BACKEND BASE URL
+const API_BASE_URL = "https://flipzokart-backend.onrender.com"
 
 const authService = {
   // =========================
@@ -12,7 +13,7 @@ const authService = {
     email: string;
     password: string;
   }): Promise<User> {
-    const response = await fetch(`/api/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -24,7 +25,6 @@ const authService = {
       throw new Error(result.message || "Registration failed");
     }
 
-    // 🔐 JWT token save
     if (result.token) {
       localStorage.setItem("token", result.token);
     }
@@ -32,49 +32,45 @@ const authService = {
     return result.user;
   },
 
+  
+
   // =========================
   // ✅ LOGIN
   // =========================
-  async login(credentials: any) {
-  const response = await fetch("/api/auth/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(credentials),
-  });
+  async login(credentials: {
+    email: string;
+    password: string;
+  }): Promise<User> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(credentials),
+    });
 
-  const result = await response.json();
+    const result = await response.json();
 
-  if (!result.success) {
-    throw new Error(result.message || "Login failed");
-  }
+    if (!result.success) {
+      throw new Error(result.message || "Login failed");
+    }
 
-  localStorage.setItem("token", result.token);
-  return result.user;
-},
+    localStorage.setItem("token", result.token);
+    return result.user;
+  },
 
   // =========================
   // ✅ LOGOUT
   // =========================
   async logout(): Promise<void> {
-    // Remove token from localStorage first
     localStorage.removeItem("token");
 
     try {
-      const response = await fetch(`/api/auth/logout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const result = await response.json();
-      
-      // Even if backend call fails, token is already removed from localStorage
-      if (!result.success) {
-        console.warn("Backend logout failed, but local token was removed:", result.message);
-      }
-    } catch (error) {
-      console.warn("Backend logout failed, but local token was removed:", error);
+      await fetch(`${API_BASE_URL}/api/auth/logout`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+    } catch {
+      // backend logout failure ignore
     }
   },
 
@@ -84,8 +80,9 @@ const authService = {
   async getMe(): Promise<User | null> {
     try {
       const token = localStorage.getItem("token");
+      if (!token) return null;
 
-      const response = await fetch(`/api/auth/me`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -102,11 +99,14 @@ const authService = {
   // ✅ FORGOT PASSWORD
   // =========================
   async forgotPassword(email: string): Promise<void> {
-    const response = await fetch(`/api/auth/forgot-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/api/auth/forgot-password`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      }
+    );
 
     const result = await response.json();
     if (!result.success) {
@@ -117,12 +117,18 @@ const authService = {
   // =========================
   // ✅ RESET PASSWORD
   // =========================
-  async resetPassword(token: string, password: string): Promise<void> {
-    const response = await fetch(`/api/auth/reset-password/${token}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
+  async resetPassword(
+    token: string,
+    password: string
+  ): Promise<void> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/auth/reset-password/${token}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      }
+    );
 
     const result = await response.json();
     if (!result.success) {
@@ -131,5 +137,4 @@ const authService = {
   },
 };
 
-export { authService };
 export default authService;

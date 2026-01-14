@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, ShieldCheck, User as UserIcon, Phone, Smartphone, AlertCircle } from 'lucide-react';
 import { useApp } from '../store/Context';
-import { authService } from '../services/authService';
+import authService from '../services/authService';
 
 export const SignupPage: React.FC = () => {
   const { setUser } = useApp();
@@ -19,7 +19,7 @@ export const SignupPage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev: typeof formData) => ({ ...prev, [name]: value }));
   };
 
   const handleSignup = async (e: React.FormEvent) => {

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, ShieldCheck, User as UserIcon, LogIn, AlertCircle } from 'lucide-react';
 import { useApp } from '../store/Context';
-import { authService } from '../services/authService';
+import authService from '../services/authService';
 
 export const LoginPage: React.FC = () => {
   const { setUser } = useApp();
@@ -109,7 +109,7 @@ export const LoginPage: React.FC = () => {
                 <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary" />
                 Remember Me
               </label>
-              <Link to="/forgot-password" size={16} className="text-primary hover:underline">Forgot Password?</Link>
+              <Link to="/forgot-password" className="text-primary hover:underline">Forgot Password?</Link>
             </div>
 
             <button 

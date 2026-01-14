@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Lock, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
-import { authService } from '../services/authService';
+import authService from '../services/authService';
 
 export const ResetPasswordPage: React.FC = () => {
   const [searchParams] = useSearchParams();
