@@ -1,0 +1,380 @@
+:root {
+    --primary-color: #ff9f00; /* Orange */
+    --primary-color-light-bg: #fff3e0;
+    --text-color-primary: #212121;
+    --text-color-secondary: #878787;
+    --border-color-light: #e0e0e0;
+    --background-color-white: #ffffff;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+body {
+    background-color: #f1f3f6;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+.checkout-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.checkout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--background-color-white);
+    border-bottom: 1px solid var(--border-color-light);
+    box-shadow: var(--shadow-sm);
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.checkout-header .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.checkout-steps {
+    font-size: 1rem;
+    color: var(--text-color-secondary);
+}
+
+.checkout-steps .active {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.secure-checkout {
+    display: flex;
+    align-items: center;
+    color: #388e3c;
+    font-weight: 500;
+}
+
+.secure-checkout svg {
+    margin-right: 0.5rem;
+}
+
+.checkout-main {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.address-section {
+    flex: 2;
+    background-color: var(--background-color-white);
+    padding: 1.5rem;
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+.address-section h2 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.address-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.address-card {
+    border: 1px solid var(--border-color-light); /* Unselected card border */
+    background-color: var(--background-color-white); /* Unselected card background */
+    border-radius: 8px;
+    padding: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    gap: 1rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.address-card.selected {
+    border: 2px solid var(--primary-color); /* Selected card border */
+    background-color: var(--primary-color-light-bg); /* Selected card background */
+    padding: calc(1.5rem - 1px); /* Adjust padding to account for thicker border */
+}
+
+.address-card:not(.selected):hover {
+    border-color: #bdbdbd;
+    box-shadow: var(--shadow-sm);
+}
+
+.address-card-radio {
+    margin-top: 4px;
+}
+
+.address-card-details h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+}
+.address-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.address-type {
+    background-color: #f0f0f0;
+    color: var(--text-color-secondary);
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.address-phone {
+    font-size: 0.9rem;
+    color: #616161;
+}
+
+.address-card-details p {
+    margin: 0 0 1rem 0;
+    color: #424242;
+    line-height: 1.5;
+}
+
+.address-card-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* New Button Styles */
+.address-btn {
+    height: 34px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.address-btn-deliver {
+    background-color: var(--primary-color);
+    color: white;
+}
+.address-btn-deliver:hover {
+    background-color: #e68a00;
+}
+.address-btn-deliver:disabled {
+    background-color: #ffcc80;
+    cursor: not-allowed;
+}
+
+.address-btn-edit, .address-btn-delete {
+    background-color: transparent;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.address-btn-edit:hover, .address-btn-delete:hover {
+    background-color: var(--primary-color-light-bg);
+}
+
+.add-new-address-card {
+    margin-top: 1.5rem;
+    border: 2px dashed var(--border-color-light);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.add-new-address-card:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.add-address-btn {
+    background: none;
+    border: none;
+    color: #2874f0; /* Default blue for add links */
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.add-new-address-card:hover .add-address-btn {
+    color: var(--primary-color);
+}
+
+/* Fixed Order Summary */
+.summary-section {
+    flex: 1;
+    position: sticky;
+    top: 1.5rem;
+}
+
+.price-summary-card {
+    background-color: var(--background-color-white); /* White background */
+    border: 1px solid var(--border-color-light); /* Light gray border */
+    color: var(--text-color-primary); /* Dark gray text */
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+}
+
+.price-summary-card h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--text-color-secondary);
+    border-bottom: 1px solid var(--border-color-light);
+    padding-bottom: 1rem;
+}
+
+.price-summary-item, .price-summary-total {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+.price-summary-item:last-of-type {
+    margin-bottom: 1.5rem;
+}
+
+.price-summary-item .free {
+    color: #388e3c;
+    font-weight: 500;
+}
+
+.price-summary-total {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    border-top: 1px dashed var(--border-color-light);
+    padding-top: 1rem;
+}
+
+/* Place Order Button */
+.place-order-btn {
+    background-color: #ff9f00;
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    height: 48px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.place-order-btn:hover:not(:disabled) {
+    background-color: #e68a00;
+}
+
+.place-order-btn:disabled {
+    background-color: #ffcc80;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.place-order-btn .loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.place-order-btn.desktop-only {
+    display: block;
+    margin-top: 1rem;
+}
+
+.place-order-sticky-mobile .place-order-btn {
+    display: none;
+}
+
+/* Security Badge */
+.security-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+    justify-content: center;
+}
+
+.security-badge svg {
+    color: #388e3c;
+}
+
+/* Form styles remain for the modal */
+.address-form {
+    background-color: var(--background-color);
+    padding: 1.5rem;
+}
+
+/* Place Order Sticky Mobile */
+.place-order-sticky-mobile {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--background-color-white);
+    border-top: 1px solid var(--border-color-light);
+    padding: 1rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .checkout-main {
+        flex-direction: column;
+    }
+    .summary-section {
+        order: -1;
+        position: static;
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .checkout-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    body {
+        background-color: var(--background-color-white);
+    }
+    .address-section {
+        box-shadow: none;
+        padding: 1rem 0;
+    }
+    .checkout-main {
+        gap: 0;
+    }
+    .place-order-sticky-mobile {
+        display: block;
+    }
+    .place-order-btn.desktop-only {
+        display: none;
+    }
+}

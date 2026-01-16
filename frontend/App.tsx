@@ -1,13 +1,13 @@
-
-import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './store/Context';
+import { NotificationProvider, useNotifications } from './store/NotificationContext';
 import { Layout } from './components/Layout';
 import { HomePage } from './pages/HomePage';
 import { ShopPage } from './pages/ShopPage';
 import { ProductDetails } from './pages/ProductDetails';
-import { CartPage } from './pages/CartPage';
-import { CheckoutPage } from './pages/CheckoutPage';
+import CartPage from './pages/CartPage/CartPage';
+import CheckoutPage from './pages/CheckoutPage/CheckoutPage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminProducts } from './pages/AdminProducts';
 import { AdminOrders } from './pages/AdminOrders';
@@ -21,7 +21,12 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { WishlistPage } from './pages/WishlistPage';
 import { AboutUsPage } from './pages/AboutUsPage';
 import { ContactUsPage } from './pages/ContactUsPage';
+import PaymentPage from './pages/PaymentPage/PaymentPage';
 import { TrackOrderPage } from './pages/TrackOrderPage';
+import OrderSuccessPage from './pages/OrderSuccessPage';
+import { useSocket } from './hooks/useSocket';
+import ToastContainer from './components/ToastContainer'; // Import useSocket
+
 
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAdmin } = useApp();
@@ -36,14 +41,32 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 const AuthWrapper: React.FC = () => {
+  const { user } = useApp();
+  const { addNotification } = useNotifications();
+  const token = localStorage.getItem('token'); // Get token from localStorage
+  const socket = useSocket(token); // Use the socket hook
+
+  // Handle incoming notifications here if needed, or pass the socket instance down
+  useEffect(() => {
+    if (socket) {
+      socket.on('notification', (data) => {
+        console.log('Received notification:', data);
+        addNotification(data); // Use addNotification from context
+      });
+    }
+  }, [socket, addNotification]);
+  
   return (
     <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/shop" element={<ShopPage />} />
+
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/order-success" element={<OrderSuccessPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -100,9 +123,12 @@ const AuthWrapper: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AppProvider>
-      <Router>
-        <AuthWrapper />
-      </Router>
+      <NotificationProvider>
+        <Router>
+          <AuthWrapper />
+        </Router>
+        <ToastContainer />
+      </NotificationProvider>
     </AppProvider>
   );
 };

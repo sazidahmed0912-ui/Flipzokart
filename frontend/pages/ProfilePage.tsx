@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Navigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navigate, Link, useLocation } from 'react-router-dom';
 import { 
   User as UserIcon, Package, MapPin, CreditCard, 
   Settings, LogOut, ChevronRight, ShoppingBag,
@@ -10,7 +10,15 @@ import { useApp } from '../store/Context';
 
 export const ProfilePage: React.FC = () => {
   const { user, orders, logout } = useApp();
+  const location = useLocation();
   const [activeSection, setActiveSection] = useState('overview');
+
+  // Automatically show orders section when navigating to /orders route
+  useEffect(() => {
+    if (location.pathname === '/orders') {
+      setActiveSection('orders');
+    }
+  }, [location.pathname]);
 
   if (!user) return <Navigate to="/login" />;
 

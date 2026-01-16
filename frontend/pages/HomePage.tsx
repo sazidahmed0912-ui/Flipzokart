@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../store/Context';
-import { NewProductCard } from '../components/NewProductCard';
+import { ProductCard } from '../components/ProductCard';
 import { GrocerySection } from '../components/GrocerySection';
 
 // Same category data as before, but will be styled according to new rules.
@@ -64,21 +64,19 @@ export const HomePage: React.FC = () => {
                 </div>
             </section>
             
-            <GrocerySection />
-        
             <section className="py-8 px-4 md:px-8 bg-gray-50">
                 <div className="max-w-7xl mx-auto">
                     <div className="mb-6">
                         <h2 className="text-2xl md:text-3xl font-bold"><span className="text-gray-800">Top Deals</span></h2>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 auto-rows-fr">
                         {topDeals.map(product => (
-                            <NewProductCard key={product.id} product={product} variant="compact" />
+                            <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
                 </div>
             </section>
-        
+            
             <section className="py-8 px-4 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <div className="mb-6">
@@ -88,11 +86,13 @@ export const HomePage: React.FC = () => {
                       </h2>
                       <div className="w-20 h-1 bg-[#f28c28] rounded"></div>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {featuredProducts.map(product => <NewProductCard key={product.id} product={product} />)}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 auto-rows-fr">
+                        {featuredProducts.map(product => <ProductCard key={product.id} product={product} />)}
                     </div>
                 </div>
             </section>
+            
+            <GrocerySection />
 
             <section className="py-12 px-4 bg-white">
                 <div className="max-w-7xl mx-auto">

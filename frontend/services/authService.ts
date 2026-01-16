@@ -1,7 +1,7 @@
 import { User } from "../types";
 
 // ✅ ONLY BACKEND BASE URL
-const API_BASE_URL = "https://flipzokart-backend.onrender.com"
+const API_BASE_URL = ""
 
 const authService = {
   // =========================

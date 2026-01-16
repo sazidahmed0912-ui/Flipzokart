@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ShoppingBag, Users, IndianRupee, TrendingUp, 
@@ -10,21 +9,85 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useApp } from '../store/Context';
 import { AdminSidebar } from '../components/AdminSidebar';
+import { getDashboardStats } from '../services/adminService'; // Import adminService
 
-const data = [
-  { name: 'Mon', revenue: 45000, orders: 124 },
-  { name: 'Tue', revenue: 38000, orders: 113 },
-  { name: 'Wed', revenue: 52000, orders: 158 },
-  { name: 'Thu', revenue: 47000, orders: 139 },
-  { name: 'Fri', revenue: 61000, orders: 188 },
-  { name: 'Sat', revenue: 78000, orders: 238 },
-  { name: 'Sun', revenue: 92000, orders: 283 },
-];
+// Define interfaces for the dashboard data
+interface SalesOverTimeData {
+  _id: string; // Date string 'YYYY-MM-DD'
+  dailySales: number;
+  dailyOrders: number;
+}
+
+interface ProductsByCategoryData {
+  _id: string; // Category name
+  count: number;
+}
+
+interface DashboardStats {
+  totalSales: number;
+  totalOrders: number;
+  totalProducts: number;
+  totalUsers: number;
+  recentOrders: any[]; // Define a more specific type if needed
+  productsByCategory: ProductsByCategoryData[];
+  salesOverTime: SalesOverTimeData[];
+}
 
 export const AdminDashboard: React.FC = () => {
-  const { orders, products } = useApp();
-  
-  const totalRevenue = orders.reduce((acc, o) => o.status !== 'Cancelled' ? acc + o.total : acc, 0);
+  const { products } = useApp(); // Removed 'orders' as it will be fetched from stats
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const { data } = await getDashboardStats();
+        setStats(data);
+      } catch (err) {
+        console.error("Failed to fetch dashboard stats:", err);
+        setError("Failed to load dashboard statistics.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50/50">
+        <AdminSidebar />
+        <div className="flex-1 p-6 lg:p-12 flex items-center justify-center">
+          <p>Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50/50">
+        <AdminSidebar />
+        <div className="flex-1 p-6 lg:p-12 flex items-center justify-center">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Use optional chaining for stats properties
+  const totalRevenue = stats?.totalSales || 0;
+  const activeOrders = stats?.totalOrders || 0;
+  const inventorySKU = stats?.totalProducts || 0;
+  const globalTraffic = '42.8k'; // Still static for now
+
+  // Prepare data for AreaChart (Sales Over Time)
+  const chartData = stats?.salesOverTime.map(item => ({
+    name: item._id.substring(5), // e.g., '10-25' from '2023-10-25'
+    revenue: item.dailySales,
+    orders: item.dailyOrders
+  })) || [];
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50/50">
@@ -49,10 +112,10 @@ export const AdminDashboard: React.FC = () => {
         {/* Vital Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
-            { label: 'Market Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: IndianRupee, color: 'blue', trend: '+12.5%' },
-            { label: 'Active Orders', value: orders.length, icon: ShoppingBag, color: 'orange', trend: '+8.2%' },
-            { label: 'Global Traffic', value: '42.8k', icon: Globe, color: 'green', trend: '+24.1%' },
-            { label: 'Inventory SKU', value: products.length, icon: Package, color: 'purple', trend: '-2.4%' },
+            { label: 'Market Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: IndianRupee, color: 'blue', trend: '+12.5%' }, // Trend is still static
+            { label: 'Total Orders', value: activeOrders, icon: ShoppingBag, color: 'orange', trend: '+8.2%' }, // Trend is still static
+            { label: 'Total Users', value: stats?.totalUsers || 0, icon: Users, color: 'green', trend: '+24.1%' }, // Trend is still static
+            { label: 'Total Products', value: inventorySKU, icon: Package, color: 'purple', trend: '-2.4%' }, // Trend is still static
           ].map((stat, i) => (
             <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm relative group hover:shadow-xl transition-all duration-500">
               <div className={`w-14 h-14 bg-${stat.color}-50 text-${stat.color}-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
@@ -82,7 +145,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data}>
+                <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#ff7a00" stopOpacity={0.2}/>

@@ -86,7 +86,7 @@ export const CartPage: React.FC = () => {
                 <div className="flex-grow flex flex-col justify-between py-2">
                   <div className="flex justify-between items-start gap-4">
                     <div className="space-y-1">
-                      <Link to={`/product/${item.id}`} className="font-bold text-2xl text-dark hover:text-primary transition-colors line-clamp-1 tracking-tight">{item.name}</Link>
+                      <Link to={`/product/${item.id}`} className="font-bold text-lg text-dark hover:text-primary transition-colors line-clamp-2 tracking-tight">{item.name}</Link>
                       <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">{item.category}</p>
                       
                       {item.selectedVariants && (

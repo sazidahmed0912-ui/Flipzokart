@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, CartItem, Product, Order } from '../types';
+import { User, CartItem, Product, Order, Address } from '../types';
 import { MOCK_PRODUCTS } from '../constants';
 import authService from '../services/authService';
 
@@ -21,6 +21,8 @@ interface AppContextType {
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
   products: Product[];
   setProducts: (products: Product[]) => void;
+  selectedAddress: Address | null;
+  setSelectedAddress: (address: Address | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -83,6 +85,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   });
 
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(() => {
+    const saved = localStorage.getItem('flipzokart_selected_address');
+    try {
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   useEffect(() => {
     if (user) {
       localStorage.setItem('flipzokart_user', JSON.stringify(user));
@@ -107,9 +118,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('flipzokart_products', JSON.stringify(products));
   }, [products]);
 
+  useEffect(() => {
+    if (selectedAddress) {
+      localStorage.setItem('flipzokart_selected_address', JSON.stringify(selectedAddress));
+    } else {
+      localStorage.removeItem('flipzokart_selected_address');
+    }
+  }, [selectedAddress]);
+
   const addToCart = (product: Product, quantity: number = 1) => {
     const selectedVariants = (product as any).selectedVariants;
     const itemKey = getCartItemKey(product.id, selectedVariants);
+
 
     setCart((prev: CartItem[]) => {
       const existingIndex = prev.findIndex((item: CartItem) => getCartItemKey(item.id, item.selectedVariants) === itemKey);
@@ -186,7 +206,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider value={{
       user, setUser, cart, addToCart, removeFromCart, updateCartQuantity, clearCart,
       wishlist, toggleWishlist, isAdmin, logout, orders, placeOrder, updateOrderStatus,
-      products, setProducts
+      products, setProducts, selectedAddress, setSelectedAddress
     }}>
       {children}
     </AppContext.Provider>

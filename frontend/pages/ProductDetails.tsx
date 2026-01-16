@@ -4,23 +4,49 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Heart, Star, ShieldCheck, Truck, RotateCcw, Minus, Plus, Share2, Check, AlertTriangle, Info, Clock, ArrowRight } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { ProductCard } from '../components/ProductCard';
+import { fetchProductById } from '../services/api';
+import { Product } from '../types';
 
 export const ProductDetails: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products, addToCart, toggleWishlist, wishlist } = useApp();
+  const { products: allProducts, addToCart, toggleWishlist, wishlist } = useApp();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const [activeImage, setActiveImage] = useState<string>('');
 
-  const product = products.find(p => p.id === id);
+  useEffect(() => {
+    if (!id) return;
+    const getProduct = async () => {
+      setIsLoading(true);
+      try {
+        const { data } = await fetchProductById(id);
+        setProduct(data);
+        setActiveImage(data.image);
+        if (data.variants) {
+          const defaults: Record<string, string> = {};
+          data.variants.forEach(v => {
+            if (v.options.length > 0) defaults[v.name] = v.options[0];
+          });
+          setSelectedVariants(defaults);
+        }
+      } catch (error) {
+        console.error("Failed to fetch product:", error);
+        setProduct(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    getProduct();
+  }, [id]);
 
   // Combine hero image and gallery for the display
   const allImages = useMemo(() => {
     if (!product) return [];
     const gallery = product.images || [];
-    // If there are no gallery images, create placeholders like before for the premium feel
     if (gallery.length === 0) {
       return [
         product.image,
@@ -29,34 +55,23 @@ export const ProductDetails: React.FC = () => {
         `https://picsum.photos/seed/${product.id}3/600/600`,
       ];
     }
-    // Prepend hero image to the gallery if it's not already there
     return gallery.includes(product.image) ? gallery : [product.image, ...gallery];
   }, [product]);
-
-  useEffect(() => {
-    if (product?.variants) {
-      const defaults: Record<string, string> = {};
-      product.variants.forEach(v => {
-        if (v.options.length > 0) defaults[v.name] = v.options[0];
-      });
-      setSelectedVariants(defaults);
-    }
-    if (product) {
-      setActiveImage(product.image);
-    }
-  }, [product?.id]);
 
   // Memoized current stock calculation
   const { currentStock, isOutOfStock } = useMemo(() => {
     if (!product) return { currentStock: 0, isOutOfStock: true };
-    if (!product.inventory || product.inventory.length === 0) {
-      return { currentStock: product.stock, isOutOfStock: product.stock <= 0 };
+    
+    // This logic now correctly uses the fetched product's countInStock
+    if (!product.variants || product.variants.length === 0) {
+      return { currentStock: product.countInStock, isOutOfStock: product.countInStock <= 0 };
     }
-    const variantMatch = product.inventory.find(inv => 
-      Object.entries(selectedVariants).every(([key, value]) => inv.options[key] === value)
-    );
-    const stock = variantMatch ? variantMatch.stock : 0;
-    return { currentStock: stock, isOutOfStock: stock <= 0 };
+
+    // This part is for variant-specific inventory, which seems to be a future feature.
+    // We will assume `countInStock` on the main product is the source of truth for now.
+    // For a real variant system, `product.inventory` would be used here.
+    return { currentStock: product.countInStock, isOutOfStock: product.countInStock <= 0 };
+
   }, [product, selectedVariants]);
 
   // Cap quantity
@@ -66,8 +81,14 @@ export const ProductDetails: React.FC = () => {
     } else if (isOutOfStock) {
       setQuantity(1);
     }
-  }, [currentStock, isOutOfStock]);
+  }, [currentStock, isOutOfStock, quantity]);
 
+  if (isLoading) return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+    </div>
+  );
+  
   if (!product) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center space-y-4">
       <div className="p-6 bg-lightGray rounded-full text-gray-400">
@@ -79,7 +100,7 @@ export const ProductDetails: React.FC = () => {
   );
 
   const isWishlisted = wishlist.includes(product.id);
-  const relatedProducts = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const relatedProducts = allProducts.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
@@ -321,7 +342,7 @@ export const ProductDetails: React.FC = () => {
           )}
           {activeTab === 'specifications' && (
             <div className="animate-in slide-in-from-bottom-4 duration-300 grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-6">
-              {[{ label: "SKU ID", value: `FZK-${product.id.padStart(6, '0')}` }, { label: "Category", value: product.category }, { label: "In-Stock Total", value: `${product.stock} Units` }, { label: "Warranty", value: "1 Year Standard" }, { label: "Origin", value: "Proudly Manufactured in India" }, { label: "Material", value: "Eco-Friendly Recycled Components" }].map((spec, i) => (
+              {[{ label: "SKU ID", value: `FZK-${product.id.padStart(6, '0')}` }, { label: "Category", value: product.category }, { label: "In-Stock Total", value: `${product.countInStock} Units` }, { label: "Warranty", value: "1 Year Standard" }, { label: "Origin", value: "Proudly Manufactured in India" }, { label: "Material", value: "Eco-Friendly Recycled Components" }].map((spec, i) => (
                 <div key={i} className="flex justify-between py-5 border-b border-gray-50 group hover:border-primary/30 transition-colors">
                   <span className="text-gray-400 font-bold uppercase text-[11px] tracking-widest">{spec.label}</span>
                   <span className="text-dark font-bold text-sm">{spec.value}</span>

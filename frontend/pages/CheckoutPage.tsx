@@ -45,7 +45,14 @@ export const CheckoutPage: React.FC = () => {
     };
 
     placeOrder(newOrder);
-    alert(`Order Placed Successfully! ${paymentMethod === 'Razorpay' ? 'Payment processed.' : 'Please pay on delivery.'}`);
+    clearCart();
+    
+    // Show success message
+    const successMessage = paymentMethod === 'Razorpay' 
+      ? `🎉 Order Placed Successfully!\n\nOrder ID: ${newOrder.id}\nPayment: Paid via Razorpay\nTotal: ₹${total.toLocaleString('en-IN')}\n\nYou will be redirected to your orders page.`
+      : `🎉 Order Placed Successfully!\n\nOrder ID: ${newOrder.id}\nPayment: Cash on Delivery\nTotal: ₹${total.toLocaleString('en-IN')}\n\nPlease keep cash ready for payment on delivery.\nYou will be redirected to your orders page.`;
+    
+    alert(successMessage);
     navigate('/orders');
   };
 

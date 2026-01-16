@@ -16,8 +16,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
   return (
-    <div className="group bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full">
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
+    <div className="group bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+      <div className="relative w-full h-48 overflow-hidden bg-gray-50">
         <Link to={`/product/${product.id}`}>
           <img
             src={product.image}
@@ -34,7 +34,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
         </button>
         {discount > 0 && (
-          <span className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded">
+          <span className="absolute top-3 right-3 bg-[#FF9F00] text-white text-[10px] font-bold px-2 py-1 rounded">
             {discount}% OFF
           </span>
         )}
@@ -56,15 +56,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         <div className="mt-auto">
           <div className="flex items-baseline gap-2 mb-4">
-            <span className="text-lg font-bold">₹{product.price.toLocaleString('en-IN')}</span>
+            <span className="text-lg font-bold text-gray-900">₹{product.price.toLocaleString('en-IN')}</span>
             {product.originalPrice > product.price && (
               <span className="text-xs text-gray-400 line-through">₹{product.originalPrice.toLocaleString('en-IN')}</span>
+            )}
+            {discount > 0 && (
+                <span className="text-sm text-green-600 font-semibold">{discount}% off</span>
             )}
           </div>
           
           <button
             onClick={() => addToCart(product)}
-            className="w-full py-2 bg-dark text-white text-xs font-semibold rounded-lg hover:bg-primary transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2 bg-[#FF9F00] text-white text-sm font-semibold rounded-full hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2"
           >
             <ShoppingCart size={14} /> Add to Cart
           </button>

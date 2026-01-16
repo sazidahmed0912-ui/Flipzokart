@@ -28,6 +28,8 @@ export interface Product {
   isFeatured?: boolean;
   variants?: VariantGroup[];
   inventory?: VariantCombination[];
+  seller?: string;
+  deliveryDate?: string;
 }
 
 export interface User {
@@ -38,6 +40,17 @@ export interface User {
   role: 'admin' | 'user';
   avatar?: string;
   joinedDate?: string;
+}
+
+export interface Address {
+  id: number;
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  type: 'Home' | 'Work';
 }
 
 export interface CartItem extends Product {

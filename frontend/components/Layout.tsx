@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag } from 'lucide-react';
 import { useApp } from '../store/Context';
+import NotificationBell from './NotificationBell';
 
 
 const Header: React.FC = () => {
@@ -75,6 +76,7 @@ const Header: React.FC = () => {
               <Home className="w-6 h-6" />
               <span className="text-sm font-medium">Home</span>
             </Link>
+            <NotificationBell />
             <Link to="/cart" className="flex items-center space-x-1 text-gray-700 hover:text-[#f28c28]">
               <ShoppingCart className="w-6 h-6" />
               <span className="text-sm font-medium">Cart</span>
@@ -86,10 +88,10 @@ const Header: React.FC = () => {
                 <div className="relative" ref={profileRef}>
                     <button 
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center space-x-1 text-gray-700 hover:text-[#f28c28]"
+                    className="flex flex-col items-center justify-center text-gray-700 hover:text-[#f28c28]"
                     >
                         <User className="w-6 h-6" />
-                        <span className="text-sm font-medium">{user.name.split(' ')[0]}</span>
+                        <span className="text-sm font-medium text-center">Welcome Back, {user.name.split(' ')[0]}</span>
                     </button>
                     {isProfileOpen && (
                         <div className="absolute top-full right-0 mt-3 w-56 bg-white border border-gray-100 shadow-2xl rounded-xl overflow-hidden z-50">

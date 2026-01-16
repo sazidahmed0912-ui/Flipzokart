@@ -26,7 +26,14 @@ const productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+productSchema.virtual("id").get(function () {
+  return this._id.toHexString();
+});
+
 
 module.exports = mongoose.model("Product", productSchema);
