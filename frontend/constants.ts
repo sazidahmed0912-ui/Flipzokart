@@ -7,7 +7,7 @@ export const CATEGORIES = [
 
 export const MOCK_PRODUCTS: Product[] = [
   {
-    id: '1',
+    id: '65f6170d4f3b7d1e8c7c9f1a', // Example ObjectId
     name: 'iPhone 15 Pro Max - Natural Titanium',
     description: 'The ultimate iPhone experience with A17 Pro chip and advanced camera system.',
     price: 159900,
@@ -24,7 +24,7 @@ export const MOCK_PRODUCTS: Product[] = [
     ]
   },
   {
-    id: '2',
+    id: '65f6170d4f3b7d1e8c7c9f1b', // Example ObjectId
     name: 'Sony WH-1000XM5 Noise Cancelling Headphones',
     description: 'Industry-leading noise cancellation with two processors and eight microphones.',
     price: 29990,
@@ -40,7 +40,7 @@ export const MOCK_PRODUCTS: Product[] = [
     ]
   },
   {
-    id: '3',
+    id: '65f6170d4f3b7d1e8c7c9f1c', // Example ObjectId
     name: 'Nike Air Max 270',
     description: 'Large Air unit delivers responsive cushioning for a comfortable ride.',
     price: 12995,
@@ -56,7 +56,7 @@ export const MOCK_PRODUCTS: Product[] = [
     ]
   },
   {
-    id: '4',
+    id: '65f6170d4f3b7d1e8c7c9f1d', // Example ObjectId
     name: 'MacBook Air M3 Chip',
     description: 'The world\'s most popular laptop is even better with the M3 chip.',
     price: 114900,
@@ -73,7 +73,7 @@ export const MOCK_PRODUCTS: Product[] = [
     ]
   },
   {
-    id: '5',
+    id: '65f6170d4f3b7d1e8c7c9f1e', // Example ObjectId
     name: 'Samsung Galaxy S24 Ultra',
     description: 'AI-powered smartphone with 200MP camera and integrated S Pen.',
     price: 129999,
@@ -85,7 +85,7 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 20
   },
   {
-    id: '6',
+    id: '65f6170d4f3b7d1e8c7c9f1f', // Example ObjectId
     name: 'Philips Air Fryer XL',
     description: 'Healthy frying with Rapid Air technology. Large 1.2kg capacity.',
     price: 9999,
@@ -97,7 +97,7 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 50
   },
   {
-    id: '7',
+    id: '65f6170d4f3b7d1e8c7c9f20', // Example ObjectId
     name: 'Fresh Organic Tomatoes - 1kg',
     description: 'Premium quality organic tomatoes, farm fresh and naturally ripened.',
     price: 60,
@@ -110,7 +110,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isFeatured: true
   },
   {
-    id: '8',
+    id: '65f6170d4f3b7d1e8c7c9f21', // Example ObjectId
     name: 'Basmati Rice - 5kg Pack',
     description: 'Premium quality long grain basmati rice, aged for perfect aroma and taste.',
     price: 450,
@@ -122,7 +122,7 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 75
   },
   {
-    id: '9',
+    id: '65f6170d4f3b7d1e8c7c9f22', // Example ObjectId
     name: 'Fresh Milk - 1L Pack',
     description: 'Farm fresh pure cow milk, pasteurized and ready to consume.',
     price: 55,
@@ -134,7 +134,7 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 50
   },
   {
-    id: '10',
+    id: '65f6170d4f3b7d1e8c7c9f23', // Example ObjectId
     name: 'Whole Wheat Atta - 10kg',
     description: 'Premium quality whole wheat flour, stone ground for better nutrition.',
     price: 380,
@@ -146,7 +146,7 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 60
   },
   {
-    id: '11',
+    id: '65f6170d4f3b7d1e8c7c9f24', // Example ObjectId
     name: 'Fresh Apples - 1kg',
     description: 'Crisp and sweet red apples, imported from the best orchards.',
     price: 120,
@@ -159,7 +159,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isFeatured: true
   },
   {
-    id: '12',
+    id: '65f6170d4f3b7d1e8c7c9f25', // Example ObjectId
     name: 'Cooking Oil - 5L Jar',
     description: 'Pure refined sunflower oil, rich in vitamin E and low cholesterol.',
     price: 850,

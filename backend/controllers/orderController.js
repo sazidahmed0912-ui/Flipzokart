@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const Product = require('../models/Product'); // Import Product model
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 
 // Helper function to update stock
 const updateStock = async (products) => {
@@ -21,25 +22,45 @@ const razorpay = new Razorpay({
 // Create order for COD
 const createOrder = async (req, res) => {
   try {
+    console.log('Creating order with user:', req.user?.id);
+    console.log('Request body:', req.body);
+    console.log('req.user object:', req.user); // Added for debugging
+    
     const { products, address, subtotal, deliveryCharges, discount, total } = req.body;
 
     // Validate required fields
     if (!products || !address || !subtotal || !total) {
+      console.log('Missing required fields:', { products, address, subtotal, total });
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Check for stock availability
+    // Validate productIds
     for (const item of products) {
+      if (!mongoose.Types.ObjectId.isValid(item.productId)) {
+        console.log('Invalid product ID format:', item.productId);
+        return res.status(400).json({ message: `Invalid product ID format: ${item.productId}` });
+      }
+    }
+
+    // Convert productIds to ObjectIds
+    const validatedProducts = products.map(item => ({
+      ...item,
+      productId: new mongoose.Types.ObjectId(item.productId)
+    }));
+
+
+    // Check for stock availability
+    for (const item of validatedProducts) {
       const product = await Product.findById(item.productId);
       if (!product || product.countInStock < item.quantity) {
-        return res.status(400).json({ message: `Product ${product.name} is out of stock.` });
+        return res.status(400).json({ message: `Product ${product?.name || item.productId} is out of stock.` });
       }
     }
 
     // Create order
     const order = new Order({
       user: req.user.id,
-      products,
+      products: validatedProducts,
       shippingAddress: address,
       paymentMethod: 'COD',
       paymentStatus: 'PENDING',
@@ -69,9 +90,9 @@ const createOrder = async (req, res) => {
     });
 
     // Update stock
-    await updateStock(products);
+    await updateStock(validatedProducts);
 
-    for (const item of products) {
+    for (const item of validatedProducts) {
       const product = await Product.findById(item.productId);
       if (product && product.countInStock <= 10) { // Threshold for low stock
         io.to('admin').emit('notification', {
