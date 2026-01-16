@@ -539,6 +539,11 @@
   .cart-header {
     border-radius: 0;
     margin-bottom: 8px;
+    padding: 12px 16px; /* Adjust padding for mobile */
+  }
+
+  .cart-header h2 {
+    font-size: 16px; /* Smaller font size for mobile header */
   }
 
   .cart-item-card {
@@ -547,30 +552,78 @@
     margin-bottom: 8px;
   }
 
+  .cart-item-content {
+    flex-direction: column; /* Stack image and details vertically */
+    gap: 16px; /* Adjust gap */
+  }
+
   .item-image-container {
-    width: 80px;
-    height: 80px;
+    width: 100%; /* Image takes full width */
+    height: auto; /* Maintain aspect ratio */
+    max-width: 100px; /* Limit image width to avoid being too large */
+    margin: 0 auto; /* Center the image */
+  }
+
+  .item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .item-details {
+    flex: none; /* Remove flex-grow */
+    width: 100%; /* Take full width */
   }
 
   .item-title {
-    font-size: 14px;
+    font-size: 15px; /* Adjust font size for mobile */
+    -webkit-line-clamp: unset; /* Allow title to use more lines if needed */
+    line-clamp: unset;
+  }
+
+  .item-category, .item-seller {
+    font-size: 11px;
+  }
+
+  .item-price-block {
+    flex-wrap: wrap; /* Allow prices to wrap if needed */
+    gap: 8px;
+  }
+
+  .current-price {
+    font-size: 16px;
+  }
+
+  .original-price, .discount-tag {
+    font-size: 13px;
   }
 
   .item-actions-row {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch; /* Stretch items to full width */
     gap: 16px;
+    padding-top: 16px; /* More padding from content above */
+    border-top: 1px solid #f0f0f0; /* Separator line */
   }
 
   .quantity-control {
     width: 100%;
+    justify-content: center; /* Center quantity controls */
   }
 
   .action-buttons {
     width: 100%;
-    justify-content: space-between;
-    border-top: 1px solid #f0f0f0;
-    padding-top: 16px;
+    display: flex; /* Ensure buttons are laid out with flex */
+    justify-content: space-around; /* Distribute buttons evenly */
+    gap: 10px; /* Small gap between buttons */
+    padding: 0; /* Remove padding-top from here */
+    border-top: none; /* Remove border-top here as it's on item-actions-row */
+  }
+
+  .cart-action-button {
+    flex: 1; /* Allow buttons to take equal space */
+    padding: 10px 0; /* Adjust padding */
+    font-size: 12px;
   }
 
   .price-details-section {
@@ -580,6 +633,37 @@
 
   .price-details-card {
     border-radius: 0;
+  }
+
+  .price-header {
+    padding: 12px 16px; /* Adjust padding for mobile */
+    font-size: 15px;
+  }
+
+  .price-breakdown {
+    padding: 16px; /* Adjust padding for mobile */
+    gap: 16px;
+  }
+
+  .price-row {
+    font-size: 15px;
+  }
+
+  .price-row.total-row {
+    font-size: 16px;
+    padding-top: 16px;
+    gap: 10px; /* Add gap for better spacing */
+  }
+
+  .savings-message {
+    padding: 12px 16px; /* Adjust padding for mobile */
+    font-size: 14px;
+  }
+
+  .security-badge {
+    padding: 12px 16px; /* Adjust padding for mobile */
+    font-size: 13px;
+    gap: 8px;
   }
 
   .desktop-only {
@@ -625,3 +709,4 @@
     font-size: 14px;
   }
 }
+

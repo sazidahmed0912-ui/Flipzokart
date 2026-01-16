@@ -360,21 +360,135 @@ body {
     .checkout-header {
         flex-direction: column;
         gap: 1rem;
+        padding: 0.75rem; /* Reduced padding for header */
+        border-radius: 0;
+        margin-bottom: 1rem;
     }
+    .checkout-header .logo {
+      font-size: 1.2rem;
+    }
+    .checkout-steps {
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    .secure-checkout {
+      font-size: 0.8rem;
+    }
+
     body {
         background-color: var(--background-color-white);
-    }
-    .address-section {
-        box-shadow: none;
-        padding: 1rem 0;
     }
     .checkout-main {
         gap: 0;
     }
+    .address-section {
+        box-shadow: none;
+        padding: 1rem 0; /* Reduced padding for address section */
+        border-radius: 0;
+    }
+    .address-section h2 {
+      font-size: 1.1rem; /* Smaller font for section title */
+      padding: 0 1rem 0.75rem 1rem; /* Adjust padding around title */
+      margin-bottom: 1rem;
+    }
+
+    .address-list {
+      padding: 0 1rem; /* Add horizontal padding to address list */
+      gap: 1rem; /* Reduce gap between address cards */
+    }
+
+    .address-card {
+      padding: 1rem; /* Reduced padding for address cards */
+      flex-direction: column; /* Stack radio and details */
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .address-card.selected {
+      padding: calc(1rem - 1px); /* Adjust padding for thicker border */
+    }
+
+    .address-card-radio {
+      margin-top: 0;
+    }
+
+    .address-card-details {
+      width: 100%; /* Ensure details take full width */
+    }
+
+    .address-card-actions {
+      flex-wrap: wrap; /* Allow buttons to wrap */
+      gap: 0.5rem; /* Reduce gap between action buttons */
+      justify-content: flex-start;
+      margin-top: 0.75rem; /* Adjust top margin */
+    }
+
+    .address-btn {
+      flex-grow: 1; /* Allow buttons to grow */
+      min-width: unset; /* Remove min-width to allow shrinking */
+      width: auto;
+      padding: 8px 12px; /* Adjust padding for smaller buttons */
+      font-size: 12px;
+    }
+
+    .add-new-address-card {
+      margin: 1rem 1rem 0 1rem; /* Adjust margins */
+      padding: 1rem; /* Reduced padding */
+    }
+
+    .add-address-btn {
+      font-size: 0.9rem; /* Smaller font for add address button */
+    }
+
+    .summary-section {
+        margin-bottom: 70px; /* Space for sticky mobile button */
+    }
+
+    .price-summary-card {
+        border-radius: 0;
+        padding: 1rem; /* Reduced padding for summary card */
+    }
+    .price-summary-card h3 {
+      font-size: 1rem; /* Smaller font for summary header */
+      padding-bottom: 0.75rem;
+      margin-bottom: 0.75rem;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .price-summary-item, .price-summary-total {
+      font-size: 0.85rem; /* Smaller font for summary items */
+      margin-bottom: 0.75rem;
+    }
+    .price-summary-item:last-of-type {
+      margin-bottom: 1rem;
+    }
+
+    .price-summary-total {
+      font-size: 1rem;
+      padding-top: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .security-badge {
+      font-size: 0.8rem;
+      margin-top: 0.75rem;
+    }
+
     .place-order-sticky-mobile {
-        display: block;
+        display: flex; /* Show sticky mobile button */
+        justify-content: center; /* Center the button */
+        align-items: center;
+        padding: 0.75rem 1rem;
+    }
+    .place-order-sticky-mobile .place-order-btn {
+        display: flex; /* Ensure button itself is flex for centering spinner */
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 14px;
+        height: auto;
     }
     .place-order-btn.desktop-only {
-        display: none;
+        display: none; /* Hide desktop button */
     }
 }

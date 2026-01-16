@@ -46,6 +46,14 @@ const PaymentPage: React.FC = () => {
   const { user, cart, clearCart } = useApp();
   const isRazorpayLoaded = useRazorpay();
 
+  // Check if user is logged in
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+  }, [user, navigate]);
+
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const deliveryCharges = subtotal > 500 ? 0 : 50;
@@ -56,32 +64,53 @@ const PaymentPage: React.FC = () => {
 
   const handlePlaceOrderCOD = async () => {
     if (!user) {
-      setNotification("Redirecting to login page...");
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      setError("Please login to place an order.");
+      navigate('/login');
       return;
     }
+    
     if (cart.length === 0) {
       setError("Your cart is empty.");
       return;
     }
+    
+    if (!paymentMethod) {
+      setError("Please select a payment method.");
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     try {
-      const orderData = {
-        userId: user.id,
+      const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+      const deliveryCharges = 0; // Calculate or get from context
+      const discount = 0; // Calculate or get from context
+      const total = subtotal + deliveryCharges - discount;
+      
+      console.log('Placing order with data:', {
         products: cart.map(item => ({ productId: item.id, quantity: item.quantity })),
-        amount: totalPayable,
-        address: "123 Flipzokart Lane, E-commerce City", // Placeholder address
-        paymentMethod: "COD",
+        subtotal,
+        deliveryCharges,
+        discount,
+        total,
+        address: "123 E-commerce Lane, E-commerce City",
+        user: user.id
+      });
+      
+      const orderData = {
+        products: cart.map(item => ({ productId: item.id, quantity: item.quantity })),
+        subtotal,
+        deliveryCharges,
+        discount,
+        total,
+        address: "123 E-commerce Lane, E-commerce City", // This should come from selected address
       };
       await createOrder(orderData);
       clearCart();
       navigate("/order-success");
-    } catch (err) {
-      setError("Failed to place order. Please try again.");
-      console.error(err);
+    } catch (err: any) {
+      console.error('Order placement error:', err);
+      setError(err.response?.data?.message || "Failed to place order. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -113,19 +142,26 @@ const PaymentPage: React.FC = () => {
             key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Use environment variable
             amount: razorpayOrder.amount,
             currency: razorpayOrder.currency,
-            name: "Flipzokart",
+            name: "E-commerce Platform",
             description: "Order Payment",
             order_id: razorpayOrder.id,
             handler: async (response: any) => {
                 try {
+                    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+                    const deliveryCharges = 0; // Calculate or get from context
+                    const discount = 0; // Calculate or get from context
+                    const total = subtotal + deliveryCharges - discount;
+                    
                     const verificationData = {
                         razorpay_order_id: response.razorpay_order_id,
                         razorpay_payment_id: response.razorpay_payment_id,
                         razorpay_signature: response.razorpay_signature,
-                        userId: user.id,
                         products: cart.map(item => ({ productId: item.id, quantity: item.quantity })),
-                        amount: totalPayable,
-                        address: "123 Flipzokart Lane, E-commerce City", // Placeholder address
+                        subtotal,
+                        deliveryCharges,
+                        discount,
+                        total,
+                        address: "123 E-commerce Lane, E-commerce City", // This should come from selected address
                     };
                     await verifyPayment(verificationData);
                     clearCart();
@@ -169,16 +205,18 @@ const PaymentPage: React.FC = () => {
     <div className="payment-page-container">
       {notification && <div className="notification-popup">{notification}</div>}
       <header className="payment-header">
-        <div className="logo">Flipzokart</div>
+        <div className="header-top">
+          <div className="logo"></div>
+          <div className="secure-checkout-badge">
+            <Lock size={16} />
+            <span>Secure Checkout</span>
+          </div>
+        </div>
         <div className="checkout-steps">
           <span>Cart</span> <ChevronRight size={16} />
           <span>Address</span> <ChevronRight size={16} />
           <span className="active">Payment</span> <ChevronRight size={16} />
           <span>Confirmation</span>
-        </div>
-        <div className="secure-checkout-badge">
-          <Lock size={16} />
-          <span>Secure Checkout</span>
         </div>
       </header>
 
@@ -257,7 +295,7 @@ const PaymentPage: React.FC = () => {
             {error && <p className="error-toast">{error}</p>}
 
             <button
-              className="action-button"
+              className="action-button desktop-only" /* Add desktop-only class */
               onClick={handleSubmit}
               disabled={!paymentMethod || isLoading}
             >
@@ -273,6 +311,25 @@ const PaymentPage: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Sticky Mobile Footer for Action Button */}
+      <div className="sticky-mobile-footer">
+        {error && <p className="error-toast">{error}</p>} {/* Error can appear here too */}
+        <button
+          className="action-button"
+          onClick={handleSubmit}
+          disabled={!paymentMethod || isLoading}
+        >
+          {isLoading ? (
+            <Loader2 className="spinner" />
+          ) : paymentMethod === "COD" ? (
+            "PLACE ORDER"
+          ) : (
+            `PAY ₹${totalPayable.toLocaleString('en-IN')} SECURELY`
+          )}
+          {paymentMethod === 'RAZORPAY' && <Lock size={16} style={{ marginLeft: '8px' }} />}
+        </button>
+      </div>
     </div>
   );
 };
