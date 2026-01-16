@@ -134,10 +134,10 @@ export const ProductDetails: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 lg:px-8 py-8 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
         {/* Gallery */}
-        <div className="space-y-6">
-          <div className="aspect-square bg-white rounded-[3rem] overflow-hidden border border-gray-100 shadow-inner relative group">
+        <div className="space-y-4 lg:space-y-6">
+          <div className="aspect-square bg-white rounded-2xl lg:rounded-[3rem] overflow-hidden border border-gray-100 shadow-inner relative group lg:max-w-none">
             <img 
               src={activeImage} 
               alt={product.name} 
@@ -157,14 +157,14 @@ export const ProductDetails: React.FC = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-4 md:grid-cols-6 gap-4">
+          <div className="grid grid-cols-4 md:grid-cols-6 gap-2 md:gap-4">
             {allImages.map((img, i) => (
               <div 
                 key={i} 
                 onClick={() => setActiveImage(img)}
-                className={`aspect-square bg-white rounded-2xl overflow-hidden cursor-pointer border-2 transition-all p-1 shadow-sm ${activeImage === img ? 'border-primary' : 'border-transparent hover:border-gray-200'}`}
+                className={`aspect-square bg-white rounded-lg lg:rounded-2xl overflow-hidden cursor-pointer border-2 transition-all p-0.5 lg:p-1 shadow-sm ${activeImage === img ? 'border-primary' : 'border-transparent hover:border-gray-200'}`}
               >
-                <img src={img} className="w-full h-full object-cover rounded-xl" />
+                <img src={img} className="w-full h-full object-cover rounded-md lg:rounded-xl" />
               </div>
             ))}
           </div>

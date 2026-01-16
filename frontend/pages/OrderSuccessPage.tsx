@@ -52,7 +52,7 @@ const OrderSuccessPage = () => {
           fontSize: '1.1rem',
           lineHeight: '1.6'
         }}>
-          Thank you for shopping with Flipzokart. Your order has been confirmed and will be delivered soon.
+          Thank you for shopping with us. Your order has been confirmed and will be delivered soon.
         </p>
 
         <div style={{

@@ -15,7 +15,7 @@ const initialAddresses: Address[] = [
         id: 0,
         name: 'Sazid Ahmed',
         phone: '123-456-7890',
-        address: '123 Flipzokart Lane, E-commerce City',
+        address: '123 E-commerce Lane, E-commerce City',
         city: 'Techville',
         state: 'Webland',
         pincode: '54321',
@@ -140,7 +140,7 @@ const CheckoutPage = () => {
     return (
         <div className="checkout-container">
             <header className="checkout-header">
-                <div className="logo">Flipzokart</div>
+                <div className="logo"></div>
                 <div className="checkout-steps">
                     <span>Cart</span> → <span className="active">Address</span> → <span>Payment</span> → <span>Confirmation</span>
                 </div>

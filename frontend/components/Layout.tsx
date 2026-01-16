@@ -230,12 +230,11 @@ const Footer: React.FC = () => {
                 </ul>
             </div>
             <div className="text-2xl font-bold">
-                <span className="text-[#222]">Flip</span><span className="text-[#f28c28]">zokart</span>
                 <p className="text-gray-600 text-sm mt-2">India's leading online shopping platform</p>
             </div>
         </div>
         <div className="border-t border-gray-300 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600 text-sm">© 2024 Flipzokart. All rights reserved.</p>
+            <p className="text-gray-600 text-sm">© 2024 All rights reserved.</p>
         </div>
         </div>
     </footer>

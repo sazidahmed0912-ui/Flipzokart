@@ -16,7 +16,7 @@ export const CompactProductCard: React.FC<ProductCardProps> = ({ product }) => {
     : 0;
 
   return (
-    <div className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col w-[240px] h-[320px]">
+    <div className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col">
       {/* Framed Product Image */}
       <div className="p-2">
         <Link to={`/product/${product.id}`} className="block rounded-lg border border-gray-200 overflow-hidden bg-gray-50">

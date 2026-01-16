@@ -32,7 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <span className="original-price">{formatPrice(product.price)}</span>
           <span className="discount-percentage">{product.discountPercentage}% off</span>
         </div>
-        {product.assured && <div className="assured-badge">✔️ Flipzokart Assured</div>} {/* Placeholder for assured badge */}
+        {product.assured && <div className="assured-badge">✔️ Assured</div>} {/* Placeholder for assured badge */}
         <p className="delivery-text">{product.deliveryText}</p>
         <button className="add-to-cart-button">Add to Cart</button>
       </div>

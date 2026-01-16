@@ -18,6 +18,7 @@ const CLIENT_URLS = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://192.168.31.152:3000",
+  "http://127.0.0.1:63790",
   "https://flipzokart.com",
   "https://www.flipzokart.com"
 ];

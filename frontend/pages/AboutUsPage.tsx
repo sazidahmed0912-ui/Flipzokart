@@ -12,7 +12,7 @@ export const AboutUsPage: React.FC = () => {
           <img 
             src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=1600" 
             className="w-full h-full object-cover opacity-40 grayscale"
-            alt="About Flipzokart"
+            alt="About Us"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-dark/60 via-dark/40 to-white"></div>
         </div>
@@ -20,7 +20,7 @@ export const AboutUsPage: React.FC = () => {
         <div className="container mx-auto px-4 relative z-10 text-center space-y-6">
           <h4 className="text-primary font-bold uppercase tracking-[0.3em] text-xs animate-in fade-in slide-in-from-bottom-4 duration-700">Established 2024</h4>
           <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-1000">
-            About <span className="text-primary">Flipzokart</span>
+            About <span className="text-primary">Us</span>
           </h1>
           <p className="text-gray-300 max-w-2xl mx-auto text-lg lg:text-xl font-medium animate-in fade-in slide-in-from-bottom-8 duration-1000">
             Redefining the Indian digital marketplace through innovation, quality, and unwavering trust.
@@ -35,20 +35,20 @@ export const AboutUsPage: React.FC = () => {
             <div className="space-y-10">
               <div className="space-y-4">
                 <h2 className="text-3xl lg:text-5xl font-bold text-dark tracking-tight leading-tight">
-                  Welcome to Flipzokart — Your Trusted Online Shopping Destination
+                  Welcome — Your Trusted Online Shopping Destination
                 </h2>
                 <div className="w-20 h-1.5 bg-primary rounded-full"></div>
               </div>
               
               <div className="space-y-6 text-gray-500 text-lg lg:text-xl leading-relaxed">
                 <p className="font-medium text-dark">
-                  Flipzokart is a modern e-commerce platform built to provide customers with high-quality products, affordable prices, and a smooth online shopping experience.
+                  This is a modern e-commerce platform built to provide customers with high-quality products, affordable prices, and a smooth online shopping experience.
                 </p>
                 <p>
                   We combine technology and trust to create a marketplace where shopping is simple, fast, and secure. Our journey began with a single mission: to bridge the gap between premium global brands and the vibrant Indian consumer base.
                 </p>
                 <p>
-                  By leveraging cutting-edge logistics and a curated selection process, we ensure that every click leads to a smile. At Flipzokart, we don't just sell products; we deliver experiences.
+                  By leveraging cutting-edge logistics and a curated selection process, we ensure that every click leads to a smile. We don't just sell products; we deliver experiences.
                 </p>
               </div>
 
@@ -92,7 +92,7 @@ export const AboutUsPage: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">Our Core Values</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">The foundation of everything we do at Flipzokart.</p>
+            <p className="text-gray-500 max-w-xl mx-auto">The foundation of everything we do.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -161,7 +161,7 @@ export const AboutUsPage: React.FC = () => {
              <span className="font-bold text-dark uppercase tracking-widest text-sm">Join the Community</span>
           </div>
           <h2 className="text-4xl font-bold tracking-tight max-w-2xl">
-            Start Your Premium Shopping Journey with <span className="text-primary">Flipzokart</span> Today.
+            Start Your Premium Shopping Journey Today.
           </h2>
           <Link to="/signup" className="bg-dark text-white px-12 py-5 rounded-[2rem] font-bold text-lg hover:bg-primary transition-all shadow-xl shadow-gray-200">
             Create Free Account

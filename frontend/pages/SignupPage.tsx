@@ -37,7 +37,7 @@ export const SignupPage: React.FC = () => {
       const user = await authService.register(formData);
       setUser(user);
       navigate('/profile');
-      alert("Account created successfully! Welcome to Flipzokart.");
+      alert("Account created successfully! Welcome.");
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {

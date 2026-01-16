@@ -97,7 +97,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-dark">Enterprise Overview</h1>
-            <p className="text-gray-500 text-lg mt-1">Real-time performance metrics for Flipzokart Global.</p>
+            <p className="text-gray-500 text-lg mt-1">Real-time performance metrics.</p>
           </div>
           <div className="flex gap-3">
             <Link to="/admin/products" className="bg-primary text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:shadow-2xl hover:-translate-y-1 transition-all shadow-xl shadow-primary/30">
@@ -206,7 +206,7 @@ export const AdminDashboard: React.FC = () => {
                 <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">Live Simulation Active</span>
               </div>
               <h2 className="text-4xl lg:text-5xl font-bold tracking-tight leading-tight">System Performance <br/><span className="text-primary italic">is Optimal</span></h2>
-              <p className="text-gray-400 text-lg max-w-xl">Flipzokart core engine is currently processing 1,420 requests per second with 0.4ms latency.</p>
+              <p className="text-gray-400 text-lg max-w-xl">Core engine is currently processing 1,420 requests per second with 0.4ms latency.</p>
             </div>
             <div className="grid grid-cols-2 gap-6 w-full lg:w-auto">
                <div className="bg-white/5 p-8 rounded-3xl border border-white/10 text-center">

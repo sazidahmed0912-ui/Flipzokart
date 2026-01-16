@@ -87,7 +87,7 @@ export const ContactUsPage: React.FC = () => {
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Office Address</p>
                     <div className="text-lg font-bold text-dark leading-tight">
-                      Flipzokart <br/>
+                      Contact Us <br/>
                       Moirabari, Morigaon <br/>
                       Assam, India
                     </div>

@@ -38,8 +38,7 @@ const Toast: React.FC<{ toast: any; hideToast: (id: string) => void }> = ({ toas
       initial={{ opacity: 0, y: -50, scale: 0.3 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.5, transition: { duration: 0.2 } }}
-      className={`flex items-center justify-between p-4 mb-2 rounded-lg shadow-md ${getBackgroundColor(toast.status)} border border-gray-200`}
-      style={{ width: '300px' }}
+      className={`flex items-center justify-between p-4 mb-2 rounded-lg shadow-md ${getBackgroundColor(toast.status)} border border-gray-200 w-full max-w-[calc(100vw-2rem)] sm:max-w-xs md:max-w-sm`}
     >
       <div className="flex items-center">
         <div className="mr-3">{getIcon(toast.status)}</div>

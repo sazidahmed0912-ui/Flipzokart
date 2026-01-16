@@ -40,19 +40,18 @@ export const HomePage: React.FC = () => {
                             <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6">Up to 70% Off</h1>
                             <p className="text-lg md:text-xl text-gray-700 mb-8">Discover amazing deals on your favorite products</p>
                             <Link to="/shop" className="bg-white text-[#f28c28] px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors shadow-md">Shop Now</Link>
-                        </div>
-                        <div className="flex justify-center lg:justify-end">
-                            <img src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/hero/hero-main-74b7ae42a905438281efa4046613129a.png" alt="Happy Indian couple shopping" width="600" height="450" className="w-full max-w-md rounded-2xl object-cover shadow-lg" />
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <section className="py-8 px-4 md:px-8">
-                <div className="max-w-7xl mx-auto">
-                    <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center"><span className="text-gray-800">Shop by Categories</span></h2>
-                    <div className="grid grid-cols-4 md:grid-cols-8 gap-4 md:gap-6">
-                        {categories.map(category => (
+                                    </div>
+                                    <div className="flex justify-center lg:justify-end mt-8 lg:mt-0">
+                                        <img src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/hero/hero-main-74b7ae42a905438281efa4046613129a.png" alt="Happy Indian couple shopping" width="600" height="450" className="w-full max-w-md rounded-2xl object-cover shadow-lg" />
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                                    <section className="py-8 px-4 md:px-8">
+                                        <div className="max-w-7xl mx-auto">
+                                            <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center"><span className="text-gray-800">Shop by Categories</span></h2>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-6">                        {categories.map(category => (
                             <Link to={category.href} key={category.name} className="flex flex-col items-center p-2 text-center group">
                                 <div className="w-16 h-16 md:w-20 md:h-20 mb-2 bg-gray-100 rounded-xl p-3 border border-gray-200 group-hover:shadow-md transition-shadow">
                                     <img src={category.imageUrl} alt={category.name} className="w-full h-full object-contain"/>
@@ -129,7 +128,7 @@ export const HomePage: React.FC = () => {
                                     <div className="flex text-orange-400 text-sm"><span>★★★★★</span></div>
                                 </div>
                             </div>
-                            <p className="text-gray-700 text-sm leading-relaxed">"Flipzokart has everything I need! From electronics to fashion, all at great prices. The delivery is always on time and packaging is excellent. Love shopping here!"</p>
+                            <p className="text-gray-700 text-sm leading-relaxed">"This platform has everything I need! From electronics to fashion, all at great prices. The delivery is always on time and packaging is excellent. Love shopping here!"</p>
                         </div>
                     </div>
                 </div>
@@ -180,7 +179,7 @@ export const HomePage: React.FC = () => {
                                 </div>
                             </div>
                             <div className="flex justify-center">
-                                <img src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/cta/cta-app-4c321c4156404b36a12972cb0c2720f6.png" alt="Flipzokart Mobile App" width="450" height="300" className="w-full max-w-md rounded-2xl object-cover shadow-sm"/>
+                                <img src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/cta/cta-app-4c321c4156404b36a12972cb0c2720f6.png" alt="Mobile App" width="450" height="300" className="w-full max-w-md rounded-2xl object-cover shadow-sm"/>
                             </div>
                         </div>
                     </div>

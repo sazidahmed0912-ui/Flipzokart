@@ -7,7 +7,7 @@ const Header: React.FC = () => {
       <header className="main-header">
         <div className="header-left">
           <button className="hamburger-menu">☰</button> {/* Mobile */}
-          <div className="flipzokart-logo">Flipzokart</div>
+          <div className="flipzokart-logo"></div>
         </div>
         <div className="header-center">
           <div className="search-bar-container">

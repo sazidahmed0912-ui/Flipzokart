@@ -58,7 +58,7 @@ const NotificationBell: React.FC = () => {
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200"
+          className="absolute right-0 mt-2 w-full max-w-xs md:max-w-sm lg:max-w-md bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200 sm:left-1/2 sm:-translate-x-1/2 md:left-auto md:-translate-x-0"
         >
           <div className="flex justify-between items-center px-4 py-2 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>

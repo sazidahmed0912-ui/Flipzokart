@@ -241,7 +241,7 @@ export const TrackOrderPage: React.FC = () => {
                 <ShieldCheck size={24} />
               </div>
               <h4 className="text-lg font-bold">Secure Delivery</h4>
-              <p className="text-sm text-gray-500 leading-relaxed">Every Flipzokart order is insured and requires a secure handover confirmation.</p>
+              <p className="text-sm text-gray-500 leading-relaxed">Every order is insured and requires a secure handover confirmation.</p>
             </div>
             <div className="p-10 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm space-y-4">
               <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-6">
