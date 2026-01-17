@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Star, Loader } from 'lucide-react';
 import { useApp } from '../../../store/Context'; // Adjust path as necessary
 import { useNotifications } from '../../../store/NotificationContext'; // Adjust path as necessary
-import { API } from '../../../services/api'; // Adjust path as necessary
+import API from '../../../services/api'; // Corrected: Import API as default
 import { Review } from '../../../../types'; // Adjust path as necessary
 
 interface ReviewFormProps {

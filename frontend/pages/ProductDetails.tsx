@@ -4,10 +4,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Heart, Star, ShieldCheck, Truck, RotateCcw, Minus, Plus, Share2, Check, AlertTriangle, Info, Clock, ArrowRight } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { ProductCard } from '../components/ProductCard';
-import { API, fetchProductById } from '../services/api'; // Import API for reviews
+import API, { fetchProductById } from '../services/api';
 import { Product, Review } from '../types'; // Import Review type
-import { ReviewList } from './components/ReviewList'; // Import ReviewList
-import { ReviewForm } from './components/ReviewForm'; // Import ReviewForm
+import { ReviewList } from './ProductDetails/components/ReviewList'; // Corrected Import ReviewList
+import { ReviewForm } from './ProductDetails/components/ReviewForm'; // Corrected Import ReviewForm
 import { useSocket } from '../hooks/useSocket'; // Import useSocket
 
 export const ProductDetails: React.FC = () => {

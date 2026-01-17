@@ -6,7 +6,7 @@ import {
   Star, ShoppingCart, MessageSquare
 } from 'lucide-react';
 import { useApp } from '../store/Context';
-import { API } from '../services/api';
+import API from '../services/api';
 import { Review, Order } from '../types';
 
 export const CustomerDashboard: React.FC = () => {
