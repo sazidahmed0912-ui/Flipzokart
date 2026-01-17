@@ -5,80 +5,98 @@ import React, {
   ReactNode,
 } from "react";
 
-/* ================= TYPES ================= */
+/* ---------------- TYPES ---------------- */
 
-export type NotificationType = "success" | "error" | "info" | "warning";
+export type ToastStatus = "success" | "error" | "info" | "warning";
 
-export interface ToastNotification {
-  id: string;
+export interface Notification {
+  _id: string;
+  recipient: string;
   message: string;
-  type: NotificationType;
-  timeoutId?: number;
+  type: string;
+  isRead: boolean;
+  createdAt: string;
+  status?: ToastStatus;
+}
+
+export interface ToastNotification extends Notification {
+  id: string;
+  timeoutId: number;
 }
 
 interface NotificationContextType {
+  notifications: Notification[];
+  unreadCount: number;
+
   toasts: ToastNotification[];
-  showToast: (message: string, type?: NotificationType) => void;
+  showToast: (notification: Notification) => void;
   hideToast: (id: string) => void;
-  clearToasts: () => void;
+  markNotificationAsRead: (id: string) => void;
 }
 
-/* ================= CONTEXT ================= */
+/* ---------------- CONTEXT ---------------- */
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
   undefined
 );
 
-/* ================= PROVIDER ================= */
+/* ---------------- PROVIDER ---------------- */
 
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
 
-  const showToast = (
-    message: string,
-    type: NotificationType = "info"
-  ) => {
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  /* ---------- TOAST ---------- */
+
+  const showToast = (notification: Notification) => {
     const id = Date.now().toString();
 
     const timeoutId = window.setTimeout(() => {
       hideToast(id);
-    }, 3000);
+    }, 5000);
 
     setToasts((prev) => [
-      ...prev,
       {
+        ...notification,
         id,
-        message,
-        type,
         timeoutId,
       },
+      ...prev,
     ]);
+
+    // Add the notification to the notifications array for tracking
+    setNotifications((prev) => [notification, ...prev]);
   };
 
   const hideToast = (id: string) => {
     setToasts((prev) => {
       const toast = prev.find((t) => t.id === id);
-      if (toast?.timeoutId) {
-        clearTimeout(toast.timeoutId);
-      }
+      if (toast) clearTimeout(toast.timeoutId);
       return prev.filter((t) => t.id !== id);
     });
   };
 
-  const clearToasts = () => {
-    toasts.forEach((t) => t.timeoutId && clearTimeout(t.timeoutId));
-    setToasts([]);
+  const markNotificationAsRead = (_id: string) => {
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification._id === _id ? { ...notification, isRead: true } : notification
+      )
+    );
   };
 
   return (
     <NotificationContext.Provider
       value={{
+        notifications,
+        unreadCount,
         toasts,
         showToast,
         hideToast,
-        clearToasts,
+        markNotificationAsRead,
       }}
     >
       {children}
@@ -86,14 +104,14 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-/* ================= HOOK ================= */
+/* ---------------- HOOK ---------------- */
 
 export const useNotifications = () => {
-  const context = useContext(NotificationContext);
-  if (!context) {
+  const ctx = useContext(NotificationContext);
+  if (!ctx) {
     throw new Error(
       "useNotifications must be used inside NotificationProvider"
     );
   }
-  return context;
+  return ctx;
 };
