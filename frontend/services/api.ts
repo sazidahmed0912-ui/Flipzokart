@@ -43,6 +43,6 @@ export const createOrder = (data: any) => API.post("/order/create", data);
 export const createRazorpayOrder = (data: any) => API.post("/order/razorpay", data);
 export const verifyPayment = (data: any) => API.post("/order/verify-payment", data);
 
-export const calculateShipping = (pincode: string) => API.post("/shipping/calculate", { pincode });
+export const calculateShipping = (pincode: string) => API.post("/order/calculate-shipping", { pincode });
 
 export default API;
