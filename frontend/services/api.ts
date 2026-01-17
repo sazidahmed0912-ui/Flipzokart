@@ -37,7 +37,7 @@ API.interceptors.response.use(
 
 // APIs
 export const fetchProducts = () => API.get("/products");
-export const fetchProductById = (id: string) => API.get(`/products/${id}`);
+export const fetchProductById = (id: string) => API.get(`/api/products/${id}`);
 
 export const createOrder = (data: any) => API.post("/api/order/create", data);
 export const createRazorpayOrder = (data: any) => API.post("/order/razorpay", data);
