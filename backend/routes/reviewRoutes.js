@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { protect } = require("../middleware/protect"); // Assuming protect middleware is in protect.js
+const protect = require("../middleware/protect");
 const { authorize } = require("../middleware/authorize"); // Assuming authorize middleware is in authorize.js
 const {
   createReview,
