@@ -116,6 +116,9 @@ app.use("/api/notifications", require("./routes/notificationRoutes"));
 // 👑 Admin
 app.use("/api/admin", require("./routes/adminRoutes"));
 
+// ⭐ Reviews
+app.use("/api/reviews", require("./routes/reviewRoutes"));
+
 /* ===============================
    ✅ SERVER START
    =============================== */

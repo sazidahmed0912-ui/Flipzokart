@@ -27,6 +27,7 @@ import { ForgotPasswordPage } from "./pages/ForgotPassword";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { WishlistPage } from "./pages/WishlistPage";
+import { CustomerDashboard } from './pages/CustomerDashboard'; // Import CustomerDashboard
 import { AboutUsPage } from "./pages/AboutUsPage";
 import { ContactUsPage } from "./pages/ContactUsPage";
 import { TrackOrderPage } from "./pages/TrackOrderPage";
@@ -135,6 +136,14 @@ const AuthWrapper: React.FC = () => {
           element={
             <ProtectedRoute>
               <WishlistPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <CustomerDashboard />
             </ProtectedRoute>
           }
         />

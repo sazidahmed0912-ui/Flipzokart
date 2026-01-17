@@ -273,9 +273,54 @@ const calculateShipping = async (req, res) => {
   }
 };
 
+// @desc    Get all orders for a user
+// @route   GET /api/orders/user/:userId
+// @access  Private
+const getUserOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.params.userId })
+      .populate({
+        path: 'products.productId',
+        model: 'Product',
+        select: 'name image' // Populate only name and image of the product
+      })
+      .sort({ createdAt: -1 });
+
+    if (!orders) {
+      return res.status(404).json({ message: "No orders found for this user" });
+    }
+
+    // Format order items to match frontend CartItem structure
+    const formattedOrders = orders.map(order => {
+      const formattedProducts = order.products.map(item => ({
+        ...item.productId.toObject(), // Spread product details
+        quantity: item.quantity,
+        price: item.productId.price || 0, // Ensure price is included
+        id: item.productId._id // Ensure id is present for product
+      }));
+
+      return {
+        ...order.toObject(),
+        id: order._id, // Add id field
+        items: formattedProducts,
+        userId: order.user,
+        userName: order.user.name || 'User', // Assuming user might be populated or fetched separately
+        address: order.shippingAddress,
+        total: order.total
+      };
+    });
+
+    res.status(200).json({ success: true, count: orders.length, data: formattedOrders });
+  } catch (error) {
+    console.error('Error fetching user orders:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 module.exports = {
   createOrder,
   createRazorpayOrder,
   verifyPayment,
-  calculateShipping
+  calculateShipping,
+  getUserOrders
 };

@@ -3,14 +3,14 @@ import { Bell, XCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react
 import { useNotifications } from '../store/NotificationContext';
 
 const NotificationBell: React.FC = () => {
-  const { notifications, unreadCount, markAsRead, deleteNotification, fetchNotifications } = useNotifications();
+  const { notifications, unreadCount, markNotificationAsRead } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    fetchNotifications(); // Fetch notifications on component mount
-  }, []);
+  // useEffect(() => {
+  //   fetchNotifications(); // Fetch notifications on component mount
+  // }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -62,14 +62,6 @@ const NotificationBell: React.FC = () => {
         >
           <div className="flex justify-between items-center px-4 py-2 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllAsRead}
-                className="text-sm text-blue-500 hover:underline"
-              >
-                Mark all as read
-              </button>
-            )}
           </div>
           <div className="max-h-80 overflow-y-auto">
             {notifications.length === 0 ? (
@@ -94,20 +86,13 @@ const NotificationBell: React.FC = () => {
                   <div className="flex items-center ml-auto">
                     {!notif.isRead && (
                       <button
-                        onClick={() => markAsRead(notif._id)}
+                        onClick={() => markNotificationAsRead(notif._id)}
                         className="text-blue-500 hover:text-blue-700 p-1"
                         title="Mark as read"
                       >
                         <CheckCircle size={16} />
                       </button>
                     )}
-                    <button
-                      onClick={() => deleteNotification(notif._id)}
-                      className="text-gray-400 hover:text-red-500 p-1 ml-2"
-                      title="Delete notification"
-                    >
-                      <X size={16} />
-                    </button>
                   </div>
                 </div>
               ))

@@ -80,3 +80,20 @@ export interface Coupon {
   discount: number;
   expiry: string;
 }
+
+export interface Review {
+  _id: string;
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  product: {
+    _id: string;
+    name: string;
+  };
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+}

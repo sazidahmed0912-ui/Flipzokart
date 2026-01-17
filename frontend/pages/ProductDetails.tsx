@@ -4,43 +4,100 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Heart, Star, ShieldCheck, Truck, RotateCcw, Minus, Plus, Share2, Check, AlertTriangle, Info, Clock, ArrowRight } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { ProductCard } from '../components/ProductCard';
-import { fetchProductById } from '../services/api';
-import { Product } from '../types';
+import { API, fetchProductById } from '../services/api'; // Import API for reviews
+import { Product, Review } from '../types'; // Import Review type
+import { ReviewList } from './components/ReviewList'; // Import ReviewList
+import { ReviewForm } from './components/ReviewForm'; // Import ReviewForm
+import { useSocket } from '../hooks/useSocket'; // Import useSocket
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products: allProducts, addToCart, toggleWishlist, wishlist } = useApp();
+  const { products: allProducts, addToCart, toggleWishlist, wishlist, user } = useApp(); // Add user from context
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [reviews, setReviews] = useState<Review[]>([]); // New state for reviews
+  const [isReviewsLoading, setIsReviewsLoading] = useState(false); // New state for reviews loading
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const [activeImage, setActiveImage] = useState<string>('');
 
+  const socket = useSocket(); // Initialize socket
+
+  // Function to add or update review in state (for real-time updates)
+  const handleReviewUpdate = (newReview: Review) => {
+    setReviews((prevReviews) => {
+      const existingIndex = prevReviews.findIndex((r) => r._id === newReview._id);
+      if (existingIndex > -1) {
+        // Update existing review
+        const updatedReviews = [...prevReviews];
+        updatedReviews[existingIndex] = newReview;
+        return updatedReviews;
+      } else {
+        // Add new review
+        return [newReview, ...prevReviews];
+      }
+    });
+  };
+
   useEffect(() => {
     if (!id) return;
-    const getProduct = async () => {
+
+    // Listen for real-time review updates
+    if (socket) {
+      socket.on('newReview', (newReview: Review) => {
+        if (newReview.product._id === id) { // Check if the review is for the current product
+          handleReviewUpdate(newReview);
+        }
+      });
+
+      socket.on('updatedReview', (updatedReview: Review) => {
+        if (updatedReview.product._id === id) { // Check if the review is for the current product
+          handleReviewUpdate(updatedReview);
+        }
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.off('newReview');
+        socket.off('updatedReview');
+      }
+    };
+  }, [id, socket, handleReviewUpdate]); // Add handleReviewUpdate to dependency array
+
+  useEffect(() => {
+    if (!id) return;
+    const getProductAndReviews = async () => {
       setIsLoading(true);
+      setIsReviewsLoading(true);
       try {
-        const { data } = await fetchProductById(id);
-        setProduct(data);
-        setActiveImage(data.image);
-        if (data.variants) {
+        const productResponse = await fetchProductById(id);
+        setProduct(productResponse.data);
+        setActiveImage(productResponse.data.image);
+
+        // Fetch reviews for the product
+        const reviewsResponse = await API.get(`/reviews/products/${id}/reviews`);
+        setReviews(reviewsResponse.data.data);
+
+        if (productResponse.data.variants) {
           const defaults: Record<string, string> = {};
-          data.variants.forEach(v => {
+          productResponse.data.variants.forEach(v => {
             if (v.options.length > 0) defaults[v.name] = v.options[0];
           });
           setSelectedVariants(defaults);
         }
       } catch (error) {
-        console.error("Failed to fetch product:", error);
+        console.error("Failed to fetch product or reviews:", error);
         setProduct(null);
+        setReviews([]);
       } finally {
         setIsLoading(false);
+        setIsReviewsLoading(false);
       }
     };
-    getProduct();
+    getProductAndReviews();
   }, [id]);
 
   // Combine hero image and gallery for the display
@@ -181,9 +238,9 @@ export const ProductDetails: React.FC = () => {
             <div className="flex items-center gap-6 pt-3">
               <div className="flex items-center gap-1.5 text-yellow-500">
                 {[1,2,3,4,5].map(s => <Star key={s} size={16} fill={s <= Math.floor(product.rating) ? "currentColor" : "none"} />)}
-                <span className="font-bold text-dark ml-1">{product.rating}</span>
+                <span className="font-bold text-dark ml-1">{product.rating.toFixed(1)}</span>
               </div>
-              <span className="text-gray-400 text-sm font-medium border-l pl-6">{product.reviewsCount} community reviews</span>
+              <span className="text-gray-400 text-sm font-medium border-l pl-6">{reviews.length} community reviews</span>
             </div>
           </div>
 
@@ -307,7 +364,7 @@ export const ProductDetails: React.FC = () => {
             <div className="animate-in slide-in-from-bottom-4 duration-300 space-y-12">
               <div className="flex flex-col md:flex-row gap-16 items-center p-10 bg-gray-50 rounded-[2.5rem] border border-gray-100">
                 <div className="text-center shrink-0">
-                  <p className="text-7xl font-bold mb-3 tracking-tighter text-dark">{product.rating}</p>
+                  <p className="text-7xl font-bold mb-3 tracking-tighter text-dark">{product.rating.toFixed(1)}</p>
                   <div className="flex text-yellow-400 justify-center mb-3">{[1,2,3,4,5].map(s => <Star key={s} size={24} fill="currentColor" />)}</div>
                   <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Global Marketplace Rating</p>
                 </div>
@@ -316,28 +373,21 @@ export const ProductDetails: React.FC = () => {
                     <div key={stars} className="flex items-center gap-6">
                       <span className="text-xs font-bold text-gray-500 w-12">{stars} Stars</span>
                       <div className="flex-1 h-3 bg-white rounded-full overflow-hidden shadow-inner border border-gray-100">
-                        <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${stars === 5 ? 85 : stars === 4 ? 12 : 3}%` }}></div>
+                        <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${reviews.length > 0 ? (reviews.filter(r => Math.floor(r.rating) === stars).length / reviews.length) * 100 : 0}%` }}></div>
                       </div>
-                      <span className="text-xs text-gray-400 font-bold w-10">{stars === 5 ? '85%' : stars === 4 ? '12%' : '3%'}</span>
+                      <span className="text-xs text-gray-400 font-bold w-10">{reviews.length > 0 ? Math.round((reviews.filter(r => Math.floor(r.rating) === stars).length / reviews.length) * 100) : 0}%</span>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="space-y-10 divide-y divide-gray-50">
-                {[{ name: "Rahul S.", review: "Absolutely phenomenal quality. The attention to detail is remarkable." }, { name: "Priya M.", review: "Swift delivery and genuine product. The variant selection made it easy." }].map((r, i) => (
-                  <div key={i} className="flex gap-8 pt-10 first:pt-0">
-                    <div className="w-16 h-16 bg-dark text-white rounded-2xl flex items-center justify-center font-bold text-xl shrink-0 shadow-lg">{r.name.charAt(0)}</div>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3"><span className="font-bold text-dark text-xl">{r.name}</span><span className="bg-green-100 text-green-700 text-[9px] px-3 py-1 rounded-full font-bold uppercase tracking-widest shadow-sm">Verified Premium Member</span></div>
-                        <div className="flex text-yellow-400">{[1,2,3,4,5].map(s => <Star key={s} size={16} fill="currentColor" />)}</div>
-                      </div>
-                      <p className="text-gray-600 text-lg leading-relaxed">{r.review}</p>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Posted 2 days ago • Helpful (12)</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {isReviewsLoading ? (
+                <div className="flex items-center justify-center p-10">
+                  <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+                </div>
+              ) : (
+                <ReviewList reviews={reviews} />
+              )}
+              <ReviewForm productId={id} onReviewSubmitted={handleReviewUpdate} />
             </div>
           )}
           {activeTab === 'specifications' && (
