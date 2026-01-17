@@ -83,7 +83,7 @@ export const AdminDashboard: React.FC = () => {
   const globalTraffic = '42.8k'; // Still static for now
 
   // Prepare data for AreaChart (Sales Over Time)
-  const chartData = stats?.salesOverTime.map(item => ({
+  const chartData = stats?.salesOverTime?.map(item => ({
     name: item._id?.substring(5), // e.g., '10-25' from '2023-10-25'
     revenue: item.dailySales,
     orders: item.dailyOrders
@@ -169,7 +169,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm flex flex-col">
             <h3 className="text-2xl font-bold tracking-tight mb-8">Inventory Alerts</h3>
             <div className="space-y-6 flex-1 overflow-y-auto pr-2">
-              {products.filter(p => p.stock < 15).map(product => (
+              {(products || []).filter(p => p.stock < 15).map(product => (
                 <div key={product.id} className="flex items-center gap-5 p-4 rounded-2xl bg-gray-50 border border-gray-100 group hover:border-orange-200 transition-all">
                   <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white shadow-sm">
                     <img src={product.image} className="w-full h-full object-cover" />
@@ -183,7 +183,7 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
               ))}
-              {products.filter(p => p.stock < 15).length === 0 && (
+              {(products || []).filter(p => p.stock < 15).length === 0 && (
                 <div className="text-center py-20">
                   <CheckCircle size={48} className="mx-auto text-green-500 mb-4 opacity-20" />
                   <p className="text-gray-400 font-medium italic">Stock levels are healthy.</p>

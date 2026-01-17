@@ -1,9 +1,5 @@
-import axios from "axios";
+import API from "./api";
 
-const API = axios.create({
-  baseURL: "/api/admin",
-});
-
-export const getDashboardStats = () => API.get("/dashboard-stats");
+export const getDashboardStats = () => API.get("/admin/dashboard-stats");
 
 export default API;
