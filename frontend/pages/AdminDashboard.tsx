@@ -84,7 +84,7 @@ export const AdminDashboard: React.FC = () => {
 
   // Prepare data for AreaChart (Sales Over Time)
   const chartData = stats?.salesOverTime.map(item => ({
-    name: item._id.substring(5), // e.g., '10-25' from '2023-10-25'
+    name: item._id?.substring(5), // e.g., '10-25' from '2023-10-25'
     revenue: item.dailySales,
     orders: item.dailyOrders
   })) || [];
