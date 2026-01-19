@@ -141,7 +141,7 @@ const ProfilePage = () => {
                 <li className="cursor-pointer hover:text-[#2874F0]">
                   Account Security
                 </li>
-                <li
+                <li 
                   className="cursor-pointer text-red-500"
                   onClick={handleLogout}
                 >
