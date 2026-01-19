@@ -17,119 +17,132 @@ export const ProfilePage: React.FC = () => {
   const userOrders = orders.filter(o => o.userId === user.id);
 
   return (
-    <div className="bg-gray-100 min-h-screen py-4 sm:py-12">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
-          {/* Left Section: Profile & Navigation */}
-          <div className="md:col-span-1">
-            <div className="bg-white rounded-lg shadow-md">
-              <div className="flex items-center space-x-4 p-4 border-b">
-                <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center text-2xl font-bold">
-                  {user.name.charAt(0)}
-                </div>
-                <div>
-                  <p className="text-sm">Hello,</p>
-                  <h2 className="text-lg font-bold text-gray-800">{user.name}</h2>
-                </div>
-              </div>
-              <nav className="p-2">
-                <Link to="/orders" className="flex items-center justify-between p-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Package size={20} />
-                    <span className="font-semibold text-sm uppercase">My Orders</span>
-                  </div>
-                  <ChevronRight size={16} />
-                </Link>
-                <div className="flex items-center justify-between p-3 text-gray-600 cursor-pointer hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors">
-                  <div className="flex items-center gap-3">
-                    <UserIcon size={20} />
-                    <span className="font-semibold text-sm">ACCOUNT SETTINGS</span>
-                  </div>
-                </div>
-                <ul className="pl-10 text-sm">
-                  <li className="py-2 px-3 text-blue-600 font-semibold cursor-pointer">Profile Information</li>
-                  <li className="py-2 px-3 hover:text-blue-600 cursor-pointer">Manage Addresses</li>
-                </ul>
+    <div className="min-h-screen bg-[#F5F7FA] flex font-sans">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white shadow-sm p-6 flex flex-col shrink-0">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-12 h-12 rounded-full bg-[#2874F0] text-white flex items-center justify-center text-lg font-semibold">
+            {user.name.charAt(0)}
+          </div>
+          <div>
+            <p className="text-xs text-gray-500">Hello,</p>
+            <p className="font-semibold text-gray-800">{user.name}</p>
+          </div>
+        </div>
 
-                <button 
-                  onClick={logout}
-                  className="w-full flex items-center gap-3 p-3 mt-4 text-gray-600 font-semibold text-sm hover:bg-red-50 hover:text-red-500 rounded-md transition-colors"
-                >
-                  <LogOut size={20} /> Logout
-                </button>
-              </nav>
+        <nav className="space-y-2 text-sm">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-50 text-[#2874F0] font-bold cursor-pointer">
+            <UserIcon size={18} /> My Profile
+          </div>
+          <Link to="/orders" className="flex items-center gap-3 px-3 py-2 text-gray-600 font-medium hover:bg-gray-50 rounded-lg cursor-pointer">
+            <Package size={18} /> Orders
+          </Link>
+          <div className="flex items-center gap-3 px-3 py-2 text-gray-600 font-medium hover:bg-gray-50 rounded-lg cursor-pointer">
+            <Settings size={18} /> Account Security
+          </div>
+          <div className="flex items-center gap-3 px-3 py-2 text-gray-600 font-medium hover:bg-gray-50 rounded-lg cursor-pointer">
+            <MapPin size={18} /> Address Book
+          </div>
+        </nav>
+
+        <button onClick={logout} className="mt-auto flex items-center gap-3 text-red-500 font-medium text-sm px-3 py-2 hover:bg-red-50 rounded-lg">
+          <LogOut size={18} /> Logout
+        </button>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 p-8 space-y-6">
+        <h1 className="text-2xl font-semibold text-gray-800">My Profile</h1>
+
+        {/* Profile Header */}
+        <div className="bg-white rounded-xl shadow-sm p-6 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-[#F9C74F] flex items-center justify-center text-xl font-bold text-white">
+              {user.name.charAt(0)}
+            </div>
+            <div>
+              <p className="font-semibold text-lg text-gray-900">{user.name}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+              <p className="text-sm text-gray-500">{user.phone || 'No mobile provided'}</p>
+              <span className="text-xs text-green-600 font-medium flex items-center gap-1 mt-1">
+                <ShieldCheck size={14} /> Verified
+              </span>
+            </div>
+          </div>
+          <button className="bg-[#F9C74F] px-4 py-2 rounded-md text-sm font-medium text-gray-900 hover:bg-yellow-400 transition-colors">
+            Edit
+          </button>
+        </div>
+
+        {/* Quick Info */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl shadow-sm p-4">
+            <p className="text-sm text-gray-500 mb-1">Orders</p>
+            <p className="font-bold text-2xl text-gray-800">{userOrders.length}</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm p-4">
+            <p className="text-sm text-gray-500 mb-1">Status</p>
+            <p className="font-bold text-xl text-green-600">Verified</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm p-4">
+            <p className="text-sm text-gray-500 mb-1">Joined Date</p>
+            <p className="font-bold text-xl text-gray-800">{new Date(user.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</p>
+          </div>
+        </div>
+
+        {/* Personal Info & Settings */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="lg:col-span-3 bg-white rounded-xl shadow-sm p-6">
+            <div className="flex justify-between items-center mb-4 border-b pb-3">
+              <h2 className="font-semibold text-gray-800">Personal Information</h2>
+              <button className="bg-[#F9C74F] px-3 py-1 rounded text-sm font-medium text-gray-900 hover:bg-yellow-400 transition-colors">
+                Edit
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500">Full Name</p>
+                <p className="font-medium text-gray-900">{user.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Email Address</p>
+                <p className="font-medium text-gray-900">{user.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Mobile Number</p>
+                <p className="font-medium text-gray-900">{user.phone || 'Not available'}</p>
+              </div>
             </div>
           </div>
 
-          {/* Right Section: Content */}
-          <div className="md:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center border-b pb-4">
-                <h2 className="text-xl font-bold text-gray-800">Personal Information</h2>
-                <button className="text-blue-600 font-semibold text-sm hover:underline">Edit</button>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 text-sm">
-                <div>
-                  <p className="text-gray-500">Name</p>
-                  <p className="font-semibold text-gray-800">{user.name}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Email Address</p>
-                  <p className="font-semibold text-gray-800">{user.email}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Mobile Number</p>
-                  <p className="font-semibold text-gray-800">{user.phone || 'Not available'}</p>
-                </div>
-              </div>
-
-              <div className="mt-8">
-                <h3 className="text-lg font-bold text-gray-800 border-b pb-2 mb-4">Account Status</h3>
-                <div className="flex items-center gap-3 text-green-600">
-                  <ShieldCheck size={24} />
-                  <p className="font-semibold">Verified Account</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-md p-6 mt-8">
-               <h2 className="text-xl font-bold text-gray-800 border-b pb-4">Recent Orders</h2>
-               {userOrders.length > 0 ? (
-                 <div className="space-y-4 pt-4">
-                   {userOrders.slice(0, 2).map(order => (
-                     <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                       <div className="flex items-center gap-4">
-                         <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
-                           <Package size={24} className="text-gray-600" />
-                         </div>
-                         <div>
-                           <p className="font-bold text-gray-800">Order #{order.id.substring(0, 8)}...</p>
-                           <p className="text-xs text-gray-500">Placed on: {new Date(order.createdAt).toLocaleDateString()}</p>
-                         </div>
-                       </div>
-                       <div className="text-right">
-                         <p className="font-bold text-gray-800">₹{order.total.toLocaleString('en-IN')}</p>
-                         <span className={`text-xs font-bold px-2 py-1 rounded-full ${order.status === 'Delivered' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                           {order.status}
-                         </span>
-                       </div>
-                     </div>
-                   ))}
-                   {userOrders.length > 2 && (
-                     <Link to="/orders" className="text-blue-600 font-semibold text-sm hover:underline pt-2 inline-block">View All Orders →</Link>
-                   )}
-                 </div>
-               ) : (
-                 <div className="text-center py-10 text-gray-500">
-                   <p>You have no recent orders.</p>
-                   <Link to="/shop" className="text-blue-600 font-semibold hover:underline">Start Shopping</Link>
-                 </div>
-               )}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-800 mb-3 border-b pb-3">Account Settings</h2>
+            <div className="text-sm font-medium text-gray-600 space-y-1">
+              <div className="p-2 hover:bg-gray-50 rounded-md cursor-pointer">Change Password</div>
+              <div className="p-2 hover:bg-gray-50 rounded-md cursor-pointer">Account Security</div>
+              <div onClick={logout} className="p-2 text-red-500 hover:bg-red-50 rounded-md cursor-pointer">Logout</div>
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Recent Activity */}
+        {userOrders.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-800 mb-4 border-b pb-3">Recent Activity</h2>
+            <ul className="text-sm text-gray-600 space-y-3">
+              {userOrders.slice(0, 2).map(order => (
+                <li key={order.id} className="flex items-center gap-3">
+                  <div className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full">
+                    <Package size={16} className="text-gray-500" />
+                  </div>
+                  <span>Placed new order <strong>#{order.id.substring(0,8)}...</strong> for <strong>₹{order.total.toLocaleString('en-IN')}</strong></span>
+                  <span className="ml-auto text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString()}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </main>
     </div>
   );
 };
