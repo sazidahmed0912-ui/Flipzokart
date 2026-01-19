@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, ShieldCheck, User as UserIcon, LogIn, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { useApp } from '../store/Context';
 import authService from '../services/authService';
 
@@ -30,104 +30,78 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4 bg-gray-50/50">
-      <div className="w-full max-w-5xl bg-white rounded-[3rem] shadow-2xl shadow-gray-200/50 overflow-hidden flex flex-col md:flex-row border border-gray-100 animate-in zoom-in-95 duration-500">
-        
-        {/* Left Side: Branding/Promo */}
-        <div className="md:w-1/2 bg-dark p-12 text-white flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
-          
-          <div className="relative z-10">
-            <Link to="/" className="text-3xl font-bold tracking-tighter mb-8 block">
-              FLIPZO<span className="text-primary">KART</span>
-            </Link>
-            <h2 className="text-4xl lg:text-5xl font-bold leading-tight mb-6">
-              Join the <span className="text-primary italic">Premium</span> Marketplace.
-            </h2>
-            <p className="text-gray-400 text-lg">
-              Unlock exclusive deals, track your orders in real-time, and experience lightning-fast delivery across India.
-            </p>
-          </div>
-
-          <div className="relative z-10 space-y-4 pt-10">
-            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
-              <div className="w-10 h-10 bg-primary/20 text-primary rounded-xl flex items-center justify-center">
-                <ShieldCheck size={20} />
-              </div>
-              <p className="text-sm font-medium">Verified & Secure Payments</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side: Form */}
-        <div className="md:w-1/2 p-8 lg:p-16 flex flex-col justify-center">
-          <div className="mb-10 text-center md:text-left">
-            <h1 className="text-3xl font-bold text-dark mb-2">Welcome Back</h1>
-            <p className="text-gray-400 font-medium">Please enter your details to sign in.</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F5F7FA] p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-semibold text-[#1F2937]">Login to Flipzokart</h1>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-sm font-bold animate-in fade-in slide-in-from-top-2">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm flex items-center gap-2">
               <AlertCircle size={18} />
-              {error}
+              <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={18} />
-                <input 
-                  type="email"
-                  required
-                  placeholder="name@example.com"
-                  className="w-full bg-lightGray px-12 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary/5 border-2 border-transparent focus:border-primary/20 transition-all font-semibold text-dark"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">Email or Mobile</label>
+              <input
+                id="email"
+                type="email"
+                required
+                placeholder="Enter your email or mobile"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2874F0] focus:border-transparent transition-all"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={18} />
-                <input 
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  className="w-full bg-lightGray px-12 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary/5 border-2 border-transparent focus:border-primary/20 transition-all font-semibold text-dark"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+              <label htmlFor="password"  className="text-sm font-medium text-gray-700">Password</label>
+              <input
+                id="password"
+                type="password"
+                required
+                placeholder="Enter your password"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2874F0] focus:border-transparent transition-all"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+               <div className="text-right">
+                <Link to="/forgot-password" className="text-xs font-semibold text-[#2874F0] hover:underline">
+                  Forgot Password?
+                </Link>
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs font-bold px-1">
-              <label className="flex items-center gap-2 cursor-pointer text-gray-500 hover:text-dark transition-colors">
-                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary" />
-                Remember Me
-              </label>
-              <Link to="/forgot-password" className="text-primary hover:underline">Forgot Password?</Link>
-            </div>
-
-            <button 
+            <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary text-white py-5 rounded-[1.5rem] font-bold text-lg hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+              className="w-full bg-[#2874F0] text-white py-3 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
             >
               {isLoading ? (
                 <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
-                <>Log In <ArrowRight size={20} /></>
+                'Login'
               )}
             </button>
           </form>
 
-          <p className="mt-10 text-center text-sm text-gray-500 font-medium">
-            Don't have an account? <Link to="/signup" className="text-primary font-bold hover:underline">Create Account</Link>
-          </p>
+          <div className="relative my-8">
+            <hr className="border-gray-300" />
+            <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-white px-2 text-sm text-gray-500">OR</span>
+          </div>
+          
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              New to Flipzokart?{' '}
+              <Link to="/signup" className="font-semibold text-[#2874F0] hover:underline">
+                Create an account
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
