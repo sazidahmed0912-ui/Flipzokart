@@ -25,7 +25,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
 import { ForgotPasswordPage } from "./pages/ForgotPassword";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
-import { ProfilePage } from "./pages/ProfilePage";
+import ProfilePage from "./pages/ProfilePage";
 import { WishlistPage } from "./pages/WishlistPage";
 import { CustomerDashboard } from './pages/CustomerDashboard'; // Import CustomerDashboard
 import { AboutUsPage } from "./pages/AboutUsPage";
