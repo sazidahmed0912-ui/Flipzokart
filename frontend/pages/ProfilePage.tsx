@@ -1,9 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import authService from "../services/authService";
 import { useNavigate } from "react-router-dom";
+import Modal from "../components/Modal";
+import "./ProfilePage.css";
+
+
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const [isModalOpen, setModalOpen] = useState(false);
+
+  const openModal = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
 
   const handleLogout = async () => {
     try {
@@ -15,6 +23,10 @@ const ProfilePage = () => {
     }
   };
 
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+
   return (
     <div className="bg-[#f1f3f6] min-h-screen">
       {/* Header spacing already exists in app */}
@@ -24,21 +36,22 @@ const ProfilePage = () => {
         <div className="w-[260px] bg-white rounded-xl shadow-sm">
           <ul className="py-2">
             {[
-              "My Profile",
-              "Orders",
-              "Wishlist",
-              "Account Security",
-              "Address Book",
+              { name: "My Profile", path: "/profile" },
+              { name: "Orders", path: "/orders" },
+              { name: "Wishlist", path: "/wishlist" },
+              { name: "Account Security", path: "/account-security" },
+              { name: "Address Book", path: "/address-book" },
             ].map((item, i) => (
               <li
                 key={i}
                 className={`px-6 py-3 text-sm cursor-pointer ${
-                  item === "My Profile"
+                  item.name === "My Profile"
                     ? "border-l-4 border-[#2874F0] bg-[#f5faff] font-semibold"
                     : "text-gray-600 hover:bg-gray-50"
                 }`}
+                onClick={() => handleNavigation(item.path)}
               >
-                {item}
+                {item.name}
               </li>
             ))}
           </ul>
@@ -61,7 +74,10 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <button className="bg-[#ff9f00] text-white px-5 py-2 rounded-lg text-sm font-semibold">
+            <button
+              onClick={openModal}
+              className="bg-[#ff9f00] text-white px-5 py-2 rounded-lg text-sm font-semibold"
+            >
               Edit
             </button>
           </div>
@@ -89,7 +105,10 @@ const ProfilePage = () => {
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold">Personal Information</h3>
-              <button className="bg-[#ff9f00] text-white px-4 py-1.5 rounded-lg text-sm">
+              <button
+                onClick={openModal}
+                className="bg-[#ff9f00] text-white px-4 py-1.5 rounded-lg text-sm"
+              >
                 Edit
               </button>
             </div>
@@ -135,13 +154,19 @@ const ProfilePage = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="font-semibold mb-3">Account Settings</h3>
               <ul className="text-sm text-gray-700 space-y-4">
-                <li className="cursor-pointer hover:text-[#2874F0]">
+                <li
+                  className="cursor-pointer hover:text-[#2874F0]"
+                  onClick={() => handleNavigation("/change-password")}
+                >
                   Change Password
                 </li>
-                <li className="cursor-pointer hover:text-[#2874F0]">
+                <li
+                  className="cursor-pointer hover:text-[#2874F0]"
+                  onClick={() => handleNavigation("/account-security")}
+                >
                   Account Security
                 </li>
-                <li 
+                <li
                   className="cursor-pointer text-red-500"
                   onClick={handleLogout}
                 >
@@ -152,6 +177,52 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+      <Modal show={isModalOpen} onClose={closeModal}>
+        <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
+        <form>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="fullName">
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="fullName"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              defaultValue="Akhtar Tiwari"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              defaultValue="akhtar@email.com"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phone">
+              Mobile Number
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              defaultValue="+91 9876543210"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
