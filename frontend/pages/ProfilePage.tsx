@@ -1,119 +1,137 @@
 import React from "react";
-import "./ProfilePage.css";
-import Sidebar from "../src/pages/ProductListingPage/components/Sidebar";
 
 const ProfilePage = () => {
   return (
-    <div className="profile-page">
-      <div className="profile-container">
+    <div className="bg-[#f1f3f6] min-h-screen">
+      {/* Header spacing already exists in app */}
+      <div className="max-w-7xl mx-auto px-4 py-6 flex gap-6">
 
         {/* LEFT SIDEBAR */}
-        <aside className="profile-sidebar">
-          <ul>
-            <li className="active">My Profile</li>
-            <li>Orders</li>
-            <li>Wishlist</li>
-            <li>Account Security</li>
-            <li>Address Book</li>
+        <div className="w-[260px] bg-white rounded-xl shadow-sm">
+          <ul className="py-2">
+            {[
+              "My Profile",
+              "Orders",
+              "Wishlist",
+              "Account Security",
+              "Address Book",
+            ].map((item, i) => (
+              <li
+                key={i}
+                className={`px-6 py-3 text-sm cursor-pointer ${
+                  item === "My Profile"
+                    ? "border-l-4 border-[#2874F0] bg-[#f5faff] font-semibold"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {item}
+              </li>
+            ))}
           </ul>
-        </aside>
+        </div>
 
-        {/* MAIN CONTENT */}
-        <main className="profile-main">
+        {/* RIGHT CONTENT */}
+        <div className="flex-1">
+          <h2 className="text-xl font-semibold mb-4">My Profile</h2>
 
-          <h2 className="profile-title">My Profile</h2>
-
-          {/* PROFILE SUMMARY */}
-          <div className="profile-card profile-summary">
-            <div className="avatar">A</div>
-
-            <div className="profile-info">
-              <h3>Akhtar Tiwari</h3>
-              <p>akhtar@email.com</p>
-              <p>+91 9876543210</p>
-
-              <div className="profile-stats">
-                <div>
-                  <strong>5</strong>
-                  <span>Orders</span>
-                </div>
-                <div className="verified">Verified</div>
-                <div>Joined Jan 21</div>
+          {/* TOP PROFILE CARD */}
+          <div className="bg-white rounded-xl shadow-sm p-6 flex justify-between items-center mb-6">
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 rounded-full bg-[#ff9f00] flex items-center justify-center text-white text-2xl font-semibold">
+                A
+              </div>
+              <div>
+                <div className="text-lg font-semibold">Akhtar Tiwari</div>
+                <div className="text-sm text-gray-600">akhtar@email.com</div>
+                <div className="text-sm text-gray-600">+91 9876543210</div>
               </div>
             </div>
 
-            <button className="edit-btn">Edit</button>
+            <button className="bg-[#ff9f00] text-white px-5 py-2 rounded-lg text-sm font-semibold">
+              Edit
+            </button>
           </div>
 
-          {/* PERSONAL INFO VIEW */}
-          <div className="profile-card">
-            <div className="card-header">
-              <h3>Personal Information</h3>
-              <button className="edit-link">Edit</button>
+          {/* STATS */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            {[
+              { title: "Orders", value: "5" },
+              { title: "Verified", value: "Verified" },
+              { title: "Joined", value: "Jan 21" },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl shadow-sm p-5 text-center"
+              >
+                <div className="text-sm text-gray-500 mb-1">
+                  {item.title}
+                </div>
+                <div className="font-semibold">{item.value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* PERSONAL INFO */}
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold">Personal Information</h3>
+              <button className="bg-[#ff9f00] text-white px-4 py-1.5 rounded-lg text-sm">
+                Edit
+              </button>
             </div>
 
-            <div className="info-row">
-              <span>Full Name</span>
-              <strong>Akhtar Tiwari</strong>
+            {/* FAKE INPUTS (EXACT LOOK) */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-gray-500">Full Name</label>
+                <div className="mt-1 border border-[#d7d7d7] bg-[#fafafa] rounded-lg px-4 py-3 text-sm font-medium shadow-inner">
+                  Akhtar Tiwari
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500">Email Address</label>
+                <div className="mt-1 border border-[#d7d7d7] bg-[#fafafa] rounded-lg px-4 py-3 text-sm font-medium shadow-inner">
+                  akhtar@email.com
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500">Mobile Number</label>
+                <div className="mt-1 border border-[#d7d7d7] bg-[#fafafa] rounded-lg px-4 py-3 text-sm font-medium shadow-inner">
+                  +91 9876543210
+                </div>
+              </div>
             </div>
-            <div className="info-row">
-              <span>Email Address</span>
-              <strong>akhtar@email.com</strong>
+          </div>
+
+          {/* BOTTOM GRID */}
+          <div className="grid grid-cols-2 gap-6">
+            {/* RECENT ACTIVITY */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="font-semibold mb-3">Recent Activity</h3>
+              <ul className="text-sm text-gray-600 space-y-3">
+                <li>Logged in from a new device – Mumbai (Today, 12:45 PM)</li>
+                <li>Logged in from a new device – Mumbai (Yesterday)</li>
+                <li>Password changed successfully (Jan 20, 2024)</li>
+              </ul>
             </div>
-            <div className="info-row">
-              <span>Mobile Number</span>
-              <strong>+91 9876543210</strong>
+
+            {/* ACCOUNT SETTINGS */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="font-semibold mb-3">Account Settings</h3>
+              <ul className="text-sm text-gray-700 space-y-4">
+                <li className="cursor-pointer hover:text-[#2874F0]">
+                  Change Password
+                </li>
+                <li className="cursor-pointer hover:text-[#2874F0]">
+                  Account Security
+                </li>
+                <li className="cursor-pointer text-red-500">Logout</li>
+              </ul>
             </div>
           </div>
-
-          {/* PERSONAL INFO EDIT STYLE */}
-          <div className="profile-card">
-            <h3>Personal Information</h3>
-
-            <label>Full Name</label>
-            <input value="Akhtar Tiwari" readOnly />
-
-            <label>Email Address</label>
-            <input value="akhtar@email.com" readOnly />
-
-            <label>Mobile Number</label>
-            <input value="+91 9876543210" readOnly />
-          </div>
-
-        </main>
-
-        {/* RIGHT PANEL */}
-        <aside className="profile-right">
-
-          <div className="profile-card">
-            <h3>Account settings</h3>
-            <ul className="settings-list">
-              <li>Change Password</li>
-              <li>Account Security</li>
-              <li className="logout">Logout</li>
-            </ul>
-          </div>
-
-          <div className="profile-card">
-            <h3>Recent Activity</h3>
-            <ul className="activity-list">
-              <li>
-                Logged in from new device – Mumbai  
-                <span>Today, 12:45 PM</span>
-              </li>
-              <li>
-                Logged in from new device – Mumbai  
-                <span>Yesterday, 10:30 AM</span>
-              </li>
-              <li>
-                Password successfully changed  
-                <span>Jan 20, 2024, 02:15 PM</span>
-              </li>
-            </ul>
-          </div>
-
-        </aside>
-
+        </div>
       </div>
     </div>
   );
