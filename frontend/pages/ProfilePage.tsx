@@ -1,5 +1,6 @@
 import React from "react";
 import "./ProfilePage.css";
+import Sidebar from "../src/pages/ProductListingPage/components/Sidebar";
 
 const ProfilePage = () => {
   return (
