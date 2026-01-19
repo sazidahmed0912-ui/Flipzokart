@@ -1,6 +1,20 @@
 import React from "react";
+import authService from "../services/authService";
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Optionally, show an error message to the user
+    }
+  };
+
   return (
     <div className="bg-[#f1f3f6] min-h-screen">
       {/* Header spacing already exists in app */}
@@ -127,7 +141,12 @@ const ProfilePage = () => {
                 <li className="cursor-pointer hover:text-[#2874F0]">
                   Account Security
                 </li>
-                <li className="cursor-pointer text-red-500">Logout</li>
+                <li
+                  className="cursor-pointer text-red-500"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </li>
               </ul>
             </div>
           </div>
