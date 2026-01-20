@@ -82,7 +82,7 @@ export class ProductService {
             prisma.product.count({ where }),
         ]);
 
-        const mappedProducts = products.map(p => ({ ...p, name: p.title }));
+        const mappedProducts = products.map((p: any) => ({ ...p, name: p.title }));
 
         return { products: mappedProducts, total, page: Number(page), pages: Math.ceil(total / Number(limit)) };
     }
