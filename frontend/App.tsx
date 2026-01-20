@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import React, { useEffect, Suspense, lazy } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import PageTransition from "./components/ui/PageTransition";
 
 /* ---------- CONTEXT ---------- */
 import { AppProvider, useApp } from "./store/Context";
@@ -11,36 +12,39 @@ import {
 /* ---------- LAYOUT & UI ---------- */
 import { Layout } from "./components/Layout";
 import ToastContainer from "./components/ToastContainer";
+import LoadingFallback from "./components/LoadingFallback";
 
-/* ---------- PAGES ---------- */
-import { HomePage } from "./pages/HomePage";
-import { ShopPage } from "./pages/ShopPage";
-import { ProductDetails } from "./pages/ProductDetails";
-import CartPage from "./pages/CartPage/CartPage";
-import CheckoutPage from "./pages/CheckoutPage/CheckoutPage";
-import PaymentPage from "./pages/PaymentPage/PaymentPage";
-import OrderSuccessPage from "./pages/OrderSuccessPage";
+/* ---------- PAGES (LAZY LOADED) ---------- */
+const HomePage = lazy(() => import("./pages/HomePage").then(module => ({ default: module.HomePage })));
+const ShopPage = lazy(() => import("./pages/ShopPage").then(module => ({ default: module.ShopPage })));
+const ProductDetails = lazy(() => import("./pages/ProductDetails").then(module => ({ default: module.ProductDetails })));
+const CartPage = lazy(() => import("./pages/CartPage/CartPage"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage/CheckoutPage"));
+const PaymentPage = lazy(() => import("./pages/PaymentPage/PaymentPage"));
+const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
 
-import { LoginPage } from "./pages/LoginPage";
-import { SignupPage } from "./pages/SignupPage";
-import { ForgotPasswordPage } from "./pages/ForgotPassword";
-import { ResetPasswordPage } from "./pages/ResetPasswordPage";
-import ProfilePage from "./pages/ProfilePage";
-import { WishlistPage } from "./pages/WishlistPage";
-import { CustomerDashboard } from './pages/CustomerDashboard'; // Import CustomerDashboard
-import { AboutUsPage } from "./pages/AboutUsPage";
-import { ContactUsPage } from "./pages/ContactUsPage";
-import { TrackOrderPage } from "./pages/TrackOrderPage";
+const LoginPage = lazy(() => import("./pages/LoginPage").then(module => ({ default: module.LoginPage })));
+const SignupPage = lazy(() => import("./pages/SignupPage").then(module => ({ default: module.SignupPage })));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPassword").then(module => ({ default: module.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage").then(module => ({ default: module.ResetPasswordPage })));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const WishlistPage = lazy(() => import("./pages/WishlistPage").then(module => ({ default: module.WishlistPage })));
+const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard").then(module => ({ default: module.CustomerDashboard })));
+const AboutUsPage = lazy(() => import("./pages/AboutUsPage").then(module => ({ default: module.AboutUsPage })));
+const ContactUsPage = lazy(() => import("./pages/ContactUsPage").then(module => ({ default: module.ContactUsPage })));
+const TrackOrderPage = lazy(() => import("./pages/TrackOrderPage").then(module => ({ default: module.TrackOrderPage })));
 
-/* ---------- ADMIN ---------- */
-import { AdminDashboard } from "./pages/AdminDashboard";
-import { AdminProducts } from "./pages/AdminProducts";
-import { AdminOrders } from "./pages/AdminOrders";
-import { AdminUsers } from "./pages/AdminUsers";
-import { AdminCoupons } from "./pages/AdminCoupons";
+/* ---------- ADMIN (LAZY LOADED) ---------- */
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then(module => ({ default: module.AdminDashboard })));
+const AdminProducts = lazy(() => import("./pages/AdminProducts").then(module => ({ default: module.AdminProducts })));
+const AdminOrders = lazy(() => import("./pages/AdminOrders").then(module => ({ default: module.AdminOrders })));
+const AdminUsers = lazy(() => import("./pages/AdminUsers").then(module => ({ default: module.AdminUsers })));
+const AdminCoupons = lazy(() => import("./pages/AdminCoupons").then(module => ({ default: module.AdminCoupons })));
 
 /* ---------- SOCKET ---------- */
 import { useSocket } from "./hooks/useSocket";
+import LuxuryLoadingScreen from "./components/LuxuryLoadingScreen";
+
 
 /* ======================================================
    ROUTE GUARDS
@@ -62,9 +66,12 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
    AUTH + SOCKET WRAPPER
 ====================================================== */
 
-const AuthWrapper: React.FC = () => {
+const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
   const { user } = useApp();
   const { showToast } = useNotifications();
+
+  const liveLocation = useLocation();
+  const currentLocation = location || liveLocation;
 
   const token = localStorage.getItem("token");
   const socket = useSocket(token);
@@ -82,8 +89,8 @@ const AuthWrapper: React.FC = () => {
         createdAt: new Date().toISOString(),
         status:
           data?.type === "success" ||
-          data?.type === "error" ||
-          data?.type === "warning"
+            data?.type === "error" ||
+            data?.type === "warning"
             ? data.type
             : "info",
       };
@@ -100,96 +107,101 @@ const AuthWrapper: React.FC = () => {
 
   return (
     <Layout>
-      <Routes>
-        {/* Public */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/shop" element={<ShopPage />} />
-        <Route path="/product/:id" element={<ProductDetails />} />
-        <Route path="/about" element={<AboutUsPage />} />
-        <Route path="/contact" element={<ContactUsPage />} />
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes location={currentLocation}>
+          {/* Public */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/about" element={<AboutUsPage />} />
+          <Route path="/about" element={<AboutUsPage />} />
+          <Route path="/contact" element={<ContactUsPage />} />
+          <Route path="/design/loading" element={<LuxuryLoadingScreen />} />
 
-        {/* Auth */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-        {/* Cart / Order */}
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/payment" element={<PaymentPage />} />
-        <Route path="/order-success" element={<OrderSuccessPage />} />
-        <Route path="/track-order" element={<TrackOrderPage />} />
+          {/* Auth */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-        {/* User Protected */}
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/wishlist"
-          element={
-            <ProtectedRoute>
-              <WishlistPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <CustomerDashboard />
-            </ProtectedRoute>
-          }
-        />
+          {/* Cart / Order */}
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/order-success" element={<OrderSuccessPage />} />
+          <Route path="/track-order" element={<TrackOrderPage />} />
 
-        {/* Admin */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/products"
-          element={
-            <AdminRoute>
-              <AdminProducts />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/orders"
-          element={
-            <AdminRoute>
-              <AdminOrders />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <AdminRoute>
-              <AdminUsers />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/coupons"
-          element={
-            <AdminRoute>
-              <AdminCoupons />
-            </AdminRoute>
-          }
-        />
-      </Routes>
+          {/* User Protected */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/wishlist"
+            element={
+              <ProtectedRoute>
+                <WishlistPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <CustomerDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={
+              <AdminRoute>
+                <AdminProducts />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <AdminRoute>
+                <AdminOrders />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <AdminUsers />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/coupons"
+            element={
+              <AdminRoute>
+                <AdminCoupons />
+              </AdminRoute>
+            }
+          />
+        </Routes>
+      </Suspense>
     </Layout>
   );
 };
@@ -203,7 +215,9 @@ const App: React.FC = () => {
     <AppProvider>
       <NotificationProvider>
         <Router>
-          <AuthWrapper />
+          <PageTransition>
+            <AuthWrapper />
+          </PageTransition>
         </Router>
         <ToastContainer />
       </NotificationProvider>

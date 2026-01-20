@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../store/Context';
 import { ProductCard } from '../components/ProductCard';
 import { GrocerySection } from '../components/GrocerySection';
+import LazyImage from '../components/LazyImage';
+import { SmoothReveal } from '../components/SmoothReveal';
 
 // Same category data as before, but will be styled according to new rules.
 const categories = [
@@ -33,107 +35,115 @@ export const HomePage: React.FC = () => {
     return (
         <>
             <section className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl mx-4 md:mx-8 my-6 p-8 md:p-12 shadow-lg">
-                <div className="max-w-7xl mx-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                        <div className="text-left">
-                            <h2 className="text-sm md:text-base text-gray-700 mb-2">Featured on <span className="font-bold text-[#222]">Flip<span className="text-[#f28c28]">zokart</span></span></h2>
-                            <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6">Up to 70% Off</h1>
-                            <p className="text-lg md:text-xl text-gray-700 mb-8">Discover amazing deals on your favorite products</p>
-                            <Link to="/shop" className="bg-white text-[#f28c28] px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors shadow-md">Shop Now</Link>
-                                    </div>
-                                    <div className="flex justify-center lg:justify-end mt-8 lg:mt-0">
-                                        <img src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/hero/hero-main-74b7ae42a905438281efa4046613129a.png" alt="Happy Indian couple shopping" width="600" height="450" className="w-full max-w-md rounded-2xl object-cover shadow-lg" />
-                                    </div>
-                                </div>
+                <SmoothReveal direction="down" duration="500">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                            <div className="text-left">
+                                <h2 className="text-sm md:text-base text-gray-700 mb-2">Featured on <span className="font-bold text-[#222]">Flip<span className="text-[#f28c28]">zokart</span></span></h2>
+                                <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6">Up to 70% Off</h1>
+                                <p className="text-lg md:text-xl text-gray-700 mb-8">Discover amazing deals on your favorite products</p>
+                                <Link to="/shop" className="bg-white text-[#f28c28] px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors shadow-md">Shop Now</Link>
                             </div>
-                        </section>
+                            <div className="flex justify-center lg:justify-end mt-8 lg:mt-0">
+                                <LazyImage src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/hero/hero-main-74b7ae42a905438281efa4046613129a.png" alt="Happy Indian couple shopping" width="600" height="450" className="w-full max-w-md rounded-2xl object-cover shadow-lg" loading="eager" />
+                            </div>
+                        </div>
+                    </div>
+                </SmoothReveal>
+            </section>
 
-                                    <section className="py-8 px-4 md:px-8">
-                                        <div className="max-w-7xl mx-auto">
-                                            <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center"><span className="text-gray-800">Shop by Categories</span></h2>
-                                            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-6">                        {categories.map(category => (
+            <section className="py-8 px-4 md:px-8">
+                <SmoothReveal direction="up" delay={200}>
+                    <div className="max-w-7xl mx-auto">
+                        <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center"><span className="text-gray-800">Shop by Categories</span></h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-6">                        {categories.map(category => (
                             <Link to={category.href} key={category.name} className="flex flex-col items-center p-2 text-center group">
                                 <div className="w-16 h-16 md:w-20 md:h-20 mb-2 bg-gray-100 rounded-xl p-3 border border-gray-200 group-hover:shadow-md transition-shadow">
-                                    <img src={category.imageUrl} alt={category.name} className="w-full h-full object-contain"/>
+                                    <LazyImage src={category.imageUrl} alt={category.name} className="w-full h-full object-contain" />
                                 </div>
                                 <span className="text-sm font-medium text-gray-700">{category.name}</span>
                             </Link>
                         ))}
+                        </div>
                     </div>
-                </div>
+                </SmoothReveal>
             </section>
-            
+
             <section className="py-8 px-4 md:px-8 bg-gray-50">
-                <div className="max-w-7xl mx-auto">
-                    <div className="mb-6">
-                        <h2 className="text-2xl md:text-3xl font-bold"><span className="text-gray-800">Top Deals</span></h2>
+                <SmoothReveal direction="up" delay={400}>
+                    <div className="max-w-7xl mx-auto">
+                        <div className="mb-6">
+                            <h2 className="text-2xl md:text-3xl font-bold"><span className="text-gray-800">Top Deals</span></h2>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 auto-rows-fr">
+                            {topDeals.map(product => (
+                                <ProductCard key={product.id} product={product} />
+                            ))}
+                        </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 auto-rows-fr">
-                        {topDeals.map(product => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
-                </div>
+                </SmoothReveal>
             </section>
-            
+
             <section className="py-8 px-4 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <div className="mb-6">
-                      <h2 className="text-2xl md:text-3xl font-bold mb-2">
-                        <span className="text-gray-600">Featured on </span>
-                        <span className="text-[#222]">Flip</span><span className="text-[#f28c28]">zokart</span>
-                      </h2>
-                      <div className="w-20 h-1 bg-[#f28c28] rounded"></div>
+                        <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                            <span className="text-gray-600">Featured on </span>
+                            <span className="text-[#222]">Flip</span><span className="text-[#f28c28]">zokart</span>
+                        </h2>
+                        <div className="w-20 h-1 bg-[#f28c28] rounded"></div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 auto-rows-fr">
                         {featuredProducts.map(product => <ProductCard key={product.id} product={product} />)}
                     </div>
                 </div>
             </section>
-            
+
             <GrocerySection />
 
             <section className="py-12 px-4 bg-white">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-10">
-                        <h2 className="text-2xl md:text-3xl font-bold mb-2">Customer <span className="text-[#f28c28]">Reviews</span></h2>
-                        <p className="text-gray-600">What our customers say about their shopping experience</p>
+                <SmoothReveal direction="up" delay={600}>
+                    <div className="max-w-7xl mx-auto">
+                        <div className="text-center mb-10">
+                            <h2 className="text-2xl md:text-3xl font-bold mb-2">Customer <span className="text-[#f28c28]">Reviews</span></h2>
+                            <p className="text-gray-600">What our customers say about their shopping experience</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                                <div className="flex items-center mb-4">
+                                    <LazyImage src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/testimonials/testimonial-1-c51c4110425c47b8af3644baedb35302.png" alt="Priya Sharma" width="60" height="60" className="w-12 h-12 rounded-full object-cover mr-4" />
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900">Priya Sharma</h4>
+                                        <div className="flex text-orange-400 text-sm"><span>★★★★★</span></div>
+                                    </div>
+                                </div>
+                                <p className="text-gray-700 text-sm leading-relaxed">"Amazing shopping experience! Fast delivery and great quality products. The customer service is excellent and I love the easy return policy. Highly recommended!"</p>
+                            </div>
+                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                                <div className="flex items-center mb-4">
+                                    <LazyImage src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/testimonials/testimonial-2-029873a672194e738bbe51deab6c4bd6.png" alt="Rajesh Kumar" width="60" height="60" className="w-12 h-12 rounded-full object-cover mr-4" />
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900">Rajesh Kumar</h4>
+                                        <div className="flex text-orange-400 text-sm"><span>★★★★★</span></div>
+                                    </div>
+                                </div>
+                                <p className="text-gray-700 text-sm leading-relaxed">"Best prices and authentic products. I've been shopping here for 2 years and never had any issues. The mobile app is very user-friendly and secure payment options."</p>
+                            </div>
+                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                                <div className="flex items-center mb-4">
+                                    <LazyImage src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/testimonials/testimonial-3-241a93ae9ab54cedb61c73fbc99de863.png" alt="Anita Patel" width="60" height="60" className="w-12 h-12 rounded-full object-cover mr-4" />
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900">Anita Patel</h4>
+                                        <div className="flex text-orange-400 text-sm"><span>★★★★★</span></div>
+                                    </div>
+                                </div>
+                                <p className="text-gray-700 text-sm leading-relaxed">"This platform has everything I need! From electronics to fashion, all at great prices. The delivery is always on time and packaging is excellent. Love shopping here!"</p>
+                            </div>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-                            <div className="flex items-center mb-4">
-                                <img src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/testimonials/testimonial-1-c51c4110425c47b8af3644baedb35302.png" alt="Priya Sharma" width="60" height="60" className="w-12 h-12 rounded-full object-cover mr-4"/>
-                                <div>
-                                    <h4 className="font-semibold text-gray-900">Priya Sharma</h4>
-                                    <div className="flex text-orange-400 text-sm"><span>★★★★★</span></div>
-                                </div>
-                            </div>
-                            <p className="text-gray-700 text-sm leading-relaxed">"Amazing shopping experience! Fast delivery and great quality products. The customer service is excellent and I love the easy return policy. Highly recommended!"</p>
-                        </div>
-                        <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-                            <div className="flex items-center mb-4">
-                                <img src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/testimonials/testimonial-2-029873a672194e738bbe51deab6c4bd6.png" alt="Rajesh Kumar" width="60" height="60" className="w-12 h-12 rounded-full object-cover mr-4"/>
-                                <div>
-                                    <h4 className="font-semibold text-gray-900">Rajesh Kumar</h4>
-                                    <div className="flex text-orange-400 text-sm"><span>★★★★★</span></div>
-                                </div>
-                            </div>
-                            <p className="text-gray-700 text-sm leading-relaxed">"Best prices and authentic products. I've been shopping here for 2 years and never had any issues. The mobile app is very user-friendly and secure payment options."</p>
-                        </div>
-                        <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-                            <div className="flex items-center mb-4">
-                                <img src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/testimonials/testimonial-3-241a93ae9ab54cedb61c73fbc99de863.png" alt="Anita Patel" width="60" height="60" className="w-12 h-12 rounded-full object-cover mr-4"/>
-                                <div>
-                                    <h4 className="font-semibold text-gray-900">Anita Patel</h4>
-                                    <div className="flex text-orange-400 text-sm"><span>★★★★★</span></div>
-                                </div>
-                            </div>
-                            <p className="text-gray-700 text-sm leading-relaxed">"This platform has everything I need! From electronics to fashion, all at great prices. The delivery is always on time and packaging is excellent. Love shopping here!"</p>
-                        </div>
-                    </div>
-                </div>
+                </SmoothReveal>
             </section>
-            
+
             <section className="py-12 px-4 bg-gray-50">
                 <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-10">
@@ -179,7 +189,7 @@ export const HomePage: React.FC = () => {
                                 </div>
                             </div>
                             <div className="flex justify-center">
-                                <img src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/cta/cta-app-4c321c4156404b36a12972cb0c2720f6.png" alt="Mobile App" width="450" height="300" className="w-full max-w-md rounded-2xl object-cover shadow-sm"/>
+                                <LazyImage src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/cta/cta-app-4c321c4156404b36a12972cb0c2720f6.png" alt="Mobile App" width="450" height="300" className="w-full max-w-md rounded-2xl object-cover shadow-sm" />
                             </div>
                         </div>
                     </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../store/Context';
 import authService from '../services/authService';
+import { SmoothReveal } from '../components/SmoothReveal';
 
 export const SignupPage: React.FC = () => {
   const { setUser } = useApp();
@@ -51,125 +52,118 @@ export const SignupPage: React.FC = () => {
         color: '#1F2937'
       }}
     >
-      <div
-        className="w-full max-w-[1100px] h-auto min-h-[560px] flex flex-col md:flex-row rounded-[18px] overflow-hidden animate-[fadeIn_0.6s_ease]"
-        style={{
-          background: 'rgba(255,255,255,0.25)',
-          backdropFilter: 'blur(18px)',
-          WebkitBackdropFilter: 'blur(18px)',
-          border: '1px solid rgba(255,255,255,0.35)',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.12)'
-        }}
-      >
-
-        {/* Left Panel */}
+      <SmoothReveal duration="500">
         <div
-          className="w-full md:w-[45%] lg:w-[40%] p-12 text-white flex flex-col justify-center"
-          style={{ background: 'linear-gradient(180deg, #2874F0 0%, #4f9cff 100%)' }}
+          className="w-full max-w-[1100px] h-auto min-h-[560px] flex flex-col md:flex-row rounded-[18px] overflow-hidden"
+          style={{
+            background: 'rgba(255,255,255,0.25)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            border: '1px solid rgba(255,255,255,0.35)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.12)'
+          }}
         >
-          <div className="flex items-center gap-2.5 font-bold text-[22px] mb-10">
-            <div className="w-9 h-9 bg-[#F9C74F] text-[#1f3fbf] font-extrabold flex items-center justify-center rounded-lg">f</div>
-            Flipzokart
-          </div>
 
-          <h1 className="text-[30px] font-bold mb-3 leading-tight">Login</h1>
-          <p className="text-[15px] leading-relaxed opacity-95">
-            Get access to your<br />
-            Orders, Wishlist and<br />
-            Recommendations
-          </p>
-        </div>
-
-        {/* Right Panel */}
-        <div className="flex-1 flex items-center justify-center p-8 bg-transparent">
-
-          {/* Signup Card */}
+          {/* Left Panel */}
           <div
-            className="w-full max-w-[360px] p-7 rounded-2xl animate-[slideUp_0.6s_ease]"
-            style={{
-              background: 'rgba(255,255,255,0.75)',
-              backdropFilter: 'blur(18px)',
-              WebkitBackdropFilter: 'blur(18px)',
-              border: '1px solid rgba(255,255,255,0.4)',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.12)'
-            }}
+            className="w-full md:w-[45%] lg:w-[40%] p-12 text-white flex flex-col justify-center"
+            style={{ background: 'linear-gradient(180deg, #2874F0 0%, #4f9cff 100%)' }}
           >
-            <h2 className="text-[20px] font-bold mb-[5px] text-[#1F2937]">Looks like you're new here!</h2>
-            <p className="text-[13px] text-[#4B5563] mb-[18px]">Sign up with your mobile number to get started</p>
+            <div className="flex items-center gap-2.5 font-bold text-[22px] mb-10">
+              <div className="w-9 h-9 bg-[#F9C74F] text-[#1f3fbf] font-extrabold flex items-center justify-center rounded-lg">f</div>
+              Flipzokart
+            </div>
 
-            {error && (
-              <div className="mb-4 text-red-600 text-sm bg-red-50 p-2 rounded border border-red-200">
-                {error}
-              </div>
-            )}
+            <h1 className="text-[30px] font-bold mb-3 leading-tight">Login</h1>
+            <p className="text-[15px] leading-relaxed opacity-95">
+              Get access to your<br />
+              Orders, Wishlist and<br />
+              Recommendations
+            </p>
+          </div>
 
-            <form onSubmit={handleSignup}>
-              <input
-                name="name"
-                type="text"
-                placeholder="Full Name"
-                required
-                className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
-                value={formData.name}
-                onChange={handleInputChange}
-              />
+          {/* Right Panel */}
+          <div className="flex-1 flex items-center justify-center p-8 bg-transparent">
 
-              <input
-                name="phone"
-                type="tel"
-                placeholder="Mobile Number"
-                required
-                className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
-                value={formData.phone}
-                onChange={handleInputChange}
-              />
-
-              <input
-                name="email"
-                type="email"
-                placeholder="Email"
-                required
-                className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-
-              <input
-                name="password"
-                type="password"
-                placeholder="Password"
-                required
-                className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
-                value={formData.password}
-                onChange={handleInputChange}
-              />
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center"
+            {/* Signup Card */}
+            <SmoothReveal direction="up" delay={200} className="w-full max-w-[360px]">
+              <div
+                className="p-7 rounded-2xl"
+                style={{
+                  background: 'rgba(255,255,255,0.75)',
+                  backdropFilter: 'blur(18px)',
+                  WebkitBackdropFilter: 'blur(18px)',
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.12)'
+                }}
               >
-                {isLoading ? 'Processing...' : 'Sign Up'}
-              </button>
+                <h2 className="text-[20px] font-bold mb-[5px] text-[#1F2937]">Looks like you're new here!</h2>
+                <p className="text-[13px] text-[#4B5563] mb-[18px]">Sign up with your mobile number to get started</p>
 
-              <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
-                Already have an account? <Link to="/login" className="font-bold hover:underline">Login</Link>
+                {error && (
+                  <div className="mb-4 text-red-600 text-sm bg-red-50 p-2 rounded border border-red-200">
+                    {error}
+                  </div>
+                )}
+
+                <form onSubmit={handleSignup}>
+                  <input
+                    name="name"
+                    type="text"
+                    placeholder="Full Name"
+                    required
+                    className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                  />
+
+                  <input
+                    name="phone"
+                    type="tel"
+                    placeholder="Mobile Number"
+                    required
+                    className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                  />
+
+                  <input
+                    name="email"
+                    type="email"
+                    placeholder="Email"
+                    required
+                    className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                  />
+
+                  <input
+                    name="password"
+                    type="password"
+                    placeholder="Password"
+                    required
+                    className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center"
+                  >
+                    {isLoading ? 'Processing...' : 'Sign Up'}
+                  </button>
+
+                  <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
+                    Already have an account? <Link to="/login" className="font-bold hover:underline">Login</Link>
+                  </div>
+                </form>
               </div>
-            </form>
+            </SmoothReveal>
           </div>
         </div>
-      </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideUp {
-          from { transform: translateY(20px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-      `}</style>
+      </SmoothReveal>
     </div>
   );
 };

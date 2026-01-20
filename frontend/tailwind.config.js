@@ -12,7 +12,14 @@ module.exports = {
         primary: '#ff7a00',
         dark: '#111111',
         lightGray: '#f3f4f6',
-      }
+      },
+      transitionTimingFunction: {
+        'smooth': 'cubic-bezier(0.22, 1, 0.36, 1)',
+      },
+      transitionDuration: {
+        '250': '250ms',
+        '350': '350ms',
+      },
     },
   },
   plugins: [],
