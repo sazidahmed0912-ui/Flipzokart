@@ -18,28 +18,28 @@ router.post("/add", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const { category, search, minPrice, maxPrice, sortBy } = req.query;
-    
+
     let filter = {};
-    
+
     // Category filter
     if (category && category !== 'All') {
       filter.category = category;
     }
-    
+
     // Search filter
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
     }
-    
+
     // Price range filter
     if (minPrice || maxPrice) {
       filter.price = {};
       if (minPrice) filter.price.$gte = parseFloat(minPrice);
       if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
     }
-    
+
     let query = Product.find(filter);
-    
+
     // Sorting
     if (sortBy) {
       switch (sortBy) {
@@ -58,7 +58,7 @@ router.get("/", async (req, res) => {
     } else {
       query = query.sort('-createdAt');
     }
-    
+
     const products = await query;
     res.status(200).json(products);
   } catch (error) {
@@ -70,25 +70,25 @@ router.get("/", async (req, res) => {
 router.get("/groceries", async (req, res) => {
   try {
     const { subcategory, search, inStock } = req.query;
-    
+
     let filter = { category: 'Groceries' };
-    
+
     // Subcategory filter (for future enhancement)
     if (subcategory && subcategory !== 'All') {
       // Assuming we'll add subcategory field later
       filter.subcategory = subcategory;
     }
-    
+
     // Search filter
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
     }
-    
+
     // Stock filter
     if (inStock === 'true') {
       filter.countInStock = { $gt: 0 };
     }
-    
+
     const products = await Product.find(filter).sort('-createdAt');
     res.status(200).json({
       success: true,
@@ -119,7 +119,7 @@ router.get("/catalog/summary", async (req, res) => {
         $sort: { count: -1 }
       }
     ]);
-    
+
     const totalProducts = await Product.countDocuments();
     const totalValue = await Product.aggregate([
       {
@@ -129,7 +129,7 @@ router.get("/catalog/summary", async (req, res) => {
         }
       }
     ]);
-    
+
     res.status(200).json({
       success: true,
       summary,
@@ -151,6 +151,9 @@ router.get("/:id", async (req, res) => {
     }
     res.status(200).json(product);
   } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: "Product not found (Invalid ID)" });
+    }
     res.status(500).json({ message: error.message });
   }
 });
