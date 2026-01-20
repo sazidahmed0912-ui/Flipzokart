@@ -8,7 +8,8 @@ router.post("/add", async (req, res) => {
   try {
     const product = new Product(req.body);
     const savedProduct = await product.save();
-    res.status(201).json(savedProduct);
+    // Return wrapped format to match AdminProducts.tsx: data.data.product
+    res.status(201).json({ success: true, data: { product: savedProduct } });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -154,6 +155,36 @@ router.get("/:id", async (req, res) => {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: "Product not found (Invalid ID)" });
     }
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ✏️ UPDATE PRODUCT
+router.put("/:id", async (req, res) => {
+  try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(200).json({ success: true, data: { product } });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 🗑️ DELETE PRODUCT
+router.delete("/:id", async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(200).json({ success: true, message: "Product deleted successfully" });
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
