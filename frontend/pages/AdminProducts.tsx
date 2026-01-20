@@ -12,6 +12,7 @@ import { useApp } from '../store/Context';
 import { Product, VariantGroup, VariantCombination } from '../types';
 import { CATEGORIES } from '../constants';
 import { AdminSidebar } from '../components/AdminSidebar';
+import { createProduct, updateProduct, deleteProduct } from '../services/adminService';
 
 export const AdminProducts: React.FC = () => {
   const { products, setProducts, user, logout } = useApp();
@@ -325,12 +326,12 @@ export const AdminProducts: React.FC = () => {
 
     try {
       if (editingProduct) {
-        const { data } = await import('../services/adminService').then(m => m.updateProduct(editingProduct.id, productPayload));
+        const { data } = await updateProduct(editingProduct.id, productPayload);
         const updatedProduct = data.data.product;
         setProducts(products.map(p => p.id === editingProduct.id ? updatedProduct : p));
         alert("Product updated successfully!");
       } else {
-        const { data } = await import('../services/adminService').then(m => m.createProduct(productPayload));
+        const { data } = await createProduct(productPayload);
         const newProduct = data.data.product;
         setProducts([newProduct, ...products]);
         alert("Product published successfully!");
@@ -346,7 +347,7 @@ export const AdminProducts: React.FC = () => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
 
     try {
-      await import('../services/adminService').then(m => m.deleteProduct(id));
+      await deleteProduct(id);
       setProducts(products.filter(p => p.id !== id));
     } catch (error: any) {
       console.error("Delete Error:", error);
