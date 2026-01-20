@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
@@ -30,80 +29,130 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F5F7FA] p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-semibold text-[#1F2937]">Login to Flipzokart</h1>
+    <div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center p-4 font-sans">
+      <div className="w-full max-w-[1000px] bg-transparent flex flex-col md:flex-row shadow-none md:h-[600px] overflow-hidden">
+
+        {/* Left Panel - Blue Gradient */}
+        <div className="w-full md:w-[40%] bg-[#2874F0] p-10 flex flex-col justify-between text-white md:rounded-l-sm">
+          <div>
+            <h1 className="text-3xl font-bold mb-6">Login</h1>
+            <p className="text-lg font-medium text-gray-200 leading-relaxed">
+              Get access to your Orders, Wishlist and Recommendations
+            </p>
           </div>
+          <div className="hidden md:block">
+            <div className="w-full h-40 bg-contain bg-no-repeat bg-center opacity-90" style={{ backgroundImage: 'url("https://static-assets-web.flixcart.com/fk-p-linchpin-web/fk-cp-zion/img/login_img_c4a81e.png")' }}></div>
+          </div>
+        </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm flex items-center gap-2">
-              <AlertCircle size={18} />
-              <span>{error}</span>
-            </div>
-          )}
+        {/* Right Panel - Glass Card Area */}
+        <div className="w-full md:w-[60%] bg-white p-10 md:p-14 md:rounded-r-sm relative border border-gray-100 shadow-sm flex flex-col justify-center">
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-gray-700">Email or Mobile</label>
-              <input
-                id="email"
-                type="email"
-                required
-                placeholder="Enter your email or mobile"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2874F0] focus:border-transparent transition-all"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+          {/* Prism Glass Card overlay if requested, but standard Flipkart login is actually white right panel with blue left. 
+             However, the user SPECIFICALLY requested "Prism Glass / Soft Glassmorphism". 
+             I will Apply the Glass effect to the form container OR the whole right panel background to satisfy "Glass card (centered)".
+             Let's make the right panel the container and put a glass card inside it or style the right panel itself as the card on a background?
+             The "Structure" says: Full screen split layout. Left Blue. Right Glass Card.
+             Okay, let's look at the structure again: 
+             LAYOUT: Full screen split layout. LEFT: Blue gradient panel. RIGHT: Glass card (centered).
+             It seems they want the glass card ON the right side, maybe over a background? 
+             Or is the Right Panel ITSELF the glass card? 
+             "Glass card (centered) -> Login form" under "RIGHT".
+             If I make the whole right panel white (like Flipkart), it's not "Glass". 
+             If I make the right panel transparent and put a glass card in it?
+             Let's assume the "Split layout" means the container is split.
+             To strictly follow "Prism Glass" rules: 
+             Card background: rgba(255,255,255,0.75), Backdrop blur 18px.
+             I will apply this style to the Right Panel container itself, making it look like a glass pane next to the blue pane.
+           */}
 
-            <div className="space-y-2">
-              <label htmlFor="password"  className="text-sm font-medium text-gray-700">Password</label>
-              <input
-                id="password"
-                type="password"
-                required
-                placeholder="Enter your password"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2874F0] focus:border-transparent transition-all"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-               <div className="text-right">
-                <Link to="/forgot-password" className="text-xs font-semibold text-[#2874F0] hover:underline">
-                  Forgot Password?
+          <div className="absolute inset-0 bg-white/75 backdrop-blur-[18px]" style={{ zIndex: 0 }}></div>
+
+          <div className="relative z-10 w-full max-w-sm mx-auto">
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-3 animate-fade-in shadow-sm">
+                <AlertCircle size={20} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="group">
+                <div className="relative">
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    placeholder=" "
+                    className="peer w-full px-0 py-3 border-b border-gray-300 bg-transparent focus:outline-none focus:border-[#2874F0] transition-colors text-gray-800 placeholder-transparent"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <label
+                    htmlFor="email"
+                    className="absolute left-0 top-3 text-gray-500 text-base transition-all duration-200 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-[#2874F0] peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-not-placeholder-shown:-top-3.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-gray-500 cursor-text"
+                  >
+                    Email or Mobile
+                  </label>
+                </div>
+              </div>
+
+              <div className="group">
+                <div className="relative">
+                  <input
+                    id="password"
+                    type="password"
+                    required
+                    placeholder=" "
+                    className="peer w-full px-0 py-3 border-b border-gray-300 bg-transparent focus:outline-none focus:border-[#2874F0] transition-colors text-gray-800 placeholder-transparent"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <label
+                    htmlFor="password"
+                    className="absolute left-0 top-3 text-gray-500 text-base transition-all duration-200 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-[#2874F0] peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-not-placeholder-shown:-top-3.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-gray-500 cursor-text"
+                  >
+                    Password
+                  </label>
+                  <Link
+                    to="/forgot-password"
+                    className="absolute right-0 top-4 text-sm font-medium text-[#2874F0] hover:text-blue-700 transition-colors"
+                  >
+                    Forgot?
+                  </Link>
+                </div>
+              </div>
+
+              <div className="text-xs text-gray-500 mt-4 leading-relaxed">
+                By continuing, you agree to Flipzokart's <span className="text-[#2874F0] font-medium cursor-pointer">Terms of Use</span> and <span className="text-[#2874F0] font-medium cursor-pointer">Privacy Policy</span>.
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[#FB641B] text-white py-3.5 rounded-[2px] font-semibold text-[15px] shadow-[0_2px_4px_0_rgba(0,0,0,0.2)] hover:shadow-[0_4px_8px_0_rgba(0,0,0,0.2)] transition-shadow disabled:opacity-70 mt-4"
+                style={{ backgroundColor: '#FB641B' }} // Flipkart Orange/Red for Update
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white/60 border-t-white rounded-full animate-spin mx-auto"></div>
+                ) : (
+                  'Login'
+                )}
+              </button>
+
+              <div className="mt-8 text-center relative">
+                <Link to="/signup" className="text-[#2874F0] font-medium text-sm hover:underline block w-full py-3">
+                  New to Flipzokart? Create an account
                 </Link>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#2874F0] text-white py-3 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                'Login'
-              )}
-            </button>
-          </form>
-
-          <div className="relative my-8">
-            <hr className="border-gray-300" />
-            <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-white px-2 text-sm text-gray-500">OR</span>
-          </div>
-          
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              New to Flipzokart?{' '}
-              <Link to="/signup" className="font-semibold text-[#2874F0] hover:underline">
-                Create an account
-              </Link>
-            </p>
+            </form>
           </div>
         </div>
       </div>
+
+      {/* Footer Info or Background Decorations can go here if needed, but keeping it clean for the task */}
     </div>
   );
 };
