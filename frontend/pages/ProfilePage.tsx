@@ -71,29 +71,32 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          {/* Navigation Menu */}
+          {/* Navigation Menu - Mobile Horizontal Scroll / Desktop Vertical List */}
           <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] overflow-hidden">
-            {sidebarItems.map((item, i) => {
-              const isActive = item.name === "My Profile";
-              const Icon = item.icon;
-              return (
-                <div
-                  key={i}
-                  onClick={() => handleNavigation(item.path)}
-                  className={`flex items-center gap-4 px-6 py-4 cursor-pointer transition-colors border-b last:border-0 border-gray-50
-                    ${isActive ? "bg-[#F5FAFF] text-[#2874F0]" : "text-gray-600 hover:bg-gray-50"}
-                  `}
-                >
-                  <Icon size={20} className={isActive ? "text-[#2874F0]" : "text-gray-400"} />
-                  <span className={`font-medium ${isActive ? "font-bold" : ""}`}>{item.name}</span>
-                  {isActive && <ChevronRight size={16} className="ml-auto text-[#2874F0]" />}
-                </div>
-              );
-            })}
-            {/* Logout Button */}
+            <div className="flex lg:flex-col overflow-x-auto lg:overflow-visible scrollbar-hide py-2 lg:py-0">
+              {sidebarItems.map((item, i) => {
+                const isActive = item.name === "My Profile";
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={i}
+                    onClick={() => handleNavigation(item.path)}
+                    className={`flex items-center gap-2 lg:gap-4 px-4 lg:px-6 py-3 lg:py-4 cursor-pointer transition-colors border-r lg:border-r-0 lg:border-b last:border-0 border-gray-50 flex-shrink-0 whitespace-nowrap
+                        ${isActive ? "bg-[#F5FAFF] text-[#2874F0]" : "text-gray-600 hover:bg-gray-50"}
+                      `}
+                  >
+                    <Icon size={18} className={`lg:w-5 lg:h-5 ${isActive ? "text-[#2874F0]" : "text-gray-400"}`} />
+                    <span className={`text-sm lg:text-base font-medium ${isActive ? "font-bold" : ""}`}>{item.name}</span>
+                    {isActive && <ChevronRight size={16} className="ml-auto text-[#2874F0] hidden lg:block" />}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Logout Button (Desktop only here, mobile can rely on bottom card setting) */}
             <div
               onClick={handleLogout}
-              className="flex items-center gap-4 px-6 py-4 cursor-pointer text-gray-600 hover:bg-red-50 hover:text-red-600 border-t border-gray-100 transition-colors"
+              className="hidden lg:flex items-center gap-4 px-6 py-4 cursor-pointer text-gray-600 hover:bg-red-50 hover:text-red-600 border-t border-gray-100 transition-colors"
             >
               <LogOut size={20} />
               <span className="font-medium">Logout</span>

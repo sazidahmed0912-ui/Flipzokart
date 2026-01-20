@@ -28,16 +28,8 @@
 }
 
 @layer utilities {
-    .animate-spin-slow {
-        animation: spin 3s linear infinite;
-    }
-
-    .animate-breathe {
-        animation: breathe 3s ease-in-out infinite;
-    }
-
-    .animate-fade-in-up {
-        animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    .animate-spin-linear {
+        animation: spin 1s linear infinite;
     }
 
     .gpu-accelerated {
@@ -57,19 +49,7 @@
     }
 }
 
-@keyframes breathe {
-
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    50% {
-        transform: scale(1.05);
-        opacity: 0.95;
-    }
-}
+/* Removed 'breathe' and 'fade-in-up' as per strict static UI rules */
 
 @keyframes fadeInUp {
     from {
