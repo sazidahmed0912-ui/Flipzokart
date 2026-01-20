@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Plus, Edit, Trash2, Search, X, 
+import {
+  Plus, Edit, Trash2, Search, X,
   Upload, Package, ChevronLeft,
   Settings2, PlusCircle,
   Image as ImageIcon, Layers, RefreshCw, AlertCircle,
   Barcode, Tag, Info, CheckCircle2, Zap,
-  ImagePlus, XCircle
+  ImagePlus, XCircle, Bell, User, LogOut, ChevronDown
 } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { Product, VariantGroup, VariantCombination } from '../types';
@@ -14,14 +14,15 @@ import { CATEGORIES } from '../constants';
 import { AdminSidebar } from '../components/AdminSidebar';
 
 export const AdminProducts: React.FC = () => {
-  const { products, setProducts } = useApp();
+  const { products, setProducts, user, logout } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [variantUploadingIndex, setVariantUploadingIndex] = useState<number | null>(null);
   const [needsSync, setNeedsSync] = useState(false);
-  
+
   // Refs
   const mainImageInputRef = useRef<HTMLInputElement>(null);
   const galleryImageInputRef = useRef<HTMLInputElement>(null);
@@ -43,7 +44,7 @@ export const AdminProducts: React.FC = () => {
     inventory: [] as VariantCombination[]
   });
 
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase())) ||
     p.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -207,10 +208,10 @@ export const AdminProducts: React.FC = () => {
   };
 
   const generateCombinations = () => {
-    const activeVariants = formData.variants.filter(v => 
+    const activeVariants = formData.variants.filter(v =>
       v.name.trim() !== '' && v.options.some(o => o.trim() !== '')
     );
-    
+
     if (activeVariants.length === 0) {
       setFormData(prev => ({ ...prev, inventory: [] }));
       setNeedsSync(false);
@@ -221,7 +222,7 @@ export const AdminProducts: React.FC = () => {
     activeVariants.forEach(group => {
       const nextCombos: Record<string, string>[] = [];
       const validOptions = group.options.filter(o => o.trim() !== '');
-      
+
       combinations.forEach(combo => {
         validOptions.forEach(option => {
           nextCombos.push({ ...combo, [group.name]: option });
@@ -244,8 +245,8 @@ export const AdminProducts: React.FC = () => {
       const variantSuffix = Object.values(combo).map(v => v.substring(0, 2).toUpperCase()).join('-');
       const randomID = Math.floor(100 + Math.random() * 899);
 
-      return { 
-        options: combo, 
+      return {
+        options: combo,
         stock: 0,
         sku: `${basePrefix}-${variantSuffix}-${randomID}`,
         price: undefined,
@@ -280,7 +281,7 @@ export const AdminProducts: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!formData.name.trim()) {
       alert("Please enter a product name.");
@@ -328,7 +329,7 @@ export const AdminProducts: React.FC = () => {
     } else {
       setProducts([productData, ...products]);
     }
-    
+
     setIsModalOpen(false);
     alert(`Product ${editingProduct ? 'updated' : 'published'} successfully!`);
   };
@@ -341,272 +342,339 @@ export const AdminProducts: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50/50">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
       <AdminSidebar />
-      
+
+      {/* Hidden Inputs for File Upload */}
       <input type="file" ref={mainImageInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'main')} />
       <input type="file" ref={galleryImageInputRef} className="hidden" accept="image/*" multiple onChange={(e) => handleFileChange(e, 'gallery')} />
       <input type="file" ref={variantImageInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'variant')} />
 
-      <div className="flex-1 p-6 lg:p-10 space-y-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-dark">Catalog Manager</h1>
-            <p className="text-gray-500 text-sm">Orchestrate complex product variants and granular availability.</p>
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+        {/* Top Navbar */}
+        <header className="bg-white border-b border-gray-100 px-8 py-4 sticky top-0 z-30 flex items-center justify-between shadow-sm">
+          <div className="flex items-center w-full max-w-xl bg-[#F0F5FF] rounded-lg px-4 py-2.5 transition-all focus-within:ring-2 focus-within:ring-[#2874F0]/20">
+            <Search size={18} className="text-[#2874F0]" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              className="w-full bg-transparent border-none outline-none text-sm ml-3 text-gray-700 placeholder-gray-400 font-medium"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-          <button onClick={openAddModal} className="bg-primary text-white px-8 py-4 rounded-2xl font-bold hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2 shadow-xl shadow-primary/30">
-            <Plus size={20} /> New Listing
-          </button>
-        </div>
 
-        <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
-          <div className="relative w-full md:w-[450px]">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input type="text" placeholder="Search catalog..." className="w-full pl-12 pr-4 py-4 bg-lightGray rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 text-sm border border-transparent focus:border-primary/30 transition-all font-medium" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <div className="flex items-center gap-6">
+            <button className="relative p-2 text-gray-500 hover:text-[#2874F0] transition-colors">
+              <Bell size={20} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FF6161] rounded-full ring-2 ring-white"></span>
+            </button>
+
+            <div className="relative">
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="flex items-center gap-2 hover:bg-gray-50 p-1.5 rounded-lg transition-colors"
+              >
+                <div className="w-8 h-8 rounded-full bg-[#2874F0] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                  {user?.name?.charAt(0) || 'A'}
+                </div>
+                <span className="text-xs font-semibold text-gray-700">{user?.name?.split(' ')[0] || 'Admin'}</span>
+                <ChevronDown size={14} className="text-gray-400" />
+              </button>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl py-1 z-50">
+                  <button onClick={logout} className="w-full text-left px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2">
+                    <LogOut size={14} /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </header>
 
-        <div className="bg-white rounded-[3rem] border border-gray-100 shadow-2xl shadow-gray-200/40 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-lightGray/30 border-b border-gray-100">
-                <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                  <th className="px-10 py-7">Product Identity</th>
-                  <th className="px-8 py-7 text-center">Global SKU</th>
-                  <th className="px-8 py-7">Base Price</th>
-                  <th className="px-8 py-7">Pantry Level</th>
-                  <th className="px-8 py-7">Attribute Groups</th>
-                  <th className="px-10 py-7 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filteredProducts.map(product => (
-                  <tr key={product.id} className="text-sm group hover:bg-gray-50/50 transition-colors">
-                    <td className="px-10 py-6">
-                      <div className="flex items-center gap-5">
-                        <div className="w-16 h-16 rounded-2xl bg-white overflow-hidden shrink-0 border border-gray-100 shadow-inner p-1 group-hover:scale-110 transition-transform duration-500">
-                          <img src={product.image} alt={product.name} className="w-full h-full object-cover rounded-xl" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-dark truncate max-w-[250px]">{product.name}</p>
-                          <p className="text-[10px] text-primary font-bold uppercase tracking-wider mt-0.5">{product.category}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6 text-center">
-                      <span className="font-mono text-[11px] text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 uppercase tracking-tighter">{product.sku || '---'}</span>
-                    </td>
-                    <td className="px-8 py-6 font-bold text-dark text-lg">₹{product.price.toLocaleString('en-IN')}</td>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-3.5 h-3.5 rounded-full ring-4 ${product.stock > 10 ? 'bg-green-500 ring-green-50' : product.stock > 0 ? 'bg-orange-500 ring-orange-50' : 'bg-red-500 ring-red-50'}`} />
-                        <span className="font-bold text-dark">{product.stock} Units</span>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="flex flex-wrap gap-1.5">
-                        {product.variants?.map(v => (
-                          <span key={v.name} className="bg-dark text-white text-[9px] px-2.5 py-1 rounded-md font-bold uppercase tracking-tighter opacity-80">{v.name}</span>
-                        )) || <span className="text-gray-300 text-xs italic">Standard Product</span>}
-                      </div>
-                    </td>
-                    <td className="px-10 py-6 text-right">
-                      <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEditModal(product)} className="p-3 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-2xl transition-all"><Edit size={20} /></button>
-                        <button onClick={() => setProducts(products.filter(p => p.id !== product.id))} className="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"><Trash2 size={20} /></button>
-                      </div>
-                    </td>
+        <div className="p-8 space-y-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">Products</h1>
+              <p className="text-xs text-gray-500 font-medium mt-1">Manage your product catalog</p>
+            </div>
+            <button onClick={openAddModal} className="bg-[#2874F0] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-[#1e5ccc] transition-all shadow-md shadow-blue-200 flex items-center gap-2">
+              <Plus size={18} /> Add Product
+            </button>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#F5F7FA] border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4">Product Name</th>
+                    <th className="px-6 py-4 text-center">SKU</th>
+                    <th className="px-6 py-4">Price</th>
+                    <th className="px-6 py-4">Stock</th>
+                    <th className="px-6 py-4">Category</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {filteredProducts.map((product, idx) => (
+                    <tr key={product.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <img src={product.image} alt={product.name} className="w-12 h-12 rounded-lg object-cover border border-gray-100" />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-gray-800 text-sm truncate max-w-[200px]">{product.name}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">{product.sku || 'N/A'}</span>
+                      </td>
+                      <td className="px-6 py-4 font-bold text-gray-800 text-sm">₹{product.price.toLocaleString('en-IN')}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${product.stock > 10 ? 'bg-green-500' : product.stock > 0 ? 'bg-orange-500' : 'bg-red-500'}`} />
+                          <span className={`text-sm font-medium ${product.stock > 10 ? 'text-green-700' : product.stock > 0 ? 'text-orange-700' : 'text-red-700'}`}>
+                            {product.stock} Units
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-block px-3 py-1 bg-blue-50 text-[#2874F0] text-xs font-bold rounded-full">
+                          {product.category}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => openEditModal(product)} className="p-2 text-gray-400 hover:text-[#2874F0] hover:bg-blue-50 rounded-lg transition-all">
+                            <Edit size={16} />
+                          </button>
+                          <button onClick={() => setProducts(products.filter(p => p.id !== product.id))} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-400 font-medium">No products found matching your search.</p>
+              </div>
+            )}
           </div>
         </div>
 
         {isModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:p-10">
-            <div className="absolute inset-0 bg-dark/70 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-            <div className="relative bg-white w-full max-w-[1440px] rounded-[3.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500 flex flex-col max-h-[96vh]">
-              
-              <div className="p-8 lg:px-12 border-b border-gray-100 flex justify-between items-center shrink-0">
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 bg-primary/10 text-primary rounded-3xl flex items-center justify-center shadow-inner">
-                    <Package size={32} />
-                  </div>
-                  <div>
-                    <h2 className="text-3xl font-bold tracking-tight">{editingProduct ? 'Update SKU Architecture' : 'Draft Market Listing'}</h2>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Enterprise Catalog Engine</p>
-                  </div>
-                </div>
-                <button onClick={() => setIsModalOpen(false)} className="p-5 hover:bg-lightGray rounded-full transition-colors"><X size={32} /></button>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto bg-gray-50/30 p-8 lg:p-12">
-                <form id="product-form" ref={formRef} onSubmit={handleSubmit} className="space-y-16">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-                    <div className="lg:col-span-4 space-y-10">
-                      <div className="space-y-6">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-3">Product Media Portfolio</label>
-                        <div className="space-y-3">
-                          <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest ml-4">Main / Hero Image</p>
-                          <div className="aspect-square bg-white rounded-[2.5rem] border-2 border-dashed border-gray-200 overflow-hidden relative group shadow-inner transition-all hover:border-primary/50 cursor-pointer" onClick={triggerMainUpload}>
-                            {formData.image ? (
-                              <img src={formData.image} className="w-full h-full object-cover p-3 rounded-[2.5rem]" alt="Hero" />
-                            ) : (
-                              <div className="flex flex-col items-center justify-center h-full text-gray-300 space-y-3">
-                                <ImageIcon size={48} strokeWidth={1} />
-                                <p className="text-[9px] font-bold uppercase tracking-widest">Main Media</p>
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 flex items-center justify-center transition-all">
-                              <div className={`bg-white p-4 rounded-full shadow-2xl scale-75 group-hover:scale-100 transition-transform ${isUploading ? 'animate-pulse' : ''}`}>
-                                <Upload className="text-primary" size={24} />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+          <div className="fixed inset-0 z-[50] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
+            <div className="relative bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center px-4">
-                            <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">Gallery Portfolio ({formData.images.length}/6)</p>
-                            {formData.images.length < 6 && (
-                              <button type="button" onClick={triggerGalleryUpload} className="text-primary text-[10px] font-bold flex items-center gap-1.5 hover:underline">
-                                <ImagePlus size={14} /> Add Images
-                              </button>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-3 gap-3">
-                            {formData.images.map((img, idx) => (
-                              <div key={idx} className="aspect-square bg-white rounded-2xl border border-gray-100 relative group overflow-hidden shadow-sm">
-                                <img src={img} className="w-full h-full object-cover p-1 rounded-2xl" />
-                                <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                                  <X size={12} />
-                                </button>
-                              </div>
-                            ))}
-                            {formData.images.length < 6 && Array.from({ length: 6 - formData.images.length }).map((_, i) => (
-                              <div key={`empty-${i}`} onClick={triggerGalleryUpload} className="aspect-square bg-gray-50 border border-dashed border-gray-200 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-white hover:border-primary/30 transition-all text-gray-300">
-                                <Plus size={20} />
-                              </div>
-                            ))}
-                          </div>
+              <div className="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                  <Package className="text-[#2874F0]" size={20} />
+                  {editingProduct ? 'Edit Product' : 'New Product'}
+                </h2>
+                <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8">
+                <form id="product-form" ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Column: Images */}
+                    <div className="lg:col-span-1 space-y-6">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Main Image</label>
+                        <div
+                          className="aspect-square bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 hover:border-[#2874F0] cursor-pointer flex flex-col items-center justify-center text-gray-400 hover:text-[#2874F0] transition-all relative group overflow-hidden"
+                          onClick={triggerMainUpload}
+                        >
+                          {formData.image ? (
+                            <img src={formData.image} className="w-full h-full object-cover" alt="Main" />
+                          ) : (
+                            <>
+                              <Upload size={32} className="mb-2" />
+                              <span className="text-xs font-bold">Upload Main Image</span>
+                            </>
+                          )}
+                          {/* Overlay for re-uploading if image exists */}
+                          {formData.image && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Upload size={24} className="text-white" />
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      <div className="space-y-8 p-10 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                          <Tag size={14} className="text-primary" /> Financial Profile
-                        </label>
-                        <div className="space-y-6">
-                          <div className="relative">
-                            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl">₹</span>
-                            <input required type="number" placeholder="Master Price" className="w-full bg-lightGray/50 pl-12 pr-6 py-5 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-bold text-xl border border-transparent" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
-                          </div>
-                          <div className="relative">
-                            <Barcode className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" size={22} />
-                            <input type="text" placeholder="Global Parent SKU" className="w-full bg-lightGray/50 pl-14 pr-6 py-5 rounded-2xl border border-transparent uppercase tracking-widest font-bold" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} />
-                          </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Gallery ({formData.images.length}/6)</label>
+                          <button type="button" onClick={triggerGalleryUpload} className="text-[#2874F0] text-xs font-bold hover:underline">+ Add</button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          {formData.images.map((img, idx) => (
+                            <div key={idx} className="aspect-square rounded-lg border border-gray-200 overflow-hidden relative group">
+                              <img src={img} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
+                              <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute top-0.5 right-0.5 bg-red-500 text-white p-0.5 rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                <X size={10} />
+                              </button>
+                            </div>
+                          ))}
+                          {formData.images.length < 6 && (
+                            <div className="aspect-square rounded-lg border border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-50 text-gray-400" onClick={triggerGalleryUpload}>
+                              <Plus size={20} />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    <div className="lg:col-span-8 space-y-12">
-                      <div className="grid grid-cols-2 gap-8">
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-3">Product Name</label>
-                          <input required type="text" className="w-full bg-white px-8 py-5 rounded-2xl border border-gray-100 font-bold text-lg focus:border-primary/30 outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                    {/* Right Column: Form Fields */}
+                    <div className="lg:col-span-2 space-y-6">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="col-span-2">
+                          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Product Name</label>
+                          <input
+                            required
+                            type="text"
+                            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800"
+                            value={formData.name}
+                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                          />
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-3">Classification</label>
-                          <select className="w-full bg-white px-8 py-5 rounded-2xl border border-gray-100 font-bold text-lg focus:border-primary/30 outline-none" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Price (₹)</label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">₹</span>
+                            <input
+                              required
+                              type="number"
+                              className="w-full pl-8 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800"
+                              value={formData.price}
+                              onChange={e => setFormData({ ...formData, price: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Category</label>
+                          <select
+                            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800"
+                            value={formData.category}
+                            onChange={e => setFormData({ ...formData, category: e.target.value })}
+                          >
                             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                           </select>
                         </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">SKU</label>
+                          <input
+                            type="text"
+                            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800"
+                            value={formData.sku}
+                            onChange={e => setFormData({ ...formData, sku: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Base Stock</label>
+                          <input
+                            type="number"
+                            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800"
+                            value={formData.stock}
+                            onChange={e => setFormData({ ...formData, stock: e.target.value })}
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Description</label>
+                          <textarea
+                            rows={3}
+                            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800 resize-none"
+                            value={formData.description}
+                            onChange={e => setFormData({ ...formData, description: e.target.value })}
+                          />
+                        </div>
                       </div>
 
-                      <div className="space-y-8 p-10 bg-white rounded-[3rem] border border-gray-100 shadow-sm relative">
-                        <div className="flex justify-between items-center mb-6">
-                          <h3 className="font-bold text-2xl tracking-tight text-dark">Attribute Designer</h3>
+                      {/* Variants Section - Simplified UI */}
+                      <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="font-bold text-gray-800 text-sm">Variants & Options</h3>
                           <div className="flex gap-2">
-                            <button type="button" onClick={() => applyPreset('size')} className="text-[10px] font-bold px-4 py-2 border border-gray-100 rounded-xl hover:bg-gray-50 flex items-center gap-2">Size Preset</button>
-                            <button type="button" onClick={() => applyPreset('color')} className="text-[10px] font-bold px-4 py-2 border border-gray-100 rounded-xl hover:bg-gray-50 flex items-center gap-2">Color Preset</button>
-                            <button type="button" onClick={addVariantGroup} className="bg-primary text-white font-bold text-xs flex items-center gap-2 px-7 py-3 rounded-2xl transition-all shadow-lg shadow-primary/30">
-                              <PlusCircle size={20} /> Add Attribute
-                            </button>
+                            <button type="button" onClick={() => applyPreset('size')} className="text-xs font-bold px-3 py-1.5 bg-white border border-gray-300 rounded hover:bg-gray-100">Size Preset</button>
+                            <button type="button" onClick={() => applyPreset('color')} className="text-xs font-bold px-3 py-1.5 bg-white border border-gray-300 rounded hover:bg-gray-100">Color Preset</button>
+                            <button type="button" onClick={addVariantGroup} className="text-xs font-bold px-3 py-1.5 bg-[#2874F0] text-white rounded hover:bg-[#1e5ccc]">+ Group</button>
                           </div>
                         </div>
-                        {formData.variants.map((group, gIdx) => (
-                          <div key={gIdx} className="bg-gray-50/80 p-8 rounded-[2rem] border border-gray-100 mb-6">
-                            <div className="flex gap-4 items-end mb-4">
-                              <div className="flex-1 space-y-2">
-                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">Type</label>
-                                <input placeholder="Attribute Name" className="w-full bg-white px-6 py-3 rounded-xl border focus:border-primary/40 outline-none font-bold" value={group.name} onChange={e => updateVariantGroupName(gIdx, e.target.value)} />
-                              </div>
-                              <button type="button" onClick={() => removeVariantGroup(gIdx)} className="p-3 text-red-500 hover:bg-red-50 rounded-xl mb-0.5"><Trash2 size={20} /></button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {group.options.map((opt, oIdx) => (
-                                <div key={oIdx} className="flex items-center bg-white px-4 py-2 rounded-xl border gap-2 shadow-sm">
-                                  <input placeholder="Value" className="w-20 text-xs font-bold bg-transparent outline-none" value={opt} onChange={e => updateVariantOption(gIdx, oIdx, e.target.value)} />
-                                  <button type="button" onClick={() => removeVariantOption(gIdx, oIdx)} className="text-gray-300 hover:text-red-500"><X size={14} /></button>
-                                </div>
-                              ))}
-                              <button type="button" onClick={() => addVariantOption(gIdx)} className="text-primary text-[10px] font-bold px-4 py-2 bg-white border border-primary/20 rounded-xl hover:bg-primary/5">+ Add</button>
-                            </div>
+
+                        {formData.variants.length === 0 && (
+                          <div className="text-center py-4 text-gray-400 text-xs italic">
+                            No variants added. This will be a standard product.
                           </div>
-                        ))}
+                        )}
+
+                        <div className="space-y-4">
+                          {formData.variants.map((group, gIdx) => (
+                            <div key={gIdx} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                              <div className="flex gap-3 mb-3">
+                                <input
+                                  placeholder="Attribute (e.g., Color)"
+                                  className="flex-1 px-3 py-1.5 border border-gray-300 rounded text-sm font-bold"
+                                  value={group.name}
+                                  onChange={e => updateVariantGroupName(gIdx, e.target.value)}
+                                />
+                                <button type="button" onClick={() => removeVariantGroup(gIdx)} className="text-red-500 hover:bg-red-50 p-1.5 rounded"><Trash2 size={16} /></button>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {group.options.map((opt, oIdx) => (
+                                  <div key={oIdx} className="flex items-center bg-gray-100 px-2 py-1 rounded border border-gray-200">
+                                    <input
+                                      className="bg-transparent w-20 text-xs font-medium outline-none"
+                                      value={opt}
+                                      onChange={e => updateVariantOption(gIdx, oIdx, e.target.value)}
+                                    />
+                                    <button type="button" onClick={() => removeVariantOption(gIdx, oIdx)} className="ml-1 text-gray-400 hover:text-red-500"><X size={12} /></button>
+                                  </div>
+                                ))}
+                                <button type="button" onClick={() => addVariantOption(gIdx)} className="text-[#2874F0] text-xs font-bold px-2 py-1 hover:bg-blue-50 rounded">+ Opt</button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
 
                         {formData.variants.length > 0 && (
-                          <div className="pt-10 border-t border-gray-100 space-y-6">
-                            <div className="flex justify-between items-center">
-                              <h3 className="font-bold text-xl tracking-tight text-dark">Inventory Matrix</h3>
-                              <button type="button" onClick={generateCombinations} className="bg-dark text-white text-xs font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-primary transition-all">
-                                <RefreshCw size={16} /> Sync Matrix
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-xs font-bold text-gray-500 uppercase">Inventory Matrix</span>
+                              <button type="button" onClick={generateCombinations} className="text-xs font-bold text-[#2874F0] flex items-center gap-1 hover:underline">
+                                <RefreshCw size={12} /> Sync Matrix
                               </button>
                             </div>
-                            
-                            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-                              <table className="w-full text-left text-sm">
-                                <thead className="bg-lightGray/50">
-                                  <tr className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                                    <th className="px-6 py-4">Media</th>
-                                    <th className="px-6 py-4">Config</th>
-                                    <th className="px-6 py-4">SKU</th>
-                                    <th className="px-6 py-4">Stock</th>
-                                    <th className="px-6 py-4 text-right">Price</th>
+                            {/* Simple Table for Matrix */}
+                            <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+                              <table className="w-full text-left text-xs">
+                                <thead className="bg-gray-50 border-b border-gray-200 text-gray-500">
+                                  <tr>
+                                    <th className="px-3 py-2">Img</th>
+                                    <th className="px-3 py-2">Var</th>
+                                    <th className="px-3 py-2">SKU</th>
+                                    <th className="px-3 py-2">Stk</th>
+                                    <th className="px-3 py-2">Price</th>
                                   </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-50">
+                                <tbody className="divide-y divide-gray-100">
                                   {formData.inventory.map((item, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50/30 transition-colors">
-                                      <td className="px-6 py-3">
-                                        <div className="relative group/var w-10 h-10 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center cursor-pointer" onClick={() => triggerVariantUpload(idx)}>
-                                          {item.image ? (
-                                            <img src={item.image} className="w-full h-full object-cover" alt="V" />
-                                          ) : (
-                                            <ImageIcon size={14} className="text-gray-300" />
-                                          )}
-                                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/var:opacity-100 flex items-center justify-center transition-opacity">
-                                            <Upload size={12} className="text-white" />
-                                          </div>
+                                    <tr key={idx}>
+                                      <td className="px-3 py-2">
+                                        <div className="w-8 h-8 bg-gray-100 border rounded flex items-center justify-center cursor-pointer hover:border-blue-500" onClick={() => triggerVariantUpload(idx)}>
+                                          {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <ImageIcon size={12} className="text-gray-400" />}
                                         </div>
                                       </td>
-                                      <td className="px-6 py-3">
-                                        <div className="flex gap-1">
-                                          {Object.values(item.options).map((v, i) => (
-                                            <span key={i} className="text-[9px] bg-gray-100 px-1.5 py-0.5 rounded font-bold">{v}</span>
-                                          ))}
-                                        </div>
-                                      </td>
-                                      <td className="px-6 py-3">
-                                        <input className="bg-transparent font-mono text-[10px] w-24 outline-none border-b border-transparent focus:border-primary/30 font-bold" value={item.sku || ''} onChange={e => updateInventoryField(idx, 'sku', e.target.value)} />
-                                      </td>
-                                      <td className="px-6 py-3">
-                                        <input type="number" className="bg-transparent font-bold w-12 outline-none border-b border-transparent focus:border-primary/30" value={item.stock} onChange={e => updateInventoryField(idx, 'stock', e.target.value)} />
-                                      </td>
-                                      <td className="px-6 py-3">
-                                        <input type="number" placeholder="Master" className="bg-transparent font-bold w-16 outline-none border-b border-transparent focus:border-primary/30 text-right" value={item.price || ''} onChange={e => updateInventoryField(idx, 'price', e.target.value)} />
-                                      </td>
+                                      <td className="px-3 py-2 font-medium max-w-[100px] truncate">{Object.values(item.options).join('/')}</td>
+                                      <td className="px-3 py-2"><input value={item.sku || ''} onChange={e => updateInventoryField(idx, 'sku', e.target.value)} className="w-20 border-b border-gray-200 focus:border-blue-500 outline-none text-xs" /></td>
+                                      <td className="px-3 py-2"><input type="number" value={item.stock} onChange={e => updateInventoryField(idx, 'stock', e.target.value)} className="w-12 border-b border-gray-200 focus:border-blue-500 outline-none text-xs" /></td>
+                                      <td className="px-3 py-2"><input type="number" value={item.price || ''} onChange={e => updateInventoryField(idx, 'price', e.target.value)} placeholder="Def" className="w-14 border-b border-gray-200 focus:border-blue-500 outline-none text-xs text-right" /></td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -614,22 +682,28 @@ export const AdminProducts: React.FC = () => {
                             </div>
                           </div>
                         )}
+
                       </div>
                     </div>
                   </div>
                 </form>
               </div>
 
-              <div className="p-10 bg-gray-50 border-t border-gray-100 flex gap-8 shrink-0">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-6 font-bold text-gray-500 hover:text-dark transition-colors uppercase tracking-widest text-xs">Cancel Session</button>
-                <button 
-                  onClick={triggerSubmit}
-                  className="flex-[2] bg-primary text-white py-6 rounded-[2.5rem] font-bold hover:shadow-2xl transition-all shadow-xl shadow-primary/30 uppercase text-base flex items-center justify-center gap-4 group"
+              <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-200 transition-all"
                 >
-                  <CheckCircle2 size={26} className="group-hover:scale-110 transition-transform" /> 
-                  {editingProduct ? 'Commit Changes' : 'Publish to Catalog'}
+                  Cancel
+                </button>
+                <button
+                  onClick={triggerSubmit}
+                  className="px-8 py-2.5 rounded-lg text-sm font-bold bg-[#2874F0] text-white hover:bg-[#1e5ccc] shadow-md shadow-blue-200 transition-all flex items-center gap-2"
+                >
+                  {editingProduct ? 'Update Product' : 'Create Product'}
                 </button>
               </div>
+
             </div>
           </div>
         )}
@@ -637,3 +711,4 @@ export const AdminProducts: React.FC = () => {
     </div>
   );
 };
+
