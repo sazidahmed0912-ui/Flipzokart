@@ -5,20 +5,30 @@ const prisma = new PrismaClient();
 
 export class ProductService {
     async createProduct(data: any) {
-        const slug = data.title.toLowerCase().replace(/ /g, '-') + '-' + Date.now();
-        return await prisma.product.create({
+        const title = data.name || data.title;
+        const slug = title.toLowerCase().replace(/ /g, '-') + '-' + Date.now();
+        const { name, ...rest } = data; // Remove name from payload if present
+
+        const product = await prisma.product.create({
             data: {
-                ...data,
+                ...rest,
+                title,
                 slug,
             },
         });
+        return { ...product, name: product.title };
     }
 
     async updateProduct(id: string, data: any) {
-        return await prisma.product.update({
+        const { name, ...rest } = data;
+        const updateData = { ...rest };
+        if (name) updateData.title = name;
+
+        const product = await prisma.product.update({
             where: { id },
-            data,
+            data: updateData,
         });
+        return { ...product, name: product.title };
     }
 
     async deleteProduct(id: string) {
@@ -41,7 +51,7 @@ export class ProductService {
             },
         });
         if (!product) throw new AppError('Product not found', 404);
-        return product;
+        return { ...product, name: product.title };
     }
 
     async getAllProducts(query: any) {
@@ -72,6 +82,8 @@ export class ProductService {
             prisma.product.count({ where }),
         ]);
 
-        return { products, total, page: Number(page), pages: Math.ceil(total / Number(limit)) };
+        const mappedProducts = products.map(p => ({ ...p, name: p.title }));
+
+        return { products: mappedProducts, total, page: Number(page), pages: Math.ceil(total / Number(limit)) };
     }
 }
