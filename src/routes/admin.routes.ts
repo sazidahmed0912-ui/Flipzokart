@@ -8,5 +8,6 @@ const adminController = new AdminController();
 router.use(protect, restrictTo('ADMIN'));
 
 router.get('/dashboard', adminController.getDashboardStats);
+router.get('/dashboard-stats', adminController.getDashboardStats);
 
 export default router;
