@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { AlertCircle } from 'lucide-react';
 import { useApp } from '../store/Context';
 import authService from '../services/authService';
 
@@ -45,149 +44,132 @@ export const SignupPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center p-4 font-sans">
-      <div className="w-full max-w-[1000px] bg-transparent flex flex-col md:flex-row shadow-none md:h-[600px] overflow-hidden">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 font-sans"
+      style={{
+        background: 'linear-gradient(135deg, #1e63d6 0%, #6fb6ff 100%)',
+        color: '#1F2937'
+      }}
+    >
+      <div
+        className="w-full max-w-[1100px] h-auto min-h-[560px] flex flex-col md:flex-row rounded-[18px] overflow-hidden animate-[fadeIn_0.6s_ease]"
+        style={{
+          background: 'rgba(255,255,255,0.25)',
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+          border: '1px solid rgba(255,255,255,0.35)',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.12)'
+        }}
+      >
 
-        {/* Left Panel - Blue Gradient */}
-        <div className="w-full md:w-[40%] bg-[#2874F0] p-10 flex flex-col justify-between text-white md:rounded-l-sm">
-          <div>
-            <h1 className="text-3xl font-bold mb-6 leading-tight">Looks like you're new here!</h1>
-            <p className="text-lg font-medium text-gray-200 leading-relaxed">
-              Sign up with your mobile number to get started
-            </p>
+        {/* Left Panel */}
+        <div
+          className="w-full md:w-[45%] lg:w-[40%] p-12 text-white flex flex-col justify-center"
+          style={{ background: 'linear-gradient(180deg, #2874F0 0%, #4f9cff 100%)' }}
+        >
+          <div className="flex items-center gap-2.5 font-bold text-[22px] mb-10">
+            <div className="w-9 h-9 bg-[#F9C74F] text-[#1f3fbf] font-extrabold flex items-center justify-center rounded-lg">f</div>
+            Flipzokart
           </div>
-          <div className="hidden md:block">
-            <div className="w-full h-40 bg-contain bg-no-repeat bg-center opacity-90" style={{ backgroundImage: 'url("https://static-assets-web.flixcart.com/fk-p-linchpin-web/fk-cp-zion/img/login_img_c4a81e.png")' }}></div>
-          </div>
+
+          <h1 className="text-[30px] font-bold mb-3 leading-tight">Login</h1>
+          <p className="text-[15px] leading-relaxed opacity-95">
+            Get access to your<br />
+            Orders, Wishlist and<br />
+            Recommendations
+          </p>
         </div>
 
-        {/* Right Panel - Glass Card Area */}
-        <div className="w-full md:w-[60%] bg-white p-10 md:p-14 md:rounded-r-sm relative border border-gray-100 shadow-sm flex flex-col justify-center">
+        {/* Right Panel */}
+        <div className="flex-1 flex items-center justify-center p-8 bg-transparent">
 
-          <div className="absolute inset-0 bg-white/75 backdrop-blur-[18px]" style={{ zIndex: 0 }}></div>
-
-          <div className="relative z-10 w-full max-w-sm mx-auto">
+          {/* Signup Card */}
+          <div
+            className="w-full max-w-[360px] p-7 rounded-2xl animate-[slideUp_0.6s_ease]"
+            style={{
+              background: 'rgba(255,255,255,0.75)',
+              backdropFilter: 'blur(18px)',
+              WebkitBackdropFilter: 'blur(18px)',
+              border: '1px solid rgba(255,255,255,0.4)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.12)'
+            }}
+          >
+            <h2 className="text-[20px] font-bold mb-[5px] text-[#1F2937]">Looks like you're new here!</h2>
+            <p className="text-[13px] text-[#4B5563] mb-[18px]">Sign up with your mobile number to get started</p>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-3 animate-fade-in shadow-sm">
-                <AlertCircle size={20} />
-                <span>{error}</span>
+              <div className="mb-4 text-red-600 text-sm bg-red-50 p-2 rounded border border-red-200">
+                {error}
               </div>
             )}
 
-            <form onSubmit={handleSignup} className="space-y-6">
+            <form onSubmit={handleSignup}>
+              <input
+                name="name"
+                type="text"
+                placeholder="Full Name"
+                required
+                className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                value={formData.name}
+                onChange={handleInputChange}
+              />
 
-              {/* Full Name */}
-              <div className="group">
-                <div className="relative">
-                  <input
-                    name="name"
-                    type="text"
-                    required
-                    placeholder=" "
-                    className="peer w-full px-0 py-3 border-b border-gray-300 bg-transparent focus:outline-none focus:border-[#2874F0] transition-colors text-gray-800 placeholder-transparent"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                  />
-                  <label
-                    className="absolute left-0 top-3 text-gray-500 text-base transition-all duration-200 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-[#2874F0] peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-not-placeholder-shown:-top-3.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-gray-500 cursor-text"
-                  >
-                    Full Name
-                  </label>
-                </div>
-              </div>
+              <input
+                name="phone"
+                type="tel"
+                placeholder="Mobile Number"
+                required
+                className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                value={formData.phone}
+                onChange={handleInputChange}
+              />
 
-              {/* Phone Number */}
-              <div className="group">
-                <div className="relative">
-                  <input
-                    name="phone"
-                    type="tel"
-                    required
-                    placeholder=" "
-                    className="peer w-full px-0 py-3 border-b border-gray-300 bg-transparent focus:outline-none focus:border-[#2874F0] transition-colors text-gray-800 placeholder-transparent"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                  />
-                  <label
-                    className="absolute left-0 top-3 text-gray-500 text-base transition-all duration-200 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-[#2874F0] peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-not-placeholder-shown:-top-3.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-gray-500 cursor-text"
-                  >
-                    Phone Number
-                  </label>
-                </div>
-              </div>
+              <input
+                name="email"
+                type="email"
+                placeholder="Email"
+                required
+                className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                value={formData.email}
+                onChange={handleInputChange}
+              />
 
-              {/* Email Address */}
-              <div className="group">
-                <div className="relative">
-                  <input
-                    name="email"
-                    type="email"
-                    required
-                    placeholder=" "
-                    className="peer w-full px-0 py-3 border-b border-gray-300 bg-transparent focus:outline-none focus:border-[#2874F0] transition-colors text-gray-800 placeholder-transparent"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                  />
-                  <label
-                    className="absolute left-0 top-3 text-gray-500 text-base transition-all duration-200 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-[#2874F0] peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-not-placeholder-shown:-top-3.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-gray-500 cursor-text"
-                  >
-                    Email Address
-                  </label>
-                </div>
-              </div>
-
-              {/* Password */}
-              <div className="group">
-                <div className="relative">
-                  <input
-                    name="password"
-                    type="password"
-                    required
-                    placeholder=" "
-                    className="peer w-full px-0 py-3 border-b border-gray-300 bg-transparent focus:outline-none focus:border-[#2874F0] transition-colors text-gray-800 placeholder-transparent"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                  />
-                  <label
-                    className="absolute left-0 top-3 text-gray-500 text-base transition-all duration-200 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-[#2874F0] peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-not-placeholder-shown:-top-3.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-gray-500 cursor-text"
-                  >
-                    Password
-                  </label>
-                </div>
-              </div>
-
-              <div className="text-xs text-gray-500 mt-4 leading-relaxed">
-                By continuing, you agree to Flipzokart's <Link to="/terms" className="text-[#2874F0] font-medium hover:underline">Terms of Use</Link> and <Link to="/privacy" className="text-[#2874F0] font-medium hover:underline">Privacy Policy</Link>.
-              </div>
+              <input
+                name="password"
+                type="password"
+                placeholder="Password"
+                required
+                className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                value={formData.password}
+                onChange={handleInputChange}
+              />
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#FB641B] text-white py-3.5 rounded-[2px] font-semibold text-[15px] shadow-[0_2px_4px_0_rgba(0,0,0,0.2)] hover:shadow-[0_4px_8px_0_rgba(0,0,0,0.2)] transition-shadow disabled:opacity-70 mt-4"
-                style={{ backgroundColor: '#FB641B' }}
+                className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center"
               >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white/60 border-t-white rounded-full animate-spin mx-auto"></div>
-                ) : (
-                  'Signup'
-                )}
+                {isLoading ? 'Processing...' : 'Sign Up'}
               </button>
 
-              <div className="hidden">
-                {/* Hidden elements if any needed for strict compliance, but existing logic didn't have much else */}
+              <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
+                Already have an account? <Link to="/login" className="font-bold hover:underline">Login</Link>
               </div>
-
-              <div className="mt-8 text-center relative">
-                <Link to="/login" className="px-8 py-3 bg-white text-[#2874F0] font-medium text-sm hover:underline shadow-md border border-gray-100 rounded-[2px]">
-                  Existing User? Log in
-                </Link>
-              </div>
-
             </form>
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 };
