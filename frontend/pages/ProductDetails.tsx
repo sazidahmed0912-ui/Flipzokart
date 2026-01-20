@@ -23,7 +23,8 @@ export const ProductDetails: React.FC = () => {
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const [activeImage, setActiveImage] = useState<string>('');
 
-  const socket = useSocket(); // Initialize socket
+  const token = localStorage.getItem("token"); // Get token for socket
+  const socket = useSocket(token); // Pass token explicitly
 
   // Function to add or update review in state (for real-time updates)
   const handleReviewUpdate = (newReview: Review) => {
@@ -74,16 +75,18 @@ export const ProductDetails: React.FC = () => {
       setIsReviewsLoading(true);
       try {
         const productResponse = await fetchProductById(id);
-        setProduct(productResponse.data);
-        setActiveImage(productResponse.data.image);
+        // Backend returns { status: 'success', data: { product } }
+        const productData = productResponse.data?.data?.product || productResponse.data;
+        setProduct(productData);
+        setActiveImage(productData.image);
 
         // Fetch reviews for the product
         const reviewsResponse = await API.get(`/reviews/products/${id}/reviews`);
         setReviews(reviewsResponse.data.data);
 
-        if (productResponse.data.variants) {
+        if (productData.variants) {
           const defaults: Record<string, string> = {};
-          productResponse.data.variants.forEach(v => {
+          productData.variants.forEach((v: any) => {
             if (v.options.length > 0) defaults[v.name] = v.options[0];
           });
           setSelectedVariants(defaults);
@@ -118,7 +121,7 @@ export const ProductDetails: React.FC = () => {
   // Memoized current stock calculation
   const { currentStock, isOutOfStock } = useMemo(() => {
     if (!product) return { currentStock: 0, isOutOfStock: true };
-    
+
     // This logic now correctly uses the fetched product's countInStock
     if (!product.variants || product.variants.length === 0) {
       return { currentStock: product.countInStock, isOutOfStock: product.countInStock <= 0 };
@@ -142,10 +145,10 @@ export const ProductDetails: React.FC = () => {
 
   if (isLoading) return (
     <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+      <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
     </div>
   );
-  
+
   if (!product) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center space-y-4">
       <div className="p-6 bg-lightGray rounded-full text-gray-400">
@@ -173,7 +176,7 @@ export const ProductDetails: React.FC = () => {
     setSelectedVariants(prev => {
       const next = { ...prev, [name]: value };
       // Check if this variant combo has a specific image
-      const match = product.inventory?.find(inv => 
+      const match = product.inventory?.find(inv =>
         Object.entries(next).every(([k, v]) => inv.options[k] === v)
       );
       if (match?.image) {
@@ -195,29 +198,29 @@ export const ProductDetails: React.FC = () => {
         {/* Gallery */}
         <div className="space-y-4 lg:space-y-6">
           <div className="aspect-square bg-white rounded-2xl lg:rounded-[3rem] overflow-hidden border border-gray-100 shadow-inner relative group lg:max-w-none">
-            <img 
-              src={activeImage} 
-              alt={product.name} 
-              className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${isOutOfStock ? 'grayscale opacity-50' : ''}`} 
+            <img
+              src={activeImage}
+              alt={product.name}
+              className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${isOutOfStock ? 'grayscale opacity-50' : ''}`}
             />
             {isOutOfStock && (
               <div className="absolute inset-0 bg-white/40 backdrop-blur-[4px] flex items-center justify-center p-8">
-                 <div className="bg-dark text-white px-10 py-4 rounded-2xl font-bold text-2xl shadow-2xl tracking-widest transform -rotate-12 border-4 border-white">
-                   SOLD OUT
-                 </div>
+                <div className="bg-dark text-white px-10 py-4 rounded-2xl font-bold text-2xl shadow-2xl tracking-widest transform -rotate-12 border-4 border-white">
+                  SOLD OUT
+                </div>
               </div>
             )}
             <div className="absolute bottom-6 right-6">
-               <button className="p-4 bg-white/90 backdrop-blur shadow-xl rounded-2xl hover:bg-primary hover:text-white transition-all">
-                  <Share2 size={20} />
-               </button>
+              <button className="p-4 bg-white/90 backdrop-blur shadow-xl rounded-2xl hover:bg-primary hover:text-white transition-all">
+                <Share2 size={20} />
+              </button>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-4 md:grid-cols-6 gap-2 md:gap-4">
             {allImages.map((img, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 onClick={() => setActiveImage(img)}
                 className={`aspect-square bg-white rounded-lg lg:rounded-2xl overflow-hidden cursor-pointer border-2 transition-all p-0.5 lg:p-1 shadow-sm ${activeImage === img ? 'border-primary' : 'border-transparent hover:border-gray-200'}`}
               >
@@ -237,7 +240,7 @@ export const ProductDetails: React.FC = () => {
             <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-dark leading-tight">{product.name}</h1>
             <div className="flex items-center gap-6 pt-3">
               <div className="flex items-center gap-1.5 text-yellow-500">
-                {[1,2,3,4,5].map(s => <Star key={s} size={16} fill={s <= Math.floor(product.rating) ? "currentColor" : "none"} />)}
+                {[1, 2, 3, 4, 5].map(s => <Star key={s} size={16} fill={s <= Math.floor(product.rating) ? "currentColor" : "none"} />)}
                 <span className="font-bold text-dark ml-1">{product.rating.toFixed(1)}</span>
               </div>
               <span className="text-gray-400 text-sm font-medium border-l pl-6">{reviews.length} community reviews</span>
@@ -268,11 +271,10 @@ export const ProductDetails: React.FC = () => {
                       <button
                         key={option}
                         onClick={() => handleVariantSelect(variant.name, option)}
-                        className={`px-6 py-3 rounded-2xl text-sm font-bold transition-all border-2 ${
-                          selectedVariants[variant.name] === option
-                            ? 'border-primary bg-primary text-white shadow-xl shadow-primary/20 scale-105'
-                            : 'border-lightGray bg-white text-gray-500 hover:border-gray-200'
-                        }`}
+                        className={`px-6 py-3 rounded-2xl text-sm font-bold transition-all border-2 ${selectedVariants[variant.name] === option
+                          ? 'border-primary bg-primary text-white shadow-xl shadow-primary/20 scale-105'
+                          : 'border-lightGray bg-white text-gray-500 hover:border-gray-200'
+                          }`}
                       >
                         {option}
                       </button>
@@ -280,7 +282,7 @@ export const ProductDetails: React.FC = () => {
                   </div>
                 </div>
               ))}
-              
+
               <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl border ${status.bg} ${status.color} ${status.border} font-bold text-sm transition-all duration-300`}>
                 {status.icon}
                 {status.label}
@@ -301,14 +303,14 @@ export const ProductDetails: React.FC = () => {
               </div>
 
               <div className="space-y-3">
-                 <p className="font-bold text-[10px] text-gray-400 uppercase tracking-widest text-right">Collect</p>
-                 <button onClick={() => toggleWishlist(product.id)} className={`w-14 h-14 border-2 rounded-2xl flex items-center justify-center transition-all ${isWishlisted ? 'border-primary text-primary bg-primary/5 shadow-lg' : 'border-lightGray text-gray-400 hover:border-gray-200 bg-white'}`}><Heart size={24} fill={isWishlisted ? "currentColor" : "none"} /></button>
+                <p className="font-bold text-[10px] text-gray-400 uppercase tracking-widest text-right">Collect</p>
+                <button onClick={() => toggleWishlist(product.id)} className={`w-14 h-14 border-2 rounded-2xl flex items-center justify-center transition-all ${isWishlisted ? 'border-primary text-primary bg-primary/5 shadow-lg' : 'border-lightGray text-gray-400 hover:border-gray-200 bg-white'}`}><Heart size={24} fill={isWishlisted ? "currentColor" : "none"} /></button>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button onClick={handleAddToCart} disabled={isOutOfStock} className={`group py-5 rounded-[1.5rem] font-bold text-lg transition-all flex items-center justify-center gap-3 ${isOutOfStock ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-dark text-white hover:bg-black hover:shadow-2xl hover:-translate-y-1 active:scale-95'}`}>
-                <ShoppingCart size={22} /> 
+                <ShoppingCart size={22} />
                 {isOutOfStock ? 'Notify Me When Available' : 'Add to Cart'}
               </button>
               <button onClick={handleAddToCart} disabled={isOutOfStock} className={`py-5 rounded-[1.5rem] font-bold text-lg transition-all ${isOutOfStock ? 'hidden' : 'bg-primary text-white hover:shadow-2xl hover:-translate-y-1 shadow-xl shadow-primary/30 active:scale-95'}`}>
@@ -344,7 +346,7 @@ export const ProductDetails: React.FC = () => {
             <button key={tab} onClick={() => setActiveTab(tab)} className={`px-10 py-6 font-bold text-sm border-b-2 transition-all shrink-0 uppercase tracking-widest ${activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-dark'}`}>{tab === 'description' ? 'Product Story' : tab}</button>
           ))}
         </div>
-        
+
         <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm min-h-[400px]">
           {activeTab === 'description' && (
             <div className="max-w-4xl animate-in slide-in-from-bottom-4 duration-300">
@@ -365,7 +367,7 @@ export const ProductDetails: React.FC = () => {
               <div className="flex flex-col md:flex-row gap-16 items-center p-10 bg-gray-50 rounded-[2.5rem] border border-gray-100">
                 <div className="text-center shrink-0">
                   <p className="text-7xl font-bold mb-3 tracking-tighter text-dark">{product.rating.toFixed(1)}</p>
-                  <div className="flex text-yellow-400 justify-center mb-3">{[1,2,3,4,5].map(s => <Star key={s} size={24} fill="currentColor" />)}</div>
+                  <div className="flex text-yellow-400 justify-center mb-3">{[1, 2, 3, 4, 5].map(s => <Star key={s} size={24} fill="currentColor" />)}</div>
                   <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Global Marketplace Rating</p>
                 </div>
                 <div className="flex-1 w-full space-y-3">
@@ -387,7 +389,7 @@ export const ProductDetails: React.FC = () => {
               ) : (
                 <ReviewList reviews={reviews} />
               )}
-              <ReviewForm productId={id} onReviewSubmitted={handleReviewUpdate} />
+              {id && <ReviewForm productId={id} onReviewSubmitted={handleReviewUpdate} />}
             </div>
           )}
           {activeTab === 'specifications' && (

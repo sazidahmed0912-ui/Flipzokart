@@ -279,7 +279,7 @@ export const AdminProducts: React.FC = () => {
     return parseInt(formData.stock) || 0;
   }, [formData.inventory, formData.stock, formData.variants]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Basic validation
@@ -306,15 +306,14 @@ export const AdminProducts: React.FC = () => {
       }))
       .filter(v => v.name !== '' && v.options.length > 0);
 
-    const productData: Product = {
-      id: editingProduct ? editingProduct.id : `PROD-${Date.now()}`,
+    const productPayload = {
       sku: formData.sku || `FZK-${Math.floor(Math.random() * 10000)}`,
       name: formData.name,
       description: formData.description || "No description provided.",
       price: numericPrice,
       originalPrice: parseFloat(formData.originalPrice) || numericPrice,
       category: formData.category,
-      stock: currentTotalStock,
+      countInStock: currentTotalStock, // Use countInStock to match backend
       image: formData.image || `https://picsum.photos/seed/${formData.name.length}/600/600`,
       images: formData.images.length > 0 ? formData.images : [],
       rating: editingProduct ? editingProduct.rating : 5,
@@ -324,14 +323,35 @@ export const AdminProducts: React.FC = () => {
       inventory: cleanedVariants.length > 0 ? formData.inventory : undefined
     };
 
-    if (editingProduct) {
-      setProducts(products.map(p => p.id === editingProduct.id ? productData : p));
-    } else {
-      setProducts([productData, ...products]);
+    try {
+      if (editingProduct) {
+        const { data } = await import('../services/adminService').then(m => m.updateProduct(editingProduct.id, productPayload));
+        const updatedProduct = data.data.product;
+        setProducts(products.map(p => p.id === editingProduct.id ? updatedProduct : p));
+        alert("Product updated successfully!");
+      } else {
+        const { data } = await import('../services/adminService').then(m => m.createProduct(productPayload));
+        const newProduct = data.data.product;
+        setProducts([newProduct, ...products]);
+        alert("Product published successfully!");
+      }
+      setIsModalOpen(false);
+    } catch (error: any) {
+      console.error("Product Save Error:", error);
+      alert(`Failed to save product: ${error.response?.data?.message || error.message}`);
     }
+  };
 
-    setIsModalOpen(false);
-    alert(`Product ${editingProduct ? 'updated' : 'published'} successfully!`);
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      await import('../services/adminService').then(m => m.deleteProduct(id));
+      setProducts(products.filter(p => p.id !== id));
+    } catch (error: any) {
+      console.error("Delete Error:", error);
+      alert("Failed to delete product.");
+    }
   };
 
   // Helper for button click to ensure form submit is triggered
@@ -450,7 +470,7 @@ export const AdminProducts: React.FC = () => {
                           <button onClick={() => openEditModal(product)} className="p-2 text-gray-400 hover:text-[#2874F0] hover:bg-blue-50 rounded-lg transition-all">
                             <Edit size={16} />
                           </button>
-                          <button onClick={() => setProducts(products.filter(p => p.id !== product.id))} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                          <button onClick={() => handleDelete(product.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
                             <Trash2 size={16} />
                           </button>
                         </div>

@@ -39,22 +39,43 @@ export const AdminDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     REAL-TIME UPDATE LOGIC
+     Mode: Polling
+     Interval: 5000ms (5s)
+     Safety: Clears on unmount
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
   useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
     const fetchStats = async () => {
       try {
+        // Silent update (no full page loading spinner after first load)
         const { data } = await getDashboardStats();
         setStats(data);
+        setError(null); // Clear transient errors on success
       } catch (err) {
         console.error("Failed to fetch dashboard stats:", err);
-        setError("Failed to load dashboard statistics.");
+        // Only show error if we have NO data at all
+        if (!stats) {
+          setError("Failed to load dashboard statistics. Retrying...");
+        }
       } finally {
         setLoading(false);
       }
     };
+
+    // Initial fetch
     fetchStats();
+
+    // Setup polling
+    intervalId = setInterval(fetchStats, 5000);
+
+    // Cleanup
+    return () => clearInterval(intervalId);
   }, []);
 
-  if (loading) {
+  if (loading && !stats) {
     return (
       <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
         <AdminSidebar />
@@ -136,7 +157,13 @@ export const AdminDashboard: React.FC = () => {
           {/* Dashboard Header */}
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
-            <p className="text-xs text-gray-500 font-medium mt-1">Welcome back, here's what's happening today.</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <p className="text-xs text-gray-500 font-medium">Live Updates Active (5s)</p>
+            </div>
           </div>
 
           {/* Stat Cards */}

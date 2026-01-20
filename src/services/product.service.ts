@@ -27,9 +27,14 @@ export class ProductService {
         });
     }
 
-    async getProduct(slug: string) {
+    async getProduct(slugOrId: string) {
+        // Check if input is a valid MongoDB ObjectId
+        const isObjectId = /^[0-9a-fA-F]{24}$/.test(slugOrId);
+
+        const query = isObjectId ? { id: slugOrId } : { slug: slugOrId };
+
         const product = await prisma.product.findUnique({
-            where: { slug },
+            where: query,
             include: {
                 category: true,
                 reviews: true,

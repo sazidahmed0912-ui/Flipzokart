@@ -25,6 +25,7 @@ export interface Product {
   rating: number;
   reviewsCount: number;
   stock: number;
+  countInStock: number; // Added to match backend response
   isFeatured?: boolean;
   variants?: VariantGroup[];
   inventory?: VariantCombination[];

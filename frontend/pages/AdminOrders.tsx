@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChevronLeft, Search, Filter,
@@ -9,18 +9,43 @@ import { useApp } from '../store/Context';
 import { Order } from '../types';
 import { AdminSidebar } from '../components/AdminSidebar';
 
+import { fetchAllOrders } from '../services/api';
+
 export const AdminOrders: React.FC = () => {
-  const { orders, updateOrderStatus, user, logout } = useApp();
+  const { updateOrderStatus, user, logout } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Order['status'] | 'All'>('All');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const filteredOrders = orders.filter(o => {
-    const matchesSearch = o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      o.userName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || o.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // Real-time Order State
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     REAL-TIME ORDERS LOGIC
+     Mode: Polling
+     Interval: 5000ms
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const loadOrders = async () => {
+      try {
+        const { data } = await fetchAllOrders();
+        // Assuming data returned is the array of orders
+        setOrders(data);
+      } catch (error) {
+        console.error("Failed to fetch orders", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadOrders(); // Initial load
+    interval = setInterval(loadOrders, 5000); // Poll every 5s
+
+    return () => clearInterval(interval);
+  }, []);
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
@@ -42,6 +67,17 @@ export const AdminOrders: React.FC = () => {
     }
   };
 
+  const filteredOrders = orders.filter(o => {
+    // Determine ID to check: if API returns full ObjectId, use last 6 chars for search
+    const displayId = o.id.length > 10 ? o.id.slice(-6) : o.id;
+
+    const matchesSearch = displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      o.userName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || o.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
       <AdminSidebar />
@@ -61,6 +97,15 @@ export const AdminOrders: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-6">
+            {/* Live Indicator */}
+            <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-[10px] font-bold text-green-700 uppercase tracking-wide">Live (5s)</span>
+            </div>
+
             <button className="relative p-2 text-gray-500 hover:text-[#2874F0] transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FF6161] rounded-full ring-2 ring-white"></span>
@@ -112,8 +157,8 @@ export const AdminOrders: React.FC = () => {
                 key={i}
                 onClick={() => setStatusFilter(s.status as any)}
                 className={`p-4 rounded-xl border transition-all text-left group ${statusFilter === s.status
-                    ? `border-[${s.color}] ring-1 ring-[${s.color}]/50 bg-white shadow-md`
-                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+                  ? `border-[${s.color}] ring-1 ring-[${s.color}]/50 bg-white shadow-md`
+                  : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
                   }`}
                 style={{ borderColor: statusFilter === s.status ? s.color : '' }}
               >
@@ -148,7 +193,7 @@ export const AdminOrders: React.FC = () => {
                   {filteredOrders.map((order, idx) => (
                     <tr key={order.id} className={`group transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                       <td className="px-6 py-4">
-                        <span className="font-mono text-xs font-bold text-[#2874F0]">#{order.id.split('-')[1]}</span>
+                        <span className="font-mono text-xs font-bold text-[#2874F0]">#{order.id.slice(-6)}</span>
                       </td>
                       <td className="px-6 py-4 text-gray-500 text-xs font-medium">{new Date(order.createdAt).toLocaleDateString()}</td>
                       <td className="px-6 py-4">

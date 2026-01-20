@@ -73,17 +73,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   });
 
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('flipzokart_products');
-    try {
-      if (saved) {
-        return JSON.parse(saved);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  // Fetch products from API on mount
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const { data } = await import('../services/api').then(m => m.fetchProducts());
+        // Backend returns: { status: 'success', products: [...], total: ... }
+        // Or sometimes it might be just the array depending on endpoint version
+        const productList = Array.isArray(data) ? data : (data.products || data.data || []);
+
+        setProducts(productList);
+        localStorage.setItem('flipzokart_products', JSON.stringify(productList));
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+        // Fallback to local storage if API fails, or mocks
+        const saved = localStorage.getItem('flipzokart_products');
+        if (saved) {
+          setProducts(JSON.parse(saved));
+        } else {
+          setProducts(MOCK_PRODUCTS.slice().reverse());
+        }
       }
-      return MOCK_PRODUCTS.slice().reverse();
-    } catch {
-      return MOCK_PRODUCTS.slice().reverse();
-    }
-  });
+    };
+    loadProducts();
+  }, []);
 
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(() => {
     const saved = localStorage.getItem('flipzokart_selected_address');
@@ -133,7 +148,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setCart((prev: CartItem[]) => {
       const existingIndex = prev.findIndex((item: CartItem) => getCartItemKey(item.id, item.selectedVariants) === itemKey);
-      
+
       if (existingIndex > -1) {
         const nextCart = [...prev];
         nextCart[existingIndex] = {
@@ -142,7 +157,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
         return nextCart;
       }
-      
+
       return [...prev, { ...product, quantity, selectedVariants } as CartItem];
     });
   };
@@ -156,9 +171,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       removeFromCart(cartItemKey);
       return;
     }
-    setCart((prev: CartItem[]) => prev.map((item: CartItem) => 
-      getCartItemKey(item.id, item.selectedVariants) === cartItemKey 
-        ? { ...item, quantity } 
+    setCart((prev: CartItem[]) => prev.map((item: CartItem) =>
+      getCartItemKey(item.id, item.selectedVariants) === cartItemKey
+        ? { ...item, quantity }
         : item
     ));
   };
@@ -169,7 +184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleWishlist = (productId: string) => {
-    setWishlist(prev => 
+    setWishlist(prev =>
       prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
     );
   };
@@ -180,7 +195,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateOrderStatus = (orderId: string, status: Order['status']) => {
-    setOrders(prev => prev.map(order => 
+    setOrders(prev => prev.map(order =>
       order.id === orderId ? { ...order, status } : order
     ));
   };
