@@ -25,7 +25,7 @@ const createOrder = async (req, res) => {
     console.log('Creating order with user:', req.user?.id);
     console.log('Request body:', req.body);
     console.log('req.user object:', req.user); // Added for debugging
-    
+
     const { products, address, subtotal, deliveryCharges, discount, total } = req.body;
 
     // Validate required fields
@@ -317,10 +317,81 @@ const getUserOrders = async (req, res) => {
   }
 };
 
+// @desc    Get all orders (Admin)
+// @route   GET /api/order/admin/all
+// @access  Private/Admin
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({})
+      .populate('user', 'id name email')
+      .populate('products.productId', 'name image price') // Populate product details
+      .sort({ createdAt: -1 });
+
+    const formattedOrders = orders.map(order => ({
+      ...order.toObject(),
+      id: order._id,
+      userName: order.user ? order.user.name : 'Unknown User',
+      items: order.products.map(p => ({
+        ...p.productId.toObject(),
+        quantity: p.quantity,
+        id: p.productId._id
+      }))
+    }));
+
+    res.status(200).json(formattedOrders);
+  } catch (error) {
+    console.error('Error fetching all orders:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Get single order by ID
+// @route   GET /api/order/:id
+// @access  Private
+const getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate('user', 'name email')
+      .populate('products.productId', 'name image price');
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Identify if user is admin or the order owner
+    if (req.user.role !== 'admin' && order.user._id.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to view this order' });
+    }
+
+    const formattedOrder = {
+      ...order.toObject(),
+      id: order._id,
+      userName: order.user ? order.user.name : 'Unknown',
+      items: order.products.map(p => ({
+        ...p.productId.toObject(),
+        quantity: p.quantity,
+        id: p.productId._id,
+        price: p.productId.price
+      })),
+      address: order.shippingAddress
+    };
+
+    res.status(200).json(formattedOrder);
+  } catch (error) {
+    console.error('Error fetching order by ID:', error);
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: "Order not found (Invalid ID)" });
+    }
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createOrder,
   createRazorpayOrder,
   verifyPayment,
   calculateShipping,
-  getUserOrders
+  getUserOrders,
+  getAllOrders,
+  getOrderById
 };
