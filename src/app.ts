@@ -16,9 +16,11 @@ app.get('/', (req, res) => {
     res.send({ message: 'Welcome to Flipzokart API' });
 });
 
+console.log('Mounting routes...');
 app.use('/api/v1', router);
+console.log('Routes mounted.');
 
-app.all('*', (req, res, next) => {
+app.use((req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 

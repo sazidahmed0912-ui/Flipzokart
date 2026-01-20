@@ -46,13 +46,13 @@ export class UserService {
 
     generateToken(id: string, role: string) {
         return jwt.sign({ id, role }, process.env.JWT_SECRET || 'secret', {
-            expiresIn: process.env.JWT_EXPIRES_IN || '1d',
+            expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any, // Cast to any to resolve overload issue
         });
     }
 
     generateRefreshToken(id: string) {
         return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET || 'refreshSecret', {
-            expiresIn: '7d',
+            expiresIn: '7d' as any,
         });
     }
 

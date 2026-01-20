@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -24,7 +15,7 @@ const initSocket = (httpServer) => {
             methods: ['GET', 'POST'],
         },
     });
-    io.use((socket, next) => __awaiter(void 0, void 0, void 0, function* () {
+    io.use(async (socket, next) => {
         try {
             const token = socket.handshake.auth.token;
             if (!token)
@@ -36,18 +27,18 @@ const initSocket = (httpServer) => {
         catch (err) {
             next(new Error('Authentication error'));
         }
-    }));
+    });
     io.on('connection', (socket) => {
         console.log('User connected', socket.userId);
         socket.on('join_chat', (chatId) => {
             socket.join(chatId);
             console.log(`User ${socket.userId} joined chat ${chatId}`);
         });
-        socket.on('send_message', (data) => __awaiter(void 0, void 0, void 0, function* () {
+        socket.on('send_message', async (data) => {
             const { chatId, message } = data;
             const userId = socket.userId;
             // Save to DB
-            const chatMessage = yield prisma.chatMessage.create({
+            const chatMessage = await prisma.chatMessage.create({
                 data: {
                     chatId,
                     sender: userId, // Simplified, in real app check if user is support or customer
@@ -55,7 +46,7 @@ const initSocket = (httpServer) => {
                 },
             });
             io.to(chatId).emit('receive_message', chatMessage);
-        }));
+        });
         socket.on('disconnect', () => {
             console.log('User disconnected');
         });

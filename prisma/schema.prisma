@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -29,7 +29,7 @@ enum PaymentStatus {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   email     String   @unique
   phone     String?
@@ -47,8 +47,8 @@ model User {
 }
 
 model Address {
-  id        String  @id @default(uuid())
-  userId    String
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String  @db.ObjectId
   user      User    @relation(fields: [userId], references: [id])
   street    String
   city      String
@@ -59,18 +59,18 @@ model Address {
 }
 
 model Product {
-  id            String   @id @default(uuid())
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
   title         String
   slug          String   @unique
   description   String
-  price         Decimal
-  discountPrice Decimal?
+  price         Float
+  discountPrice Float?
   stock         Int
   brand         String
-  categoryId    String
+  categoryId    String   @db.ObjectId
   category      Category @relation(fields: [categoryId], references: [id])
   images        String[]
-  rating        Decimal  @default(0)
+  rating        Float    @default(0)
   totalSales    Int      @default(0)
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
@@ -82,25 +82,25 @@ model Product {
 }
 
 model Category {
-  id       String    @id @default(uuid())
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
   name     String    @unique
   slug     String    @unique
   products Product[]
 }
 
 model Brand {
-  id   String @id @default(uuid())
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
   name String @unique
   slug String @unique
 }
 
 model Review {
-  id        String   @id @default(uuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   rating    Int
   comment   String?
-  userId    String
+  userId    String   @db.ObjectId
   user      User     @relation(fields: [userId], references: [id])
-  productId String
+  productId String   @db.ObjectId
   product   Product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())
 
@@ -108,27 +108,27 @@ model Review {
 }
 
 model Cart {
-  id        String     @id @default(uuid())
-  userId    String     @unique
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @unique @db.ObjectId
   user      User       @relation(fields: [userId], references: [id])
   items     CartItem[]
   updatedAt DateTime   @updatedAt
 }
 
 model CartItem {
-  id        String  @id @default(uuid())
-  cartId    String
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String  @db.ObjectId
   cart      Cart    @relation(fields: [cartId], references: [id])
-  productId String
+  productId String  @db.ObjectId
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
 }
 
 model Order {
-  id            String        @id @default(uuid())
-  userId        String
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
   user          User          @relation(fields: [userId], references: [id])
-  totalAmount   Decimal
+  totalAmount   Float
   paymentStatus PaymentStatus @default(PENDING)
   orderStatus   OrderStatus   @default(PENDING)
   address       Json // Snapshot of address
@@ -139,20 +139,20 @@ model Order {
 }
 
 model OrderItem {
-  id        String  @id @default(uuid())
-  orderId   String
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String  @db.ObjectId
   order     Order   @relation(fields: [orderId], references: [id])
-  productId String
+  productId String  @db.ObjectId
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
-  price     Decimal
+  price     Float
 }
 
 model Chat {
-  id        String        @id @default(uuid())
-  userId    String
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String        @db.ObjectId
   user      User          @relation(fields: [userId], references: [id])
-  supportId String?
+  supportId String?       @db.ObjectId
   status    ChatStatus    @default(OPEN)
   messages  ChatMessage[]
   createdAt DateTime      @default(now())
@@ -165,8 +165,8 @@ enum ChatStatus {
 }
 
 model ChatMessage {
-  id        String   @id @default(uuid())
-  chatId    String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId    String   @db.ObjectId
   chat      Chat     @relation(fields: [chatId], references: [id])
   sender    String // 'USER' or 'SUPPORT' or specific ID
   message   String

@@ -10,6 +10,10 @@ const globalErrorHandler = (err, req, res, next) => {
         error = new AppError_1.AppError(message, statusCode);
     }
     const statusCode = error.statusCode || 500;
-    res.status(statusCode).json(Object.assign({ status: error.status || 'error', message: error.message }, (process.env.NODE_ENV === 'development' && { stack: error.stack })));
+    res.status(statusCode).json({
+        status: error.status || 'error',
+        message: error.message,
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+    });
 };
 exports.globalErrorHandler = globalErrorHandler;
