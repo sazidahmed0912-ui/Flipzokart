@@ -60,8 +60,12 @@ const createOrder = async (req, res) => {
         await product.save();
       }
 
-      if (!product || product.countInStock < item.quantity) {
-        return res.status(400).json({ message: `Product ${product?.name || item.productId} is out of stock.` });
+      if (!product) {
+        return res.status(400).json({ message: `Product with ID ${item.productId} not found (likely deleted). Please remove it from your cart.` });
+      }
+
+      if (product.countInStock < item.quantity) {
+        return res.status(400).json({ message: `Product ${product.name} is out of stock.` });
       }
     }
 
@@ -193,9 +197,11 @@ const verifyPayment = async (req, res) => {
         await product.save();
       }
 
-      if (!product || product.countInStock < item.quantity) {
-        // Ideally, we should refund the payment here if stock is insufficient.
-        // For now, we'll return an error.
+      if (!product) {
+        return res.status(400).json({ message: `Product with ID ${item.productId} not found (likely deleted). Please remove it from your cart.` });
+      }
+
+      if (product.countInStock < item.quantity) {
         return res.status(400).json({ message: `Product ${product.name} is out of stock. Payment will be refunded.` });
       }
     }

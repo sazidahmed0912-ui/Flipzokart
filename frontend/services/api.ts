@@ -26,11 +26,22 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Logging
+// Logging & Auth Handling
 API.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error("API Error:", JSON.stringify(error.response?.data || error.message, null, 2));
+
+    // Auto-logout on 401 (Unauthorized)
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("flipzokart_user");
+      // Optional: Redirect to login if not already there
+      if (!window.location.pathname.includes("/login")) {
+        window.location.href = "/login";
+      }
+    }
+
     return Promise.reject(error);
   }
 );
