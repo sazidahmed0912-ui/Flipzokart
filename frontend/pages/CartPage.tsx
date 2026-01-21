@@ -47,9 +47,9 @@ export const CartPage: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-32 text-center space-y-6">
         <img
-          src="https://rukminim2.flixcart.com/www/800/800/promos/16/05/2019/d438a32e-765a-4d8b-b4a6-520b560971e8.png?q=90"
+          src="https://illustrations.popsy.co/amber/surr-shopping-cart.svg"
           alt="Empty Cart"
-          className="w-64 h-auto mx-auto opacity-90"
+          className="w-64 h-64 mx-auto opacity-90 object-contain mb-6"
         />
         <h2 className="text-3xl font-bold text-dark">Your bag is empty</h2>
         <p className="text-gray-500 max-w-sm mx-auto">Looks like you haven't added anything to your cart yet. Let's find something premium for you!</p>
