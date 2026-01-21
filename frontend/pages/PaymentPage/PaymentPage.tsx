@@ -45,7 +45,7 @@ const useRazorpay = () => {
 
 const PaymentPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, cart, clearCart } = useApp();
+  const { user, cart, clearCart, selectedAddress } = useApp();
 
   const [paymentMethod, setPaymentMethod] = useState<
     "COD" | "RAZORPAY" | null
@@ -92,7 +92,9 @@ const PaymentPage: React.FC = () => {
         deliveryCharges,
         discount,
         total: totalPayable,
-        address: "Default Address",
+        address: selectedAddress
+          ? `${selectedAddress.name}, ${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}`
+          : "Default Address",
       });
 
       clearCart();
@@ -142,7 +144,9 @@ const PaymentPage: React.FC = () => {
               deliveryCharges,
               discount,
               total: totalPayable,
-              address: "Default Address",
+              address: selectedAddress
+                ? `${selectedAddress.name}, ${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}`
+                : "Default Address",
             });
 
             clearCart();
@@ -201,9 +205,8 @@ const PaymentPage: React.FC = () => {
           <h2>Choose a payment method</h2>
 
           <div
-            className={`payment-option-card ${
-              paymentMethod === "COD" ? "selected" : ""
-            }`}
+            className={`payment-option-card ${paymentMethod === "COD" ? "selected" : ""
+              }`}
             onClick={() => setPaymentMethod("COD")}
           >
             <Banknote />
@@ -212,9 +215,8 @@ const PaymentPage: React.FC = () => {
           </div>
 
           <div
-            className={`payment-option-card ${
-              paymentMethod === "RAZORPAY" ? "selected" : ""
-            }`}
+            className={`payment-option-card ${paymentMethod === "RAZORPAY" ? "selected" : ""
+              }`}
             onClick={() => setPaymentMethod("RAZORPAY")}
           >
             <img

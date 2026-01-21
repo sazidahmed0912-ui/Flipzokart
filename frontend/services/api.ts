@@ -30,7 +30,7 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("API Error:", error.response?.data || error.message);
+    console.error("API Error:", JSON.stringify(error.response?.data || error.message, null, 2));
     return Promise.reject(error);
   }
 );
