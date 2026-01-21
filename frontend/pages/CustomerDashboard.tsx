@@ -5,6 +5,7 @@ import {
   Settings, LogOut, ChevronRight, ShoppingBag,
   Star, ShoppingCart, MessageSquare, CheckCircle2
 } from 'lucide-react';
+import CircularGlassSpinner from '../components/CircularGlassSpinner';
 import { useApp } from '../store/Context';
 import API from '../services/api';
 import { Review, Order } from '../types';
@@ -162,8 +163,10 @@ export const CustomerDashboard: React.FC = () => {
                   <Link to="#orders" onClick={() => setActiveSection('orders')} className="text-primary text-xs font-bold hover:underline">View All</Link>
                 </div>
                 {isLoadingOrders ? (
-                  <div className="flex justify-center py-10">
-                    <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+                  <div className="h-64 flex items-center justify-center relative overflow-hidden rounded-[3rem]">
+                    <div className="scale-50 transform">
+                      <CircularGlassSpinner />
+                    </div>
                   </div>
                 ) : userOrders.length > 0 ? (
                   <div className="space-y-4">
@@ -197,8 +200,10 @@ export const CustomerDashboard: React.FC = () => {
                   <Link to="#reviews" onClick={() => setActiveSection('reviews')} className="text-primary text-xs font-bold hover:underline">View All</Link>
                 </div>
                 {isLoadingReviews ? (
-                  <div className="flex justify-center py-10">
-                    <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+                  <div className="h-64 flex items-center justify-center relative overflow-hidden rounded-[3rem]">
+                    <div className="scale-50 transform">
+                      <CircularGlassSpinner />
+                    </div>
                   </div>
                 ) : userReviews.length > 0 ? (
                   <div className="space-y-4">
@@ -231,9 +236,10 @@ export const CustomerDashboard: React.FC = () => {
             <div className="space-y-6 animate-in fade-in duration-500">
               <h2 className="text-3xl font-bold tracking-tight text-dark mb-8">My Orders</h2>
               {isLoadingOrders ? (
-                <div className="text-center py-32 bg-white rounded-[3rem] border border-gray-100 border-dashed">
-                  {/* Loading removed */}
-                  <p className="text-gray-500 font-medium">Loading your orders...</p>
+                <div className="flex justify-center py-20">
+                  <div className="scale-75">
+                    <CircularGlassSpinner />
+                  </div>
                 </div>
               ) : userOrders.length > 0 ? (
                 userOrders.map(order => (
@@ -294,9 +300,10 @@ export const CustomerDashboard: React.FC = () => {
             <div className="space-y-6 animate-in fade-in duration-500">
               <h2 className="text-3xl font-bold tracking-tight text-dark mb-8">My Reviews</h2>
               {isLoadingReviews ? (
-                <div className="text-center py-32 bg-white rounded-[3rem] border border-gray-100 border-dashed">
-                  {/* Loading removed */}
-                  <p className="text-gray-500 font-medium">Loading your reviews...</p>
+                <div className="flex justify-center py-20">
+                  <div className="scale-75">
+                    <CircularGlassSpinner />
+                  </div>
                 </div>
               ) : userReviews.length > 0 ? (
                 userReviews.map(review => (

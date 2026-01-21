@@ -11,6 +11,7 @@ import { ReviewForm } from './ProductDetails/components/ReviewForm'; // Correcte
 import { useSocket } from '../hooks/useSocket'; // Import useSocket
 import LazyImage from '../components/LazyImage';
 import { SmoothReveal } from '../components/SmoothReveal';
+import CircularGlassSpinner from '../components/CircularGlassSpinner';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -146,7 +147,7 @@ export const ProductDetails: React.FC = () => {
     }
   }, [currentStock, isOutOfStock, quantity]);
 
-  if (isLoading) return <div className="min-h-[60vh]"></div>;
+  if (isLoading) return <CircularGlassSpinner />;
 
   if (!product) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center space-y-4">
@@ -383,7 +384,11 @@ export const ProductDetails: React.FC = () => {
                   </div>
                 </div>
                 {/* Reviews List */}
-                {isReviewsLoading ? null : (
+                {isReviewsLoading ? (
+                  <div className="flex justify-center p-10">
+                    <CircularGlassSpinner />
+                  </div>
+                ) : (
                   <ReviewList reviews={reviews} />
                 )}
                 {id && <ReviewForm productId={id} onReviewSubmitted={handleReviewUpdate} />}

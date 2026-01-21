@@ -9,6 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useApp } from '../store/Context';
 import { AdminSidebar } from '../components/AdminSidebar';
 import { getDashboardStats } from '../services/adminService';
+import CircularGlassSpinner from '../components/CircularGlassSpinner';
 import { SmoothReveal } from '../components/SmoothReveal';
 
 // Define interfaces for the dashboard data
@@ -78,12 +79,7 @@ export const AdminDashboard: React.FC = () => {
 
   if (loading && !stats) {
     return (
-      <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
-        <AdminSidebar />
-        <div className="flex-1 p-8 flex items-center justify-center">
-          {/* Loading removed */}
-        </div>
-      </div>
+      <CircularGlassSpinner />
     );
   }
 

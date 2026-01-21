@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import SignatureLoader from './SignatureLoader';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
+import CircularGlassSpinner from '../CircularGlassSpinner';
 
 interface PageTransitionProps {
     children: React.ReactNode;
@@ -46,7 +47,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
 
     return (
         <>
-            {isLoading && null /* Loader removed */}
+            {isLoading && <CircularGlassSpinner />}
 
             <div
                 className={`
