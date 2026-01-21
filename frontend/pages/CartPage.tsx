@@ -46,9 +46,11 @@ export const CartPage: React.FC = () => {
   if (cart.length === 0) {
     return (
       <div className="container mx-auto px-4 py-32 text-center space-y-6">
-        <div className="w-24 h-24 bg-lightGray rounded-full flex items-center justify-center mx-auto text-gray-300">
-          <ShoppingBag size={48} />
-        </div>
+        <img
+          src="https://rukminim2.flixcart.com/www/800/800/promos/16/05/2019/d438a32e-765a-4d8b-b4a6-520b560971e8.png?q=90"
+          alt="Empty Cart"
+          className="w-64 h-auto mx-auto opacity-90"
+        />
         <h2 className="text-3xl font-bold text-dark">Your bag is empty</h2>
         <p className="text-gray-500 max-w-sm mx-auto">Looks like you haven't added anything to your cart yet. Let's find something premium for you!</p>
         <Link to="/shop" className="inline-flex items-center gap-2 bg-primary text-white px-10 py-4 rounded-xl font-bold hover:shadow-2xl hover:-translate-y-1 transition-all">
@@ -102,7 +104,7 @@ export const CartPage: React.FC = () => {
 
                     <button
                       onClick={() => removeFromCart(itemKey)}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest border border-transparent hover:border-red-100"
+                      className="flex items-center gap-1.5 px-4 py-2 bg-gray-50 text-primary hover:text-amber-700 hover:bg-orange-50 rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest border border-transparent hover:border-orange-100"
                       title="Remove from bag"
                     >
                       <Trash2 size={14} /> <span className="hidden sm:inline">Remove</span>

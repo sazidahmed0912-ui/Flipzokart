@@ -34,7 +34,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
         </button>
         {discount > 0 && (
-          <span className="absolute top-3 right-3 bg-[#FF9F00] text-white text-[10px] font-bold px-2 py-1 rounded">
+          <span className="absolute top-3 right-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">
             {discount}% OFF
           </span>
         )}
@@ -67,7 +67,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
           <button
             onClick={() => addToCart(product)}
-            className="w-full py-2 bg-[#FF9F00] text-white text-sm font-semibold rounded-full hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2 bg-primary text-white text-sm font-semibold rounded-full hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2"
           >
             <ShoppingCart size={14} /> Add to Cart
           </button>

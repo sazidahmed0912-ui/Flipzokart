@@ -1,5 +1,6 @@
 :root {
-    --primary-color: #ff9f00; /* Orange */
+    --primary-color: #ff7a00;
+    /* Orange - Matching Tailwind Primary */
     --primary-color-light-bg: #fff3e0;
     --text-color-primary: #212121;
     --text-color-secondary: #878787;
@@ -87,8 +88,10 @@ body {
 }
 
 .address-card {
-    border: 1px solid var(--border-color-light); /* Unselected card border */
-    background-color: var(--background-color-white); /* Unselected card background */
+    border: 1px solid var(--border-color-light);
+    /* Unselected card border */
+    background-color: var(--background-color-white);
+    /* Unselected card background */
     border-radius: 8px;
     padding: 1.5rem;
     cursor: pointer;
@@ -98,9 +101,12 @@ body {
 }
 
 .address-card.selected {
-    border: 2px solid var(--primary-color); /* Selected card border */
-    background-color: var(--primary-color-light-bg); /* Selected card background */
-    padding: calc(1.5rem - 1px); /* Adjust padding to account for thicker border */
+    border: 2px solid var(--primary-color);
+    /* Selected card border */
+    background-color: var(--primary-color-light-bg);
+    /* Selected card background */
+    padding: calc(1.5rem - 1px);
+    /* Adjust padding to account for thicker border */
 }
 
 .address-card:not(.selected):hover {
@@ -117,6 +123,7 @@ body {
     font-weight: 500;
     margin: 0;
 }
+
 .address-card-header {
     display: flex;
     align-items: center;
@@ -168,20 +175,25 @@ body {
     background-color: var(--primary-color);
     color: white;
 }
+
 .address-btn-deliver:hover {
     background-color: #e68a00;
 }
+
 .address-btn-deliver:disabled {
     background-color: #ffcc80;
     cursor: not-allowed;
 }
 
-.address-btn-edit, .address-btn-delete {
+.address-btn-edit,
+.address-btn-delete {
     background-color: transparent;
     color: var(--primary-color);
     border-color: var(--primary-color);
 }
-.address-btn-edit:hover, .address-btn-delete:hover {
+
+.address-btn-edit:hover,
+.address-btn-delete:hover {
     background-color: var(--primary-color-light-bg);
 }
 
@@ -194,6 +206,7 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
 }
+
 .add-new-address-card:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
@@ -202,11 +215,13 @@ body {
 .add-address-btn {
     background: none;
     border: none;
-    color: #2874f0; /* Default blue for add links */
+    color: #2874f0;
+    /* Default blue for add links */
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
 }
+
 .add-new-address-card:hover .add-address-btn {
     color: var(--primary-color);
 }
@@ -219,9 +234,12 @@ body {
 }
 
 .price-summary-card {
-    background-color: var(--background-color-white); /* White background */
-    border: 1px solid var(--border-color-light); /* Light gray border */
-    color: var(--text-color-primary); /* Dark gray text */
+    background-color: var(--background-color-white);
+    /* White background */
+    border: 1px solid var(--border-color-light);
+    /* Light gray border */
+    color: var(--text-color-primary);
+    /* Dark gray text */
     padding: 1.5rem;
     border-radius: 8px;
     box-shadow: var(--shadow-sm);
@@ -237,12 +255,14 @@ body {
     padding-bottom: 1rem;
 }
 
-.price-summary-item, .price-summary-total {
+.price-summary-item,
+.price-summary-total {
     display: flex;
     justify-content: space-between;
     margin-bottom: 1rem;
     font-size: 0.9rem;
 }
+
 .price-summary-item:last-of-type {
     margin-bottom: 1.5rem;
 }
@@ -295,8 +315,13 @@ body {
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .place-order-btn.desktop-only {
@@ -348,6 +373,7 @@ body {
     .checkout-main {
         flex-direction: column;
     }
+
     .summary-section {
         order: -1;
         position: static;
@@ -360,135 +386,173 @@ body {
     .checkout-header {
         flex-direction: column;
         gap: 1rem;
-        padding: 0.75rem; /* Reduced padding for header */
+        padding: 0.75rem;
+        /* Reduced padding for header */
         border-radius: 0;
         margin-bottom: 1rem;
     }
+
     .checkout-header .logo {
-      font-size: 1.2rem;
+        font-size: 1.2rem;
     }
+
     .checkout-steps {
-      font-size: 0.9rem;
-      text-align: center;
+        font-size: 0.9rem;
+        text-align: center;
     }
+
     .secure-checkout {
-      font-size: 0.8rem;
+        font-size: 0.8rem;
     }
 
     body {
         background-color: var(--background-color-white);
     }
+
     .checkout-main {
         gap: 0;
     }
+
     .address-section {
         box-shadow: none;
-        padding: 1rem 0; /* Reduced padding for address section */
+        padding: 1rem 0;
+        /* Reduced padding for address section */
         border-radius: 0;
     }
+
     .address-section h2 {
-      font-size: 1.1rem; /* Smaller font for section title */
-      padding: 0 1rem 0.75rem 1rem; /* Adjust padding around title */
-      margin-bottom: 1rem;
+        font-size: 1.1rem;
+        /* Smaller font for section title */
+        padding: 0 1rem 0.75rem 1rem;
+        /* Adjust padding around title */
+        margin-bottom: 1rem;
     }
 
     .address-list {
-      padding: 0 1rem; /* Add horizontal padding to address list */
-      gap: 1rem; /* Reduce gap between address cards */
+        padding: 0 1rem;
+        /* Add horizontal padding to address list */
+        gap: 1rem;
+        /* Reduce gap between address cards */
     }
 
     .address-card {
-      padding: 1rem; /* Reduced padding for address cards */
-      flex-direction: column; /* Stack radio and details */
-      align-items: flex-start;
-      gap: 0.75rem;
+        padding: 1rem;
+        /* Reduced padding for address cards */
+        flex-direction: column;
+        /* Stack radio and details */
+        align-items: flex-start;
+        gap: 0.75rem;
     }
 
     .address-card.selected {
-      padding: calc(1rem - 1px); /* Adjust padding for thicker border */
+        padding: calc(1rem - 1px);
+        /* Adjust padding for thicker border */
     }
 
     .address-card-radio {
-      margin-top: 0;
+        margin-top: 0;
     }
 
     .address-card-details {
-      width: 100%; /* Ensure details take full width */
+        width: 100%;
+        /* Ensure details take full width */
     }
 
     .address-card-actions {
-      flex-wrap: wrap; /* Allow buttons to wrap */
-      gap: 0.5rem; /* Reduce gap between action buttons */
-      justify-content: flex-start;
-      margin-top: 0.75rem; /* Adjust top margin */
+        flex-wrap: wrap;
+        /* Allow buttons to wrap */
+        gap: 0.5rem;
+        /* Reduce gap between action buttons */
+        justify-content: flex-start;
+        margin-top: 0.75rem;
+        /* Adjust top margin */
     }
 
     .address-btn {
-      flex-grow: 1; /* Allow buttons to grow */
-      min-width: unset; /* Remove min-width to allow shrinking */
-      width: auto;
-      padding: 8px 12px; /* Adjust padding for smaller buttons */
-      font-size: 12px;
+        flex-grow: 1;
+        /* Allow buttons to grow */
+        min-width: unset;
+        /* Remove min-width to allow shrinking */
+        width: auto;
+        padding: 8px 12px;
+        /* Adjust padding for smaller buttons */
+        font-size: 12px;
     }
 
     .add-new-address-card {
-      margin: 1rem 1rem 0 1rem; /* Adjust margins */
-      padding: 1rem; /* Reduced padding */
+        margin: 1rem 1rem 0 1rem;
+        /* Adjust margins */
+        padding: 1rem;
+        /* Reduced padding */
     }
 
     .add-address-btn {
-      font-size: 0.9rem; /* Smaller font for add address button */
+        font-size: 0.9rem;
+        /* Smaller font for add address button */
     }
 
     .summary-section {
-        margin-bottom: 70px; /* Space for sticky mobile button */
+        margin-bottom: 70px;
+        /* Space for sticky mobile button */
     }
 
     .price-summary-card {
         border-radius: 0;
-        padding: 1rem; /* Reduced padding for summary card */
-    }
-    .price-summary-card h3 {
-      font-size: 1rem; /* Smaller font for summary header */
-      padding-bottom: 0.75rem;
-      margin-bottom: 0.75rem;
-      padding-left: 0;
-      padding-right: 0;
+        padding: 1rem;
+        /* Reduced padding for summary card */
     }
 
-    .price-summary-item, .price-summary-total {
-      font-size: 0.85rem; /* Smaller font for summary items */
-      margin-bottom: 0.75rem;
+    .price-summary-card h3 {
+        font-size: 1rem;
+        /* Smaller font for summary header */
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        padding-left: 0;
+        padding-right: 0;
     }
+
+    .price-summary-item,
+    .price-summary-total {
+        font-size: 0.85rem;
+        /* Smaller font for summary items */
+        margin-bottom: 0.75rem;
+    }
+
     .price-summary-item:last-of-type {
-      margin-bottom: 1rem;
+        margin-bottom: 1rem;
     }
 
     .price-summary-total {
-      font-size: 1rem;
-      padding-top: 0.75rem;
-      margin-top: 0.75rem;
+        font-size: 1rem;
+        padding-top: 0.75rem;
+        margin-top: 0.75rem;
     }
 
     .security-badge {
-      font-size: 0.8rem;
-      margin-top: 0.75rem;
+        font-size: 0.8rem;
+        margin-top: 0.75rem;
     }
 
     .place-order-sticky-mobile {
-        display: flex; /* Show sticky mobile button */
-        justify-content: center; /* Center the button */
+        display: flex;
+        /* Show sticky mobile button */
+        justify-content: center;
+        /* Center the button */
         align-items: center;
         padding: 0.75rem 1rem;
     }
+
     .place-order-sticky-mobile .place-order-btn {
-        display: flex; /* Ensure button itself is flex for centering spinner */
+        display: flex;
+        /* Ensure button itself is flex for centering spinner */
         width: 100%;
         padding: 12px 16px;
         font-size: 14px;
         height: auto;
     }
+
     .place-order-btn.desktop-only {
-        display: none; /* Hide desktop button */
+        display: none;
+        /* Hide desktop button */
     }
 }

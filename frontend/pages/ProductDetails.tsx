@@ -235,8 +235,8 @@ export const ProductDetails: React.FC = () => {
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
                 className={`flex-1 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-[0.98] ${isOutOfStock
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-yellow-400 text-gray-900 hover:bg-yellow-500 shadow-md'
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-primary text-white hover:opacity-90 shadow-md'
                   }`}
               >
                 <ShoppingCart size={20} />
@@ -246,8 +246,8 @@ export const ProductDetails: React.FC = () => {
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
                 className={`flex-1 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-[0.98] ${isOutOfStock
-                    ? 'hidden'
-                    : 'bg-yellow-500 text-gray-900 hover:bg-yellow-600 shadow-md'
+                  ? 'hidden'
+                  : 'bg-primary text-white hover:opacity-90 shadow-md'
                   }`}
               >
                 BUY NOW
@@ -326,8 +326,8 @@ export const ProductDetails: React.FC = () => {
             <button
               onClick={() => setActiveTab('details')}
               className={`px-6 py-4 font-medium text-sm ${activeTab === 'details'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
                 }`}
             >
               Product Details
@@ -335,8 +335,8 @@ export const ProductDetails: React.FC = () => {
             <button
               onClick={() => setActiveTab('specifications')}
               className={`px-6 py-4 font-medium text-sm ${activeTab === 'specifications'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
                 }`}
             >
               Specifications
@@ -344,8 +344,8 @@ export const ProductDetails: React.FC = () => {
             <button
               onClick={() => setActiveTab('reviews')}
               className={`px-6 py-4 font-medium text-sm ${activeTab === 'reviews'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
                 }`}
             >
               Customer Reviews
