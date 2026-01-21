@@ -38,6 +38,7 @@ const TrackOrderPage = lazy(() => import("./pages/TrackOrderPage").then(module =
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then(module => ({ default: module.AdminDashboard })));
 const AdminProducts = lazy(() => import("./pages/AdminProducts").then(module => ({ default: module.AdminProducts })));
 const AdminOrders = lazy(() => import("./pages/AdminOrders").then(module => ({ default: module.AdminOrders })));
+const AdminSellers = lazy(() => import("./pages/AdminSellers").then(module => ({ default: module.AdminSellers })));
 const AdminUsers = lazy(() => import("./pages/AdminUsers").then(module => ({ default: module.AdminUsers })));
 const AdminCoupons = lazy(() => import("./pages/AdminCoupons").then(module => ({ default: module.AdminCoupons })));
 
@@ -189,6 +190,14 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
             element={
               <AdminRoute>
                 <AdminUsers />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/sellers"
+            element={
+              <AdminRoute>
+                <AdminSellers />
               </AdminRoute>
             }
           />
