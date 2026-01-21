@@ -47,7 +47,7 @@ export const CartPage: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-32 text-center space-y-6">
         <img
-          src="https://illustrations.popsy.co/amber/surr-shopping-cart.svg"
+          src="/user-shopping-bags.jpg"
           alt="Empty Cart"
           className="w-64 h-64 mx-auto opacity-90 object-contain mb-6"
         />
