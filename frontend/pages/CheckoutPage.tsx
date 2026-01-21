@@ -35,6 +35,7 @@ export const CheckoutPage: React.FC = () => {
       total,
       status: paymentMethod === 'Razorpay' ? 'Paid' : 'Pending',
       paymentMethod,
+      paymentStatus: paymentMethod === 'Razorpay' ? 'PAID' : 'PENDING',
       createdAt: new Date().toISOString(),
       address: {
         fullName: address.fullName,
@@ -46,12 +47,12 @@ export const CheckoutPage: React.FC = () => {
 
     placeOrder(newOrder);
     clearCart();
-    
+
     // Show success message
-    const successMessage = paymentMethod === 'Razorpay' 
+    const successMessage = paymentMethod === 'Razorpay'
       ? `🎉 Order Placed Successfully!\n\nOrder ID: ${newOrder.id}\nPayment: Paid via Razorpay\nTotal: ₹${total.toLocaleString('en-IN')}\n\nYou will be redirected to your orders page.`
       : `🎉 Order Placed Successfully!\n\nOrder ID: ${newOrder.id}\nPayment: Cash on Delivery\nTotal: ₹${total.toLocaleString('en-IN')}\n\nPlease keep cash ready for payment on delivery.\nYou will be redirected to your orders page.`;
-    
+
     alert(successMessage);
     navigate('/orders');
   };
@@ -64,7 +65,7 @@ export const CheckoutPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 lg:px-8 py-8">
       <h1 className="text-3xl font-bold mb-8">Secure Checkout</h1>
-      
+
       <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-8">
           {/* Shipping Address */}
@@ -75,46 +76,46 @@ export const CheckoutPage: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold">Shipping Address</h3>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="col-span-2 space-y-2">
                 <label className="text-xs font-bold text-gray-500 uppercase">Full Name</label>
-                <input 
+                <input
                   required
-                  type="text" 
+                  type="text"
                   className="w-full bg-lightGray px-4 py-3 rounded-xl focus:ring-1 focus:ring-primary outline-none"
                   value={address.fullName}
-                  onChange={e => setAddress({...address, fullName: e.target.value})}
+                  onChange={e => setAddress({ ...address, fullName: e.target.value })}
                 />
               </div>
               <div className="col-span-2 space-y-2">
                 <label className="text-xs font-bold text-gray-500 uppercase">Street Address</label>
-                <input 
+                <input
                   required
-                  type="text" 
+                  type="text"
                   className="w-full bg-lightGray px-4 py-3 rounded-xl focus:ring-1 focus:ring-primary outline-none"
                   value={address.street}
-                  onChange={e => setAddress({...address, street: e.target.value})}
+                  onChange={e => setAddress({ ...address, street: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-500 uppercase">City</label>
-                <input 
+                <input
                   required
-                  type="text" 
+                  type="text"
                   className="w-full bg-lightGray px-4 py-3 rounded-xl focus:ring-1 focus:ring-primary outline-none"
                   value={address.city}
-                  onChange={e => setAddress({...address, city: e.target.value})}
+                  onChange={e => setAddress({ ...address, city: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-500 uppercase">Zip Code</label>
-                <input 
+                <input
                   required
-                  type="text" 
+                  type="text"
                   className="w-full bg-lightGray px-4 py-3 rounded-xl focus:ring-1 focus:ring-primary outline-none"
                   value={address.zipCode}
-                  onChange={e => setAddress({...address, zipCode: e.target.value})}
+                  onChange={e => setAddress({ ...address, zipCode: e.target.value })}
                 />
               </div>
             </div>
@@ -128,9 +129,9 @@ export const CheckoutPage: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold">Payment Method</h3>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button 
+              <button
                 type="button"
                 onClick={() => setPaymentMethod('Razorpay')}
                 className={`p-6 rounded-2xl border-2 flex items-center justify-between transition-all ${paymentMethod === 'Razorpay' ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-primary/50'}`}
@@ -147,7 +148,7 @@ export const CheckoutPage: React.FC = () => {
                 {paymentMethod === 'Razorpay' && <CheckCircle2 className="text-primary" />}
               </button>
 
-              <button 
+              <button
                 type="button"
                 onClick={() => setPaymentMethod('COD')}
                 className={`p-6 rounded-2xl border-2 flex items-center justify-between transition-all ${paymentMethod === 'COD' ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-primary/50'}`}
@@ -179,7 +180,7 @@ export const CheckoutPage: React.FC = () => {
                 </div>
               ))}
             </div>
-            
+
             <div className="border-t border-white/10 pt-6 space-y-4 mb-8">
               <div className="flex justify-between text-gray-400">
                 <span>Subtotal</span>
@@ -195,7 +196,7 @@ export const CheckoutPage: React.FC = () => {
               </div>
             </div>
 
-            <button 
+            <button
               type="submit"
               className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:shadow-xl transition-all"
             >
