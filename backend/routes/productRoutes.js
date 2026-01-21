@@ -20,8 +20,6 @@ router.get("/", async (req, res) => {
   try {
     const { category, search, minPrice, maxPrice, sortBy } = req.query;
 
-    const { category, search, minPrice, maxPrice, sortBy } = req.query;
-
     // 🔒 FORCE VISIBILITY DEFAULTS
     let filter = {
       isDeleted: false,
