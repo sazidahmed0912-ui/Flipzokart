@@ -20,7 +20,14 @@ router.get("/", async (req, res) => {
   try {
     const { category, search, minPrice, maxPrice, sortBy } = req.query;
 
-    let filter = {};
+    const { category, search, minPrice, maxPrice, sortBy } = req.query;
+
+    // 🔒 FORCE VISIBILITY DEFAULTS
+    let filter = {
+      isDeleted: false,
+      isActive: true,
+      published: true
+    };
 
     // Category filter
     if (category && category !== 'All') {
@@ -39,6 +46,7 @@ router.get("/", async (req, res) => {
       if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
     }
 
+    console.log("DEBUG: POST /product list filter:", JSON.stringify(filter, null, 2));
     let query = Product.find(filter);
 
     // Sorting

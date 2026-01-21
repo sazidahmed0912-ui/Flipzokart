@@ -23,6 +23,26 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // 🔒 SYSTEM INTEGRITY FIELDS
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+      index: true
+    },
+    status: {
+      type: String,
+      default: "approved",
+      enum: ["approved", "pending", "rejected"]
+    },
+    published: {
+      type: Boolean,
+      default: true
+    }
   },
   {
     timestamps: true,
