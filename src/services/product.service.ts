@@ -5,36 +5,69 @@ const prisma = new PrismaClient();
 
 export class ProductService {
     async createProduct(data: any) {
+        // Map frontend fields to backend schema
         const title = data.name || data.title;
-        const slug = title.toLowerCase().replace(/ /g, '-') + '-' + Date.now();
-        const { name, category, ...rest } = data;
+        const slug = (data.slug && data.slug !== '') ? data.slug : (title.toLowerCase().replace(/ /g, '-') + '-' + Date.now());
 
+        // Extract allowed fields
+        const { price, description, images, rating, isActive } = data;
+        const stock = data.countInStock || data.stock || 0;
+        const brand = data.brand || 'Generic'; // Default brand if missing
+
+        // Handle Category
         let categoryId;
-        if (category) {
+        const categoryInput = data.category;
+
+        if (categoryInput) {
+            // Try to find existing category
             const categoryDoc = await prisma.category.findFirst({
                 where: {
                     OR: [
-                        { name: { equals: category, mode: 'insensitive' } },
-                        { slug: { equals: category, mode: 'insensitive' } }
+                        { name: { equals: categoryInput, mode: 'insensitive' } },
+                        { slug: { equals: categoryInput, mode: 'insensitive' } }
                     ]
                 }
             });
-            if (categoryDoc) categoryId = categoryDoc.id;
+
+            if (categoryDoc) {
+                categoryId = categoryDoc.id;
+            } else {
+                // Auto-create category if not found to prevent errors
+                const newCatSlug = categoryInput.toLowerCase().replace(/ /g, '-');
+                try {
+                    const newCat = await prisma.category.create({
+                        data: {
+                            name: categoryInput,
+                            slug: newCatSlug
+                        }
+                    });
+                    categoryId = newCat.id;
+                } catch (e) {
+                    // If slug collision or race condition, fallback to default
+                    const defaultCat = await prisma.category.findFirst();
+                    categoryId = defaultCat?.id;
+                }
+            }
         }
 
         if (!categoryId) {
-            // Fallback or Error. For now, let's try to find 'Electronics' or first available
             const defaultCat = await prisma.category.findFirst();
             if (defaultCat) categoryId = defaultCat.id;
-            else throw new AppError('Category not found', 400);
+            else throw new AppError('Category not found and cannot be created', 400);
         }
 
         const product = await prisma.product.create({
             data: {
-                ...rest,
                 title,
                 slug,
-                categoryId,
+                description: description || '',
+                price: Number(price),
+                stock: Number(stock),
+                brand,
+                images: images || [],
+                rating: Number(rating) || 0,
+                isActive: isActive !== undefined ? isActive : true,
+                categoryId
             },
             include: { category: true }
         });
@@ -42,16 +75,24 @@ export class ProductService {
     }
 
     async updateProduct(id: string, data: any) {
-        const { name, category, ...rest } = data;
-        const updateData: any = { ...rest };
-        if (name) updateData.title = name;
+        const updateData: any = {};
 
-        if (category) {
+        if (data.name) updateData.title = data.name;
+        if (data.description) updateData.description = data.description;
+        if (data.price) updateData.price = Number(data.price);
+        if (data.stock !== undefined) updateData.stock = Number(data.stock);
+        if (data.countInStock !== undefined) updateData.stock = Number(data.countInStock);
+        if (data.images) updateData.images = data.images;
+        if (data.isActive !== undefined) updateData.isActive = data.isActive;
+        if (data.brand) updateData.brand = data.brand;
+
+        const categoryInput = data.category;
+        if (categoryInput) {
             const categoryDoc = await prisma.category.findFirst({
                 where: {
                     OR: [
-                        { name: { equals: category, mode: 'insensitive' } },
-                        { slug: { equals: category, mode: 'insensitive' } }
+                        { name: { equals: categoryInput, mode: 'insensitive' } },
+                        { slug: { equals: categoryInput, mode: 'insensitive' } }
                     ]
                 }
             });
