@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // Added ShieldCheck to the imported icons from lucide-react
-import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Tag, XCircle, ShieldCheck } from 'lucide-react';
+import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Tag, XCircle, ShieldCheck, Heart } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { MOCK_COUPONS } from '../constants';
 
@@ -102,6 +102,12 @@ export const CartPage: React.FC = () => {
                       )}
                     </div>
 
+                    <button
+                      className="flex items-center gap-1.5 px-4 py-2 bg-gray-50 text-primary hover:text-amber-700 hover:bg-orange-50 rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest border border-transparent hover:border-orange-100"
+                      title="Save for later"
+                    >
+                      <Heart size={14} /> <span className="hidden sm:inline">Save for Later</span>
+                    </button>
                     <button
                       onClick={() => removeFromCart(itemKey)}
                       className="flex items-center gap-1.5 px-4 py-2 bg-gray-50 text-primary hover:text-amber-700 hover:bg-orange-50 rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest border border-transparent hover:border-orange-100"
