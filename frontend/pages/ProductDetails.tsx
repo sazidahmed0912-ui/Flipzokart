@@ -142,304 +142,322 @@ export const ProductDetails: React.FC = () => {
   const totalRatings = reviews.length || 1;
 
   return (
-    <div className="bg-[#F5F7FA] min-h-screen pb-28 text-gray-800">
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* SECTION 1: ABOVE FOLD */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column: Image & Gallery */}
+    <div className="bg-gray-50 min-h-screen pb-28 text-gray-800 font-sans">
+      {/* SECTION 1: PRODUCT IMAGE & BASIC INFO */}
+      <div className="max-w-6xl mx-auto p-4">
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Left Column: Image Gallery & Rating Summary */}
           <div className="space-y-4">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 relative">
-              <div className="absolute top-4 left-4 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-sm border border-gray-100 cursor-pointer">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
-              </div>
-              <div className="absolute top-4 right-4 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-sm border border-gray-100 cursor-pointer">
-                <Search size={18} className="text-gray-400" />
-              </div>
-              <div className="aspect-square flex items-center justify-center overflow-hidden">
-                <LazyImage
-                  src={activeImage}
-                  alt={product.name}
-                  className={`w-full h-full object-contain ${isOutOfStock ? 'grayscale opacity-50' : ''}`}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              {allImages.slice(0, 4).map((img, i) => (
-                <div
-                  key={i}
-                  onClick={() => setActiveImage(img)}
-                  className={`w-18 h-18 bg-white rounded-lg overflow-hidden cursor-pointer border-2 transition-all shadow-sm ${activeImage === img ? 'border-blue-500' : 'border-transparent'}`}
-                >
-                  <img src={img} alt={`thumb-${i}`} className="w-full h-full object-cover" />
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <div className="relative bg-blue-50 rounded-xl p-8 mb-4 min-h-[400px] flex items-center justify-center overflow-hidden">
+                <button className="absolute top-4 left-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-50 z-10 transition-transform active:scale-95">
+                  <span className="text-gray-400">✓</span>
+                </button>
+                <button className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-50 z-10 transition-transform active:scale-95">
+                  <Search size={18} className="text-gray-400" />
+                </button>
+                <div className="relative w-full aspect-square flex items-center justify-center">
+                  <LazyImage
+                    src={activeImage}
+                    alt={product.name}
+                    className={`max-w-[75%] max-h-[75%] object-contain transition-transform duration-500 hover:scale-105 ${isOutOfStock ? 'grayscale opacity-50' : ''}`}
+                  />
+                  {/* Visual decoration: Shoe shadow as seen in image/mockup */}
+                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 w-48 h-6 bg-gray-300 rounded-full blur-xl opacity-20 pointer-events-none"></div>
                 </div>
-              ))}
-            </div>
-
-            {/* Rating Breakdown Card (labeled "Full Description" in image) */}
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-4">Full Description</h3>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex text-yellow-500">
-                  {[1, 2, 3, 4, 5].map(s => (
-                    <Star
-                      key={s}
-                      size={16}
-                      fill={s <= Math.floor(product.rating || 0) ? "currentColor" : "none"}
-                    />
-                  ))}
-                </div>
-                <span className="font-bold text-gray-900">{product.rating?.toFixed(1) || '4.4'}</span>
-                <span className="text-gray-400 text-sm ml-auto">{reviews.length.toLocaleString() || '8,562'}</span>
               </div>
 
-              <div className="space-y-2">
-                {[5, 4, 3, 2, 1].map((stars, idx) => (
-                  <div key={stars} className="flex items-center gap-2">
-                    <span className="text-xs font-medium w-4">{stars}</span>
-                    <Star size={12} className="text-yellow-500" fill="currentColor" />
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${stars >= 4 ? 'bg-yellow-500' : stars === 3 ? 'bg-blue-500' : stars === 2 ? 'bg-blue-400' : 'bg-blue-300'}`}
-                        style={{ width: `${(ratingCounts[5 - stars] / (totalRatings || 1)) * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-gray-400 w-12 text-right">{ratingCounts[5 - stars].toLocaleString()}</span>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
+                {allImages.slice(0, 4).map((img, i) => (
+                  <div
+                    key={i}
+                    onClick={() => setActiveImage(img)}
+                    className={`w-20 h-20 rounded-xl border-2 transition-all cursor-pointer bg-gray-50 flex-shrink-0 flex items-center justify-center overflow-hidden ${activeImage === img ? 'border-blue-500 shadow-md ring-2 ring-blue-100' : 'border-gray-100 hover:border-gray-300'}`}
+                  >
+                    <img src={img} alt={`thumb-${i}`} className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>
+            </div>
 
-              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-50">
-                <Lock size={14} className="text-gray-400" />
-                <span className="text-sm text-gray-500">Surniri© 24/7</span>
+            {/* Rating Breakdown Card - EXACTLY BELOW GALLERY as per image */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-lg text-gray-900 mb-4 uppercase tracking-tighter">Full Description</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex text-yellow-500">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <Star
+                        key={s}
+                        size={18}
+                        fill={s <= Math.floor(product.rating || 0) ? "currentColor" : "none"}
+                        className={s <= Math.floor(product.rating || 0) ? "text-yellow-400" : "text-gray-200"}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-bold text-xl text-gray-900 leading-none">{product.rating?.toFixed(1) || '4.4'}</span>
+                  <span className="text-gray-400 text-sm ml-auto font-medium">{reviews.length.toLocaleString() || '8,562'}</span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {[5, 4, 3, 2, 1].map((stars, idx) => (
+                    <div key={stars} className="flex items-center gap-3">
+                      <span className="text-xs text-gray-500 w-4 font-bold">{stars}</span>
+                      <Star size={14} className="text-yellow-400 fill-yellow-400" />
+                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-1000 ${stars >= 4 ? 'bg-yellow-400' : stars === 3 ? 'bg-blue-500' : stars === 2 ? 'bg-blue-400' : 'bg-blue-300'}`}
+                          style={{ width: `${(ratingCounts[5 - stars] / (totalRatings || 1)) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-500 w-16 text-right font-bold">{ratingCounts[5 - stars].toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-gray-400 pt-4 border-t border-gray-50 mt-2">
+                  <Lock size={14} />
+                  <span className="font-bold text-[11px] uppercase tracking-widest">Surniri© 24/7</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Product Info & Selectors */}
+          {/* Right Column: Info & Selectors */}
           <div className="space-y-4">
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <h1 className="text-2xl font-semibold text-gray-900 leading-tight">{product.name}</h1>
-              <p className="text-sm text-gray-500 mt-2">Brand: <span className="text-gray-900">{product.category}</span></p>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h1 className="text-2xl font-bold text-gray-900 leading-tight">{product.name}</h1>
+              <p className="text-sm text-gray-500 mt-2 font-bold uppercase tracking-wider">Brand: <span className="text-gray-900">{product.category}</span></p>
 
-              <div className="flex items-center gap-2 mt-3">
-                <div className="flex text-yellow-500">
+              <div className="flex items-center gap-2 mt-4 bg-gray-50/50 p-2 rounded-lg inline-flex">
+                <div className="flex text-yellow-400">
                   {[1, 2, 3, 4, 5].map(s => (
                     <Star
                       key={s}
-                      size={14}
+                      size={16}
                       fill={s <= Math.round(product.rating || 4.4) ? "currentColor" : "none"}
+                      className={s <= Math.floor(product.rating || 0) ? "text-yellow-400" : "text-gray-200"}
                     />
                   ))}
                 </div>
-                <span className="text-sm font-semibold text-[#2563EB]">4.4</span>
-                <span className="text-sm text-gray-400">
-                  • {reviews.length.toLocaleString() || '8,562'} ratings • {reviews.length || '1,095'} reviews
+                <span className="text-md font-black text-gray-900 ml-1">4.4</span>
+                <span className="text-sm text-gray-400 font-bold ml-1 border-l border-gray-200 pl-2">
+                  {reviews.length.toLocaleString() || '8,562'} ratings · {reviews.length || '1,095'} reviews
                 </span>
               </div>
 
               {/* Color Selector */}
-              <div className="flex gap-2 mt-5">
-                {['#3B82F6', '#D1D5DB', '#EF4444', '#F3F4F6'].map((color, i) => (
-                  <div
-                    key={i}
-                    className={`w-7 h-7 rounded-full border-2 cursor-pointer transition-transform hover:scale-110 ${i === 0 ? 'border-blue-600 ring-1 ring-blue-600 ring-offset-2' : 'border-gray-100'}`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
+              <div className="mt-8">
+                <div className="flex gap-4">
+                  {['#3B82F6', '#D1D5DB', '#EF4444', '#F3F4F6'].map((color, idx) => (
+                    <button
+                      key={idx}
+                      className={`w-9 h-9 rounded-full border-2 transition-all hover:scale-110 active:scale-95 ${idx === 0 ? 'border-gray-800 ring-2 ring-offset-4 ring-gray-900' : 'border-gray-200 shadow-sm'}`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
               </div>
 
               {/* Size Selector */}
-              <div className="mt-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-[2px] w-12 bg-blue-600 rounded" />
-                  <div className="flex flex-wrap gap-2">
-                    {[6, 7, 8, 8, 9, 10, 11].map((size, i) => (
-                      <button
-                        key={i}
-                        className={`px-4 py-1.5 border rounded-lg text-sm font-medium transition-all ${i === 0 ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-gray-100 text-gray-600 hover:border-gray-300'}`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                  <ChevronRight size={18} className="text-gray-300 ml-auto" />
+              <div className="mt-8">
+                <div className="flex gap-2 flex-wrap">
+                  {[6, 7, 8, 9, 10, 11].map((size, i) => (
+                    <button
+                      key={i}
+                      className={`px-5 py-2.5 border-2 rounded-xl text-sm font-black transition-all active:scale-95 ${i === 2 ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-sm' : 'border-gray-100 text-gray-600 hover:border-gray-300'}`}
+                    >
+                      {size}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* SECTION 2: BANK OFFERS & POLICY */}
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-4">Bank Offers</h3>
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                    <CreditCard size={18} className="text-blue-600" />
+            {/* SECTION 2: BANK OFFERS & POLICIES */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-lg text-gray-900 mb-6 flex items-center gap-2">
+                <CreditCard size={20} className="text-blue-600" /> Bank Offers
+              </h3>
+              <div className="space-y-5">
+                {[
+                  { icon: CreditCard, title: "5% Unlimited Cashback", sub: "on Flipkart Axis Bank Credit Card", color: "blue" },
+                  { icon: CreditCard, title: "10% Instant Discount", sub: "on HDFC Bank Credit Card", color: "blue" },
+                  { icon: Package, title: "Pay Later & Get 10% Cashback", sub: "on Flipkart Pay Later", color: "blue" }
+                ].map((offer, i) => (
+                  <div key={i} className="flex gap-4 group cursor-pointer">
+                    <div className="w-11 h-11 bg-blue-50 rounded-xl flex items-center justify-center shrink-0 transition-colors group-hover:bg-blue-100">
+                      <offer.icon size={20} className="text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-black text-gray-900 leading-tight">{offer.title}</p>
+                      <p className="text-sm text-gray-500 mt-0.5 font-bold">{offer.sub}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">5% Unlimited Cashback</p>
-                    <p className="text-xs text-gray-500 mt-0.5">on Flipkart Axis Bank Credit Card</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                    <CreditCard size={18} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">10% Instant Discount</p>
-                    <p className="text-xs text-gray-500 mt-0.5">on HDFC Bank Credit Card</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                    <Package size={18} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">Pay Later & Get 10% Cashback</p>
-                    <p className="text-xs text-gray-500 mt-0.5">on Flipkart Pay Later</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-2 mb-4">
-                <RotateCcw size={18} className="text-blue-600" />
-                <span className="text-sm font-semibold text-gray-900">10 Days Return Policy</span>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+              <div className="flex items-center gap-3 text-gray-900 bg-blue-50/50 p-3 rounded-xl border border-blue-50">
+                <RotateCcw size={20} className="text-blue-600" />
+                <span className="font-black">10 Days Return Policy</span>
               </div>
-              <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 flex-wrap pt-4 border-t border-gray-50">
+                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
                   <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
                     <Check size={12} className="text-white" />
                   </div>
-                  <span className="text-xs font-semibold text-gray-600">Seller</span>
+                  <span className="text-[11px] font-black text-gray-700 uppercase tracking-widest">Seller</span>
                 </div>
-                <div className="text-xs font-bold text-blue-600">UPI</div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                  <span className="text-[11px] font-black text-gray-700 uppercase tracking-widest leading-none">UPI</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
                   <Truck size={16} className="text-gray-400" />
-                  <span className="text-xs font-semibold text-gray-600">Pay Delivery</span>
+                  <span className="text-[11px] font-black text-gray-700 uppercase tracking-widest">Pay Delivery</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* SECTION 3: TABS - DETAILS / SPECS / REVIEWS */}
-        <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="flex border-b border-gray-100 px-4">
+      {/* SECTION 3: TABS - DETAILS / SPECS / REVIEWS */}
+      <div className="max-w-6xl mx-auto px-4 mt-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          {/* Tabs Nav */}
+          <div className="flex border-b border-gray-100 bg-gray-50/30">
             {['details', 'specifications', 'reviews'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-4 text-sm font-semibold transition-all relative ${activeTab === tab ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+                className={`flex-1 md:flex-none px-8 py-5 font-black text-xs uppercase tracking-widest transition-all relative ${activeTab === tab ? 'text-blue-600 bg-white' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50/50'}`}
               >
                 {tab === 'details' ? 'Product Details' : tab === 'specifications' ? 'Specifications' : 'Customer Reviews'}
-                {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900" />}
+                {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-600 rounded-t-full" />}
               </button>
             ))}
           </div>
 
-          <div className="p-6">
+          {/* Tab Content */}
+          <div className="p-8 md:p-12">
             {activeTab === 'details' && (
               <div className="max-w-4xl">
-                <div className="flex items-start gap-4 mb-4">
-                  <select className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-600">
-                    <option>Latest</option>
-                  </select>
-                  <select className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-600">
-                    <option>All Star 9</option>
-                  </select>
-                </div>
-                <p className="text-gray-600 leading-relaxed text-sm">
-                  {product.description || "Very good quality product with comfortable sole and durable build. High-performance sneakers designed for all-day comfort and style. Featuring a breathable upper and a cushioned midsole."}
+                <h3 className="font-black text-xl text-gray-900 mb-8 uppercase tracking-widest flex items-center gap-3">
+                  <div className="w-8 h-1 bg-blue-600 rounded"></div> Full Description
+                </h3>
+                <p className="text-gray-600 leading-relaxed font-bold text-lg md:text-xl italic bg-gray-50/50 p-6 rounded-2xl border-l-4 border-blue-500">
+                  "{product.description || "Very good quality product with comfortable sole and durable build. High-performance sneakers designed for all-day comfort and style."}"
                 </p>
-                <div className="flex items-center gap-4 mt-8 pt-6 border-t border-gray-50">
+                <div className="flex items-center gap-6 mt-12 pt-8 border-t border-gray-100">
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                      <Check size={12} className="text-white" />
+                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                      <Check size={14} className="text-white" />
                     </div>
-                    <span className="text-xs font-semibold text-gray-600">Seller</span>
+                    <span className="text-xs font-black text-gray-700 uppercase tracking-widest">Authorized Seller</span>
                   </div>
-                  <div className="text-xs font-bold text-blue-600">UPI</div>
+                  <div className="w-px h-6 bg-gray-200"></div>
+                  <div className="text-xs font-black text-blue-600 uppercase tracking-widest">UPI SECURE</div>
                 </div>
               </div>
             )}
 
             {activeTab === 'specifications' && (
-              <div className="max-w-xl space-y-4">
-                {[
-                  { label: "SKU", value: `FZK-${product.id.padStart(6, '0')}` },
-                  { label: "Category", value: product.category },
-                  { label: "Model", value: product.name },
-                  { label: "Warranty", value: "1 Year" },
-                  { label: "Material", value: "Premium Synthetic" },
-                ].map((spec, i) => (
-                  <div key={i} className="flex justify-between py-3 border-b border-gray-50 last:border-0">
-                    <span className="text-sm text-gray-400 font-medium">{spec.label}</span>
-                    <span className="text-sm font-semibold text-gray-900">{spec.value}</span>
-                  </div>
-                ))}
+              <div className="max-w-2xl">
+                <h3 className="font-black text-xl text-gray-900 mb-8 uppercase tracking-widest">Product Specs</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2">
+                  {[
+                    { label: "SKU ID", value: `FZK-${product.id.padStart(6, '0')}` },
+                    { label: "Category", value: product.category },
+                    { label: "Model", value: product.name },
+                    { label: "Warranty", value: "1 Year International" },
+                    { label: "Material", value: "Premium Grade Synthetic" },
+                    { label: "Condition", value: "Brand New" },
+                  ].map((spec, i) => (
+                    <div key={i} className="flex flex-col py-5 border-b border-gray-50 group hover:border-blue-100 transition-colors">
+                      <span className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-1">{spec.label}</span>
+                      <span className="text-md font-black text-gray-900">{spec.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
             {activeTab === 'reviews' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 {/* Reviews List */}
-                <div className="lg:col-span-2 space-y-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <select className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-600">
-                      <option>Latest</option>
-                    </select>
-                    <select className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-600">
-                      <option>All Star 9</option>
-                    </select>
+                <div className="lg:col-span-2 space-y-8">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 border-b border-gray-50 pb-6">
+                    <h3 className="font-black text-2xl text-gray-900 uppercase tracking-tight">Verified Reviews</h3>
+                    <div className="flex gap-3">
+                      <select className="text-xs border-2 border-gray-100 rounded-xl px-4 py-2.5 bg-white font-black text-gray-500 focus:border-blue-500 outline-none cursor-pointer hover:border-gray-300 transition-all">
+                        <option>Sort: Latest</option>
+                      </select>
+                      <select className="text-xs border-2 border-gray-100 rounded-xl px-4 py-2.5 bg-white font-black text-gray-500 focus:border-blue-500 outline-none cursor-pointer hover:border-gray-300 transition-all">
+                        <option>Filter: All Star 9</option>
+                      </select>
+                    </div>
                   </div>
-                  {isReviewsLoading ? <CircularGlassSpinner /> : <ReviewList reviews={reviews} />}
+                  {isReviewsLoading ? <CircularGlassSpinner /> : (
+                    <div className="space-y-6">
+                      <ReviewList reviews={reviews} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Reviews Sidebar */}
-                <div className="space-y-6">
-                  <div className="bg-gray-50/50 rounded-2xl p-5 border border-gray-100">
-                    <h4 className="font-bold text-gray-900 mb-4">Customer Reviews</h4>
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <CreditCard size={14} className="text-blue-600" />
-                        <span className="text-[10px] font-bold text-gray-500 uppercase">Seller</span>
+                <div className="space-y-8">
+                  <div className="bg-gray-50/50 rounded-3xl p-8 border border-gray-100 shadow-inner">
+                    <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <CreditCard size={16} className="text-blue-600" />
+                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Safe Seller</span>
                       </div>
-                      <div className="text-[10px] font-bold text-blue-600 uppercase">UPI</div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <Truck size={14} className="text-gray-400" />
-                        <span className="text-[10px] font-bold text-gray-500 uppercase">Pay Delivery</span>
+                      <div className="text-[9px] font-black text-blue-600 uppercase tracking-widest">UPI PAY</div>
+                      <div className="flex items-center gap-2">
+                        <Truck size={18} className="text-gray-400" />
+                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Fast Delivery</span>
                       </div>
                     </div>
 
-                    <div className="space-y-5">
-                      <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Reviews</h5>
+                    <div className="space-y-8">
+                      <h5 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Highlights</h5>
                       {reviews.slice(0, 2).map((review, i) => (
-                        <div key={i} className="flex gap-4">
-                          <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0 overflow-hidden">
-                            <img src={`https://i.pravatar.cc/150?u=${(review as any).user?._id || i}`} alt="user" className="w-full h-full object-cover" />
+                        <div key={i} className="flex gap-5 group">
+                          <div className="w-14 h-14 bg-white rounded-2xl flex-shrink-0 overflow-hidden ring-4 ring-gray-100 group-hover:ring-blue-50 transition-all">
+                            <img
+                              src={`https://i.pravatar.cc/150?u=${(review as any).user?._id || i}`}
+                              alt="user"
+                              className="w-full h-full object-cover grayscale transition-all group-hover:grayscale-0"
+                            />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-bold text-gray-900">{(review as any).user?.name || 'User'}</p>
-                            <div className="flex items-center gap-1 mt-0.5">
-                              <div className="flex text-yellow-500">
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="text-xs font-black text-gray-900 group-hover:text-blue-600 transition-colors">{(review as any).user?.name || 'User'}</p>
+                              <p className="text-[9px] text-gray-300 font-bold">{new Date(review.createdAt).toISOString().split('T')[0]}</p>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <div className="flex text-yellow-400">
                                 {[1, 2, 3, 4, 5].map(s => (
-                                  <Star key={s} size={10} fill={s <= review.rating ? "currentColor" : "none"} />
+                                  <Star key={s} size={11} fill={s <= review.rating ? "currentColor" : "none"} className={s <= review.rating ? "text-yellow-400" : "text-gray-200"} />
                                 ))}
                               </div>
-                              <span className="text-[10px] font-bold text-gray-900 ml-1">{review.rating}</span>
+                              <span className="text-[10px] font-black text-gray-900">{review.rating}</span>
+                              <span className="text-[9px] bg-blue-100 text-blue-600 font-black px-1.5 py-0.5 rounded ml-auto uppercase tracking-tighter">verified</span>
                             </div>
-                            <p className="text-xs text-gray-500 mt-2 font-medium leading-relaxed">{review.comment}</p>
-                            <p className="text-[10px] text-gray-300 mt-2 font-bold">{new Date(review.createdAt).toISOString().split('T')[0]}</p>
+                            <p className="text-xs text-gray-500 mt-2 font-bold leading-relaxed line-clamp-2">"{review.comment}"</p>
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="mt-8">
+                    <div className="mt-12 text-center">
                       {id && (
-                        <ReviewForm productId={id} onReviewSubmitted={handleReviewUpdate} />
+                        <div className="pt-6 border-t border-gray-100">
+                          {/* Add Review button blue exactly as requested */}
+                          <ReviewForm productId={id} onReviewSubmitted={handleReviewUpdate} />
+                        </div>
                       )}
                     </div>
                   </div>
@@ -450,31 +468,25 @@ export const ProductDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* STICKY BOTTOM BAR */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50">
-        <div className="max-w-6xl mx-auto flex items-center px-4 py-3 gap-3">
+      {/* STICKY BOTTOM ACTION BAR */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50">
+        <div className="max-w-6xl mx-auto px-4 py-5 flex gap-4">
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all shadow-sm ${isOutOfStock ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#FFC107] text-gray-900 hover:bg-[#FFD54F]'}`}
+            className={`flex-1 flex items-center justify-center gap-3 py-4.5 rounded-2xl font-black text-base md:text-lg transition-all shadow-xl active:scale-[0.98] group ${isOutOfStock ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-[#FFC107] text-gray-900 hover:bg-[#FFD54F] hover:shadow-2xl'}`}
           >
-            <ShoppingCart size={18} /> ADD TO CART
+            <ShoppingCart size={22} className="group-hover:scale-110 transition-transform" />
+            ADD TO CART
           </button>
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all shadow-sm ${isOutOfStock ? 'hidden' : 'bg-[#FF9800] text-white hover:bg-[#FFA726]'}`}
+            className={`flex-1 flex items-center justify-center gap-3 py-4.5 rounded-2xl font-black text-base md:text-lg transition-all shadow-xl active:scale-[0.98] group ${isOutOfStock ? 'hidden' : 'bg-[#FF9800] text-gray-900 hover:bg-[#FFA726] hover:shadow-2xl'}`}
           >
-            BUY NOW <ChevronRight size={18} />
+            BUY NOW
+            <ChevronRight size={22} className="group-hover:translate-x-1.5 transition-transform" />
           </button>
-          <div className="flex items-center gap-4 ml-2">
-            <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-              <ShoppingCart size={22} />
-            </button>
-            <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="18" y2="18" /></svg>
-            </button>
-          </div>
         </div>
       </div>
     </div>
