@@ -40,6 +40,8 @@ const getCartItemKey = (productId: string, variants?: Record<string, string>) =>
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('flipzokart_user');
+    const token = localStorage.getItem('token');
+    if (!token) return null; // Force logout if token missing
     try {
       return saved ? JSON.parse(saved) : null;
     } catch {
