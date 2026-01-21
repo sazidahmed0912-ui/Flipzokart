@@ -249,11 +249,10 @@ export const ProductDetails: React.FC = () => {
               {/* Color Selector */}
               <div className="mt-8">
                 <div className="flex gap-4">
-                  {['#3B82F6', '#D1D5DB', '#EF4444', '#F3F4F6'].map((color, idx) => (
+                  {['bg-blue-500', 'bg-gray-300', 'bg-red-500', 'bg-gray-100'].map((colorClass, idx) => (
                     <button
                       key={idx}
-                      className={`w-9 h-9 rounded-full border-2 transition-all hover:scale-110 active:scale-95 ${idx === 0 ? 'border-gray-800 ring-2 ring-offset-4 ring-gray-900' : 'border-gray-200 shadow-sm'}`}
-                      style={{ backgroundColor: color }}
+                      className={`w-9 h-9 rounded-full border-2 transition-all hover:scale-110 active:scale-95 ${colorClass} ${idx === 0 ? 'border-gray-800 ring-2 ring-offset-4 ring-gray-900' : 'border-gray-200 shadow-sm'}`}
                     />
                   ))}
                 </div>
@@ -474,7 +473,7 @@ export const ProductDetails: React.FC = () => {
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`flex-1 flex items-center justify-center gap-3 py-4.5 rounded-2xl font-black text-base md:text-lg transition-all shadow-xl active:scale-[0.98] group ${isOutOfStock ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-[#FFC107] text-gray-900 hover:bg-[#FFD54F] hover:shadow-2xl'}`}
+            className={`flex-1 flex items-center justify-center gap-3 py-4.5 rounded-2xl font-black text-base md:text-lg transition-all shadow-xl active:scale-[0.98] group ${isOutOfStock ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-yellow-400 text-gray-900 hover:bg-yellow-500 hover:shadow-2xl'}`}
           >
             <ShoppingCart size={22} className="group-hover:scale-110 transition-transform" />
             ADD TO CART
@@ -482,7 +481,7 @@ export const ProductDetails: React.FC = () => {
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`flex-1 flex items-center justify-center gap-3 py-4.5 rounded-2xl font-black text-base md:text-lg transition-all shadow-xl active:scale-[0.98] group ${isOutOfStock ? 'hidden' : 'bg-[#FF9800] text-gray-900 hover:bg-[#FFA726] hover:shadow-2xl'}`}
+            className={`flex-1 flex items-center justify-center gap-3 py-4.5 rounded-2xl font-black text-base md:text-lg transition-all shadow-xl active:scale-[0.98] group ${isOutOfStock ? 'hidden' : 'bg-yellow-500 text-gray-900 hover:bg-yellow-600 hover:shadow-2xl'}`}
           >
             BUY NOW
             <ChevronRight size={22} className="group-hover:translate-x-1.5 transition-transform" />
