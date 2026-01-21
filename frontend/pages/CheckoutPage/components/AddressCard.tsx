@@ -34,9 +34,7 @@ const AddressCard: React.FC<AddressCardProps> = ({
                 <p>{`${address.address}, ${address.city}, ${address.state} - ${address.pincode}`}</p>
                 {isSelected && (
                     <div className="address-card-actions">
-                        <button className="address-btn address-btn-deliver" onClick={onDeliverHere} disabled={isLoading}>
-                            {isLoading ? 'Processing...' : 'Deliver Here'}
-                        </button>
+
                         <button className="address-btn address-btn-edit" onClick={() => onEdit(address)}>Edit</button>
                         <button className="address-btn address-btn-delete" onClick={() => onDelete(address.id)}>Delete</button>
                     </div>
