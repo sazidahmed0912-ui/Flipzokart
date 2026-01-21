@@ -15,7 +15,7 @@ import ToastContainer from "./components/ToastContainer";
 
 
 /* ---------- PAGES (LAZY LOADED) ---------- */
-const HomePage = lazy(() => import("./pages/HomePage").then(module => ({ default: module.HomePage })));
+import { HomePage } from "./pages/HomePage";
 const ShopPage = lazy(() => import("./pages/ShopPage").then(module => ({ default: module.ShopPage })));
 const ProductDetails = lazy(() => import("./pages/ProductDetails").then(module => ({ default: module.ProductDetails })));
 const CartPage = lazy(() => import("./pages/CartPage/CartPage"));
