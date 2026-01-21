@@ -82,9 +82,10 @@ export const ProductDetails: React.FC = () => {
         setProduct(productData);
         setActiveImage(productData.image);
 
-        // Fetch reviews for the product
-        const reviewsResponse = await API.get(`/reviews/products/${id}/reviews`);
-        setReviews(reviewsResponse.data.data);
+        // Use reviews from product data if available
+        if (productData.reviews) {
+          setReviews(productData.reviews);
+        }
 
         if (productData.variants) {
           const defaults: Record<string, string> = {};
@@ -94,7 +95,7 @@ export const ProductDetails: React.FC = () => {
           setSelectedVariants(defaults);
         }
       } catch (error) {
-        console.error("Failed to fetch product or reviews:", error);
+        console.error("Failed to fetch product:", error);
         setProduct(null);
         setReviews([]);
       } finally {

@@ -7,28 +7,63 @@ export class ProductService {
     async createProduct(data: any) {
         const title = data.name || data.title;
         const slug = title.toLowerCase().replace(/ /g, '-') + '-' + Date.now();
-        const { name, ...rest } = data; // Remove name from payload if present
+        const { name, category, ...rest } = data;
+
+        let categoryId;
+        if (category) {
+            const categoryDoc = await prisma.category.findFirst({
+                where: {
+                    OR: [
+                        { name: { equals: category, mode: 'insensitive' } },
+                        { slug: { equals: category, mode: 'insensitive' } }
+                    ]
+                }
+            });
+            if (categoryDoc) categoryId = categoryDoc.id;
+        }
+
+        if (!categoryId) {
+            // Fallback or Error. For now, let's try to find 'Electronics' or first available
+            const defaultCat = await prisma.category.findFirst();
+            if (defaultCat) categoryId = defaultCat.id;
+            else throw new AppError('Category not found', 400);
+        }
 
         const product = await prisma.product.create({
             data: {
                 ...rest,
                 title,
                 slug,
+                categoryId,
             },
+            include: { category: true }
         });
-        return { ...product, name: product.title };
+        return { ...product, name: product.title, category: product.category?.name || 'Unknown' };
     }
 
     async updateProduct(id: string, data: any) {
-        const { name, ...rest } = data;
-        const updateData = { ...rest };
+        const { name, category, ...rest } = data;
+        const updateData: any = { ...rest };
         if (name) updateData.title = name;
+
+        if (category) {
+            const categoryDoc = await prisma.category.findFirst({
+                where: {
+                    OR: [
+                        { name: { equals: category, mode: 'insensitive' } },
+                        { slug: { equals: category, mode: 'insensitive' } }
+                    ]
+                }
+            });
+            if (categoryDoc) updateData.categoryId = categoryDoc.id;
+        }
 
         const product = await prisma.product.update({
             where: { id },
             data: updateData,
+            include: { category: true }
         });
-        return { ...product, name: product.title };
+        return { ...product, name: product.title, category: product.category?.name || 'Unknown' };
     }
 
     async deleteProduct(id: string) {
@@ -51,7 +86,7 @@ export class ProductService {
             },
         });
         if (!product) throw new AppError('Product not found', 404);
-        return { ...product, name: product.title };
+        return { ...product, name: product.title, category: product.category?.name || 'Unknown' };
     }
 
     async getAllProducts(query: any) {
@@ -82,7 +117,7 @@ export class ProductService {
             prisma.product.count({ where }),
         ]);
 
-        const mappedProducts = products.map((p: any) => ({ ...p, name: p.title }));
+        const mappedProducts = products.map((p: any) => ({ ...p, name: p.title, category: p.category?.name || 'Unknown' }));
 
         return { products: mappedProducts, total, page: Number(page), pages: Math.ceil(total / Number(limit)) };
     }
