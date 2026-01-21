@@ -260,39 +260,50 @@ export const ProductDetails: React.FC = () => {
               </span>
             </div>
 
+            {/* Description */}
+            <p className="mt-4 text-gray-600 text-sm leading-relaxed line-clamp-3">
+              {product.description}
+            </p>
+
             {/* Color Selector */}
-            {product.variants?.find(v => v.name === 'Color') && (
+            {product.variants?.find(v => v.name.toLowerCase() === 'color') && (
               <div className="mt-6">
                 <div className="flex gap-3">
-                  {product.variants.find(v => v.name === 'Color')?.options.map((color, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleVariantSelect('Color', color)}
-                      className={`w-8 h-8 rounded-full ${getColorClass(color)} border-2 ${selectedVariants['Color'] === color ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'
-                        }`}
-                      title={color}
-                    />
-                  ))}
+                  {product.variants.find(v => v.name.toLowerCase() === 'color')?.options.map((color, idx) => {
+                    const variantName = product.variants?.find(v => v.name.toLowerCase() === 'color')?.name || 'Color';
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handleVariantSelect(variantName, color)}
+                        className={`w-8 h-8 rounded-full ${getColorClass(color)} border-2 ${selectedVariants[variantName] === color ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'
+                          }`}
+                        title={color}
+                      />
+                    )
+                  })}
                 </div>
               </div>
             )}
 
             {/* Size Selector */}
-            {product.variants?.find(v => v.name === 'Size') && (
+            {product.variants?.find(v => v.name.toLowerCase() === 'size') && (
               <div className="mt-6">
                 <div className="flex gap-2 flex-wrap">
-                  {product.variants.find(v => v.name === 'Size')?.options.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => handleVariantSelect('Size', size)}
-                      className={`px-5 py-2 rounded-lg border-2 text-sm font-medium ${selectedVariants['Size'] === size
-                        ? 'border-gray-800 bg-gray-900 text-white'
-                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                        }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {product.variants.find(v => v.name.toLowerCase() === 'size')?.options.map((size) => {
+                    const variantName = product.variants?.find(v => v.name.toLowerCase() === 'size')?.name || 'Size';
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => handleVariantSelect(variantName, size)}
+                        className={`px-5 py-2 rounded-lg border-2 text-sm font-medium ${selectedVariants[variantName] === size
+                          ? 'border-gray-800 bg-gray-900 text-white'
+                          : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                          }`}
+                      >
+                        {size}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             )}
