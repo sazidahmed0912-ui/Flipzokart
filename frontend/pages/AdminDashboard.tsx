@@ -81,7 +81,7 @@ export const AdminDashboard: React.FC = () => {
       <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
         <AdminSidebar />
         <div className="flex-1 p-8 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2874F0]"></div>
+          {/* Loading removed */}
         </div>
       </div>
     );

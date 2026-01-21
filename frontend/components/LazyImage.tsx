@@ -23,11 +23,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
 
     return (
         <div className={`relative overflow-hidden bg-gray-50 ${className}`}>
-            {!isLoaded && (
-                <Skeleton
-                    className={`absolute inset-0 w-full h-full z-10 ${skeletonClassName}`}
-                />
-            )}
+            {/* Loading skeleton removed */}
             <img
                 src={src}
                 alt={alt}

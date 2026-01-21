@@ -146,11 +146,7 @@ export const ProductDetails: React.FC = () => {
     }
   }, [currentStock, isOutOfStock, quantity]);
 
-  if (isLoading) return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
-    </div>
-  );
+  if (isLoading) return <div className="min-h-[60vh]"></div>;
 
   if (!product) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center space-y-4">
@@ -386,11 +382,8 @@ export const ProductDetails: React.FC = () => {
                     ))}
                   </div>
                 </div>
-                {isReviewsLoading ? (
-                  <div className="flex items-center justify-center p-10">
-                    <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-primary"></div>
-                  </div>
-                ) : (
+                {/* Reviews List */}
+                {isReviewsLoading ? null : (
                   <ReviewList reviews={reviews} />
                 )}
                 {id && <ReviewForm productId={id} onReviewSubmitted={handleReviewUpdate} />}

@@ -46,7 +46,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
 
     return (
         <>
-            {isLoading && <SignatureLoader />}
+            {isLoading && null /* Loader removed */}
 
             <div
                 className={`

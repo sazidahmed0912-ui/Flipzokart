@@ -107,7 +107,7 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
 
   return (
     <Layout>
-      <Suspense fallback={<CircularGlassSpinner />}>
+      <Suspense fallback={null}>
         <Routes location={currentLocation}>
           {/* Public */}
           <Route path="/" element={<HomePage />} />

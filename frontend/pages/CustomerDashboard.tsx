@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, Link, useLocation } from 'react-router-dom';
-import { 
-  User as UserIcon, Package, MapPin, CreditCard, 
+import {
+  User as UserIcon, Package, MapPin, CreditCard,
   Settings, LogOut, ChevronRight, ShoppingBag,
-  Star, ShoppingCart, MessageSquare
+  Star, ShoppingCart, MessageSquare, CheckCircle2
 } from 'lucide-react';
 import { useApp } from '../store/Context';
 import API from '../services/api';
@@ -36,7 +36,7 @@ export const CustomerDashboard: React.FC = () => {
       setIsLoadingReviews(true);
       try {
         // Assuming an API endpoint to get reviews by user ID
-        const response = await API.get(`/reviews/user/${user.id}`); 
+        const response = await API.get(`/reviews/user/${user.id}`);
         setUserReviews(response.data.data);
       } catch (error) {
         console.error("Failed to fetch user reviews:", error);
@@ -51,7 +51,7 @@ export const CustomerDashboard: React.FC = () => {
       setIsLoadingOrders(true);
       try {
         // Assuming an API endpoint to get orders by user ID
-        const response = await API.get(`/orders/user/${user.id}`); 
+        const response = await API.get(`/orders/user/${user.id}`);
         setUserOrders(response.data.data);
       } catch (error) {
         console.error("Failed to fetch user orders:", error);
@@ -94,11 +94,10 @@ export const CustomerDashboard: React.FC = () => {
                   key={item.id}
                   to={`#${item.id}`}
                   onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${
-                    activeSection === item.id 
-                      ? 'bg-primary/5 text-primary border border-primary/10' 
-                      : 'text-gray-500 hover:bg-gray-50'
-                  }`}
+                  className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${activeSection === item.id
+                    ? 'bg-primary/5 text-primary border border-primary/10'
+                    : 'text-gray-500 hover:bg-gray-50'
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <item.icon size={20} className={activeSection === item.id ? 'text-primary' : 'text-gray-400 group-hover:text-dark'} />
@@ -107,10 +106,10 @@ export const CustomerDashboard: React.FC = () => {
                   <ChevronRight size={14} className={activeSection === item.id ? 'opacity-100' : 'opacity-0'} />
                 </Link>
               ))}
-              
+
               <div className="h-px bg-gray-50 my-4 mx-4"></div>
-              
-              <button 
+
+              <button
                 onClick={logout}
                 className="w-full flex items-center gap-3 p-4 rounded-2xl text-red-500 font-bold text-sm hover:bg-red-50 transition-all"
               >
@@ -232,10 +231,10 @@ export const CustomerDashboard: React.FC = () => {
             <div className="space-y-6 animate-in fade-in duration-500">
               <h2 className="text-3xl font-bold tracking-tight text-dark mb-8">My Orders</h2>
               {isLoadingOrders ? (
-                 <div className="text-center py-32 bg-white rounded-[3rem] border border-gray-100 border-dashed">
-                    <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary mx-auto mb-4"></div>
-                    <p className="text-gray-500 font-medium">Loading your orders...</p>
-                 </div>
+                <div className="text-center py-32 bg-white rounded-[3rem] border border-gray-100 border-dashed">
+                  {/* Loading removed */}
+                  <p className="text-gray-500 font-medium">Loading your orders...</p>
+                </div>
               ) : userOrders.length > 0 ? (
                 userOrders.map(order => (
                   <div key={order.id} className="bg-white border border-gray-100 rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-md transition-shadow">
@@ -255,16 +254,16 @@ export const CustomerDashboard: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Order ID</p>
-                         <p className="text-sm font-bold">#{order.id}</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Order ID</p>
+                        <p className="text-sm font-bold">#{order.id}</p>
                       </div>
                     </div>
                     <div className="p-8 space-y-6">
                       <div className="flex items-center gap-3">
-                         <div className="w-8 h-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center">
-                           <CheckCircle2 size={16} />
-                         </div>
-                         <p className="font-bold text-dark">Status: <span className="text-green-600">{order.status}</span></p>
+                        <div className="w-8 h-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center">
+                          <CheckCircle2 size={16} />
+                        </div>
+                        <p className="font-bold text-dark">Status: <span className="text-green-600">{order.status}</span></p>
                       </div>
                       <div className="space-y-4">
                         {order.items.map((item, idx) => (
@@ -296,8 +295,8 @@ export const CustomerDashboard: React.FC = () => {
               <h2 className="text-3xl font-bold tracking-tight text-dark mb-8">My Reviews</h2>
               {isLoadingReviews ? (
                 <div className="text-center py-32 bg-white rounded-[3rem] border border-gray-100 border-dashed">
-                   <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary mx-auto mb-4"></div>
-                   <p className="text-gray-500 font-medium">Loading your reviews...</p>
+                  {/* Loading removed */}
+                  <p className="text-gray-500 font-medium">Loading your reviews...</p>
                 </div>
               ) : userReviews.length > 0 ? (
                 userReviews.map(review => (
@@ -316,8 +315,8 @@ export const CustomerDashboard: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Date</p>
-                         <p className="text-sm font-bold">{new Date(review.createdAt).toLocaleDateString()}</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Date</p>
+                        <p className="text-sm font-bold">{new Date(review.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <div className="p-8">
@@ -338,31 +337,31 @@ export const CustomerDashboard: React.FC = () => {
 
           {activeSection === 'addresses' && (
             <div className="space-y-8 animate-in fade-in duration-500">
-               <h2 className="text-3xl font-bold tracking-tight text-dark">Saved Addresses</h2>
-               <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm space-y-10">
-                  <p className="text-gray-500 italic">Address management features would go here.</p>
-                  {/* You would integrate address listing/editing components here */}
-               </div>
+              <h2 className="text-3xl font-bold tracking-tight text-dark">Saved Addresses</h2>
+              <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm space-y-10">
+                <p className="text-gray-500 italic">Address management features would go here.</p>
+                {/* You would integrate address listing/editing components here */}
+              </div>
             </div>
           )}
 
           {activeSection === 'payments' && (
             <div className="space-y-8 animate-in fade-in duration-500">
-               <h2 className="text-3xl font-bold tracking-tight text-dark">Payment Methods</h2>
-               <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm space-y-10">
-                  <p className="text-gray-500 italic">Payment method management features would go here.</p>
-                  {/* You would integrate payment method listing/editing components here */}
-               </div>
+              <h2 className="text-3xl font-bold tracking-tight text-dark">Payment Methods</h2>
+              <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm space-y-10">
+                <p className="text-gray-500 italic">Payment method management features would go here.</p>
+                {/* You would integrate payment method listing/editing components here */}
+              </div>
             </div>
           )}
 
           {activeSection === 'settings' && (
             <div className="space-y-8 animate-in fade-in duration-500">
-               <h2 className="text-3xl font-bold tracking-tight text-dark">Account Security</h2>
-               <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm space-y-10">
-                  <p className="text-gray-500 italic">Account security features would go here, similar to ProfilePage.</p>
-                  {/* Copy content from ProfilePage settings tab */}
-               </div>
+              <h2 className="text-3xl font-bold tracking-tight text-dark">Account Security</h2>
+              <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm space-y-10">
+                <p className="text-gray-500 italic">Account security features would go here, similar to ProfilePage.</p>
+                {/* Copy content from ProfilePage settings tab */}
+              </div>
             </div>
           )}
         </main>
