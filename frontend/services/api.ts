@@ -59,5 +59,6 @@ export const calculateShipping = (pincode: string) => API.post("/api/order/calcu
 export const fetchAllOrders = () => API.get("/api/order/admin/all");
 export const fetchUserOrders = (userId: string) => API.get(`/api/order/user/${userId}`);
 export const fetchOrderById = (id: string) => API.get(`/api/order/${id}`);
+export const deleteOrder = (id: string) => API.delete(`/api/order/${id}`);
 
 export default API;

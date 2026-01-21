@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import {
   ChevronLeft, Search, Filter,
   Clock, CheckCircle, Truck, XCircle, CreditCard, Banknote,
-  ExternalLink, Eye, ChevronDown, Bell, User, LogOut, ShoppingBag
+  ExternalLink, Eye, ChevronDown, Bell, User, LogOut, ShoppingBag, Trash2
 } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { Order } from '../types';
 import { AdminSidebar } from '../components/AdminSidebar';
 
-import { fetchAllOrders } from '../services/api';
+import { fetchAllOrders, deleteOrder } from '../services/api';
 
 export const AdminOrders: React.FC = () => {
   const { updateOrderStatus, user, logout } = useApp();
@@ -20,6 +20,10 @@ export const AdminOrders: React.FC = () => {
   // Real-time Order State
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Actions
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      REAL-TIME ORDERS LOGIC
@@ -32,7 +36,6 @@ export const AdminOrders: React.FC = () => {
     const loadOrders = async () => {
       try {
         const { data } = await fetchAllOrders();
-        // Assuming data returned is the array of orders
         setOrders(data);
       } catch (error) {
         console.error("Failed to fetch orders", error);
@@ -46,6 +49,23 @@ export const AdminOrders: React.FC = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this order? This action cannot be undone.")) {
+      try {
+        await deleteOrder(id);
+        setOrders(prev => prev.filter(o => o.id !== id));
+      } catch (error) {
+        console.error("Delete failed", error);
+        alert("Failed to delete order");
+      }
+    }
+  };
+
+  const handlePreview = (order: Order) => {
+    setSelectedOrder(order);
+    setIsPreviewOpen(true);
+  };
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
@@ -68,7 +88,6 @@ export const AdminOrders: React.FC = () => {
   };
 
   const filteredOrders = orders.filter(o => {
-    // Determine ID to check: if API returns full ObjectId, use last 6 chars for search
     const displayId = o.id.length > 10 ? o.id.slice(-6) : o.id;
 
     const matchesSearch = displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,7 +116,6 @@ export const AdminOrders: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-6">
-            {/* Live Indicator */}
             <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -227,9 +245,22 @@ export const AdminOrders: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="p-2 text-gray-400 hover:text-[#2874F0] hover:bg-blue-50 rounded-lg transition-all" title="View Details">
-                          <Eye size={16} />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handlePreview(order)}
+                            className="p-2 text-gray-400 hover:text-[#2874F0] hover:bg-blue-50 rounded-lg transition-all"
+                            title="View Details"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(order.id)}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                            title="Delete Order"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -244,6 +275,95 @@ export const AdminOrders: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Preview Modal */}
+      {isPreviewOpen && selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">Order #{selectedOrder.id.slice(-6)}</h2>
+                <p className="text-sm text-gray-500">{new Date(selectedOrder.createdAt).toLocaleString()}</p>
+              </div>
+              <button onClick={() => setIsPreviewOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <XCircle size={24} className="text-gray-400" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-6">
+              {/* Product List */}
+              <div>
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Items ({selectedOrder.items?.length || 0})</h3>
+                <div className="space-y-4">
+                  {selectedOrder.items?.map((item, idx) => (
+                    <div key={idx} className="flex gap-4">
+                      <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400"><ShoppingBag size={20} /></div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800 text-sm line-clamp-1">{item.name}</p>
+                        <p className="text-xs text-gray-500 mt-1">Qty: {item.quantity} × <span className="font-bold text-gray-700">₹{item.price.toLocaleString()}</span></p>
+                      </div>
+                      <div className="ml-auto font-bold text-gray-800 text-sm">
+                        ₹{(item.price * item.quantity).toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-gray-100">
+                {/* Shipping */}
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Shipping Details</h3>
+                  <div className="bg-gray-50 p-4 rounded-xl text-sm text-gray-700">
+                    <p className="font-semibold mb-1">{selectedOrder.userName}</p>
+                    <p className="whitespace-pre-wrap leading-relaxed text-gray-600">
+                      {typeof selectedOrder.address === 'string'
+                        ? selectedOrder.address
+                        : `${selectedOrder.address?.fullName || ''}, ${selectedOrder.address?.street}, ${selectedOrder.address?.city} - ${selectedOrder.address?.zipCode}`}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Payment */}
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Payment Info</h3>
+                  <div className="bg-gray-50 p-4 rounded-xl space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Method</span>
+                      <span className="font-bold text-gray-800">{selectedOrder.paymentMethod}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Status</span>
+                      <span className={`font-bold ${selectedOrder.paymentStatus === 'PAID' ? 'text-green-600' : 'text-orange-600'}`}>
+                        {selectedOrder.paymentStatus || 'PENDING'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between pt-2 border-t border-gray-200 mt-2">
+                      <span className="font-bold text-gray-800">Total Amount</span>
+                      <span className="font-bold text-[#2874F0] text-lg">₹{selectedOrder.total.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+              <button
+                onClick={() => setIsPreviewOpen(false)}
+                className="px-6 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

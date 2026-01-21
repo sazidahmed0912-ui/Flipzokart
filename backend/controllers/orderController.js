@@ -408,6 +408,25 @@ const getOrderById = async (req, res) => {
   }
 };
 
+// @desc    Delete order
+// @route   DELETE /api/order/:id
+// @access  Private/Admin
+const deleteOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    await order.deleteOne();
+    res.json({ message: 'Order removed' });
+  } catch (error) {
+    console.error('Error deleting order:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createOrder,
   createRazorpayOrder,
@@ -415,5 +434,6 @@ module.exports = {
   calculateShipping,
   getUserOrders,
   getAllOrders,
-  getOrderById
+  getOrderById,
+  deleteOrder
 };

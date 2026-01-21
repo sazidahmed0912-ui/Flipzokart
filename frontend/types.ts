@@ -67,6 +67,7 @@ export interface Order {
   total: number;
   status: 'Pending' | 'Paid' | 'Shipped' | 'Delivered' | 'Cancelled';
   paymentMethod: 'COD' | 'Razorpay';
+  paymentStatus: 'PENDING' | 'PAID' | 'FAILED'; // Added this
   createdAt: string;
   address: {
     fullName: string;
