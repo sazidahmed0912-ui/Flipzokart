@@ -167,9 +167,8 @@ export const ProductDetails: React.FC = () => {
                 <div
                   key={i}
                   onClick={() => setActiveImage(img)}
-                  className={`w-20 h-20 rounded-xl border-2 ${
-                    activeImage === img ? 'border-blue-500' : 'border-gray-200'
-                  } overflow-hidden cursor-pointer`}
+                  className={`w-20 h-20 rounded-xl border-2 ${activeImage === img ? 'border-blue-500' : 'border-gray-200'
+                    } overflow-hidden cursor-pointer`}
                 >
                   <img
                     src={img}
@@ -191,9 +190,9 @@ export const ProductDetails: React.FC = () => {
             <div className="flex items-center gap-2 mt-3">
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Star 
-                    key={i} 
-                    className={`w-5 h-5 ${i <= Math.floor(product.rating || 4.4) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                  <Star
+                    key={i}
+                    className={`w-5 h-5 ${i <= Math.floor(product.rating || 4.4) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
                   />
                 ))}
               </div>
@@ -209,9 +208,8 @@ export const ProductDetails: React.FC = () => {
                 {['bg-blue-500', 'bg-gray-300', 'bg-red-500', 'bg-gray-100'].map((color, idx) => (
                   <button
                     key={idx}
-                    className={`w-8 h-8 rounded-full ${color} border-2 ${
-                      idx === 0 ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'
-                    }`}
+                    className={`w-8 h-8 rounded-full ${color} border-2 ${idx === 0 ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'
+                      }`}
                   />
                 ))}
               </div>
@@ -230,6 +228,32 @@ export const ProductDetails: React.FC = () => {
                 ))}
               </div>
             </div>
+
+            {/* Action Buttons - MOVED HERE */}
+            <div className="mt-8 flex flex-col md:flex-row gap-4">
+              <button
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className={`flex-1 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-[0.98] ${isOutOfStock
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-yellow-400 text-gray-900 hover:bg-yellow-500 shadow-md'
+                  }`}
+              >
+                <ShoppingCart size={20} />
+                ADD TO CART
+              </button>
+              <button
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className={`flex-1 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-[0.98] ${isOutOfStock
+                    ? 'hidden'
+                    : 'bg-yellow-500 text-gray-900 hover:bg-yellow-600 shadow-md'
+                  }`}
+              >
+                BUY NOW
+                <ChevronRight size={20} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -247,7 +271,7 @@ export const ProductDetails: React.FC = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">5% Unlimited Cashback</p>
-                  <p className="text-sm text-gray-600">on Flipkart Axis Bank Credit Card</p>
+                  <p className="text-sm text-gray-600">on Flipzokart Axis Bank Credit Card</p>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -265,7 +289,7 @@ export const ProductDetails: React.FC = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">Pay Later & Get 10% Cashback</p>
-                  <p className="text-sm text-gray-600">on Flipkart Pay Later</p>
+                  <p className="text-sm text-gray-600">on Flipzokart Pay Later</p>
                 </div>
               </div>
             </div>
@@ -301,31 +325,28 @@ export const ProductDetails: React.FC = () => {
           <div className="flex border-b border-gray-200">
             <button
               onClick={() => setActiveTab('details')}
-              className={`px-6 py-4 font-medium text-sm ${
-                activeTab === 'details'
+              className={`px-6 py-4 font-medium text-sm ${activeTab === 'details'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
             >
               Product Details
             </button>
             <button
               onClick={() => setActiveTab('specifications')}
-              className={`px-6 py-4 font-medium text-sm ${
-                activeTab === 'specifications'
+              className={`px-6 py-4 font-medium text-sm ${activeTab === 'specifications'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
             >
               Specifications
             </button>
             <button
               onClick={() => setActiveTab('reviews')}
-              className={`px-6 py-4 font-medium text-sm ${
-                activeTab === 'reviews'
+              className={`px-6 py-4 font-medium text-sm ${activeTab === 'reviews'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
             >
               Customer Reviews
             </button>
@@ -341,9 +362,9 @@ export const ProductDetails: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <div className="flex">
                         {[1, 2, 3, 4, 5].map((i) => (
-                          <Star 
-                            key={i} 
-                            className={`w-4 h-4 ${i <= Math.floor(product.rating || 4.4) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} 
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${i <= Math.floor(product.rating || 4.4) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
                           />
                         ))}
                       </div>
@@ -420,35 +441,7 @@ export const ProductDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* STICKY BOTTOM ACTION BAR */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex gap-3">
-          <button 
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-            className={`flex-1 py-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors ${
-              isOutOfStock 
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                : 'bg-yellow-400 hover:bg-yellow-500 text-gray-900'
-            }`}
-          >
-            <ShoppingCart className="w-5 h-5" />
-            ADD TO CART
-          </button>
-          <button 
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-            className={`flex-1 py-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors ${
-              isOutOfStock 
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                : 'bg-yellow-500 hover:bg-yellow-600 text-gray-900'
-            }`}
-          >
-            BUY NOW
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+
     </div>
   );
-};    
+};
