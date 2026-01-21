@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, CartItem, Product, Order, Address } from '../types';
 import { MOCK_PRODUCTS } from '../constants';
 import authService from '../services/authService';
-import { fetchProducts } from '../services/api';
+import { fetchProducts, updateOrderStatus as updateOrderStatusAPI } from '../services/api';
 
 interface AppContextType {
   user: User | null;
@@ -202,10 +202,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     clearCart();
   };
 
-  const updateOrderStatus = (orderId: string, status: Order['status']) => {
-    setOrders(prev => prev.map(order =>
-      order.id === orderId ? { ...order, status } : order
-    ));
+  const updateOrderStatus = async (orderId: string, status: Order['status']) => {
+    try {
+      await updateOrderStatusAPI(orderId, status);
+      setOrders(prev => prev.map(order =>
+        order.id === orderId ? { ...order, status } : order
+      ));
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      alert('Failed to update order status. Please try again.');
+    }
   };
 
   const logout = async () => {

@@ -408,6 +408,44 @@ const getOrderById = async (req, res) => {
   }
 };
 
+// @desc    Update order status
+// @route   PUT /api/order/:id/status
+// @access  Private/Admin
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Validate status
+    const validStatuses = ['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    order.status = status;
+
+    // Update paymentStatus if status is Paid
+    if (status === 'Paid') {
+      order.paymentStatus = 'PAID';
+    }
+
+    await order.save();
+
+    res.json({ message: 'Order status updated', order });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Order not found (Invalid ID)' });
+    }
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // @desc    Delete order
 // @route   DELETE /api/order/:id
 // @access  Private/Admin
@@ -435,5 +473,6 @@ module.exports = {
   getUserOrders,
   getAllOrders,
   getOrderById,
+  updateOrderStatus,
   deleteOrder
 };

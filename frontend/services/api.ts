@@ -60,5 +60,6 @@ export const fetchAllOrders = () => API.get("/api/order/admin/all");
 export const fetchUserOrders = (userId: string) => API.get(`/api/order/user/${userId}`);
 export const fetchOrderById = (id: string) => API.get(`/api/order/${id}`);
 export const deleteOrder = (id: string) => API.delete(`/api/order/${id}`);
+export const updateOrderStatus = (id: string, status: string) => API.put(`/api/order/${id}/status`, { status });
 
 export default API;
