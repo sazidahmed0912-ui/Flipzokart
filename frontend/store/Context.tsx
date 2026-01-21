@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, CartItem, Product, Order, Address } from '../types';
 import { MOCK_PRODUCTS } from '../constants';
 import authService from '../services/authService';
+import { fetchProducts } from '../services/api';
 
 interface AppContextType {
   user: User | null;
@@ -79,7 +80,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const { data } = await import('../services/api').then(m => m.fetchProducts());
+        const { data } = await fetchProducts();
         // Backend returns: { status: 'success', products: [...], total: ... }
         // Or sometimes it might be just the array depending on endpoint version
         const productList = Array.isArray(data) ? data : (data.products || data.data || []);
