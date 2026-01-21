@@ -203,7 +203,7 @@ export const AdminDashboard: React.FC = () => {
                     <option>This Month</option>
                   </select>
                 </div>
-                <div className="h-64">
+                <div className="h-64 w-full min-h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
                       <defs>

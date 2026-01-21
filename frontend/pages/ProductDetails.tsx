@@ -242,7 +242,7 @@ export const ProductDetails: React.FC = () => {
               <div className="flex items-center gap-6 pt-3">
                 <div className="flex items-center gap-1.5 text-yellow-500">
                   {[1, 2, 3, 4, 5].map(s => <Star key={s} size={16} fill={s <= Math.floor(product.rating) ? "currentColor" : "none"} />)}
-                  <span className="font-bold text-dark ml-1">{product.rating.toFixed(1)}</span>
+                  <span className="font-bold text-dark ml-1">{product.rating ? product.rating.toFixed(1) : 'New'}</span>
                 </div>
                 <span className="text-gray-400 text-sm font-medium border-l pl-6">{reviews.length} community reviews</span>
               </div>
@@ -367,7 +367,7 @@ export const ProductDetails: React.FC = () => {
               <div className="animate-in slide-in-from-bottom-4 duration-300 space-y-12">
                 <div className="flex flex-col md:flex-row gap-16 items-center p-10 bg-gray-50 rounded-[2.5rem] border border-gray-100">
                   <div className="text-center shrink-0">
-                    <p className="text-7xl font-bold mb-3 tracking-tighter text-dark">{product.rating.toFixed(1)}</p>
+                    <p className="text-7xl font-bold mb-3 tracking-tighter text-dark">{product.rating ? product.rating.toFixed(1) : 'New'}</p>
                     <div className="flex text-yellow-400 justify-center mb-3">{[1, 2, 3, 4, 5].map(s => <Star key={s} size={24} fill="currentColor" />)}</div>
                     <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Global Marketplace Rating</p>
                   </div>
