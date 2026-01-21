@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Minus, Plus, Star, Trash2, Heart, ShieldCheck, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { useApp } from '../../store/Context';
@@ -15,7 +15,7 @@ const getCartItemKey = (productId: string, variants?: Record<string, string>) =>
 };
 
 const CartPage = () => {
-  const { cart: cartItems, updateCartQuantity, removeFromCart } = useApp();
+  const { cart: cartItems, removeFromCart, updateCartQuantity, clearCart, products, removeProductFromCart } = useApp();
   const navigate = useNavigate();
 
   const updateQuantity = (item: CartItem, change: number) => {
@@ -32,6 +32,19 @@ const CartPage = () => {
   const handlePlaceOrder = () => {
     navigate('/checkout');
   };
+
+  // Proactive Cart Cleanup: Remove items that no longer exist in DB
+  useEffect(() => {
+    if (products.length > 0 && cartItems.length > 0) {
+      cartItems.forEach(item => {
+        const productExists = products.find(p => p.id === item.id);
+        if (!productExists) {
+          console.warn(`Removing invalid cart item: ${item.name} (${item.id})`);
+          removeProductFromCart(item.id);
+        }
+      });
+    }
+  }, [products, cartItems, removeProductFromCart]);
 
   const calculatePriceDetails = () => {
     const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
