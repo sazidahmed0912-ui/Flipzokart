@@ -49,11 +49,22 @@ export const ProductDetails: React.FC = () => {
       socket.on('updatedReview', (updatedReview: Review) => {
         if (updatedReview.product._id === id) handleReviewUpdate(updatedReview);
       });
+      socket.on('productUpdated', (updatedProduct: Product) => {
+        if (updatedProduct.id === id) {
+          setProduct(updatedProduct);
+          // If the currently active image is no longer in the updated product's gallery, reset to main image
+          const newGallery = updatedProduct.images || [];
+          if (activeImage !== updatedProduct.image && !newGallery.includes(activeImage)) {
+            setActiveImage(updatedProduct.image);
+          }
+        }
+      });
     }
     return () => {
       if (socket) {
         socket.off('newReview');
         socket.off('updatedReview');
+        socket.off('productUpdated');
       }
     };
   }, [id, socket, handleReviewUpdate]);
