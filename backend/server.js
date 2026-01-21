@@ -67,7 +67,7 @@ io.on("connection", (socket) => {
   }
 
   socket.on("disconnect", () => {
-    console.log("❌ Socket disconnected:", socket.user.email);
+    // console.log("❌ Socket disconnected:", socket.user.email);
     userSocketMap.delete(socket.user.id);
   });
 });
