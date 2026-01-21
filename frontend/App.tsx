@@ -12,7 +12,7 @@ import {
 /* ---------- LAYOUT & UI ---------- */
 import { Layout } from "./components/Layout";
 import ToastContainer from "./components/ToastContainer";
-import LoadingFallback from "./components/LoadingFallback";
+
 
 /* ---------- PAGES (LAZY LOADED) ---------- */
 const HomePage = lazy(() => import("./pages/HomePage").then(module => ({ default: module.HomePage })));
@@ -43,7 +43,7 @@ const AdminCoupons = lazy(() => import("./pages/AdminCoupons").then(module => ({
 
 /* ---------- SOCKET ---------- */
 import { useSocket } from "./hooks/useSocket";
-import LuxuryLoadingScreen from "./components/LuxuryLoadingScreen";
+import CircularGlassSpinner from "./components/CircularGlassSpinner";
 
 
 /* ======================================================
@@ -107,7 +107,7 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
 
   return (
     <Layout>
-      <Suspense fallback={<LoadingFallback />}>
+      <Suspense fallback={<CircularGlassSpinner />}>
         <Routes location={currentLocation}>
           {/* Public */}
           <Route path="/" element={<HomePage />} />
@@ -116,7 +116,7 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
           <Route path="/about" element={<AboutUsPage />} />
           <Route path="/about" element={<AboutUsPage />} />
           <Route path="/contact" element={<ContactUsPage />} />
-          <Route path="/design/loading" element={<LuxuryLoadingScreen />} />
+          <Route path="/design/loading" element={<CircularGlassSpinner />} />
 
 
           {/* Auth */}
