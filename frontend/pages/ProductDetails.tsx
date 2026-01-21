@@ -141,6 +141,23 @@ export const ProductDetails: React.FC = () => {
   const ratingCounts = [5, 4, 3, 2, 1].map(stars => reviews.filter(r => Math.floor(r.rating) === stars).length);
   const totalRatings = reviews.length || 1;
 
+  // Helper to map color names to Tailwind classes
+  const getColorClass = (colorName: string) => {
+    const map: Record<string, string> = {
+      'Blue': 'bg-blue-500',
+      'Red': 'bg-red-500',
+      'Green': 'bg-green-500',
+      'Black': 'bg-gray-900',
+      'White': 'bg-white',
+      'Gray': 'bg-gray-500',
+      'Yellow': 'bg-yellow-400',
+      'Orange': 'bg-orange-500',
+      'Purple': 'bg-purple-500',
+      'Pink': 'bg-pink-500',
+    };
+    return map[colorName] || 'bg-gray-200';
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen pb-24">
       {/* SECTION 1: PRODUCT IMAGE & BASIC INFO */}
@@ -198,36 +215,46 @@ export const ProductDetails: React.FC = () => {
               </div>
               <span className="font-semibold text-gray-900">{product.rating?.toFixed(1) || '4.4'}</span>
               <span className="text-gray-500 text-sm">
-                {reviews.length.toLocaleString() || '8,562'} ratings · {reviews.length || '1,095'} reviews
+                {reviews.length.toLocaleString()} ratings · {reviews.length} reviews
               </span>
             </div>
 
             {/* Color Selector */}
-            <div className="mt-6">
-              <div className="flex gap-3">
-                {['bg-blue-500', 'bg-gray-300', 'bg-red-500', 'bg-gray-100'].map((color, idx) => (
-                  <button
-                    key={idx}
-                    className={`w-8 h-8 rounded-full ${color} border-2 ${idx === 0 ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'
-                      }`}
-                  />
-                ))}
+            {product.variants?.find(v => v.name === 'Color') && (
+              <div className="mt-6">
+                <div className="flex gap-3">
+                  {product.variants.find(v => v.name === 'Color')?.options.map((color, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleVariantSelect('Color', color)}
+                      className={`w-8 h-8 rounded-full ${getColorClass(color)} border-2 ${selectedVariants['Color'] === color ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'
+                        }`}
+                      title={color}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Size Selector */}
-            <div className="mt-6">
-              <div className="flex gap-2 flex-wrap">
-                {[6, 7, 8, 9, 10, 11].map((size) => (
-                  <button
-                    key={size}
-                    className="px-5 py-2 rounded-lg border-2 text-sm font-medium border-gray-200 text-gray-700 hover:border-gray-300"
-                  >
-                    {size}
-                  </button>
-                ))}
+            {product.variants?.find(v => v.name === 'Size') && (
+              <div className="mt-6">
+                <div className="flex gap-2 flex-wrap">
+                  {product.variants.find(v => v.name === 'Size')?.options.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => handleVariantSelect('Size', size)}
+                      className={`px-5 py-2 rounded-lg border-2 text-sm font-medium ${selectedVariants['Size'] === size
+                        ? 'border-gray-800 bg-gray-900 text-white'
+                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                        }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Action Buttons - MOVED HERE */}
             <div className="mt-8 flex flex-col md:flex-row gap-4">
