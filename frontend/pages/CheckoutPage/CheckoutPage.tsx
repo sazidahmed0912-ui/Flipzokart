@@ -45,7 +45,7 @@ const CheckoutPage = () => {
     const [addressToEdit, setAddressToEdit] = useState<Address | null>(null);
     const [deliveryCharges, setDeliveryCharges] = useState(0);
 
-    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const subtotal = cart.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 1)), 0);
     const discount = 0; // Placeholder
     const totalPayable = subtotal + deliveryCharges - discount;
 

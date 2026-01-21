@@ -35,8 +35,8 @@ const CartPage = () => {
 
   const calculatePriceDetails = () => {
     const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-    const originalPrice = cartItems.reduce((acc, item) => acc + (item.originalPrice * item.quantity), 0);
-    const sellingPrice = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const originalPrice = cartItems.reduce((acc, item) => acc + ((item.originalPrice || 0) * item.quantity), 0);
+    const sellingPrice = cartItems.reduce((acc, item) => acc + ((item.price || 0) * item.quantity), 0);
     const discount = originalPrice - sellingPrice;
     const deliveryCharges = sellingPrice > 500 ? 0 : 40;
     const platformFee = 3;
@@ -123,9 +123,9 @@ const CartPage = () => {
     return (
       <div className="empty-cart-container">
         <div className="empty-cart-content">
-          <img 
-            src="/user-shopping-bags.jpg" 
-            alt="Empty Cart" 
+          <img
+            src="/user-shopping-bags.jpg"
+            alt="Empty Cart"
             className="empty-cart-image"
           />
           <h2>Your cart is empty!</h2>
@@ -144,7 +144,7 @@ const CartPage = () => {
           <div className="cart-header">
             <h2>My Cart ({cartItems.length})</h2>
           </div>
-          
+
           <div className="cart-items-list">
             {cartItems.map((item) => (
               <div key={item.id} className="cart-item-card">
@@ -169,10 +169,10 @@ const CartPage = () => {
                     </div>
 
                     <div className="item-price-block">
-                      <span className="current-price">₹{item.price.toLocaleString()}</span>
-                      <span className="original-price">₹{item.originalPrice.toLocaleString()}</span>
+                      <span className="current-price">₹{(item.price || 0).toLocaleString()}</span>
+                      <span className="original-price">₹{(item.originalPrice || 0).toLocaleString()}</span>
                       <span className="discount-tag">
-                        {Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}% Off
+                        {item.originalPrice ? Math.round(((item.originalPrice - (item.price || 0)) / item.originalPrice) * 100) : 0}% Off
                       </span>
                     </div>
 
@@ -194,8 +194,8 @@ const CartPage = () => {
                 {/* Actions & Quantity */}
                 <div className="item-actions-row">
                   <div className="quantity-control">
-                    <button 
-                      className="qty-btn" 
+                    <button
+                      className="qty-btn"
                       disabled={item.quantity <= 1}
                       onClick={() => updateQuantity(item, -1)}
                     >
@@ -213,7 +213,7 @@ const CartPage = () => {
 
                   <div className="action-buttons">
                     <button className="cart-action-button">SAVE FOR LATER</button>
-                    <button 
+                    <button
                       className="cart-action-button"
                       onClick={() => removeItem(item)}
                     >
@@ -224,7 +224,7 @@ const CartPage = () => {
               </div>
             ))}
           </div>
-          
+
           <div className="place-order-sticky-mobile">
             <div className="mobile-total">
               <span>₹{priceDetails.totalAmount.toLocaleString()}</span>
