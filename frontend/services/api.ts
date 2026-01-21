@@ -39,13 +39,14 @@ API.interceptors.response.use(
 export const fetchProducts = () => API.get("/api/products");
 export const fetchProductById = (id: string) => API.get(`/api/products/${id}`);
 
-export const createOrder = (data: any) => API.post("/api/orders/checkout", data);
-export const createRazorpayOrder = (data: any) => API.post("/order/razorpay", data); // This one unsure, maybe /api/v1/payment? Leaving as is if handled elsewhere
-export const verifyPayment = (data: any) => API.post("/order/verify-payment", data);
+// Orders (Base: /api/order)
+export const createOrder = (data: any) => API.post("/api/order/create", data);
+export const createRazorpayOrder = (data: any) => API.post("/api/order/razorpay", data);
+export const verifyPayment = (data: any) => API.post("/api/order/verify-payment", data);
 
-export const calculateShipping = (pincode: string) => API.post("/api/orders/calculate-shipping", { pincode });
-export const fetchAllOrders = () => API.get("/api/orders/admin/all"); // Check routes for this?
-export const fetchUserOrders = (userId: string) => API.get(`/api/orders`); // userId comes from token
-export const fetchOrderById = (id: string) => API.get(`/api/orders/${id}`);
+export const calculateShipping = (pincode: string) => API.post("/api/order/calculate-shipping", { pincode });
+export const fetchAllOrders = () => API.get("/api/order/admin/all");
+export const fetchUserOrders = (userId: string) => API.get(`/api/order/user/${userId}`);
+export const fetchOrderById = (id: string) => API.get(`/api/order/${id}`);
 
 export default API;
