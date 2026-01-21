@@ -21,7 +21,7 @@ const productSchema = new mongoose.Schema(
     },
     countInStock: {
       type: Number,
-      default: 0,
+      default: 100, // Default to 100 for easier testing
     },
     // 🔒 SYSTEM INTEGRITY FIELDS
     isDeleted: {
