@@ -116,10 +116,6 @@ export const AdminSellers: React.FC = () => {
                                 </div>
                             )}
                         </div>
-
-                        <button className="bg-[#F9C74F] text-gray-800 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-[#f0b52e] transition-all flex items-center gap-2 shadow-sm">
-                            + Add Seller
-                        </button>
                     </div>
                 </header>
 
@@ -154,6 +150,10 @@ export const AdminSellers: React.FC = () => {
 
                         <button className="bg-[#F9C74F] text-gray-800 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-[#f0b52e] transition-all shadow-sm">
                             Filter
+                        </button>
+
+                        <button className="bg-[#F9C74F] text-gray-800 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-[#f0b52e] transition-all flex items-center gap-2 shadow-sm">
+                            + Add Seller
                         </button>
                     </div>
 
@@ -233,8 +233,8 @@ export const AdminSellers: React.FC = () => {
                                     key={page}
                                     onClick={() => setCurrentPage(page)}
                                     className={`w-10 h-10 rounded-lg font-semibold text-sm transition-colors ${currentPage === page
-                                            ? 'bg-[#2874F0] text-white'
-                                            : 'text-gray-700 hover:bg-gray-100'
+                                        ? 'bg-[#2874F0] text-white'
+                                        : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                 >
                                     {page}
