@@ -20,9 +20,46 @@ import {
 import "./ProfilePage.css";
 import { SmoothReveal } from "../components/SmoothReveal";
 
+import { useApp } from "../store/Context";
+import API from "../services/api";
+
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const { user } = useApp();
   const [isModalOpen, setModalOpen] = useState(false);
+  const [profileData, setProfileData] = useState<any>(user || {});
+  const [activities, setActivities] = useState<any[]>([]);
+
+  // STRICT 5s SYNC ENGINE
+  React.useEffect(() => {
+    // Initial Fetch
+    const syncData = async () => {
+      try {
+        // 1. Silent Profile Sync
+        const updatedUser = await authService.getMe();
+        if (updatedUser) setProfileData((prev: any) => ({ ...prev, ...updatedUser }));
+
+        // 2. Silent Activity Sync
+        const activityRes = await API.get('/api/user/activity');
+        if (activityRes.data?.success) {
+          setActivities(activityRes.data.activities);
+        }
+      } catch (e) {
+        // Silent Fail - No UI impact
+      }
+    };
+
+    syncData(); // Run immediately on mount
+
+    const intervalId = setInterval(syncData, 5000); // 5s Auto Sync
+
+    return () => clearInterval(intervalId); // Cleanup
+  }, []);
+
+  // Update local state if context user changes initially
+  React.useEffect(() => {
+    if (user) setProfileData((prev: any) => ({ ...prev, ...user }));
+  }, [user]);
 
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
@@ -67,7 +104,7 @@ const ProfilePage = () => {
             </div>
             <div>
               <div className="text-xs text-gray-500 font-medium">Hello,</div>
-              <div className="text-base font-bold text-[#1F2937]">Akhtar Tiwari</div>
+              <div className="text-base font-bold text-[#1F2937]">{profileData.name || "User"}</div>
             </div>
           </div>
 
@@ -123,11 +160,11 @@ const ProfilePage = () => {
                 </div>
                 <div className="space-y-1">
                   <h2 className="text-2xl font-bold text-[#1F2937] flex items-center gap-2">
-                    Akhtar Tiwari
+                    {profileData.name || "User Name"}
                     <CheckCircle2 size={20} className="text-green-500 fill-current" />
                   </h2>
-                  <div className="text-base text-gray-500 font-medium">akhtar@email.com</div>
-                  <div className="text-base text-gray-500 font-medium">+91 9876543210</div>
+                  <div className="text-base text-gray-500 font-medium">{profileData.email || "email@example.com"}</div>
+                  <div className="text-base text-gray-500 font-medium">{profileData.phone || "+91 XXXXXXXXXX"}</div>
                 </div>
               </div>
               <button
@@ -224,15 +261,15 @@ const ProfilePage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Full Name</label>
-                    <div className="font-semibold text-[#1F2937] text-base">Akhtar Tiwari</div>
+                    <div className="font-semibold text-[#1F2937] text-base">{profileData.name || "N/A"}</div>
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Email Address</label>
-                    <div className="font-semibold text-[#1F2937] text-base">akhtar@email.com</div>
+                    <div className="font-semibold text-[#1F2937] text-base">{profileData.email || "N/A"}</div>
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Mobile Number</label>
-                    <div className="font-semibold text-[#1F2937] text-base">+91 9876543210</div>
+                    <div className="font-semibold text-[#1F2937] text-base">{profileData.phone || "N/A"}</div>
                   </div>
                 </div>
               )}
@@ -247,21 +284,19 @@ const ProfilePage = () => {
               <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 h-full">
                 <h3 className="text-lg font-bold text-[#1F2937] mb-6">Recent Activity</h3>
                 <div className="space-y-6">
-                  {[
-                    { text: "Logged in from a new device – Mumbai", time: "Today, 12:45 PM", icon: Smartphone },
-                    { text: "Logged in from a new device – Mumbai", time: "Yesterday", icon: Smartphone },
-                    { text: "Password changed successfully", time: "Jan 20, 2024", icon: Lock },
-                  ].map((activity, i) => (
+                  {activities.length > 0 ? activities.slice(0, 3).map((activity, i) => (
                     <div key={i} className="flex gap-4 items-start relative before:absolute before:left-2.5 before:top-8 before:w-[2px] before:h-full before:bg-gray-100 last:before:hidden">
                       <div className="w-5 h-5 rounded-full bg-blue-50 text-[#2874F0] flex items-center justify-center flex-shrink-0 z-10 mt-0.5">
-                        <activity.icon size={12} />
+                        <Smartphone size={12} />
                       </div>
                       <div>
-                        <div className="text-sm font-semibold text-[#1F2937] leading-tight">{activity.text}</div>
-                        <div className="text-xs text-gray-500 font-medium mt-1">{activity.time}</div>
+                        <div className="text-sm font-semibold text-[#1F2937] leading-tight">{activity.description || activity.text}</div>
+                        <div className="text-xs text-gray-500 font-medium mt-1">{new Date(activity.createdAt || Date.now()).toLocaleDateString()}</div>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="text-sm text-gray-500 italic">No recent activity found.</div>
+                  )}
                 </div>
               </div>
             </SmoothReveal>
