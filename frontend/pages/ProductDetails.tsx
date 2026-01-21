@@ -99,6 +99,36 @@ export const ProductDetails: React.FC = () => {
     getProductAndReviews();
   }, [id]);
 
+  // STRICT 5s POLLING SYNC (Backup for Socket)
+  useEffect(() => {
+    if (!id) return;
+    const intervalId = setInterval(async () => {
+      try {
+        const productResponse = await fetchProductById(id);
+        const updatedProduct = productResponse.data?.data?.product || productResponse.data;
+
+        if (updatedProduct) {
+          setProduct((prev) => {
+            // Only update if critical data changed to avoid unnecessary renders
+            if (JSON.stringify(prev) !== JSON.stringify(updatedProduct)) {
+              return updatedProduct;
+            }
+            return prev;
+          });
+
+          // Sync Active Image if needed (e.g. main image changed)
+          if (activeImage !== updatedProduct.image && (!updatedProduct.images || !updatedProduct.images.includes(activeImage))) {
+            setActiveImage(updatedProduct.image);
+          }
+        }
+      } catch (error) {
+        // Silent fail
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [id, activeImage]);
+
   const allImages = useMemo(() => {
     if (!product) return [];
     const gallery = product.images || [];
