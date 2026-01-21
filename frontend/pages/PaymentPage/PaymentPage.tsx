@@ -45,7 +45,7 @@ const useRazorpay = () => {
 
 const PaymentPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, cart, clearCart, selectedAddress } = useApp();
+  const { user, cart, clearCart, selectedAddress, removeProductFromCart } = useApp();
 
   const [paymentMethod, setPaymentMethod] = useState<
     "COD" | "RAZORPAY" | null
@@ -76,6 +76,38 @@ const PaymentPage: React.FC = () => {
     subtotal + deliveryCharges - discount + platformFee;
 
   /* =========================
+     ERROR HANDLING HELPER
+  ========================= */
+  const handlePaymentError = (err: any) => {
+    const errorMsg = err.response?.data?.message || "Order failed";
+    setError(errorMsg);
+
+    // Auto-Remove Deleted Products
+    if (errorMsg.includes("not found (likely deleted)")) {
+      // Extract ID from message: "Product with ID <id> ..."
+      const match = errorMsg.match(/ID\s([a-f0-9]+)/i);
+      if (match && match[1]) {
+        const invalidId = match[1];
+        // Find the item in cart to get getCartItemKey if needed, or just try removing by ID
+        // The context's removeFromCart expects cartItemKey. 
+        // Since we don't have the variant string here easily, we might need to find the item first.
+        const itemToRemove = cart.find(i => i.id === invalidId);
+        if (itemToRemove) {
+          // We need to reconstruct the key or if simple ID works
+          // Context uses keys. Let's try to remove all variants of this product ID to be safe
+          // OR just alert user. But auto-removal is better.
+          // For now, let's just use the ID if no variants, or filter cart ourselves.
+          // Actually, clearCart might be too aggressive.
+          // Let's trust the error message is clear enough, but adding a specific Toast would be nice.
+          alert(`Item removed: ${errorMsg}`);
+          // Let's rely on the user reading the message for now, OR try to filter:
+          removeProductFromCart(itemToRemove.id); // Try ID directly (if getCartItemKey handles it or if it matches)
+        }
+      }
+    }
+  };
+
+  /* =========================
      COD ORDER
   ========================= */
   const placeCODOrder = async () => {
@@ -100,7 +132,7 @@ const PaymentPage: React.FC = () => {
       clearCart();
       navigate("/order-success");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Order failed");
+      handlePaymentError(err);
     } finally {
       setLoading(false);
     }
@@ -151,8 +183,8 @@ const PaymentPage: React.FC = () => {
 
             clearCart();
             navigate("/order-success");
-          } catch {
-            setError("Payment verification failed");
+          } catch (err) {
+            handlePaymentError(err);
           }
         },
         prefill: {

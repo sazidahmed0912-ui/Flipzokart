@@ -11,6 +11,7 @@ interface AppContextType {
   cart: CartItem[];
   addToCart: (product: Product, quantity?: number) => void;
   removeFromCart: (cartItemId: string) => void;
+  removeProductFromCart: (productId: string) => void;
   updateCartQuantity: (cartItemId: string, quantity: number) => void;
   clearCart: () => void;
   wishlist: string[];
@@ -169,6 +170,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCart((prev: CartItem[]) => prev.filter((item: CartItem) => getCartItemKey(item.id, item.selectedVariants) !== cartItemKey));
   };
 
+  const removeProductFromCart = (productId: string) => {
+    setCart((prev: CartItem[]) => prev.filter((item: CartItem) => item.id !== productId));
+  };
+
   const updateCartQuantity = (cartItemKey: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(cartItemKey);
@@ -222,7 +227,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      user, setUser, cart, addToCart, removeFromCart, updateCartQuantity, clearCart,
+      user, setUser, cart, addToCart, removeFromCart, removeProductFromCart, updateCartQuantity, clearCart,
       wishlist, toggleWishlist, isAdmin, logout, orders, placeOrder, updateOrderStatus,
       products, setProducts, selectedAddress, setSelectedAddress
     }}>
