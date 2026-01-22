@@ -1,4 +1,6 @@
 const Order = require('../models/Order');
+const Notification = require('../models/Notification');
+const Notification = require('../models/Notification'); // Import Notification model
 const Product = require('../models/Product'); // Import Product model
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
@@ -83,6 +85,14 @@ const createOrder = async (req, res) => {
     });
 
     await order.save();
+
+    // Create Notification for User
+    await Notification.create({
+      recipient: order.user,
+      message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
+      type: 'newOrder',
+      relatedId: order._id
+    });
 
     const io = req.app.get('socketio');
     // Notify customer
@@ -225,6 +235,14 @@ const verifyPayment = async (req, res) => {
     });
 
     await order.save();
+
+    // Create Notification for User
+    await Notification.create({
+      recipient: order.user,
+      message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
+      type: 'newOrder',
+      relatedId: order._id
+    });
 
     const io = req.app.get('socketio');
     // Notify customer
@@ -469,6 +487,26 @@ const updateOrderStatus = async (req, res) => {
     }
 
     await order.save();
+
+    // Create Notification and Emit Socket
+    const message = `Your order #${order._id.toString().slice(-6)} is now ${status}`;
+
+    // Persist
+    await Notification.create({
+      recipient: order.user,
+      message,
+      type: 'orderStatusUpdate',
+      relatedId: order._id
+    });
+
+    // Emit
+    const io = req.app.get('socketio');
+    io.to(order.user.toString()).emit('notification', {
+      type: 'orderStatusUpdate',
+      message,
+      orderId: order._id,
+      status: 'info'
+    });
 
     res.json({ message: 'Order status updated', order });
   } catch (error) {
