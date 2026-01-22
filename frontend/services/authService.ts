@@ -32,7 +32,7 @@ const authService = {
     return result.user;
   },
 
-  
+
 
   // =========================
   // ✅ LOGIN
@@ -133,6 +133,26 @@ const authService = {
     const result = await response.json();
     if (!result.success) {
       throw new Error(result.message || "Reset failed");
+    }
+  },
+
+  // =========================
+  // ✅ CHANGE PASSWORD
+  // =========================
+  async changePassword(data: any): Promise<void> {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/api/auth/updatepassword`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message || "Password update failed");
     }
   },
 };
