@@ -276,79 +276,7 @@ const ProfilePage = () => {
             </div>
           </SmoothReveal>
 
-          /* BOTTOM GRID */
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            {/* 6️⃣ RECENT ACTIVITY */}
-            <SmoothReveal direction="left" delay={700} className="h-full">
-              <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 h-full">
-                <h3 className="text-lg font-bold text-[#1F2937] mb-6">Recent Activity</h3>
-                <div className="space-y-6">
-                  {activities.length > 0 ? activities.slice(0, 3).map((activity, i) => (
-                    <div key={i} className="flex gap-4 items-start relative before:absolute before:left-2.5 before:top-8 before:w-[2px] before:h-full before:bg-gray-100 last:before:hidden">
-                      <div className="w-5 h-5 rounded-full bg-blue-50 text-[#2874F0] flex items-center justify-center flex-shrink-0 z-10 mt-0.5">
-                        <Smartphone size={12} />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-[#1F2937] leading-tight">{activity.description || activity.text}</div>
-                        <div className="text-xs text-gray-500 font-medium mt-1">{new Date(activity.createdAt || Date.now()).toLocaleDateString()}</div>
-                      </div>
-                    </div>
-                  )) : (
-                    <div className="text-sm text-gray-500 italic">No recent activity found.</div>
-                  )}
-                </div>
-              </div>
-            </SmoothReveal>
-
-            {/* 7️⃣ ACCOUNT SETTINGS */}
-            <SmoothReveal direction="right" delay={800} className="h-full">
-              <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 h-full">
-                <h3 className="text-lg font-bold text-[#1F2937] mb-6">Account Settings</h3>
-                <div className="space-y-2">
-                  <div
-                    onClick={() => handleNavigation("/change-password")}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-50 text-[#2874F0] flex items-center justify-center">
-                        <Lock size={16} />
-                      </div>
-                      <span className="font-semibold text-gray-700 group-hover:text-[#2874F0]">Change Password</span>
-                    </div>
-                    <ChevronRight size={18} className="text-gray-400 group-hover:text-[#2874F0]" />
-                  </div>
-
-                  <div
-                    onClick={() => handleNavigation("/account-security")}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-50 text-[#2874F0] flex items-center justify-center">
-                        <ShieldCheck size={16} />
-                      </div>
-                      <span className="font-semibold text-gray-700 group-hover:text-[#2874F0]">Account Security</span>
-                    </div>
-                    <ChevronRight size={18} className="text-gray-400 group-hover:text-[#2874F0]" />
-                  </div>
-
-                  <div
-                    onClick={handleLogout}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-red-50 cursor-pointer group transition-colors mt-2"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
-                        <LogOut size={16} />
-                      </div>
-                      <span className="font-semibold text-gray-700 group-hover:text-red-500">Logout</span>
-                    </div>
-                    <ChevronRight size={18} className="text-gray-400 group-hover:text-red-500" />
-                  </div>
-                </div>
-              </div>
-            </SmoothReveal>
-
-          </div>
 
         </div>
       </div>
