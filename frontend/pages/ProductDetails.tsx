@@ -133,12 +133,33 @@ export const ProductDetails: React.FC = () => {
     return gallery.includes(product.image) ? gallery : [product.image, ...gallery];
   }, [product]);
 
-  const { currentStock, isOutOfStock } = useMemo(() => {
-    if (!product) return { currentStock: 0, isOutOfStock: true };
-    if (!product.variants || product.variants.length === 0) {
-      return { currentStock: product.countInStock, isOutOfStock: product.countInStock <= 0 };
+  const { currentStock, isOutOfStock, currentPrice, currentOriginalPrice } = useMemo(() => {
+    if (!product) return { currentStock: 0, isOutOfStock: true, currentPrice: 0, currentOriginalPrice: 0 };
+
+    let stock = product.countInStock;
+    let price = product.price;
+    let originalPrice = product.originalPrice;
+
+    if (product.variants && product.variants.length > 0 && product.inventory) {
+      console.log('Checking inventory for variants:', selectedVariants);
+      const match = product.inventory.find(inv =>
+        Object.entries(selectedVariants).every(([k, v]) => inv.options[k] === v)
+      );
+      if (match) {
+        console.log('Found variant match:', match);
+        stock = match.stock;
+        if (match.price) price = match.price;
+      } else {
+        console.log('No matching inventory found');
+      }
     }
-    return { currentStock: product.countInStock, isOutOfStock: product.countInStock <= 0 };
+
+    return {
+      currentStock: stock,
+      isOutOfStock: stock <= 0,
+      currentPrice: price,
+      currentOriginalPrice: originalPrice
+    };
   }, [product, selectedVariants]);
 
   useEffect(() => {
@@ -160,14 +181,22 @@ export const ProductDetails: React.FC = () => {
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
-    const productWithSelection = { ...product, selectedVariants: Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined };
+    const productWithSelection = {
+      ...product,
+      price: currentPrice, // Use potentially updated price
+      selectedVariants: Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined
+    };
     addToCart(productWithSelection, quantity);
     navigate('/cart');
   };
 
   const handleBuyNow = () => {
     if (isOutOfStock) return;
-    const productWithSelection = { ...product, selectedVariants: Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined };
+    const productWithSelection = {
+      ...product,
+      price: currentPrice,
+      selectedVariants: Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined
+    };
     addToCart(productWithSelection, quantity);
     navigate('/checkout');
   };
@@ -199,6 +228,10 @@ export const ProductDetails: React.FC = () => {
     };
     return map[colorName] || 'bg-gray-200';
   };
+
+  const discount = currentOriginalPrice > currentPrice
+    ? Math.round(((currentOriginalPrice - currentPrice) / currentOriginalPrice) * 100)
+    : 0;
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -257,10 +290,21 @@ export const ProductDetails: React.FC = () => {
               </span>
             </div>
 
+            {/* Price Display */}
+            <div className="mt-4 flex items-baseline gap-3">
+              <span className="text-3xl font-bold text-gray-900">₹{currentPrice.toLocaleString()}</span>
+              {currentOriginalPrice > currentPrice && (
+                <>
+                  <span className="text-lg text-gray-500 line-through">₹{currentOriginalPrice.toLocaleString()}</span>
+                  <span className="text-lg font-bold text-green-600">{discount}% off</span>
+                </>
+              )}
+            </div>
+
             {product.variants && product.variants.length > 0 && product.variants.map((variant, vIdx) => {
-              const matchesColor = variant.name.toLowerCase() === 'color';
+              const matchesColor = variant.name.toLowerCase() === 'color' || variant.name.toLowerCase() === 'colour';
               const selectedValue = selectedVariants[variant.name];
-              
+
               return (
                 <div key={vIdx} className="mt-4 sm:mt-6">
                   <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">
