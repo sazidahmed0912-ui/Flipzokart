@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Loader } from 'lucide-react';
 import { calculateShipping } from '../../services/api';
 import { useApp } from '../../store/Context';
-import { useToast } from '../../components/toast/ToastContext';
+import { useToast } from '../../components/toast';
 import { Address } from '../../types';
 import AddressCard from './components/AddressCard';
 import AddressForm from './components/AddressForm';
