@@ -163,7 +163,7 @@ const CheckoutPage = () => {
                 <div className="place-order-sticky-mobile">
                     <button
                         className="place-order-btn"
-                        disabled={selectedAddressId === null || isPlaceOrderLoading}
+                        disabled={isPlaceOrderLoading}
                         onClick={handlePlaceOrder}
                     >
                         {isPlaceOrderLoading ? (
@@ -194,7 +194,7 @@ const CheckoutPage = () => {
                         </div>
                         <button
                             className="place-order-btn desktop-only"
-                            disabled={selectedAddressId === null || isPlaceOrderLoading}
+                            disabled={isPlaceOrderLoading}
                             onClick={handlePlaceOrder}
                         >
                             {isPlaceOrderLoading ? (
