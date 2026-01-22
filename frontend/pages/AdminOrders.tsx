@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import {
   ChevronLeft, Search, Filter,
@@ -27,6 +28,7 @@ export const AdminOrders: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -258,17 +260,27 @@ export const AdminOrders: React.FC = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setOpenDropdownId(openDropdownId === order.id ? null : order.id);
+                              if (openDropdownId === order.id) {
+                                setOpenDropdownId(null);
+                              } else {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setDropdownPosition({
+                                  top: rect.bottom + window.scrollY + 8,
+                                  left: rect.left + window.scrollX
+                                });
+                                setOpenDropdownId(order.id);
+                              }
                             }}
                             className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(order.status)} border border-current/20`}
                           >
                             {getStatusIcon(order.status)} {order.status} <ChevronDown size={10} className={`transform transition-transform ${openDropdownId === order.id ? 'rotate-180' : ''}`} />
                           </button>
 
-                          {/* Status Dropdown */}
-                          {openDropdownId === order.id && (
+                          {/* Portal Status Dropdown */}
+                          {openDropdownId === order.id && createPortal(
                             <div
-                              className="absolute top-full left-0 mt-2 w-36 bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-200"
+                              className="fixed z-[9999] bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden min-w-[150px] animate-in fade-in zoom-in-95 duration-200"
+                              style={{ top: dropdownPosition.top - window.scrollY, left: dropdownPosition.left - window.scrollX }}
                               onClick={(e) => e.stopPropagation()}
                             >
                               {(['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled'] as Order['status'][]).map(s => (
@@ -284,7 +296,8 @@ export const AdminOrders: React.FC = () => {
                                   {s}
                                 </button>
                               ))}
-                            </div>
+                            </div>,
+                            document.body
                           )}
                         </div>
                       </td>
