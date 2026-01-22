@@ -53,9 +53,18 @@ export const AdminProducts: React.FC = () => {
 
   useEffect(() => {
     if (isModalOpen && formData.variants.length > 0) {
-      setNeedsSync(true);
+      // Check if inventory is actually out of sync
+      const activeVariants = formData.variants.filter(v => v.name.trim());
+      if (activeVariants.length === 0) {
+        setNeedsSync(false);
+        return;
+      }
+      // Simple heuristic: if inventory is empty but we have variants, we need sync
+      if (formData.inventory.length === 0) {
+        setNeedsSync(true);
+      }
     }
-  }, [formData.variants, isModalOpen]);
+  }, [formData.variants, isModalOpen, formData.inventory.length]);
 
   const openAddModal = () => {
     setEditingProduct(null);
@@ -323,6 +332,10 @@ export const AdminProducts: React.FC = () => {
       variants: cleanedVariants.length > 0 ? cleanedVariants : undefined,
       inventory: cleanedVariants.length > 0 ? formData.inventory : undefined
     };
+
+    console.log('Submitting Product Payload:', productPayload);
+    console.log('Cleaned Variants:', cleanedVariants);
+    console.log('Form Inventory:', formData.inventory);
 
     try {
       if (editingProduct) {
