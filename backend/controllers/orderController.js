@@ -1,6 +1,5 @@
 const Order = require('../models/Order');
 const Notification = require('../models/Notification');
-const Notification = require('../models/Notification'); // Import Notification model
 const Product = require('../models/Product'); // Import Product model
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
