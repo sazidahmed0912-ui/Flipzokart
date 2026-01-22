@@ -56,11 +56,11 @@ const PaymentPage: React.FC = () => {
   const razorpayLoaded = useRazorpay();
 
   /* =========================
-     Auth Guard
+     Auth Guard Removed for Guest Access
   ========================= */
-  useEffect(() => {
-    if (!user) navigate("/login");
-  }, [user, navigate]);
+  // useEffect(() => {
+  //   if (!user) navigate("/login");
+  // }, [user, navigate]);
 
   /* =========================
      Price Calculation
