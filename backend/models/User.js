@@ -31,6 +31,22 @@ const userSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpiry: Date,
+    cart: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Product',
+        },
+        quantity: {
+          type: Number,
+          default: 1,
+        },
+        selectedVariants: {
+          type: Map,
+          of: String,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

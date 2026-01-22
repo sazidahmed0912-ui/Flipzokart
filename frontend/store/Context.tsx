@@ -113,6 +113,72 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   });
 
+  const [isCartLoading, setIsCartLoading] = useState(false);
+
+  // Sync Cart: FETCH on Login/Mount
+  useEffect(() => {
+    if (!user) return; // Don't fetch if no user
+
+    const fetchCart = async () => {
+      try {
+        setIsCartLoading(true);
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        // Use axios directly or use fetch with headers
+        const response = await fetch(`${(import.meta as any).env.VITE_API_URL}/api/cart`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const serverCart = await response.json();
+          // Merge or Replace? 
+          // Strategy: Replace local with server if server has items.
+          // If server is empty and local has items (guest cart), push local to server?
+          // For simplicity and "Login Restore" requirement: Server > Local.
+          if (serverCart && serverCart.length > 0) {
+            setCart(serverCart);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to sync cart from server", err);
+      } finally {
+        setIsCartLoading(false);
+      }
+    };
+
+    fetchCart();
+  }, [user]); // Run when user changes (Login)
+
+  // Sync Cart: SAVE on Change
+  useEffect(() => {
+    if (!user || isCartLoading) return; // Don't save if loading or no user
+
+    const saveCart = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        await fetch(`${(import.meta as any).env.VITE_API_URL}/api/cart`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ cart })
+        });
+      } catch (err) {
+        console.error("Failed to save cart to server", err);
+      }
+    };
+
+    // Debounce to prevent too many requests
+    const timeoutId = setTimeout(saveCart, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [cart, user, isCartLoading]);
+
   useEffect(() => {
     if (user) {
       localStorage.setItem('flipzokart_user', JSON.stringify(user));
@@ -120,6 +186,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.removeItem('flipzokart_user');
     }
   }, [user]);
+
 
   useEffect(() => {
     localStorage.setItem('flipzokart_cart', JSON.stringify(cart));
@@ -137,6 +204,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('flipzokart_products', JSON.stringify(products));
   }, [products]);
 
+  useEffect(() => {
+    localStorage.setItem('flipzokart_wishlist', JSON.stringify(wishlist));
+  }, [wishlist]);
+
+  useEffect(() => {
+    localStorage.setItem('flipzokart_orders', JSON.stringify(orders));
+  }, [orders]);
+
+  useEffect(() => {
+    localStorage.setItem('flipzokart_products', JSON.stringify(products));
+  }, [products]);
+
+  useEffect(() => {
+    localStorage.setItem('flipzokart_wishlist', JSON.stringify(wishlist));
+  }, [wishlist]);
+
+  useEffect(() => {
+    localStorage.setItem('flipzokart_orders', JSON.stringify(orders));
+  }, [orders]);
+
+  useEffect(() => {
+    localStorage.setItem('flipzokart_products', JSON.stringify(products));
+  }, [products]);
+
+  // Saved address local storage
   useEffect(() => {
     if (selectedAddress) {
       localStorage.setItem('flipzokart_selected_address', JSON.stringify(selectedAddress));

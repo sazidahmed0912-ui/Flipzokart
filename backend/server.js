@@ -119,6 +119,9 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 // ⭐ Reviews
 app.use("/api/reviews", require("./routes/reviewRoutes"));
 
+// 🛒 Persistent Cart
+app.use("/api/cart", require("./routes/cartRoutes"));
+
 // 🔗 Frontend compatibility - alias /admin to /api/admin
 app.use("/admin", require("./routes/adminRoutes"));
 
