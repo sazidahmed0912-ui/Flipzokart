@@ -30,8 +30,8 @@ const LazyImage: React.FC<LazyImageProps> = ({
                 loading="lazy"
                 onLoad={() => setIsLoaded(true)}
                 className={`
-                    transition-all duration-700 ease-out
-                    ${isLoaded ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-110 blur-xl'}
+                    transition-all duration-300 ease-out
+                    ${isLoaded ? 'opacity-100' : 'opacity-0'}
                     ${className}
                 `}
                 {...props}
