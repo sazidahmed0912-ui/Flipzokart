@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Loader } from 'lucide-react';
 import { calculateShipping } from '../../services/api';
 import { useApp } from '../../store/Context';
+import { useToast } from '../../components/toast/ToastContext';
 import { Address } from '../../types';
 import AddressCard from './components/AddressCard';
 import AddressForm from './components/AddressForm';
@@ -14,6 +15,7 @@ const initialAddresses: Address[] = [];
 
 const CheckoutPage = () => {
     const { cart, selectedAddress: contextAddress, setSelectedAddress: setContextAddress } = useApp();
+    const { addToast } = useToast();
     const navigate = useNavigate();
 
     const [addresses, setAddresses] = useState<Address[]>(initialAddresses);
@@ -44,7 +46,7 @@ const CheckoutPage = () => {
 
     const handleDeliverHere = () => {
         if (selectedAddressId === null) {
-            alert('Please select a delivery address.');
+            addToast('warning', 'Please select or add a delivery address first!');
             return;
         }
 
@@ -59,7 +61,7 @@ const CheckoutPage = () => {
                 setIsLoading(false);
             }, 1000);
         } else {
-            alert('Selected address not found.');
+            addToast('warning', 'Selected address not found.');
             setIsLoading(false);
         }
     };
@@ -103,7 +105,7 @@ const CheckoutPage = () => {
 
     const handlePlaceOrder = () => {
         if (selectedAddressId === null) {
-            alert('Please select a delivery address.');
+            addToast('warning', 'Please select or add a delivery address first!');
             return;
         }
 

@@ -33,6 +33,7 @@ const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard").then(mo
 const AboutUsPage = lazy(() => import("./pages/AboutUsPage").then(module => ({ default: module.AboutUsPage })));
 const ContactUsPage = lazy(() => import("./pages/ContactUsPage").then(module => ({ default: module.ContactUsPage })));
 const TrackOrderPage = lazy(() => import("./pages/TrackOrderPage").then(module => ({ default: module.TrackOrderPage })));
+const AddNewAddress = lazy(() => import("./components/AddNewAddress"));
 
 /* ---------- ADMIN (LAZY LOADED) ---------- */
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then(module => ({ default: module.AdminDashboard })));
@@ -139,6 +140,7 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
             <Route path="/payment" element={<PaymentPage />} />
             <Route path="/order-success" element={<OrderSuccessPage />} />
             <Route path="/track-order" element={<TrackOrderPage />} />
+            <Route path="/add-address" element={<AddNewAddress />} />
 
             {/* User Protected */}
             <Route
