@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/protect'); // Ensure protect middleware path is correct
+const protect = require('../middleware/protect'); // Correct import
 const { getCart, updateCart } = require('../controllers/cartController');
 
 router.route('/')
