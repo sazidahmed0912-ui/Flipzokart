@@ -79,7 +79,14 @@ const NotificationBell: React.FC = () => {
                       {notif.message}
                     </p>
                     <span className="text-xs text-gray-400">
-                      {new Date(notif.createdAt).toLocaleString()}
+                      {new Date(notif.createdAt).toLocaleString('en-IN', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
                     </span>
                   </div>
                   <div className="flex items-center ml-auto gap-1">
