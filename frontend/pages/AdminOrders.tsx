@@ -26,6 +26,14 @@ export const AdminOrders: React.FC = () => {
   // Actions
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setOpenDropdownId(null);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   // Socket Connection
   const token = localStorage.getItem('token');
@@ -246,24 +254,38 @@ export const AdminOrders: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 font-bold text-gray-800 text-sm">₹{order.total.toLocaleString('en-IN')}</td>
                       <td className="px-6 py-4">
-                        <div className="relative group/status inline-block">
-                          <button className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(order.status)} border border-current/20`}>
-                            {getStatusIcon(order.status)} {order.status}
+                        <div className="relative inline-block">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenDropdownId(openDropdownId === order.id ? null : order.id);
+                            }}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(order.status)} border border-current/20`}
+                          >
+                            {getStatusIcon(order.status)} {order.status} <ChevronDown size={10} className={`transform transition-transform ${openDropdownId === order.id ? 'rotate-180' : ''}`} />
                           </button>
 
                           {/* Status Dropdown */}
-                          <div className="absolute top-full left-0 mt-2 w-36 bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden hidden group-hover/status:block z-50 animate-in fade-in slide-in-from-top-1 duration-200">
-                            {(['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled'] as Order['status'][]).map(s => (
-                              <button
-                                key={s}
-                                onClick={() => updateOrderStatus(order.id, s)}
-                                className={`w-full text-left px-4 py-2.5 text-[10px] font-bold uppercase hover:bg-gray-50 transition-colors flex items-center gap-2 ${order.status === s ? 'text-[#2874F0] bg-blue-50' : 'text-gray-500'}`}
-                              >
-                                {order.status === s && <CheckCircle size={10} />}
-                                {s}
-                              </button>
-                            ))}
-                          </div>
+                          {openDropdownId === order.id && (
+                            <div
+                              className="absolute top-full left-0 mt-2 w-36 bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-200"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {(['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled'] as Order['status'][]).map(s => (
+                                <button
+                                  key={s}
+                                  onClick={() => {
+                                    updateOrderStatus(order.id, s);
+                                    setOpenDropdownId(null);
+                                  }}
+                                  className={`w-full text-left px-4 py-2.5 text-[10px] font-bold uppercase hover:bg-gray-50 transition-colors flex items-center gap-2 ${order.status === s ? 'text-[#2874F0] bg-blue-50' : 'text-gray-500'}`}
+                                >
+                                  {order.status === s && <CheckCircle size={10} />}
+                                  {s}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
