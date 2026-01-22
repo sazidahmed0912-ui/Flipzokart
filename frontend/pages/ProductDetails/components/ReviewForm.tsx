@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Star, Loader } from 'lucide-react';
 import { useApp } from '../../../store/Context'; // Adjust path as necessary
-import { useNotifications } from '../../../store/NotificationContext'; // Adjust path as necessary
+import { useToast } from '../../../components/toast';
 import API from '../../../services/api'; // Corrected: Import API as default
 import { Review } from '../../../types'; // Adjust path as necessary
 
@@ -12,7 +12,7 @@ interface ReviewFormProps {
 
 export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmitted }) => {
   const { user } = useApp();
-  const { showToast } = useNotifications();
+  const { addToast } = useToast();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -21,11 +21,11 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmi
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      showToast({ _id: Date.now().toString(), recipient: '', message: 'Please log in to submit a review.', type: 'error', isRead: false, createdAt: new Date().toISOString() });
+      addToast('error', 'Please log in to submit a review.');
       return;
     }
     if (rating === 0 || comment.trim() === '') {
-      showToast({ _id: Date.now().toString(), recipient: user.id, message: 'Please provide a rating and a comment.', type: 'error', isRead: false, createdAt: new Date().toISOString() });
+      addToast('warning', 'Please provide a rating and a comment.');
       return;
     }
 
@@ -36,13 +36,13 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmi
         rating,
         comment,
       });
-      showToast({ _id: Date.now().toString(), recipient: user.id, message: 'Review submitted successfully!', type: 'success', isRead: false, createdAt: new Date().toISOString() });
+      addToast('success', '✅ Review submitted successfully!');
       onReviewSubmitted(data.data);
       setRating(0);
       setComment('');
     } catch (error: any) {
       console.error('Error submitting review:', error);
-      showToast({ _id: Date.now().toString(), recipient: user.id, message: error.response?.data?.message || 'Failed to submit review.', type: 'error', isRead: false, createdAt: new Date().toISOString() });
+      addToast('error', error.response?.data?.message || 'Failed to submit review.');
     } finally {
       setIsLoading(false);
     }

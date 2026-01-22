@@ -4,10 +4,10 @@ import PageTransition from "./components/ui/PageTransition";
 
 /* ---------- CONTEXT ---------- */
 import { AppProvider, useApp } from "./store/Context";
-/* import {
+import {
   NotificationProvider,
   useNotifications,
-} from "./store/NotificationContext"; */
+} from "./store/NotificationContext";
 
 /* ---------- LAYOUT & UI ---------- */
 import { Layout } from "./components/Layout";
@@ -224,14 +224,14 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
 const App: React.FC = () => {
   return (
     <AppProvider>
-      {/* <NotificationProvider> */}
-      <ToastProvider>
-        <Router>
-          <AuthWrapper />
-        </Router>
-      </ToastProvider>
-      {/* <ToastContainer /> */}
-      {/* </NotificationProvider> */}
+      <NotificationProvider>
+        <ToastProvider>
+          <Router>
+            <AuthWrapper />
+          </Router>
+        </ToastProvider>
+        {/* <ToastContainer /> */}
+      </NotificationProvider>
     </AppProvider>
   );
 };
