@@ -6,6 +6,7 @@ const router = express.Router();
 // ➕ ADD PRODUCT
 router.post("/add", async (req, res) => {
   try {
+    console.log("👉 [POST /add] Payload:", JSON.stringify(req.body, null, 2));
     const product = new Product(req.body);
     const savedProduct = await product.save();
     // Return wrapped format to match AdminProducts.tsx: data.data.product
@@ -164,7 +165,8 @@ router.get("/:id", async (req, res) => {
 // ✏️ UPDATE PRODUCT
 router.put("/:id", async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(
+    console.log(`👉 [PUT /${req.params.id}] Payload:`, JSON.stringify(req.body, null, 2));
+    const product = new Product.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
