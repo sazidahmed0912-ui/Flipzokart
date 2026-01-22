@@ -3,26 +3,36 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../store/Context';
 import authService from '../services/authService';
 import { SmoothReveal } from '../components/SmoothReveal';
+import { useToast } from '../components/toast';
 
 export const LoginPage: React.FC = () => {
   const { setUser } = useApp();
   const navigate = useNavigate();
+  const { addToast } = useToast();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
 
     try {
       const user = await authService.login({ email, password });
       setUser(user);
+
+      // Part of 3. Login successfull notification
+      addToast('success', '✅ Login successful!');
+
       navigate(user.role === 'admin' ? '/admin' : '/profile');
     } catch (err: any) {
-      setError(err.message || 'Failed to log in. Please check your credentials.');
+      if (err.response?.status === 401 || err.message?.includes('credentials')) {
+        // Part of 4. Invalid Credentials notification
+        addToast('error', '❌ Invalid Credentials!');
+      } else {
+        addToast('error', err.message || 'Failed to log in. Please check your credentials.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -81,12 +91,6 @@ export const LoginPage: React.FC = () => {
                 }}
               >
                 <h2 className="text-[20px] font-bold mb-[18px] text-[#1F2937]">Login</h2>
-
-                {error && (
-                  <div className="mb-4 text-red-600 text-sm bg-red-50 p-2 rounded border border-red-200">
-                    {error}
-                  </div>
-                )}
 
                 <form onSubmit={handleLogin}>
                   <input

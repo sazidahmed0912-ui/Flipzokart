@@ -4,14 +4,14 @@ import PageTransition from "./components/ui/PageTransition";
 
 /* ---------- CONTEXT ---------- */
 import { AppProvider, useApp } from "./store/Context";
-import {
+/* import {
   NotificationProvider,
   useNotifications,
-} from "./store/NotificationContext";
+} from "./store/NotificationContext"; */
 
 /* ---------- LAYOUT & UI ---------- */
 import { Layout } from "./components/Layout";
-import ToastContainer from "./components/ToastContainer";
+import { ToastProvider, useToast } from "./src/components/toast";
 
 
 /* ---------- PAGES (LAZY LOADED) ---------- */
@@ -69,7 +69,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
   const { user } = useApp();
-  const { showToast } = useNotifications();
+  const { addToast } = useToast();
 
   const liveLocation = useLocation();
   const currentLocation = location || liveLocation;
@@ -96,7 +96,7 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
             : "info",
       };
 
-      showToast(notification);
+      addToast(notification.status as any, notification.message);
     };
 
     socket.on("notification", handleNotification);
@@ -104,7 +104,7 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
     return () => {
       socket.off("notification", handleNotification);
     };
-  }, [socket, user, showToast]);
+  }, [socket, user, addToast]);
 
   return (
     <Layout>
@@ -224,12 +224,14 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
 const App: React.FC = () => {
   return (
     <AppProvider>
-      <NotificationProvider>
+      {/* <NotificationProvider> */}
+      <ToastProvider>
         <Router>
           <AuthWrapper />
         </Router>
-        <ToastContainer />
-      </NotificationProvider>
+      </ToastProvider>
+      {/* <ToastContainer /> */}
+      {/* </NotificationProvider> */}
     </AppProvider>
   );
 };

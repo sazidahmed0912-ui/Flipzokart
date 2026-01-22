@@ -5,12 +5,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Tag, XCircle, ShieldCheck, Heart } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { MOCK_COUPONS } from '../constants';
+import { useToast } from '../components/toast';
 
 export const CartPage: React.FC = () => {
-  const { cart, removeFromCart, updateCartQuantity, clearCart } = useApp();
+  const { cart, removeFromCart, updateCartQuantity, clearCart, user } = useApp();
   const [coupon, setCoupon] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string, discount: number } | null>(null);
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
   const getCartItemKey = (productId: string, variants?: Record<string, string>) => {
     if (!variants) return productId;
@@ -32,14 +34,26 @@ export const CartPage: React.FC = () => {
     if (found) {
       setAppliedCoupon({ code: found.code, discount: found.discount });
       setCoupon('');
+      addToast('success', `Awesome! Promo ${found.code} applied.`);
     } else {
-      alert('Invalid coupon code');
+      addToast('error', '❌ Invalid coupon code');
     }
   };
 
   const handleClearCart = () => {
     if (window.confirm("Are you sure you want to remove all items from your cart?")) {
       clearCart();
+    }
+  };
+
+  const handleCheckout = () => {
+    // 5. Without Login user place order button click (Secure Checkout here)
+    if (!user) {
+      addToast('info', 'ℹ️ Redirecting to Login page...');
+      // Small delay to let user see toast before full page transition/unmount
+      setTimeout(() => navigate('/login'), 1000);
+    } else {
+      navigate('/checkout');
     }
   };
 
@@ -205,7 +219,7 @@ export const CartPage: React.FC = () => {
             </form>
 
             <button
-              onClick={() => navigate('/checkout')}
+              onClick={handleCheckout}
               className="w-full bg-primary text-white py-6 rounded-[2rem] font-bold hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/30 uppercase tracking-widest text-sm active:scale-95"
             >
               Secure Checkout <ArrowRight size={20} />

@@ -3,10 +3,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../store/Context';
 import authService from '../services/authService';
 import { SmoothReveal } from '../components/SmoothReveal';
+import { useToast } from '../components/toast';
 
 export const SignupPage: React.FC = () => {
   const { setUser } = useApp();
   const navigate = useNavigate();
+  const { addToast } = useToast();
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -14,7 +17,6 @@ export const SignupPage: React.FC = () => {
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -23,10 +25,9 @@ export const SignupPage: React.FC = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     if (formData.phone.length < 10) {
-      setError("Please enter a valid 10-digit phone number.");
+      addToast('warning', "⚠️ Please enter a valid 10-digit phone number.");
       return;
     }
 
@@ -35,10 +36,15 @@ export const SignupPage: React.FC = () => {
     try {
       const user = await authService.register(formData);
       setUser(user);
-      navigate('/profile');
-      alert("Account created successfully! Welcome.");
+
+      // Part of 1. Signup successfull notification
+      addToast('success', '✅ Signup successful!');
+
+      // Part of 2. Autoredirect to login
+      navigate('/login');
+
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      addToast('error', err.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -99,12 +105,6 @@ export const SignupPage: React.FC = () => {
               >
                 <h2 className="text-[20px] font-bold mb-[5px] text-[#1F2937]">Looks like you're new here!</h2>
                 <p className="text-[13px] text-[#4B5563] mb-[18px]">Sign up with your mobile number to get started</p>
-
-                {error && (
-                  <div className="mb-4 text-red-600 text-sm bg-red-50 p-2 rounded border border-red-200">
-                    {error}
-                  </div>
-                )}
 
                 <form onSubmit={handleSignup}>
                   <input
