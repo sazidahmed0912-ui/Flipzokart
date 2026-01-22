@@ -11,6 +11,8 @@ import { AdminSidebar } from '../components/AdminSidebar';
 
 import { fetchAllOrders, deleteOrder } from '../services/api';
 
+import { useSocket } from '../hooks/useSocket';
+
 export const AdminOrders: React.FC = () => {
   const { updateOrderStatus, user, logout } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,10 +27,14 @@ export const AdminOrders: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
+  // Socket Connection
+  const token = localStorage.getItem('token');
+  const socket = useSocket(token);
+
   /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      REAL-TIME ORDERS LOGIC
-     Mode: Polling
-     Interval: 5000ms
+     Mode: Socket + Polling Fallback
+     Interval: 10000ms
      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -45,10 +51,26 @@ export const AdminOrders: React.FC = () => {
     };
 
     loadOrders(); // Initial load
-    interval = setInterval(loadOrders, 5000); // Poll every 5s
+    interval = setInterval(loadOrders, 10000); // Poll every 10s as fallback
 
-    return () => clearInterval(interval);
-  }, []);
+    // Socket Listener
+    if (socket) {
+      socket.on('notification', (data: any) => {
+        // Refresh orders on new order or status change
+        if (data.type === 'adminNewOrder' || data.type === 'orderStatusUpdate') {
+          console.log('⚡ Live Update: New Order/Status Change Detected');
+          loadOrders();
+        }
+      });
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (socket) {
+        socket.off('notification');
+      }
+    };
+  }, [socket]); // Re-run if socket connects/reconnects
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this order? This action cannot be undone.")) {
