@@ -180,7 +180,10 @@ const Header: React.FC = () => {
 
 const BottomNav: React.FC = () => {
   const location = useLocation();
+  const { cart } = useApp();
   const isActive = (path: string, exact = true) => exact ? location.pathname === path : location.pathname.startsWith(path);
+
+  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
@@ -193,8 +196,15 @@ const BottomNav: React.FC = () => {
     <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-[999]">
       <div className="flex items-center justify-around py-2">
         {navItems.map(({ path, label, icon: Icon }) => (
-          <Link key={path} to={path} className={`flex flex-col items-center py-2 px-3 ${isActive(path) ? 'text-[#f28c28]' : 'text-gray-600'}`}>
-            <Icon className="w-5 h-5" />
+          <Link key={path} to={path} className={`relative flex flex-col items-center py-2 px-3 ${isActive(path) ? 'text-[#f28c28]' : 'text-gray-600'}`}>
+            <div className="relative">
+              <Icon className="w-5 h-5" />
+              {label === 'Cart' && totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                  {totalItems > 99 ? '99+' : totalItems}
+                </span>
+              )}
+            </div>
             <span className="text-xs mt-1">{label}</span>
           </Link>
         ))}
