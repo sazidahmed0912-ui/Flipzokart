@@ -14,6 +14,7 @@ import {
   verifyPayment,
 } from "../../services/api";
 import { useApp } from "../../store/Context";
+import { useToast } from "../../components/toast";
 import "./PaymentPage.css";
 
 /* =========================
@@ -46,6 +47,7 @@ const useRazorpay = () => {
 const PaymentPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, cart, clearCart, selectedAddress, removeProductFromCart } = useApp();
+  const { addToast } = useToast();
 
   const [paymentMethod, setPaymentMethod] = useState<
     "COD" | "RAZORPAY" | null
@@ -207,6 +209,12 @@ const PaymentPage: React.FC = () => {
      SUBMIT HANDLER
   ========================= */
   const handleSubmit = () => {
+    if (!user) {
+      addToast('warning', '⚠️ Redirecting to Login page...');
+      setTimeout(() => navigate('/login'), 1000);
+      return;
+    }
+
     if (!paymentMethod) return;
     paymentMethod === "COD" ? placeCODOrder() : payWithRazorpay();
   };
@@ -289,7 +297,7 @@ const PaymentPage: React.FC = () => {
 
             <button
               className="action-button"
-              disabled={!paymentMethod || loading}
+              disabled={(!paymentMethod && !!user) || loading} // Allow clicking if no user (to show toast), but disable if user present & no method
               onClick={handleSubmit}
             >
               {loading ? (
