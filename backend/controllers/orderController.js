@@ -213,7 +213,9 @@ const verifyPayment = async (req, res) => {
       shippingAddress: address,
       paymentMethod: 'RAZORPAY',
       paymentStatus: 'PAID',
-      orderStatus: 'CONFIRMED',
+      paymentMethod: 'RAZORPAY',
+      paymentStatus: 'PAID',
+      status: 'Paid', // Set status directly matching enum
       subtotal,
       deliveryCharges: deliveryCharges || 0,
       discount: discount || 0,
