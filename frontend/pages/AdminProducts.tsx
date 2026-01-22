@@ -13,6 +13,7 @@ import { Product, VariantGroup, VariantCombination } from '../types';
 import { CATEGORIES } from '../constants';
 import { AdminSidebar } from '../components/AdminSidebar';
 import { createProduct, updateProduct, deleteProduct } from '../services/adminService';
+import { fetchProductById } from '../services/api';
 
 export const AdminProducts: React.FC = () => {
   const { products, setProducts, user, logout } = useApp();
@@ -85,9 +86,10 @@ export const AdminProducts: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (product: Product) => {
+  const openEditModal = async (product: Product) => {
     setEditingProduct(product);
     setNeedsSync(false);
+    // Initialize with current data
     setFormData({
       name: product.name,
       sku: product.sku || '',
@@ -102,6 +104,24 @@ export const AdminProducts: React.FC = () => {
       inventory: product.inventory || []
     });
     setIsModalOpen(true);
+
+    // Fetch full details to ensure variants/inventory are complete
+    try {
+      const { data } = await fetchProductById(product.id);
+      const fullProduct = data.data?.product || data; // Handle different response structures
+
+      if (fullProduct) {
+        console.log('Fetched Full Product Details:', fullProduct);
+        setFormData(prev => ({
+          ...prev,
+          variants: fullProduct.variants || [],
+          inventory: fullProduct.inventory || [],
+          images: fullProduct.images || prev.images
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to fetch full details:", error);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'main' | 'gallery' | 'variant' = 'main') => {
