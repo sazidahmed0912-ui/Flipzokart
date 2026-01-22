@@ -70,6 +70,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
   const { user } = useApp();
   const { addToast } = useToast();
+  const { showToast } = useNotifications();
 
   const liveLocation = useLocation();
   const currentLocation = location || liveLocation;
@@ -96,7 +97,11 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
             : "info",
       };
 
+      // Show the visual toast
       addToast(notification.status as any, notification.message);
+
+      // Persist the notification to the bell/list
+      showToast(notification);
     };
 
     socket.on("notification", handleNotification);
@@ -104,7 +109,7 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
     return () => {
       socket.off("notification", handleNotification);
     };
-  }, [socket, user, addToast]);
+  }, [socket, user, addToast, showToast]);
 
   return (
     <Layout>
