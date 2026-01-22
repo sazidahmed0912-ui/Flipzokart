@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Heart, Star, ShieldCheck, Truck, RotateCcw, Minus, Plus, Share2, Check, AlertTriangle, Info, Clock, ArrowRight, CreditCard, Package, ChevronRight, Search, Lock } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { ProductCard } from '../components/ProductCard';
+import { useToast } from '../components/toast';
 import API, { fetchProductById } from '../services/api';
 import { Product, Review } from '../types';
 import { ReviewList } from './ProductDetails/components/ReviewList';
@@ -15,6 +16,7 @@ export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { products: allProducts, addToCart, toggleWishlist, wishlist, user } = useApp();
+  const { addToast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -187,6 +189,7 @@ export const ProductDetails: React.FC = () => {
       selectedVariants: Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined
     };
     addToCart(productWithSelection, quantity);
+    addToast('success', '✅ Product added to bag!');
     navigate('/cart');
   };
 
@@ -198,6 +201,7 @@ export const ProductDetails: React.FC = () => {
       selectedVariants: Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined
     };
     addToCart(productWithSelection, quantity);
+    addToast('success', '✅ Product added to bag!');
     navigate('/checkout');
   };
 

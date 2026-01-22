@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../store/Context';
 import { Product } from '../types';
 import LazyImage from './LazyImage';
+import { useToast } from './toast';
 
 interface ProductCardProps {
   product: Product;
@@ -12,6 +13,12 @@ interface ProductCardProps {
 
 export const NewProductCard: React.FC<ProductCardProps> = ({ product, variant = 'featured' }) => {
   const { addToCart } = useApp();
+  const { addToast } = useToast();
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    addToast('success', '✅ Product added to bag!');
+  };
 
   const discount = product.originalPrice > 0
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -32,7 +39,7 @@ export const NewProductCard: React.FC<ProductCardProps> = ({ product, variant = 
         </div>
         {discount > 0 && <span className="text-xs text-green-600 font-medium">{discount}% off</span>}
         <button
-          onClick={() => addToCart(product)}
+          onClick={handleAddToCart}
           className="w-full mt-3 bg-[#f28c28] text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors">
           Add to Cart
         </button>
@@ -60,7 +67,7 @@ export const NewProductCard: React.FC<ProductCardProps> = ({ product, variant = 
         {discount > 0 && <span className="text-xs text-green-600 font-medium">{discount}% off</span>}
       </div>
       <button
-        onClick={() => addToCart(product)}
+        onClick={handleAddToCart}
         className="w-full bg-[#f28c28] text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors">
         Add to Cart
       </button>

@@ -5,6 +5,7 @@ import { ShoppingCart, Heart, Star } from 'lucide-react';
 import { Product } from '../types';
 import { useApp } from '../store/Context';
 import LazyImage from './LazyImage';
+import { useToast } from './toast';
 
 interface ProductCardProps {
   product: Product;
@@ -12,9 +13,15 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, toggleWishlist, wishlist } = useApp();
+  const { addToast } = useToast();
   const isWishlisted = wishlist.includes(product.id);
 
   const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    addToast('success', '✅ Product added to bag!');
+  };
 
   return (
     <div className="group bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
@@ -66,7 +73,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           <button
-            onClick={() => addToCart(product)}
+            onClick={handleAddToCart}
             className="w-full py-2 bg-primary text-white text-sm font-semibold rounded-full hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2"
           >
             <ShoppingCart size={14} /> Add to Cart
