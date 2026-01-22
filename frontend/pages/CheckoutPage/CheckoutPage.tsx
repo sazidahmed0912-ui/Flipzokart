@@ -104,7 +104,9 @@ const CheckoutPage = () => {
     };
 
     const handlePlaceOrder = () => {
+        console.log('handlePlaceOrder called', { selectedAddressId });
         if (selectedAddressId === null) {
+            console.log('No address selected, attempting to show toast');
             addToast('warning', 'Please select or add a delivery address first!');
             return;
         }
