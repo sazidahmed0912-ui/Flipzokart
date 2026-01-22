@@ -11,7 +11,7 @@ import { AppProvider, useApp } from "./store/Context";
 
 /* ---------- LAYOUT & UI ---------- */
 import { Layout } from "./components/Layout";
-import { ToastProvider, useToast } from "./src/components/toast";
+import { ToastProvider, useToast } from "./components/toast";
 
 
 /* ---------- PAGES (LAZY LOADED) ---------- */
