@@ -109,107 +109,109 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
   return (
     <Layout>
       <Suspense fallback={<CircularGlassSpinner />}>
-        <Routes location={currentLocation}>
-          {/* Public */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/shop" element={<ShopPage />} />
-          <Route path="/product/:id" element={<ProductDetails />} />
-          <Route path="/about" element={<AboutUsPage />} />
-          <Route path="/about" element={<AboutUsPage />} />
-          <Route path="/contact" element={<ContactUsPage />} />
-          <Route path="/design/loading" element={<CircularGlassSpinner />} />
+        <PageTransition>
+          <Routes location={currentLocation}>
+            {/* Public */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/product/:id" element={<ProductDetails />} />
+            <Route path="/about" element={<AboutUsPage />} />
+            <Route path="/about" element={<AboutUsPage />} />
+            <Route path="/contact" element={<ContactUsPage />} />
+            <Route path="/design/loading" element={<CircularGlassSpinner />} />
 
 
-          {/* Auth */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            {/* Auth */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-          {/* Cart / Order */}
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/order-success" element={<OrderSuccessPage />} />
-          <Route path="/track-order" element={<TrackOrderPage />} />
+            {/* Cart / Order */}
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/order-success" element={<OrderSuccessPage />} />
+            <Route path="/track-order" element={<TrackOrderPage />} />
 
-          {/* User Protected */}
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/wishlist"
-            element={
-              <ProtectedRoute>
-                <WishlistPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <CustomerDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* User Protected */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/wishlist"
+              element={
+                <ProtectedRoute>
+                  <WishlistPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <CustomerDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Admin */}
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/products"
-            element={
-              <AdminRoute>
-                <AdminProducts />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/orders"
-            element={
-              <AdminRoute>
-                <AdminOrders />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              <AdminRoute>
-                <AdminUsers />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/sellers"
-            element={
-              <AdminRoute>
-                <AdminSellers />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/coupons"
-            element={
-              <AdminRoute>
-                <AdminCoupons />
-              </AdminRoute>
-            }
-          />
-        </Routes>
+            {/* Admin */}
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/products"
+              element={
+                <AdminRoute>
+                  <AdminProducts />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <AdminRoute>
+                  <AdminOrders />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminRoute>
+                  <AdminUsers />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/sellers"
+              element={
+                <AdminRoute>
+                  <AdminSellers />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/coupons"
+              element={
+                <AdminRoute>
+                  <AdminCoupons />
+                </AdminRoute>
+              }
+            />
+          </Routes>
+        </PageTransition>
       </Suspense>
     </Layout>
   );
@@ -224,9 +226,7 @@ const App: React.FC = () => {
     <AppProvider>
       <NotificationProvider>
         <Router>
-          <PageTransition>
-            <AuthWrapper />
-          </PageTransition>
+          <AuthWrapper />
         </Router>
         <ToastContainer />
       </NotificationProvider>
