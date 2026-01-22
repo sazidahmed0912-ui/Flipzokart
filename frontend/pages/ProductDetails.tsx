@@ -191,11 +191,11 @@ export const ProductDetails: React.FC = () => {
       'Green': 'bg-green-500',
       'Black': 'bg-gray-900',
       'White': 'bg-white',
-      'Gray': 'bg-gray-500',
       'Yellow': 'bg-yellow-400',
       'Orange': 'bg-orange-500',
       'Purple': 'bg-purple-500',
       'Pink': 'bg-pink-500',
+      'Gray': 'bg-gray-500',
     };
     return map[colorName] || 'bg-gray-200';
   };
@@ -259,12 +259,16 @@ export const ProductDetails: React.FC = () => {
 
             {product.variants?.map((variant, vIdx) => {
               const matchesColor = variant.name.toLowerCase() === 'color';
+              const selectedValue = selectedVariants[variant.name];
+              
               return (
                 <div key={vIdx} className="mt-4 sm:mt-6">
-                  <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">{variant.name}</h3>
+                  <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">
+                    {variant.name}: <span className="text-blue-600">{selectedValue}</span>
+                  </h3>
                   <div className="flex gap-2 sm:gap-3 flex-wrap">
                     {variant.options.map((option, oIdx) => {
-                      const isActive = selectedVariants[variant.name] === option;
+                      const isActive = selectedValue === option;
 
                       if (matchesColor) {
                         return (

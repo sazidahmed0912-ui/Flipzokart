@@ -31,6 +31,7 @@ export interface Product {
   inventory?: VariantCombination[];
   seller?: string;
   deliveryDate?: string;
+  selectedVariants?: Record<string, string>;
 }
 
 export interface User {

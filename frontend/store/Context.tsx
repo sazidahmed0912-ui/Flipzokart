@@ -146,7 +146,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [selectedAddress]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
-    const selectedVariants = (product as any).selectedVariants;
+    const selectedVariants = product.selectedVariants;
     const itemKey = getCartItemKey(product.id, selectedVariants);
 
 
