@@ -3,7 +3,7 @@ import { Bell, XCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react
 import { useNotifications } from '../store/NotificationContext';
 
 const NotificationBell: React.FC = () => {
-  const { notifications, unreadCount, markNotificationAsRead } = useNotifications();
+  const { notifications, unreadCount, markNotificationAsRead, deleteNotification } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -82,16 +82,29 @@ const NotificationBell: React.FC = () => {
                       {new Date(notif.createdAt).toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex items-center ml-auto">
+                  <div className="flex items-center ml-auto gap-1">
                     {!notif.isRead && (
                       <button
-                        onClick={() => markNotificationAsRead(notif._id)}
-                        className="text-blue-500 hover:text-blue-700 p-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markNotificationAsRead(notif._id);
+                        }}
+                        className="text-blue-500 hover:text-blue-700 p-1 hover:bg-blue-50 rounded-full transition-colors"
                         title="Mark as read"
                       >
                         <CheckCircle size={16} />
                       </button>
                     )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteNotification(notif._id);
+                      }}
+                      className="text-gray-400 hover:text-red-500 p-1 hover:bg-red-50 rounded-full transition-colors"
+                      title="Delete"
+                    >
+                      <X size={16} />
+                    </button>
                   </div>
                 </div>
               ))

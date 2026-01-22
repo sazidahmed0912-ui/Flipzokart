@@ -10,28 +10,7 @@ import Modal from './components/Modal';
 import './components/Modal.css';
 import './CheckoutPage.css';
 
-const initialAddresses: Address[] = [
-    {
-        id: 0,
-        name: 'Sazid Ahmed',
-        phone: '123-456-7890',
-        address: '123 E-commerce Lane, E-commerce City',
-        city: 'Techville',
-        state: 'Webland',
-        pincode: '54321',
-        type: 'Home'
-    },
-    {
-        id: 1,
-        name: 'Sazid Ahmed',
-        phone: '098-765-4321',
-        address: '456 Business Bay, Corporate Towers',
-        city: 'Metroville',
-        state: 'Marketland',
-        pincode: '12345',
-        type: 'Work'
-    }
-];
+const initialAddresses: Address[] = [];
 
 const CheckoutPage = () => {
     const { cart, selectedAddress: contextAddress, setSelectedAddress: setContextAddress } = useApp();
