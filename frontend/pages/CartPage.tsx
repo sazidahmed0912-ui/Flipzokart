@@ -47,14 +47,8 @@ export const CartPage: React.FC = () => {
   };
 
   const handleCheckout = () => {
-    // 5. Without Login user place order button click (Secure Checkout here)
-    if (!user) {
-      addToast('info', 'ℹ️ Redirecting to Login page...');
-      // Small delay to let user see toast before full page transition/unmount
-      setTimeout(() => navigate('/login'), 1000);
-    } else {
-      navigate('/checkout');
-    }
+    // Navigate directly to checkout without login check
+    navigate('/checkout');
   };
 
   if (cart.length === 0) {
