@@ -79,10 +79,10 @@ export const ProductDetails: React.FC = () => {
         setProduct(productData);
         setActiveImage(productData.image);
         if (productData.reviews) setReviews(productData.reviews);
-        if (productData.variants) {
+        if (productData.variants && productData.variants.length > 0) {
           const defaults: Record<string, string> = {};
           productData.variants.forEach((v: any) => {
-            if (v.options.length > 0) defaults[v.name] = v.options[0];
+            if (v.options && v.options.length > 0) defaults[v.name] = v.options[0];
           });
           setSelectedVariants(defaults);
         }
@@ -257,18 +257,18 @@ export const ProductDetails: React.FC = () => {
               </span>
             </div>
 
-            {product.variants?.map((variant, vIdx) => {
+            {product.variants && product.variants.length > 0 && product.variants.map((variant, vIdx) => {
               const matchesColor = variant.name.toLowerCase() === 'color';
               const selectedValue = selectedVariants[variant.name];
               
               return (
                 <div key={vIdx} className="mt-4 sm:mt-6">
                   <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">
-                    {variant.name}: <span className="text-blue-600">{selectedValue}</span>
+                    {variant.name}: <span className="text-blue-600">{selectedValue || variant.options[0]}</span>
                   </h3>
                   <div className="flex gap-2 sm:gap-3 flex-wrap">
                     {variant.options.map((option, oIdx) => {
-                      const isActive = selectedValue === option;
+                      const isActive = selectedValue === option || (!selectedValue && oIdx === 0);
 
                       if (matchesColor) {
                         return (
