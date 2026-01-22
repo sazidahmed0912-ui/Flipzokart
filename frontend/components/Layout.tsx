@@ -80,8 +80,10 @@ const Header: React.FC = () => {
             <Link to="/cart" className="flex items-center space-x-1 text-gray-700 hover:text-[#f28c28]">
               <ShoppingCart className="w-6 h-6" />
               <span className="text-sm font-medium">Cart</span>
-              {cart.length > 0 &&
-                <span className="bg-[#f28c28] text-white text-xs rounded-full px-2 py-1 ml-1">{cart.length}</span>
+              {cart.reduce((acc, item) => acc + item.quantity, 0) > 0 &&
+                <span className="bg-[#f28c28] text-white text-xs rounded-full px-2 py-1 ml-1">
+                  {cart.reduce((acc, item) => acc + item.quantity, 0)}
+                </span>
               }
             </Link>
             {user ? (
