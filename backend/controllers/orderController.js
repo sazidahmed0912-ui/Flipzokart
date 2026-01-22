@@ -314,12 +314,23 @@ const getUserOrders = async (req, res) => {
 
     // Format order items to match frontend CartItem structure
     const formattedOrders = orders.map(order => {
-      const formattedProducts = order.products.map(item => ({
-        ...item.productId.toObject(), // Spread product details
-        quantity: item.quantity,
-        price: item.productId.price || 0, // Ensure price is included
-        id: item.productId._id // Ensure id is present for product
-      }));
+      const formattedProducts = order.products.map(item => {
+        if (!item.productId) {
+          return {
+            quantity: item.quantity,
+            price: 0,
+            name: 'Unknown Product (Deleted)',
+            image: '',
+            id: 'deleted'
+          };
+        }
+        return {
+          ...item.productId.toObject(), // Spread product details
+          quantity: item.quantity,
+          price: item.productId.price || 0, // Ensure price is included
+          id: item.productId._id // Ensure id is present for product
+        };
+      });
 
       return {
         ...order.toObject(),
@@ -353,11 +364,22 @@ const getAllOrders = async (req, res) => {
       ...order.toObject(),
       id: order._id,
       userName: order.user ? order.user.name : 'Unknown User',
-      items: order.products.map(p => ({
-        ...p.productId.toObject(),
-        quantity: p.quantity,
-        id: p.productId._id
-      }))
+      items: order.products.map(p => {
+        if (!p.productId) {
+          return {
+            quantity: p.quantity,
+            name: 'Unknown Product (Deleted)',
+            price: 0,
+            image: '',
+            id: 'deleted'
+          };
+        }
+        return {
+          ...p.productId.toObject(),
+          quantity: p.quantity,
+          id: p.productId._id
+        };
+      })
     }));
 
     res.status(200).json(formattedOrders);
@@ -389,12 +411,22 @@ const getOrderById = async (req, res) => {
       ...order.toObject(),
       id: order._id,
       userName: order.user ? order.user.name : 'Unknown',
-      items: order.products.map(p => ({
-        ...p.productId.toObject(),
-        quantity: p.quantity,
-        id: p.productId._id,
-        price: p.productId.price
-      })),
+      items: order.products.map(p => {
+        if (!p.productId) {
+          return {
+            quantity: p.quantity,
+            name: 'Unknown Product (Deleted)',
+            price: 0,
+            id: 'deleted'
+          };
+        }
+        return {
+          ...p.productId.toObject(),
+          quantity: p.quantity,
+          id: p.productId._id,
+          price: p.productId.price
+        };
+      }),
       address: order.shippingAddress
     };
 
