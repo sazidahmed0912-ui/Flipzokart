@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag } from 'lucide-react';
+import { ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag, ChevronRight } from 'lucide-react';
 import { useApp } from '../store/Context';
 import NotificationBell from './NotificationBell';
 
@@ -148,31 +148,92 @@ const Header: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Menu Overlay (Premium Redesign) */}
       {isMenuOpen && (
-        <div className="md:hidden fixed inset-0 bg-black/40 z-50" onClick={closeMenus}>
-          <div className="absolute top-0 left-0 h-full w-4/5 max-w-sm bg-white shadow-2xl p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6">
-              <div className="text-2xl font-bold">
-                <Link to="/">
-                  <span className="text-[#222]">Flip</span><span className="text-[#f28c28]">zokart</span>
-                </Link>
-              </div>
-              <button onClick={() => setIsMenuOpen(false)}><X /></button>
+        <div className="md:hidden fixed inset-0 z-[100] flex flex-col bg-white/95 backdrop-blur-xl animate-fade-in">
+          {/* Header */}
+          <div className="flex justify-between items-center p-6 border-b border-gray-100">
+            <div className="text-2xl font-bold">
+              <span className="text-gray-800">Flip</span><span className="text-[#f28c28]">zokart</span>
             </div>
-            <nav className="flex flex-col space-y-4">
-              <Link to="/" onClick={closeMenus} className="font-semibold">Home</Link>
-              <Link to="/shop" onClick={closeMenus} className="font-semibold">Shop</Link>
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Grid Content */}
+          <div className="flex-1 p-6 flex items-center justify-center">
+            <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+              <Link
+                to="/"
+                onClick={closeMenus}
+                className="flex flex-col items-center justify-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-[#f28c28]/30 transition-all group"
+              >
+                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <Home size={24} />
+                </div>
+                <span className="font-bold text-gray-700">Home</span>
+              </Link>
+
+              <Link
+                to="/shop"
+                onClick={closeMenus}
+                className="flex flex-col items-center justify-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-[#f28c28]/30 transition-all group"
+              >
+                <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <LayoutGrid size={24} />
+                </div>
+                <span className="font-bold text-gray-700">Shop</span>
+              </Link>
+
               {user ? (
                 <>
-                  <Link to="/profile" onClick={closeMenus} className="font-semibold">My Profile</Link>
-                  {isAdmin && <Link to="/admin" onClick={closeMenus} className="font-semibold">Admin Dashboard</Link>}
-                  <button onClick={handleLogout} className="text-left font-semibold">Logout</button>
+                  <Link
+                    to="/profile"
+                    onClick={closeMenus}
+                    className="flex flex-col items-center justify-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-[#f28c28]/30 transition-all group"
+                  >
+                    <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                      <User size={24} />
+                    </div>
+                    <span className="font-bold text-gray-700">Profile</span>
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex flex-col items-center justify-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-red-200 transition-all group"
+                  >
+                    <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                      <LogOut size={24} />
+                    </div>
+                    <span className="font-bold text-gray-700">Logout</span>
+                  </button>
+
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      onClick={closeMenus}
+                      className="col-span-2 flex items-center justify-between p-4 bg-gray-900 text-white rounded-xl shadow-lg mt-2"
+                    >
+                      <span className="font-bold flex items-center gap-2"><LayoutDashboard size={18} /> Admin Dashboard</span>
+                      <ChevronRight size={18} />
+                    </Link>
+                  )}
                 </>
               ) : (
-                <Link to="/login" onClick={closeMenus} className="font-semibold">Login</Link>
+                <Link
+                  to="/login"
+                  onClick={closeMenus}
+                  className="col-span-2 flex flex-col items-center justify-center p-6 bg-[#f28c28] text-white rounded-2xl shadow-lg hover:bg-[#e07b1f] transition-all"
+                >
+                  <span className="text-lg font-bold">Login / Sign Up</span>
+                  <span className="text-xs opacity-90 mt-1">Access your account</span>
+                </Link>
               )}
-            </nav>
+            </div>
           </div>
         </div>
       )}

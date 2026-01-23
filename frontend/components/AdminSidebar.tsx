@@ -11,8 +11,9 @@ const navItems = [
   { name: 'Products', path: '/admin/products', icon: Package },
   { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
   { name: 'Users', path: '/admin/users', icon: Users },
-  { name: 'Sellers', path: '/admin/sellers', icon: Users }, // Added based on requirement if exists
-  { name: 'Payments', path: '/admin/payments', icon: TicketPercent }, // Added based on requirement if exists
+  { name: 'Sellers', path: '/admin/sellers', icon: Users },
+  { name: 'Payments', path: '/admin/payments', icon: TicketPercent },
+  { name: 'Monitor', path: '/admin/monitor', icon: Activity }, // New Monitor Link
   { name: 'Settings', path: '/admin/settings', icon: Settings },
 ];
 
@@ -39,8 +40,8 @@ export const AdminSidebar: React.FC = () => {
               key={item.path}
               to={item.path}
               className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all group ${isActive
-                  ? 'bg-[#2874F0]/10 text-[#2874F0]'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-[#2874F0]'
+                ? 'bg-[#2874F0]/10 text-[#2874F0]'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-[#2874F0]'
                 }`}
             >
               <div className="flex items-center gap-3">

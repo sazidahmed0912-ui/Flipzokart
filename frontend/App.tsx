@@ -49,6 +49,7 @@ const AdminProducts = lazy(() => import("./pages/AdminProducts").then(module => 
 const AdminOrders = lazy(() => import("./pages/AdminOrders").then(module => ({ default: module.AdminOrders })));
 const AdminSellers = lazy(() => import("./pages/AdminSellers").then(module => ({ default: module.AdminSellers })));
 const AdminUsers = lazy(() => import("./pages/AdminUsers").then(module => ({ default: module.AdminUsers })));
+const AdminMonitor = lazy(() => import("./pages/AdminMonitor").then(module => ({ default: module.AdminMonitor })));
 const AdminCoupons = lazy(() => import("./pages/AdminCoupons").then(module => ({ default: module.AdminCoupons })));
 
 /* ---------- SOCKET ---------- */
@@ -239,6 +240,14 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
               element={
                 <AdminRoute>
                   <AdminUsers />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/monitor"
+              element={
+                <AdminRoute>
+                  <AdminMonitor />
                 </AdminRoute>
               }
             />

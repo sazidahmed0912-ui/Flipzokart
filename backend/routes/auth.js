@@ -17,6 +17,11 @@ router.get("/me", protect, async (req, res) => {
       email: req.user.email,
       phone: req.user.phone,
       role: req.user.role,
+      status: req.user.status,
+      suspensionEnd: req.user.suspensionEnd,
+      banReason: req.user.banReason,
+      createdAt: req.user.createdAt,
+      joinedDate: req.user.createdAt // map for frontend
     },
   });
 });
