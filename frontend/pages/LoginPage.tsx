@@ -4,6 +4,7 @@ import { useApp } from '../store/Context';
 import authService from '../services/authService';
 import { SmoothReveal } from '../components/SmoothReveal';
 import { useToast } from '../components/toast';
+import { Eye, EyeOff } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { setUser } = useApp();
@@ -12,6 +13,7 @@ export const LoginPage: React.FC = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -102,14 +104,23 @@ export const LoginPage: React.FC = () => {
                     onChange={(e) => setEmail(e.target.value)}
                   />
 
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    required
-                    className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      required
+                      className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm mb-3.5 outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all pr-12"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3.5 text-gray-500 hover:text-[#2874F0] cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
 
                   <button
                     type="submit"

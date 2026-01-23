@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Activity = require("../models/Activity");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -91,6 +92,15 @@ const login = async (req, res) => {
       { expiresIn: "30d" }
     );
 
+    // Log Activity
+    await Activity.create({
+      user: user._id,
+      type: 'login',
+      message: 'Logged in to account',
+      device: req.headers['user-agent'] || 'Unknown Device',
+      ip: req.ip || '0.0.0.0'
+    });
+
     res.status(200).json({
       success: true,
       message: "Login successful",
@@ -113,20 +123,20 @@ const login = async (req, res) => {
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     if (!email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Email is required" 
+      return res.status(400).json({
+        success: false,
+        message: "Email is required"
       });
     }
 
     const user = await User.findOne({ email: email.trim().toLowerCase() });
-    
+
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "No user found with this email" 
+      return res.status(404).json({
+        success: false,
+        message: "No user found with this email"
       });
     }
 
@@ -156,9 +166,9 @@ const forgotPassword = async (req, res) => {
     });
   } catch (error) {
     console.error("Forgot password error:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Server error" 
+    res.status(500).json({
+      success: false,
+      message: "Server error"
     });
   }
 };
@@ -174,9 +184,9 @@ const resetPassword = async (req, res) => {
     console.log('Password provided:', password ? 'Yes' : 'No');
 
     if (!password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Password is required" 
+      return res.status(400).json({
+        success: false,
+        message: "Password is required"
       });
     }
 
@@ -189,9 +199,9 @@ const resetPassword = async (req, res) => {
     console.log('User found:', user ? 'Yes' : 'No');
 
     if (!user) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid or expired reset token" 
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired reset token"
       });
     }
 
@@ -211,9 +221,9 @@ const resetPassword = async (req, res) => {
     });
   } catch (error) {
     console.error("Reset password error:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Server error" 
+    res.status(500).json({
+      success: false,
+      message: "Server error"
     });
   }
 };

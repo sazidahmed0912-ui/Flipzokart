@@ -113,6 +113,9 @@ app.use("/api/order", require("./routes/orderRoutes"));
 // 🔔 Notifications
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 
+// 👤 User & Profile
+app.use("/api/user", require("./routes/userRoutes"));
+
 // 👑 Admin
 app.use("/api/admin", require("./routes/adminRoutes"));
 

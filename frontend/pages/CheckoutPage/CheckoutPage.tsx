@@ -18,13 +18,21 @@ const CheckoutPage = () => {
     const { addToast } = useToast();
     const navigate = useNavigate();
 
-    const [addresses, setAddresses] = useState<Address[]>(initialAddresses);
+    const [addresses, setAddresses] = useState<Address[]>(() => {
+        const saved = localStorage.getItem('checkout_addresses');
+        return saved ? JSON.parse(saved) : initialAddresses;
+    });
     const [selectedAddressId, setSelectedAddressId] = useState<number | null>(contextAddress?.id ?? null);
     const [isLoading, setIsLoading] = useState(false);
     const [isPlaceOrderLoading, setIsPlaceOrderLoading] = useState(false);
     const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
     const [addressToEdit, setAddressToEdit] = useState<Address | null>(null);
     const [deliveryCharges, setDeliveryCharges] = useState(0);
+
+    // Save to local storage whenever addresses change
+    React.useEffect(() => {
+        localStorage.setItem('checkout_addresses', JSON.stringify(addresses));
+    }, [addresses]);
 
     const subtotal = cart.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 1)), 0);
     const discount = 0; // Placeholder

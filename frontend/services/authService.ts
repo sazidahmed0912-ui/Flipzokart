@@ -137,11 +137,32 @@ const authService = {
   },
 
   // =========================
+  // ✅ UPDATE PROFILE
+  // =========================
+  async updateProfile(data: { name?: string; phone?: string }): Promise<User> {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message || "Profile update failed");
+    }
+    return result.user;
+  },
+
+  // =========================
   // ✅ CHANGE PASSWORD
   // =========================
   async changePassword(data: any): Promise<void> {
     const token = localStorage.getItem("token");
-    const response = await fetch(`${API_BASE_URL}/api/auth/updatepassword`, {
+    const response = await fetch(`${API_BASE_URL}/api/user/password`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -153,6 +174,38 @@ const authService = {
     const result = await response.json();
     if (!result.success) {
       throw new Error(result.message || "Password update failed");
+    }
+  },
+
+  // =========================
+  // ✅ GET ACTIVITIES
+  // =========================
+  async getActivities(): Promise<any[]> {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user/activities`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await response.json();
+      return result.success ? result.activities : [];
+    } catch {
+      return [];
+    }
+  },
+
+  // =========================
+  // ✅ GET DEVICE HISTORY
+  // =========================
+  async getDeviceHistory(): Promise<any[]> {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user/devices`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await response.json();
+      return result.success ? result.devices : [];
+    } catch {
+      return [];
     }
   },
 };

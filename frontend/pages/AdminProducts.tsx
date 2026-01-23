@@ -46,6 +46,12 @@ export const AdminProducts: React.FC = () => {
     inventory: [] as VariantCombination[]
   });
 
+  // Feature: Color-Image Sync State
+  const [variantColorImages, setVariantColorImages] = useState<Record<string, string>>({});
+  const [newColorName, setNewColorName] = useState('');
+  const [newColorImage, setNewColorImage] = useState<string | null>(null);
+  const colorImageInputRef = useRef<HTMLInputElement>(null);
+
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -237,6 +243,56 @@ export const AdminProducts: React.FC = () => {
     });
   };
 
+
+
+  // --- Color-Image Sync Logic ---
+  const handleColorImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewColorImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const addColorWithImage = () => {
+    if (!newColorName.trim()) {
+      alert("Please enter a color name (e.g., Red)");
+      return;
+    }
+    if (!newColorImage) {
+      alert("Please upload an image for this color.");
+      return;
+    }
+
+    // 1. Add to Variants (Find 'Color' group or create one)
+    setFormData(prev => {
+      const existingGroupIndex = prev.variants.findIndex(v => v.name.toLowerCase() === 'color');
+      let nextVariants = [...prev.variants];
+
+      if (existingGroupIndex >= 0) {
+        // Add option if not exists
+        if (!nextVariants[existingGroupIndex].options.includes(newColorName)) {
+          const nextOptions = [...nextVariants[existingGroupIndex].options, newColorName];
+          nextVariants[existingGroupIndex] = { ...nextVariants[existingGroupIndex], options: nextOptions };
+        }
+      } else {
+        // Create new Color group
+        nextVariants.push({ name: 'Color', options: [newColorName] });
+      }
+      return { ...prev, variants: nextVariants };
+    });
+
+    // 2. Save mapping
+    setVariantColorImages(prev => ({ ...prev, [newColorName]: newColorImage }));
+
+    // Reset
+    setNewColorName('');
+    setNewColorImage(null);
+  };
+
   const generateCombinations = () => {
     const activeVariants = formData.variants.filter(v =>
       v.name.trim() !== '' && v.options.some(o => o.trim() !== '')
@@ -275,12 +331,22 @@ export const AdminProducts: React.FC = () => {
       const variantSuffix = Object.values(combo).map(v => v.substring(0, 2).toUpperCase()).join('-');
       const randomID = Math.floor(100 + Math.random() * 899);
 
+      // Auto-assign image from Color map if available
+      let autoImage = undefined;
+      const colorKey = Object.keys(combo).find(k => k.toLowerCase() === 'color');
+      if (colorKey) {
+        const colorValue = combo[colorKey];
+        if (variantColorImages[colorValue]) {
+          autoImage = variantColorImages[colorValue];
+        }
+      }
+
       return {
         options: combo,
         stock: 0,
         sku: `${basePrefix}-${variantSuffix}-${randomID}`,
         price: undefined,
-        image: undefined
+        image: autoImage
       };
     });
 
@@ -662,6 +728,45 @@ export const AdminProducts: React.FC = () => {
                           </div>
                         </div>
 
+                        {/* New Feature: Color + Image Quick Add */}
+                        <div className="mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100 flex flex-wrap items-center gap-3">
+                          <input
+                            type="file"
+                            ref={colorImageInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleColorImageUpload}
+                          />
+                          <div
+                            className="w-10 h-10 bg-white rounded border border-blue-200 flex items-center justify-center cursor-pointer hover:border-blue-500 overflow-hidden shadow-sm"
+                            onClick={() => colorImageInputRef.current?.click()}
+                            title="Upload Color Image"
+                          >
+                            {newColorImage ? (
+                              <img src={newColorImage} className="w-full h-full object-cover" alt="Color Variant" />
+                            ) : (
+                              <ImagePlus size={18} className="text-blue-400" />
+                            )}
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="Color Name (e.g. Red)"
+                            className="w-40 px-3 py-2 bg-white border border-blue-200 rounded text-sm outline-none focus:border-blue-500"
+                            value={newColorName}
+                            onChange={(e) => setNewColorName(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addColorWithImage())}
+                          />
+                          <button
+                            type="button"
+                            onClick={addColorWithImage}
+                            className="px-4 py-2 bg-[#2874F0] text-white text-xs font-bold rounded hover:bg-[#1e5ccc] shadow-sm flex items-center gap-2"
+                          >
+                            <PlusCircle size={14} /> Add Color + Img
+                          </button>
+                          <span className="text-[10px] text-blue-600 font-medium ml-auto">
+                            * Auto-syncs image to all sizes
+                          </span>
+                        </div>
                         {formData.variants.length === 0 && (
                           <div className="text-center py-4 text-gray-400 text-xs italic">
                             No variants added. This will be a standard product.

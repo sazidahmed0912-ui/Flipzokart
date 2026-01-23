@@ -30,6 +30,7 @@ const ProfilePage = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [profileData, setProfileData] = useState<any>(user || {});
   const [activities, setActivities] = useState<any[]>([]);
+  const [devices, setDevices] = useState<any[]>([]);
 
   // STRICT 5s SYNC ENGINE
   React.useEffect(() => {
@@ -41,10 +42,12 @@ const ProfilePage = () => {
         if (updatedUser) setProfileData((prev: any) => ({ ...prev, ...updatedUser }));
 
         // 2. Silent Activity Sync
-        const activityRes = await API.get('/api/user/activity');
-        if (activityRes.data?.success) {
-          setActivities(activityRes.data.activities);
-        }
+        const fetchedActivities = await authService.getActivities();
+        setActivities(fetchedActivities);
+
+        // 3. Silent Device Sync
+        const fetchedDevices = await authService.getDeviceHistory();
+        setDevices(fetchedDevices);
       } catch (e) {
         // Silent Fail - No UI impact
       }
@@ -215,48 +218,14 @@ const ProfilePage = () => {
 
               {isModalOpen ? (
                 /* FORM MODE */
-                <form className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Full Name</label>
-                    <input
-                      type="text"
-                      defaultValue={profileData.name}
-                      className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2874F0] focus:ring-2 focus:ring-blue-50 text-sm font-medium transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Email Address</label>
-                    <input
-                      type="email"
-                      defaultValue={profileData.email}
-                      className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2874F0] focus:ring-2 focus:ring-blue-50 text-sm font-medium transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Mobile Number</label>
-                    <input
-                      type="tel"
-                      defaultValue={profileData.phone}
-                      className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2874F0] focus:ring-2 focus:ring-blue-50 text-sm font-medium transition-all"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2 flex justify-end gap-3 mt-4">
-                    <button
-                      type="button"
-                      onClick={closeModal}
-                      className="px-6 py-2.5 rounded-lg font-bold text-gray-600 hover:bg-gray-100 text-sm"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="bg-[#2874F0] text-white px-8 py-2.5 rounded-lg font-bold text-sm shadow-md hover:bg-blue-600 transition-colors"
-                    >
-                      Save Changes
-                    </button>
-                  </div>
-                </form>
+                <EditProfileForm
+                  initialData={profileData}
+                  onCancel={closeModal}
+                  onSuccess={(updatedUser: any) => {
+                    setProfileData(updatedUser);
+                    closeModal();
+                  }}
+                />
               ) : (
                 /* VIEW MODE */
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -320,15 +289,17 @@ const ProfilePage = () => {
 
                 <div className="space-y-4">
                   <h4 className="font-semibold text-gray-700">Device History</h4>
-                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <Smartphone size={24} className="text-gray-400" />
-                    <div>
-                      <div className="text-sm font-semibold text-gray-800">Windows PC - Chrome</div>
-                      <div className="text-xs text-green-600 font-medium flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Active Now
+                  {devices.map((device, idx) => (
+                    <div key={idx} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 mb-2">
+                      <Smartphone size={24} className="text-gray-400" />
+                      <div>
+                        <div className="text-sm font-semibold text-gray-800">{device.device}</div>
+                        <div className="text-xs text-green-600 font-medium flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Last active: {new Date(device.lastLogin).toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -421,6 +392,74 @@ const ChangePasswordForm = () => {
       >
         {loading ? "Updating..." : "Update Password"}
       </button>
+    </form>
+  );
+};
+
+const EditProfileForm = ({ initialData, onCancel, onSuccess }: any) => {
+  const [name, setName] = useState(initialData.name || "");
+  const [phone, setPhone] = useState(initialData.phone || "");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const updatedUser = await authService.updateProfile({ name, phone });
+      onSuccess(updatedUser);
+    } catch (error) {
+      console.error("Update failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up">
+      <div className="space-y-2">
+        <label className="text-xs font-bold text-gray-500 uppercase">Full Name</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2874F0] focus:ring-2 focus:ring-blue-50 text-sm font-medium transition-all"
+        />
+      </div>
+      <div className="space-y-2">
+        <label className="text-xs font-bold text-gray-500 uppercase">Email Address</label>
+        <input
+          type="email"
+          value={initialData.email}
+          disabled
+          className="w-full h-11 px-4 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed text-sm font-medium"
+        />
+      </div>
+      <div className="space-y-2">
+        <label className="text-xs font-bold text-gray-500 uppercase">Mobile Number</label>
+        <input
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2874F0] focus:ring-2 focus:ring-blue-50 text-sm font-medium transition-all"
+        />
+      </div>
+
+      <div className="md:col-span-2 flex justify-end gap-3 mt-4">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-6 py-2.5 rounded-lg font-bold text-gray-600 hover:bg-gray-100 text-sm"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-[#2874F0] text-white px-8 py-2.5 rounded-lg font-bold text-sm shadow-md hover:bg-blue-600 transition-colors disabled:opacity-50"
+        >
+          {loading ? "Saving..." : "Save Changes"}
+        </button>
+      </div>
     </form>
   );
 };
