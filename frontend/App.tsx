@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import PageTransition from "./components/ui/PageTransition";
 
 /* ---------- CONTEXT ---------- */
@@ -34,6 +34,13 @@ const AboutUsPage = lazy(() => import("./pages/AboutUsPage").then(module => ({ d
 const ContactUsPage = lazy(() => import("./pages/ContactUsPage").then(module => ({ default: module.ContactUsPage })));
 const TrackOrderPage = lazy(() => import("./pages/TrackOrderPage").then(module => ({ default: module.TrackOrderPage })));
 const AddNewAddress = lazy(() => import("./components/AddNewAddress"));
+import { BannedPage } from "./pages/BannedPage";
+
+const BannedPageWrapper = () => (
+  <Suspense fallback={<CircularGlassSpinner />}>
+    <BannedPage />
+  </Suspense>
+);
 
 /* ---------- ADMIN (LAZY LOADED) ---------- */
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then(module => ({ default: module.AdminDashboard })));
@@ -112,6 +119,17 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
     };
   }, [socket, user, addToast, showToast]);
 
+  // Strict Punishment Redirection
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (user && (user.status === 'Banned' || user.status === 'Suspended')) {
+      // Allow appeal and logout, otherwise redirect
+      if (location?.pathname !== '/banned' && liveLocation.pathname !== '/banned') {
+        navigate('/banned');
+      }
+    }
+  }, [user, location, liveLocation, navigate]);
+
   return (
     <Layout>
       <Suspense fallback={<CircularGlassSpinner />}>
@@ -141,6 +159,7 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
             <Route path="/order-success" element={<OrderSuccessPage />} />
             <Route path="/track-order" element={<TrackOrderPage />} />
             <Route path="/add-address" element={<AddNewAddress />} />
+            <Route path="/banned" element={<BannedPageWrapper />} />
 
             {/* User Protected */}
             <Route

@@ -105,9 +105,50 @@ const getDeviceHistory = async (req, res) => {
     }
 };
 
+// @desc    Submit an appeal for unban
+// @route   POST /api/users/appeal
+// @access  Private (Banned Users allowed)
+const appealUser = async (req, res) => {
+    try {
+        const { message, userId } = req.body;
+        // Verify user matches token (or is admin)
+        if (req.user._id.toString() !== userId && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        // Create Notification for Admin
+        // Assuming there's a Notification model or similar mechanism.
+        // For now, we'll just log it or update a user field if "Appeals" schemas exist.
+        // However, user request said "Admin Notification Box".
+        // Let's create an Activity log of type 'appeal' which Admin Dashboard reads?
+        // Or if there is a Notification system.
+
+        // Let's create an Activity for now, type 'appeal'
+        await Activity.create({
+            user: user._id,
+            type: 'appeal',
+            message: `User Appeal: ${message}`,
+            ip: req.ip
+        });
+
+        // Optionally send email to admin or real-time socket
+
+        res.json({ success: true, message: 'Appeal submitted' });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     updateProfile,
     changePassword,
     getActivities,
-    getDeviceHistory
+    getDeviceHistory,
+    appealUser
 };

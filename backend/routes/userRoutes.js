@@ -9,5 +9,6 @@ router.put('/profile', updateProfile);
 router.put('/password', changePassword);
 router.get('/activity', getActivities);
 router.get('/devices', getDeviceHistory);
+router.post('/appeal', appealUser);
 
 module.exports = router;

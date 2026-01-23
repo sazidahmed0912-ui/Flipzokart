@@ -20,7 +20,32 @@ const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select('-password');
+    req.user = await User.findById(decoded.id).select("-password");
+
+    // Strict Punishment Check
+    if (req.user && req.user.role !== 'admin') {
+      // Allow users to check their status (for Banned Page) and submit appeals
+      const allowedPaths = ['/api/users/profile', '/api/users/appeal', '/api/users/me'];
+      const isAllowed = allowedPaths.includes(req.originalUrl) || req.method === 'GET' && req.originalUrl.includes('/api/users/profile');
+
+      if (!isAllowed) {
+        if (req.user.status === 'Banned') {
+          return res.status(403).json({ message: `Access Denied: Your account has been permanently banned. Reason: ${req.user.banReason || 'Violation of Terms'}` });
+        }
+        if (req.user.status === 'Suspended') {
+          if (req.user.suspensionEnd && new Date() < new Date(req.user.suspensionEnd)) {
+            return res.status(403).json({ message: `Access Denied: Your account is suspended until ${new Date(req.user.suspensionEnd).toLocaleDateString()}.` });
+          } else {
+            // Auto-reactivate
+            req.user.status = 'Active';
+            req.user.suspensionEnd = undefined;
+            req.user.banReason = undefined;
+            await req.user.save();
+          }
+        }
+      }
+    }
+
     next();
   } catch (error) {
     res.status(401).json({ message: 'Not authorized, token failed' });

@@ -201,7 +201,7 @@ const ProfilePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { label: "Total Orders", value: orderCount.toString(), icon: Package },
-              { label: "Account Status", value: "Verified", icon: ShieldCheck, isStatus: true },
+              { label: "Account Status", value: profileData.status || "Active", icon: ShieldCheck, isStatus: true },
               { label: "Member Since", value: getMemberSince(), icon: Calendar }
             ].map((stat, i) => (
               <SmoothReveal key={i} direction="up" delay={300 + (i * 100)} className="h-full">
