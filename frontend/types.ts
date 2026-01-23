@@ -52,7 +52,7 @@ export interface Address {
   city: string;
   state: string;
   pincode: string;
-  type: 'Home' | 'Work';
+  type: 'Home' | 'Work' | 'Other';
 }
 
 export interface CartItem extends Product {
