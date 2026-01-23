@@ -349,10 +349,7 @@ body {
 }
 
 /* Form styles remain for the modal */
-.address-form {
-    background-color: var(--background-color);
-    padding: 1.5rem;
-}
+
 
 /* Place Order Sticky Mobile */
 .place-order-sticky-mobile {

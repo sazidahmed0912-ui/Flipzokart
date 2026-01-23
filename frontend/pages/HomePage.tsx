@@ -34,54 +34,7 @@ export const HomePage: React.FC = () => {
 
     return (
         <>
-            <section
-  className="rounded-2xl mx-4 md:mx-8 my-6 p-8 md:p-12 shadow-lg bg-cover bg-center relative"
-  style={{
-    backgroundImage: "url('/Flipzokart Official Banner.jpeg')",
-  }}
->
-  {/* overlay for readability */}
-  <div className="absolute inset-0 bg-black/30 rounded-2xl"></div>
-
-  <div className="relative max-w-7xl mx-auto">
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center text-center lg:text-left">
-      <div className="flex flex-col items-center lg:items-start text-white">
-        <h2 className="text-sm md:text-base mb-2">
-          Featured on{" "}
-          <span className="font-bold">
-            Flip<span className="text-[#f28c28]">zokart</span>
-          </span>
-        </h2>
-
-        <h1 className="text-4xl md:text-6xl font-bold mb-6">
-          Up to 70% Off
-        </h1>
-
-        <p className="text-lg md:text-xl mb-8 max-w-md lg:max-w-none">
-          Discover amazing deals on your favorite products
-        </p>
-
-        <Link
-          to="/shop"
-          className="bg-white text-[#f28c28] px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors shadow-md w-full sm:w-auto"
-        >
-          Shop Now
-        </Link>
-      </div>
-
-      <div className="flex justify-center lg:justify-end mt-8 lg:mt-0">
-        <LazyImage
-          src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/hero/hero-main-74b7ae42a905438281efa4046613129a.png"
-          alt="Happy Indian couple shopping"
-          width="600"
-          height="450"
-          className="w-full max-w-md rounded-2xl object-cover shadow-lg"
-          loading="eager"
-        />
-      </div>
-    </div>
-  </div>
-</section>
+            <section className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl mx-4 md:mx-8 my-6 p-8 md:p-12 shadow-lg"> <div className="max-w-7xl mx-auto"> <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center text-center lg:text-left"> <div className="flex flex-col items-center lg:items-start"> <h2 className="text-sm md:text-base text-gray-700 mb-2">Featured on <span className="font-bold text-[#222]">Flip<span className="text-[#f28c28]">zokart</span></span></h2> <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6">Up to 70% Off</h1> <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-md lg:max-w-none mx-auto lg:mx-0">Discover amazing deals on your favorite products</p> <Link to="/shop" className="bg-white text-[#f28c28] px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors shadow-md w-full sm:w-auto">Shop Now</Link> </div> <div className="flex justify-center lg:justify-end mt-8 lg:mt-0"> <LazyImage src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/hero/hero-main-74b7ae42a905438281efa4046613129a.png" alt="Happy Indian couple shopping" width="600" height="450" className="w-full max-w-md rounded-2xl object-cover shadow-lg" loading="eager" /> </div> </div> </div> </section>
 
 
             <section className="py-8 px-4 md:px-8">
