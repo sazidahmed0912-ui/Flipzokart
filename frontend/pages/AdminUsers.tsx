@@ -1,26 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search, Filter, MoreVertical,
   UserX, ShieldCheck, Mail, Phone,
   ChevronDown, MapPin, Calendar, Clock,
-  Bell, User, LogOut, CheckCircle, XCircle
+  Bell, User, LogOut, CheckCircle, XCircle,
+  Eye, Home
 } from 'lucide-react';
 import { AdminSidebar } from '../components/AdminSidebar';
 import { useApp } from '../store/Context';
+import { fetchAllUsers } from '../services/adminService';
 
-const MOCK_USERS = [
-  { id: '1', name: 'Rahul Sharma', email: 'rahul.s@gmail.com', status: 'Active', orders: 12, totalSpent: 45000, joined: '2024-01-15', location: 'Mumbai' },
-  { id: '2', name: 'Priya Patel', email: 'priya.p@outlook.com', status: 'Active', orders: 8, totalSpent: 28000, joined: '2024-02-10', location: 'Delhi' },
-  { id: '3', name: 'Anish Gupta', email: 'anish.g@gmail.com', status: 'Suspended', orders: 2, totalSpent: 5000, joined: '2024-03-05', location: 'Bangalore' },
-  { id: '4', name: 'Sneha Reddy', email: 'sneha.r@gmail.com', status: 'New', orders: 1, totalSpent: 1200, joined: '2024-05-12', location: 'Hyderabad' },
-];
+// Removed MOCK_USERS - Now using Real Data
 
 export const AdminUsers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const { user, logout } = useApp();
+  const [users, setUsers] = useState<any[]>([]); // Real users state
+  const [loading, setLoading] = useState(true);
+  const [addressModalUser, setAddressModalUser] = useState<any | null>(null);
+  const { user: adminUser, logout } = useApp();
 
-  const filteredUsers = MOCK_USERS.filter(u =>
+  // 🔄 Real-time 5s Polling
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const { data } = await fetchAllUsers();
+        // Only update if data changed (simple length check or deep compare if needed)
+        // For now, simple set to keep UI fresh
+        setUsers(data);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUsers(); // Initial fetch
+    const interval = setInterval(loadUsers, 5000); // 5s poll
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredUsers = users.filter(u =>
     u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -55,9 +75,9 @@ export const AdminUsers: React.FC = () => {
                 className="flex items-center gap-2 hover:bg-gray-50 p-1.5 rounded-lg transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-[#2874F0] text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                  {user?.name?.charAt(0) || 'A'}
+                  {adminUser?.name?.charAt(0) || 'A'}
                 </div>
-                <span className="text-xs font-semibold text-gray-700">{user?.name?.split(' ')[0] || 'Admin'}</span>
+                <span className="text-xs font-semibold text-gray-700">{adminUser?.name?.split(' ')[0] || 'Admin'}</span>
                 <ChevronDown size={14} className="text-gray-400" />
               </button>
 
@@ -98,12 +118,20 @@ export const AdminUsers: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {filteredUsers.map((user, idx) => (
-                    <tr key={user.id} className={`group transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">Loading users...</td>
+                    </tr>
+                  ) : filteredUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-medium">No users found.</td>
+                    </tr>
+                  ) : filteredUsers.map((user, idx) => (
+                    <tr key={user._id || user.id} className={`group transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-50 text-[#2874F0] flex items-center justify-center font-bold text-sm border border-blue-100">
-                            {user.name.charAt(0)}
+                            {user.name?.charAt(0) || 'U'}
                           </div>
                           <div>
                             <p className="font-bold text-gray-800 text-sm">{user.name}</p>
@@ -114,28 +142,33 @@ export const AdminUsers: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${user.status === 'Active' ? 'bg-green-50 text-green-700 border-green-200' :
-                            user.status === 'Suspended' ? 'bg-red-50 text-red-700 border-red-200' :
-                              'bg-orange-50 text-orange-700 border-orange-200'
-                          }`}>
-                          {user.status === 'Active' ? <ShieldCheck size={12} /> : user.status === 'Suspended' ? <UserX size={12} /> : <Clock size={12} />}
-                          {user.status}
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border bg-green-50 text-green-700 border-green-200`}>
+                          <ShieldCheck size={12} />
+                          Active
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-600 text-sm font-medium">
                         <div className="flex items-center gap-1.5">
-                          <MapPin size={14} className="text-gray-400" /> {user.location}
+                          <MapPin size={14} className="text-gray-400" /> {user.location || 'Unknown'}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-gray-600 text-sm">
                         <div className="flex items-center gap-1.5">
-                          <Calendar size={14} className="text-gray-400" /> {new Date(user.joined).toLocaleDateString()}
+                          <Calendar size={14} className="text-gray-400" />
+                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                         </div>
                       </td>
                       <td className="px-6 py-4 font-bold text-gray-800 text-sm">{user.orders}</td>
-                      <td className="px-6 py-4 font-bold text-gray-800 text-sm">₹{user.totalSpent.toLocaleString('en-IN')}</td>
-                      <td className="px-6 py-4 text-right">
-                        <button className="p-2 text-gray-400 hover:text-[#2874F0] hover:bg-blue-50 rounded-lg transition-all">
+                      <td className="px-6 py-4 font-bold text-gray-800 text-sm">₹{(user.totalSpent || 0).toLocaleString('en-IN')}</td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        <button
+                          onClick={() => setAddressModalUser(user)}
+                          className="p-2 text-gray-400 hover:text-[#2874F0] hover:bg-blue-50 rounded-lg transition-all inline-block"
+                          title="View Address"
+                        >
+                          <Home size={16} />
+                        </button>
+                        <button className="p-2 text-gray-400 hover:text-[#2874F0] hover:bg-blue-50 rounded-lg transition-all inline-block">
                           <MoreVertical size={16} />
                         </button>
                       </td>
@@ -144,13 +177,48 @@ export const AdminUsers: React.FC = () => {
                 </tbody>
               </table>
             </div>
-            {filteredUsers.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-400 font-medium">No users found.</p>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* View Address Modal */}
+        {addressModalUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setAddressModalUser(null)}></div>
+            <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 animate-fade-in-up">
+              <button
+                onClick={() => setAddressModalUser(null)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              >
+                <XCircle size={20} />
+              </button>
+              <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <MapPin className="text-[#2874F0]" size={20} />
+                User Address
+              </h2>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                  <p className="text-sm font-bold text-gray-900 mb-1">{addressModalUser.name}</p>
+                  <p className="text-sm text-gray-500 mb-2">{addressModalUser.email}</p>
+                  <hr className="border-gray-200 my-2" />
+                  <p className="text-sm text-gray-700 font-medium leading-relaxed">
+                    {addressModalUser.fullAddress && addressModalUser.fullAddress !== 'N/A'
+                      ? addressModalUser.fullAddress
+                      : "No address found for this user (No orders yet)."}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setAddressModalUser(null)}
+                  className="w-full bg-[#2874F0] text-white py-2.5 rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

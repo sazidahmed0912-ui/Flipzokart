@@ -166,7 +166,7 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     console.log(`👉 [PUT /${req.params.id}] Payload:`, JSON.stringify(req.body, null, 2));
-    const product = new Product.findByIdAndUpdate(
+    const product = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }

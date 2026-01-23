@@ -2,32 +2,51 @@ const Review = require("../models/Review");
 const Product = require("../models/Product"); // Assuming Product model exists
 const User = require("../models/User"); // Assuming User model exists
 
+// Helper to calculate average rating
+const calculateProductStats = async (productId, io) => {
+  const reviews = await Review.find({ product: productId });
+  const reviewsCount = reviews.length;
+  const rating = reviewsCount === 0
+    ? 0
+    : reviews.reduce((acc, item) => item.rating + acc, 0) / reviewsCount;
+
+  const product = await Product.findByIdAndUpdate(
+    productId,
+    {
+      rating,
+      reviewsCount
+    },
+    { new: true }
+  );
+
+  // Real-time update for product details page
+  if (io) {
+    io.emit('productUpdated', product);
+  }
+};
+
 // @desc    Create a new review
 // @route   POST /api/reviews
 // @access  Private
 const createReview = async (req, res) => {
   const { product, rating, comment } = req.body;
-  const user = req.user._id; // Comes from protect middleware
+  const user = req.user._id;
 
   try {
-    // Check if product exists
     const existingProduct = await Product.findById(product);
     if (!existingProduct) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Check if user has already reviewed this product
     const alreadyReviewed = await Review.findOne({ user, product });
     if (alreadyReviewed) {
-      return res
-        .status(400)
-        .json({ message: "You have already reviewed this product" });
+      return res.status(400).json({ message: "You have already reviewed this product" });
     }
 
     const review = await Review.create({
       user,
       product,
-      rating,
+      rating: Number(rating),
       comment,
     });
 
@@ -35,9 +54,11 @@ const createReview = async (req, res) => {
       .populate("user", "name email")
       .populate("product", "name");
 
-    // Emit real-time event
     const io = req.app.get("socketio");
     io.emit("newReview", populatedReview);
+
+    // Update Product Stats
+    await calculateProductStats(product, io);
 
     res.status(201).json({ success: true, data: populatedReview });
   } catch (error) {
@@ -52,8 +73,8 @@ const createReview = async (req, res) => {
 const getProductReviews = async (req, res) => {
   try {
     const reviews = await Review.find({ product: req.params.productId })
-      .populate("user", "name email") // Populate user details
-      .sort({ createdAt: -1 }); // Latest reviews first
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, count: reviews.length, data: reviews });
   } catch (error) {
@@ -96,11 +117,8 @@ const updateReview = async (req, res) => {
       return res.status(404).json({ message: "Review not found" });
     }
 
-    // Make sure user is the review owner
     if (review.user.toString() !== req.user._id.toString()) {
-      return res
-        .status(401)
-        .json({ message: "Not authorized to update this review" });
+      return res.status(401).json({ message: "Not authorized to update this review" });
     }
 
     review.rating = rating || review.rating;
@@ -112,9 +130,11 @@ const updateReview = async (req, res) => {
       .populate("user", "name email")
       .populate("product", "name");
 
-    // Emit real-time event
     const io = req.app.get("socketio");
     io.emit("updatedReview", populatedReview);
+
+    // Update Product Stats
+    await calculateProductStats(review.product, io);
 
     res.status(200).json({ success: true, data: populatedReview });
   } catch (error) {
@@ -134,17 +154,19 @@ const deleteReview = async (req, res) => {
       return res.status(404).json({ message: "Review not found" });
     }
 
-    // Make sure user is the review owner OR admin
     if (
       review.user.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
     ) {
-      return res
-        .status(401)
-        .json({ message: "Not authorized to delete this review" });
+      return res.status(401).json({ message: "Not authorized to delete this review" });
     }
 
+    const productId = review.product; // Save before delete
     await review.deleteOne();
+
+    // Update Product Stats
+    const io = req.app.get("socketio");
+    await calculateProductStats(productId, io);
 
     res.status(200).json({ success: true, message: "Review removed" });
   } catch (error) {
@@ -159,8 +181,8 @@ const deleteReview = async (req, res) => {
 const getUserReviews = async (req, res) => {
   try {
     const reviews = await Review.find({ user: req.params.userId })
-      .populate("product", "name image") // Populate product name and image
-      .sort({ createdAt: -1 }); // Latest reviews first
+      .populate("product", "name image")
+      .sort({ createdAt: -1 });
 
     if (!reviews) {
       return res.status(404).json({ message: "No reviews found for this user" });

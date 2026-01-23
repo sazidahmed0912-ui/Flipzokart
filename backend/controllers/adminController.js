@@ -64,6 +64,41 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+// @desc    Get all users with stats
+// @route   GET /api/admin/users
+// @access  Private/Admin
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({ role: 'user' }).select('-password').sort({ createdAt: -1 });
+
+    // Enrich with order stats
+    // Note: Doing this in loop for simplicity, but aggregation is better for scale. 
+    // Given the scale mentioned (demo/small), this is fine.
+    const usersWithStats = await Promise.all(users.map(async (user) => {
+      const orders = await Order.find({ userId: user._id });
+      const totalSpent = orders.reduce((acc, order) => acc + (order.paymentStatus === 'PAID' ? order.total : 0), 0);
+
+      // Try to find a recent address from orders
+      const lastOrder = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+      const address = lastOrder ? `${lastOrder.address.street}, ${lastOrder.address.city}, ${lastOrder.address.zipCode}` : 'N/A';
+
+      return {
+        ...user.toObject(),
+        orders: orders.length,
+        totalSpent,
+        location: address !== 'N/A' ? lastOrder.address.city : 'Unknown', // Simple location for table
+        fullAddress: address // Detailed address for 'View Address'
+      };
+    }));
+
+    res.json(usersWithStats);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
+  getAllUsers,
 };
