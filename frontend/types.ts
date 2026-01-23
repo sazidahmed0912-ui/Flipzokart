@@ -42,6 +42,7 @@ export interface User {
   role: 'admin' | 'user';
   avatar?: string;
   joinedDate?: string;
+  createdAt?: string;
 }
 
 export interface Address {

@@ -31,6 +31,7 @@ const ProfilePage = () => {
   const [profileData, setProfileData] = useState<any>(user || {});
   const [activities, setActivities] = useState<any[]>([]);
   const [devices, setDevices] = useState<any[]>([]);
+  const [orderCount, setOrderCount] = useState(0);
 
   // STRICT 5s SYNC ENGINE
   React.useEffect(() => {
@@ -48,6 +49,15 @@ const ProfilePage = () => {
         // 3. Silent Device Sync
         const fetchedDevices = await authService.getDeviceHistory();
         setDevices(fetchedDevices);
+
+        // 4. Order Count Sync (if user id available)
+        const uid = updatedUser?.id || user?.id;
+        if (uid) {
+          const customRes = await API.get(`/api/order/user/${uid}`);
+          // Check if response data is array or object with orders
+          const orders = Array.isArray(customRes.data) ? customRes.data : (customRes.data.orders || []);
+          setOrderCount(orders.length);
+        }
       } catch (e) {
         // Silent Fail - No UI impact
       }
@@ -58,7 +68,7 @@ const ProfilePage = () => {
     const intervalId = setInterval(syncData, 5000); // 5s Auto Sync
 
     return () => clearInterval(intervalId); // Cleanup
-  }, []);
+  }, [user]);
 
   // Update local state if context user changes initially
   React.useEffect(() => {
@@ -88,6 +98,13 @@ const ProfilePage = () => {
     { name: "Account Security", path: "/account-security", icon: ShieldCheck },
     { name: "Address Book", path: "/address-book", icon: MapPin },
   ];
+
+  // Helper for Member Since Format: "Jan 21"
+  const getMemberSince = () => {
+    if (!profileData.createdAt) return "N/A";
+    const date = new Date(profileData.createdAt);
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" }).replace(",", "'");
+  };
 
   return (
     <div className="bg-[#F5F7FA] min-h-screen font-sans text-[#1F2937]">
@@ -160,7 +177,7 @@ const ProfilePage = () => {
             <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex items-center gap-6">
                 <div className="w-24 h-24 rounded-full bg-[#FFE11B] flex items-center justify-center text-3xl font-bold text-[#1F2937] border-4 border-white shadow-sm">
-                  A
+                  {profileData.name?.[0]?.toUpperCase() || "U"}
                 </div>
                 <div className="space-y-1">
                   <h2 className="text-2xl font-bold text-[#1F2937] flex items-center gap-2">
@@ -183,9 +200,9 @@ const ProfilePage = () => {
           {/* 3️⃣ QUICK INFO CARDS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { label: "Total Orders", value: "5", icon: Package },
+              { label: "Total Orders", value: orderCount.toString(), icon: Package },
               { label: "Account Status", value: "Verified", icon: ShieldCheck, isStatus: true },
-              { label: "Member Since", value: "Jan 21", icon: Calendar }
+              { label: "Member Since", value: getMemberSince(), icon: Calendar }
             ].map((stat, i) => (
               <SmoothReveal key={i} direction="up" delay={300 + (i * 100)} className="h-full">
                 <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-5 flex items-center gap-4 h-full">
@@ -267,7 +284,7 @@ const ProfilePage = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-gray-800 text-sm md:text-base truncate">{activity.message}</p>
-                        <p className="text-xs text-gray-500">{new Date(activity.date).toLocaleString()}</p>
+                        <p className="text-xs text-gray-500">{new Date(activity.date).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                       </div>
                     </div>
                   ))}
@@ -295,7 +312,8 @@ const ProfilePage = () => {
                       <div>
                         <div className="text-sm font-semibold text-gray-800">{device.device}</div>
                         <div className="text-xs text-green-600 font-medium flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Last active: {new Date(device.lastLogin).toLocaleDateString()}
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                          Last active: {new Date(device.lastLogin).toLocaleString("en-US", { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}
                         </div>
                       </div>
                     </div>
