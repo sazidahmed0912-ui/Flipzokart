@@ -29,6 +29,13 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    status: {
+      type: String,
+      enum: ["Active", "Suspended", "Banned"],
+      default: "Active",
+    },
+    suspensionEnd: Date,
+    banReason: String,
     resetPasswordToken: String,
     resetPasswordExpiry: Date,
     cart: [

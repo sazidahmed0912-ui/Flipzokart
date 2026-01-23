@@ -2,12 +2,18 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/authorize');
-const { getDashboardStats, getAllUsers } = require('../controllers/adminController');
+const { getDashboardStats, getAllUsers, updateUserStatus, sendUserNotice } = require('../controllers/adminController');
 
 router.route('/dashboard-stats')
   .get(protect, authorize(['admin']), getDashboardStats);
 
 router.route('/users')
   .get(protect, authorize(['admin']), getAllUsers);
+
+router.route('/users/:id/status')
+  .put(protect, authorize(['admin']), updateUserStatus);
+
+router.route('/users/:id/notice')
+  .post(protect, authorize(['admin']), sendUserNotice);
 
 module.exports = router;

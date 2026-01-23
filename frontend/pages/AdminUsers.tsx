@@ -8,7 +8,8 @@ import {
 } from 'lucide-react';
 import { AdminSidebar } from '../components/AdminSidebar';
 import { useApp } from '../store/Context';
-import { fetchAllUsers } from '../services/adminService';
+import { fetchAllUsers, updateUserStatus, sendUserNotice } from '../services/adminService';
+import { useToast } from '../components/toast';
 
 // Removed MOCK_USERS - Now using Real Data
 
@@ -17,7 +18,18 @@ export const AdminUsers: React.FC = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [users, setUsers] = useState<any[]>([]); // Real users state
   const [loading, setLoading] = useState(true);
+
+  // Modal States
   const [addressModalUser, setAddressModalUser] = useState<any | null>(null);
+  const [actionModal, setActionModal] = useState<{ type: 'suspend' | 'ban' | 'notice', user: any } | null>(null);
+  const [suspensionDays, setSuspensionDays] = useState(3);
+  const [banReason, setBanReason] = useState('');
+  const [noticeMessage, setNoticeMessage] = useState('');
+
+  // Dropdown States
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
+  const { addToast } = useToast();
   const { user: adminUser, logout } = useApp();
 
   // 🔄 Real-time 5s Polling
@@ -39,6 +51,42 @@ export const AdminUsers: React.FC = () => {
     const interval = setInterval(loadUsers, 5000); // 5s poll
     return () => clearInterval(interval);
   }, []);
+
+  const handleStatusUpdate = async (type: 'suspend' | 'ban') => {
+    if (!actionModal?.user) return;
+    try {
+      const status = type === 'suspend' ? 'Suspended' : 'Banned';
+      await updateUserStatus(actionModal.user.id || actionModal.user._id, status, type === 'suspend' ? suspensionDays : undefined, type === 'ban' ? banReason : undefined);
+      addToast('success', `User ${status} successfully`);
+      setActionModal(null);
+      // Optimistic Update
+      setUsers(users.map(u => u._id === actionModal.user._id ? { ...u, status } : u));
+    } catch (error) {
+      addToast('error', 'Failed to update status');
+    }
+  };
+
+  const handleSendNotice = async () => {
+    if (!actionModal?.user || !noticeMessage) return;
+    try {
+      await sendUserNotice(actionModal.user.id || actionModal.user._id, noticeMessage);
+      addToast('success', 'Notice sent successfully');
+      setActionModal(null);
+      setNoticeMessage('');
+    } catch (error) {
+      addToast('error', 'Failed to send notice');
+    }
+  };
+
+  const handleReactivate = async (user: any) => {
+    if (window.confirm(`Reactivate ${user.name}?`)) {
+      try {
+        await updateUserStatus(user.id || user._id, 'Active');
+        addToast('success', 'User reactivated');
+        setUsers(users.map(u => u._id === user._id ? { ...u, status: 'Active' } : u));
+      } catch (err) { addToast('error', 'Failed to reactivate'); }
+    }
+  };
 
   const filteredUsers = users.filter(u =>
     u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

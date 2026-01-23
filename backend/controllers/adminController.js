@@ -98,7 +98,91 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const Notification = require('../models/Notification'); // Import Notification
+
+// @desc    Update user status (Suspend/Ban/Active)
+// @route   PUT /api/admin/users/:id/status
+// @access  Private/Admin
+const updateUserStatus = async (req, res) => {
+  const { status, days, reason } = req.body; // days for suspension, reason for ban
+
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.status = status;
+
+    if (status === 'Suspended') {
+      const suspensionEnd = new Date();
+      suspensionEnd.setDate(suspensionEnd.getDate() + (days || 1));
+      user.suspensionEnd = suspensionEnd;
+      user.banReason = reason || 'Temporary Suspension';
+    } else if (status === 'Banned') {
+      user.suspensionEnd = null; // Permanent
+      user.banReason = reason || 'Violation of Terms';
+    } else {
+      // Reactivate
+      user.suspensionEnd = null;
+      user.banReason = null;
+    }
+
+    await user.save();
+
+    // Notify User via Socket
+    const io = req.app.get('socketio');
+    if (io) {
+      // Emit to specific user if possible, or broadcast update
+      // For simplicity in this architecture, we emit a general list update or check if we can emit to user room
+      io.emit('userStatusChanged', { userId: user._id, status, suspensionEnd: user.suspensionEnd });
+    }
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Send notice to user
+// @route   POST /api/admin/users/:id/notice
+// @access  Private/Admin
+const sendUserNotice = async (req, res) => {
+  const { message, type } = req.body;
+
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Create Notification
+    const notification = await Notification.create({
+      recipient: user._id,
+      message,
+      type: type || 'adminNotice',
+      isRead: false
+    });
+
+    // Real-time Push
+    const io = req.app.get('socketio');
+    if (io) {
+      io.to(user._id.toString()).emit('newNotification', notification);
+      io.to(user._id.toString()).emit('adminNotice', { message, type: 'emergency' }); // Special event for emergency popup
+    }
+
+    res.json({ success: true, notification });
+  } catch (error) {
+    console.error('Error sending notice:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAllUsers,
+  updateUserStatus,
+  sendUserNotice
 };

@@ -12,7 +12,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['newOrder', 'orderStatusUpdate', 'lowStock', 'adminNewOrder', 'userRegistration', 'general'],
+    enum: ['newOrder', 'orderStatusUpdate', 'lowStock', 'adminNewOrder', 'userRegistration', 'general', 'adminNotice'],
     default: 'general',
   },
   relatedId: { // To link to an order, product, or user
