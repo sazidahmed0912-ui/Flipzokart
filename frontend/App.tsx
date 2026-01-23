@@ -4,6 +4,7 @@ import PageTransition from "./components/ui/PageTransition";
 
 /* ---------- CONTEXT ---------- */
 import { AppProvider, useApp } from "./store/Context";
+import authService from "./services/authService";
 import {
   NotificationProvider,
   useNotifications,
@@ -76,9 +77,30 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 ====================================================== */
 
 const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
-  const { user } = useApp();
+  const { user, setUser } = useApp();
   const { addToast } = useToast();
   const { showToast } = useNotifications();
+
+  // GLOBAL: Real-time Status Sync (5s Poll)
+  useEffect(() => {
+    if (!user) return;
+
+    const checkStatus = async () => {
+      try {
+        const freshUser = await authService.getMe();
+        // Check if critical status fields changed
+        if (freshUser && (freshUser.status !== user.status || freshUser.suspensionEnd !== user.suspensionEnd)) {
+          console.log("Status update detected:", freshUser.status);
+          setUser(freshUser);
+        }
+      } catch (err) {
+        // silent fail
+      }
+    };
+
+    const interval = setInterval(checkStatus, 5000);
+    return () => clearInterval(interval);
+  }, [user, setUser]);
 
   const liveLocation = useLocation();
   const currentLocation = location || liveLocation;

@@ -44,6 +44,9 @@ export interface User {
   avatar?: string;
   joinedDate?: string;
   createdAt?: string;
+  status?: string;
+  suspensionEnd?: string;
+  banReason?: string;
 }
 
 export interface Address {
