@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { updateProfile, changePassword, getActivities, getDeviceHistory } = require('../controllers/userController');
+const { updateProfile, changePassword, getActivities, getDeviceHistory, appealUser } = require('../controllers/userController');
 const protect = require('../middleware/protect');
 
 router.use(protect); // All routes are protected
