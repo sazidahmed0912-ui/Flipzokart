@@ -37,7 +37,7 @@ export const HomePage: React.FC = () => {
             <section
   className="rounded-2xl mx-4 md:mx-8 my-6 p-8 md:p-12 shadow-lg bg-cover bg-center relative"
   style={{
-    backgroundImage: "url('public/Flipzokart Official Banner.jpeg')",
+    backgroundImage: "url('/Flipzokart Official Banner.jpeg')",
   }}
 >
   {/* overlay for readability */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Address } from '../../types';
+import { Address } from '../../../types';
 
 interface AddressFormProps {
     addressToEdit?: Address | null;
@@ -27,14 +27,14 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormState(prevState => ({
+        setFormState((prevState: Address) => ({
             ...prevState,
             [name]: value
         }));
     };
 
     const handleAddressTypeChange = (type: 'Home' | 'Work') => {
-        setFormState(prevState => ({
+        setFormState((prevState: Address) => ({
             ...prevState,
             type
         }));
