@@ -45,6 +45,7 @@ const productSchema = new mongoose.Schema(
     rating: { type: Number, default: 0 },
     reviewsCount: { type: Number, default: 0 },
     isFeatured: { type: Boolean, default: false },
+    defaultColor: { type: String, default: "" },
     // 🔒 SYSTEM INTEGRITY FIELDS
     isDeleted: {
       type: Boolean,

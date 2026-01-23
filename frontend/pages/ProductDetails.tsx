@@ -81,9 +81,23 @@ export const ProductDetails: React.FC = () => {
         setProduct(productData);
         setActiveImage(productData.image);
         if (productData.reviews) setReviews(productData.reviews);
+
+        // Default Variants Logic
         if (productData.variants && productData.variants.length > 0) {
           const defaults: Record<string, string> = {};
           productData.variants.forEach((v: any) => {
+            // Rule: Use Admin Default Color if Available
+            if (v.name.toLowerCase() === 'color' && productData.defaultColor) {
+              // Only if the default color is actually a valid option
+              if (v.options.includes(productData.defaultColor)) {
+                defaults[v.name] = productData.defaultColor;
+                // Try to find image for this default color immediately
+                const match = productData.inventory?.find((inv: any) => inv.options[v.name] === productData.defaultColor);
+                if (match?.image) setActiveImage(match.image);
+                return;
+              }
+            }
+            // Fallback to first option
             if (v.options && v.options.length > 0) defaults[v.name] = v.options[0];
           });
           setSelectedVariants(defaults);
@@ -115,6 +129,8 @@ export const ProductDetails: React.FC = () => {
             return prev;
           });
 
+          // Logic to update image if needed, but respect user selection if they have one?
+          // For now keep existing simple logic
           if (activeImage !== updatedProduct.image && (!updatedProduct.images || !updatedProduct.images.includes(activeImage))) {
             setActiveImage(updatedProduct.image);
           }
@@ -190,7 +206,8 @@ export const ProductDetails: React.FC = () => {
     };
     addToCart(productWithSelection, quantity);
     addToast('success', '✅ Product added to bag!');
-    navigate('/cart');
+    // Redirect Blocked: automatically redirect cart page block
+    // navigate('/cart'); 
   };
 
   const handleBuyNow = () => {

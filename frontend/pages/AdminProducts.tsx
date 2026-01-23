@@ -43,7 +43,8 @@ export const AdminProducts: React.FC = () => {
     image: '',
     images: [] as string[],
     variants: [] as VariantGroup[],
-    inventory: [] as VariantCombination[]
+    inventory: [] as VariantCombination[],
+    defaultColor: ''
   });
 
   // Feature: Color-Image Sync State
@@ -87,7 +88,8 @@ export const AdminProducts: React.FC = () => {
       image: '',
       images: [],
       variants: [],
-      inventory: []
+      inventory: [],
+      defaultColor: ''
     });
     setIsModalOpen(true);
   };
@@ -107,7 +109,8 @@ export const AdminProducts: React.FC = () => {
       image: product.image,
       images: product.images || [],
       variants: product.variants || [],
-      inventory: product.inventory || []
+      inventory: product.inventory || [],
+      defaultColor: product.defaultColor || ''
     });
     setIsModalOpen(true);
 
@@ -122,7 +125,8 @@ export const AdminProducts: React.FC = () => {
           ...prev,
           variants: fullProduct.variants || [],
           inventory: fullProduct.inventory || [],
-          images: fullProduct.images || prev.images
+          images: fullProduct.images || prev.images,
+          defaultColor: fullProduct.defaultColor || prev.defaultColor
         }));
       }
     } catch (error) {
@@ -416,7 +420,8 @@ export const AdminProducts: React.FC = () => {
       reviewsCount: editingProduct ? editingProduct.reviewsCount : 0,
       isFeatured: editingProduct ? editingProduct.isFeatured : false,
       variants: cleanedVariants.length > 0 ? cleanedVariants : undefined,
-      inventory: cleanedVariants.length > 0 ? formData.inventory : undefined
+      inventory: cleanedVariants.length > 0 ? formData.inventory : undefined,
+      defaultColor: formData.defaultColor
     };
 
     console.log('Submitting Product Payload:', productPayload);
@@ -802,6 +807,30 @@ export const AdminProducts: React.FC = () => {
                           ))}
                         </div>
 
+
+                        {formData.variants.some(v => v.name.toLowerCase() === 'color' && v.options.length > 0) && (
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Default Product Color</label>
+                            <div className="flex flex-wrap gap-2">
+                              {formData.variants.find(v => v.name.toLowerCase() === 'color')?.options.map((opt, i) => (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => setFormData(prev => ({ ...prev, defaultColor: prev.defaultColor === opt ? '' : opt }))}
+                                  className={`px-3 py-1.5 rounded border text-xs font-bold transition-all ${formData.defaultColor === opt
+                                      ? 'bg-blue-600 text-white border-blue-600'
+                                      : 'bg-white border-gray-300 text-gray-600 hover:border-blue-400'
+                                    }`}
+                                >
+                                  {opt}
+                                  {formData.defaultColor === opt && <CheckCircle2 size={12} className="inline ml-1 mb-0.5" />}
+                                </button>
+                              ))}
+                            </div>
+                            <p className="text-[10px] text-gray-400 mt-1">Select the color to be shown by default on the product details page.</p>
+                          </div>
+                        )}
+
                         {formData.variants.length > 0 && (
                           <div className="mt-4 pt-4 border-t border-gray-200">
                             <div className="flex justify-between items-center mb-3">
@@ -865,9 +894,10 @@ export const AdminProducts: React.FC = () => {
 
             </div>
           </div>
-        )}
-      </div>
-    </div>
+        )
+        }
+      </div >
+    </div >
   );
 };
 

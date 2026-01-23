@@ -32,6 +32,7 @@ export interface Product {
   seller?: string;
   deliveryDate?: string;
   selectedVariants?: Record<string, string>;
+  defaultColor?: string;
 }
 
 export interface User {
