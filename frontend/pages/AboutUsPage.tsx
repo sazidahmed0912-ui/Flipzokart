@@ -9,14 +9,14 @@ export const AboutUsPage: React.FC = () => {
       {/* Hero Section */}
       <section className="relative h-[400px] lg:h-[500px] flex items-center justify-center overflow-hidden bg-dark">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=1600" 
+          <img
+            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=1600"
             className="w-full h-full object-cover opacity-40 grayscale"
             alt="About Us"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-dark/60 via-dark/40 to-white"></div>
         </div>
-        
+
         <div className="container mx-auto px-4 relative z-10 text-center space-y-6">
           <h4 className="text-primary font-bold uppercase tracking-[0.3em] text-xs animate-in fade-in slide-in-from-bottom-4 duration-700">Established 2024</h4>
           <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-1000">
@@ -39,7 +39,7 @@ export const AboutUsPage: React.FC = () => {
                 </h2>
                 <div className="w-20 h-1.5 bg-primary rounded-full"></div>
               </div>
-              
+
               <div className="space-y-6 text-gray-500 text-lg lg:text-xl leading-relaxed">
                 <p className="font-medium text-dark">
                   This is a modern e-commerce platform built to provide customers with high-quality products, affordable prices, and a smooth online shopping experience.
@@ -61,8 +61,8 @@ export const AboutUsPage: React.FC = () => {
 
             <div className="relative">
               <div className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl relative z-10">
-                <img 
-                  src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=800" 
+                <img
+                  src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=800"
                   className="w-full h-full object-cover"
                   alt="Quality Products"
                 />
@@ -70,7 +70,7 @@ export const AboutUsPage: React.FC = () => {
               {/* Decorative background elements */}
               <div className="absolute -top-10 -right-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl -z-0"></div>
               <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-dark/5 rounded-full blur-2xl -z-0"></div>
-              
+
               <div className="absolute -bottom-6 -right-6 bg-white p-8 rounded-[2rem] shadow-xl border border-gray-100 z-20 hidden md:block">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center">
@@ -94,7 +94,7 @@ export const AboutUsPage: React.FC = () => {
             <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">Our Core Values</h2>
             <p className="text-gray-500 max-w-xl mx-auto">The foundation of everything we do.</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -129,7 +129,7 @@ export const AboutUsPage: React.FC = () => {
       <section className="container mx-auto px-4 py-24">
         <div className="bg-dark rounded-[4rem] p-12 lg:p-20 text-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2"></div>
-          
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10">
             <div className="space-y-2">
               <p className="text-4xl lg:text-6xl font-bold tracking-tighter">1M+</p>
@@ -155,10 +155,10 @@ export const AboutUsPage: React.FC = () => {
       <section className="container mx-auto px-4 py-12 mb-20">
         <div className="flex flex-col items-center text-center space-y-8">
           <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
-                <Users size={20} />
-             </div>
-             <span className="font-bold text-dark uppercase tracking-widest text-sm">Join the Community</span>
+            <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+              <Users size={20} />
+            </div>
+            <span className="font-bold text-dark uppercase tracking-widest text-sm">Join the Community</span>
           </div>
           <h2 className="text-4xl font-bold tracking-tight max-w-2xl">
             Start Your Premium Shopping Journey Today.
