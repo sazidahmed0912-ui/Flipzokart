@@ -92,10 +92,10 @@ const HelpCenterPage: React.FC = () => {
                             <div className="flex flex-col items-center gap-2">
                                 <span className="text-xs font-bold text-gray-800">Contact Us</span>
                                 <div className="text-[10px] text-gray-500 text-center">
-                                    Call us:<br />+91 99999 88888
+                                    Call us:<br />+91 6033394539
                                 </div>
                                 <div className="text-[10px] text-gray-500 text-center">
-                                    Email us:<br />support@flipzokart.com
+                                    Email us:<br />flipzokartshop@gmail.com
                                 </div>
                             </div>
                         </div>
@@ -109,11 +109,11 @@ const HelpCenterPage: React.FC = () => {
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <Phone size={18} className="text-[#2874F0]" />
-                                <span className="text-sm font-medium text-gray-700">+91 99999 88888</span>
+                                <span className="text-sm font-medium text-gray-700">+91 6033394539</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Mail size={18} className="text-[#2874F0]" />
-                                <span className="text-sm font-medium text-gray-700">support@flipzokart.com</span>
+                                <span className="text-sm font-medium text-gray-700">flipzokartshop@gmail.com</span>
                             </div>
                             {/* Callback Mock */}
                             <div className="flex items-center gap-3 cursor-pointer hover:underline">

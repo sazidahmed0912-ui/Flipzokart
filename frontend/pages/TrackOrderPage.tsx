@@ -100,7 +100,7 @@ export const TrackOrderPage: React.FC = () => {
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-bold text-gray-900">Order ID: {foundOrder._id || foundOrder.id}</h1>
           </div>
-          <div className="text-sm font-medium text-gray-600">
+          <div className="text-sm font-bold text-gray-600 uppercase tracking-wide">
             Placed on {new Date(foundOrder.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' })}
           </div>
         </div>
@@ -120,7 +120,7 @@ export const TrackOrderPage: React.FC = () => {
               {!isCancelled && (
                 <div className="relative flex w-full max-w-4xl items-start">
                   {/* Connector Line Wrapper */}
-                  <div className="absolute top-[14px] left-[12.5%] right-[12.5%] h-1 -z-10">
+                  <div className="absolute top-[12px] left-[12.5%] right-[12.5%] h-1 -z-10">
                     <div className="absolute top-0 left-0 w-full h-full bg-gray-200 rounded-full"></div>
                     <div
                       className="absolute top-0 left-0 h-full bg-green-600 rounded-full transition-all duration-500"
