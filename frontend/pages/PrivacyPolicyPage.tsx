@@ -209,7 +209,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                             <div className="mt-2 bg-gray-50 p-4 rounded border border-gray-200">
                                 <p><strong>Fzokart Grievance Officer</strong></p>
                                 <p>Name: Shahid Afridi</p>
-                                <p>Email: <a href="mailto:fzokartshop@gmail.com" className="text-blue-600 hover:underline">flipzokartshop@gmail.com</a></p>
+                                <p>Email: <a href="mailto:fzokartshop@gmail.com" className="text-blue-600 hover:underline">fzokartshop@gmail.com</a></p>
                                 <p>Response Time: Within 48 hours</p>
                             </div>
                         </section>

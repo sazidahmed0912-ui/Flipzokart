@@ -95,7 +95,7 @@ const HelpCenterPage: React.FC = () => {
                                     Call us:<br />+91 6033394539
                                 </div>
                                 <div className="text-[10px] text-gray-500 text-center">
-                                    Email us:<br />flipzokartshop@gmail.com
+                                    Email us:<br />fzokartshop@gmail.com
                                 </div>
                             </div>
                         </div>
@@ -113,7 +113,7 @@ const HelpCenterPage: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-3">
                                 <Mail size={18} className="text-[#2874F0]" />
-                                <span className="text-sm font-medium text-gray-700">flipzokartshop@gmail.com</span>
+                                <span className="text-sm font-medium text-gray-700">fzokartshop@gmail.com</span>
                             </div>
                             {/* Callback Mock */}
                             <div className="flex items-center gap-3 cursor-pointer hover:underline">

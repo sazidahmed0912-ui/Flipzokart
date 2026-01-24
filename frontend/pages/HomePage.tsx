@@ -38,7 +38,7 @@ export const HomePage: React.FC = () => {
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center text-center lg:text-left">
                         <div className="flex flex-col items-center lg:items-start">
-                            <h2 className="text-sm md:text-base text-gray-700 mb-2">Featured on <span className="font-bold text-[#222]">F<span className="text-[#f28c28]">zokart</span></span></h2>
+
                             <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6">Up to 70% Off</h1>
                             <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-md lg:max-w-none mx-auto lg:mx-0">Discover amazing deals on your favorite products</p>
                             <Link to="/shop" className="bg-white text-[#f28c28] px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors shadow-md w-full sm:w-auto">Shop Now</Link>
@@ -205,7 +205,7 @@ export const HomePage: React.FC = () => {
                     <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
                         <div className="grid md:grid-cols-2 gap-8 items-center">
                             <div className="text-center md:text-left">
-                                <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop Smarter with <span className="text-[#222]">F</span><span className="text-[#f28c28]">zokart</span></h2>
+                                <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop Smarter with <span className="text-[#222]">Fzo</span><span className="text-[#f28c28]">kart</span></h2>
                                 <p className="text-gray-600 text-lg mb-6">Download our mobile app and get exclusive deals, faster checkout, and personalized recommendations.</p>
                                 <div className="space-y-4 md:space-y-0 md:space-x-4 md:flex">
                                     <button className="w-full md:w-auto bg-[#f28c28] hover:bg-opacity-90 text-white font-semibold px-8 py-3 rounded-lg transition-colors">Download App</button>

@@ -26,12 +26,12 @@ export const ContactUsPage: React.FC = () => {
 
       <section className="container mx-auto px-4 py-20 -mt-16 relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Contact Information Cards */}
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50 space-y-8">
               <h3 className="text-2xl font-bold tracking-tight text-dark">Contact Information</h3>
-              
+
               <div className="space-y-6">
                 <div className="flex gap-5 group">
                   <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
@@ -39,7 +39,7 @@ export const ContactUsPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Email Us</p>
-                    <a href="mailto:flipzokartshop@gmail.com" className="text-lg font-bold text-dark hover:text-primary transition-colors">flipzokartshop@gmail.com</a>
+                    <a href="mailto:fzokartshop@gmail.com" className="text-lg font-bold text-dark hover:text-primary transition-colors">fzokartshop@gmail.com</a>
                   </div>
                 </div>
 
@@ -59,9 +59,9 @@ export const ContactUsPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">WhatsApp Chat</p>
-                    <a 
-                      href="https://wa.me/917636067699" 
-                      target="_blank" 
+                    <a
+                      href="https://wa.me/917636067699"
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-lg font-bold text-dark hover:text-[#25D366] transition-colors"
                     >
@@ -87,8 +87,8 @@ export const ContactUsPage: React.FC = () => {
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Office Address</p>
                     <div className="text-lg font-bold text-dark leading-tight">
-                      Contact Us <br/>
-                      Moirabari, Morigaon <br/>
+                      Contact Us <br />
+                      Moirabari, Morigaon <br />
                       Assam, India
                     </div>
                   </div>
@@ -97,9 +97,9 @@ export const ContactUsPage: React.FC = () => {
 
               <div className="pt-6 border-t border-gray-50 flex items-center gap-4">
                 <div className="flex -space-x-3">
-                  {[1,2,3].map(i => (
+                  {[1, 2, 3].map(i => (
                     <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 overflow-hidden">
-                      <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="Support Team" />
+                      <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="Support Team" />
                     </div>
                   ))}
                 </div>
@@ -107,9 +107,9 @@ export const ContactUsPage: React.FC = () => {
               </div>
             </div>
 
-            <a 
-              href="https://wa.me/917636067699" 
-              target="_blank" 
+            <a
+              href="https://wa.me/917636067699"
+              target="_blank"
               rel="noopener noreferrer"
               className="bg-[#25D366] p-8 rounded-[2.5rem] text-white flex items-center justify-between group cursor-pointer overflow-hidden relative shadow-lg shadow-[#25D366]/20"
             >
@@ -134,7 +134,7 @@ export const ContactUsPage: React.FC = () => {
                   <p className="text-gray-500 text-lg max-w-md mx-auto">
                     Thank you for reaching out. We've received your inquiry and will get back to you within 24 hours.
                   </p>
-                  <button 
+                  <button
                     onClick={() => setIsSubmitted(false)}
                     className="bg-dark text-white px-10 py-4 rounded-2xl font-bold hover:bg-primary transition-all"
                   >
@@ -191,20 +191,20 @@ export const ContactUsPage: React.FC = () => {
       {/* Map Section Visual */}
       <section className="container mx-auto px-4 pb-20">
         <div className="h-[400px] w-full bg-lightGray rounded-[4rem] relative overflow-hidden group">
-          <img 
-            src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=1600" 
-            className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 transition-all duration-1000" 
+          <img
+            src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=1600"
+            className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 transition-all duration-1000"
             alt="Office Location"
           />
           <div className="absolute inset-0 bg-primary/10 mix-blend-multiply"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-             <div className="bg-white p-8 rounded-[2rem] shadow-2xl border border-gray-100 text-center animate-bounce-slow">
-                <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <MapPin size={24} />
-                </div>
-                <h4 className="font-bold text-dark mb-1">Visit Our Office</h4>
-                <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Morigaon, Assam</p>
-             </div>
+            <div className="bg-white p-8 rounded-[2rem] shadow-2xl border border-gray-100 text-center animate-bounce-slow">
+              <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center mx-auto mb-4">
+                <MapPin size={24} />
+              </div>
+              <h4 className="font-bold text-dark mb-1">Visit Our Office</h4>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Morigaon, Assam</p>
+            </div>
           </div>
         </div>
       </section>
