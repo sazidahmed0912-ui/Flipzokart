@@ -119,7 +119,7 @@ const Header: React.FC = () => {
           </button>
           <div className="text-2xl font-bold">
             <Link to="/">
-              <span className="text-[#222]">Flip</span><span className="text-[#f28c28]">zokart</span>
+              <span className="text-[#222]">Fzo</span><span className="text-[#f28c28]">kart</span>
             </Link>
           </div>
           <button className="p-2" onClick={() => setIsSearchOpen(!isSearchOpen)}>

@@ -63,12 +63,12 @@ export const HomePage: React.FC = () => {
                 <SmoothReveal direction="up" delay={200}>
                     <div className="max-w-7xl mx-auto">
                         <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center"><span className="text-gray-800">Shop by Categories</span></h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-6">                        {categories.map(category => (
-                            <Link to={category.href} key={category.name} className="flex flex-col items-center p-2 text-center group">
-                                <div className="w-16 h-16 md:w-20 md:h-20 mb-2 bg-gray-100 rounded-xl p-3 border border-gray-200 group-hover:shadow-md transition-shadow">
+                        <div className="flex overflow-x-auto pb-4 gap-4 px-2 md:grid md:grid-cols-8 md:gap-6 no-scrollbar snap-x">                        {categories.map(category => (
+                            <Link to={category.href} key={category.name} className="flex flex-col items-center flex-shrink-0 snap-center w-20 md:w-auto text-center group">
+                                <div className="w-14 h-14 md:w-20 md:h-20 mb-2 bg-gray-100 rounded-full md:rounded-xl p-3 border border-gray-200 group-hover:shadow-md transition-shadow flex items-center justify-center">
                                     <LazyImage src={category.imageUrl} alt={category.name} className="w-full h-full object-contain" />
                                 </div>
-                                <span className="text-sm font-medium text-gray-700">{category.name}</span>
+                                <span className="text-xs md:text-sm font-medium text-gray-700 whitespace-nowrap">{category.name}</span>
                             </Link>
                         ))}
                         </div>
@@ -82,7 +82,7 @@ export const HomePage: React.FC = () => {
                         <div className="mb-6">
                             <h2 className="text-2xl md:text-3xl font-bold"><span className="text-gray-800">Top Deals</span></h2>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 auto-rows-fr">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 auto-rows-fr">
                             {topDeals.map(product => (
                                 <ProductCard key={product.id} product={product} />
                             ))}
