@@ -192,15 +192,16 @@ const OrdersPage = () => {
                             filteredOrders.map((order: any) => (
                                 <div key={order._id || order.id} className="bg-white rounded-[8px] shadow-sm hover:shadow-md transition-shadow border border-gray-200 mb-6 overflow-hidden">
                                     {/* Order Header */}
-                                    <div className="bg-[#F1F3F6] px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
+                                    {/* Order Header */}
+                                    <div className="bg-[#fff] px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                                        <div className="flex items-center gap-8">
                                             <div className="flex flex-col">
-                                                <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Order Placed</span>
-                                                <span className="text-sm font-semibold text-gray-900">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                                <span className="text-xs text-gray-400 uppercase font-medium tracking-wide">Order Placed</span>
+                                                <span className="text-sm font-medium text-gray-900 mt-1">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Total</span>
-                                                <span className="text-sm font-semibold text-gray-900">₹{order.total?.toLocaleString() || order.items?.reduce((acc: number, i: any) => acc + (i.price * i.quantity), 0).toLocaleString()}</span>
+                                                <span className="text-xs text-gray-400 uppercase font-medium tracking-wide">Total</span>
+                                                <span className="text-sm font-medium text-gray-900 mt-1">₹{order.total?.toLocaleString() || order.items?.reduce((acc: number, i: any) => acc + (i.price * i.quantity), 0).toLocaleString()}</span>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -249,15 +250,33 @@ const OrdersPage = () => {
 
                                                     {/* Progress Bar (Only standard statuses) */}
                                                     {['Pending', 'Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) && (
-                                                        <div className="relative w-full max-w-md mt-1">
-                                                            <div className="h-1.5 bg-gray-200 rounded-full w-full">
-                                                                <div className="h-full bg-green-500 rounded-full transition-all duration-500" style={{ width: getProgressWidth(order.status) }}></div>
-                                                            </div>
-                                                            <div className="text-xs text-gray-400 mt-1.5 flex justify-between font-medium">
-                                                                <span>Ordered</span>
-                                                                <span>Shipped</span>
-                                                                <span>Out for Delivery</span>
-                                                                <span>Delivered</span>
+                                                        <div className="relative w-full max-w-md mt-4">
+                                                            {/* Line */}
+                                                            <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -translate-y-1/2 z-0"></div>
+                                                            <div className="absolute top-1/2 left-0 h-1 bg-green-500 -translate-y-1/2 z-0 transition-all duration-500" style={{ width: getProgressWidth(order.status) }}></div>
+
+                                                            {/* Dots */}
+                                                            <div className="relative z-10 flex justify-between w-full">
+                                                                {/* Ordered */}
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <div className={`w-3 h-3 rounded-full border-2 ${['Pending', 'Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}></div>
+                                                                    <span className="text-xs text-gray-500 font-medium absolute top-4 whitespace-nowrap">Ordered</span>
+                                                                </div>
+                                                                {/* Shipped */}
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <div className={`w-3 h-3 rounded-full border-2 ${['Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}></div>
+                                                                    <span className="text-xs text-gray-500 font-medium absolute top-4 whitespace-nowrap">Shipped</span>
+                                                                </div>
+                                                                {/* Out for Delivery */}
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <div className={`w-3 h-3 rounded-full border-2 ${['Out for Delivery', 'Delivered'].includes(order.status) ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}></div>
+                                                                    <span className="text-xs text-gray-500 font-medium absolute top-4 whitespace-nowrap">Out for Delivery</span>
+                                                                </div>
+                                                                {/* Delivered */}
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <div className={`w-3 h-3 rounded-full border-2 ${['Delivered'].includes(order.status) ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}></div>
+                                                                    <span className="text-xs text-gray-500 font-medium absolute top-4 whitespace-nowrap">Delivered</span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     )}
@@ -273,30 +292,25 @@ const OrdersPage = () => {
                                                         <div className="relative group">
                                                             <button
                                                                 onClick={() => navigate('/track-order', { state: { order } })}
-                                                                className="bg-[#F9C74F] hover:bg-yellow-400 text-black font-semibold py-1.5 px-6 rounded-[4px] text-sm shadow-sm transition-colors whitespace-nowrap"
+                                                                className="bg-[#2874F0] hover:bg-blue-600 text-white font-semibold py-1.5 px-6 rounded-[2px] text-sm shadow-sm transition-colors whitespace-nowrap"
                                                             >
-                                                                Track
-                                                            </button>
-                                                            {/* Tooltip */}
-                                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-max bg-[#2874F0] text-white text-xs px-2 py-1 rounded shadow-lg z-10">
                                                                 Track Order
-                                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#2874F0]"></div>
-                                                            </div>
+                                                            </button>
                                                         </div>
                                                     )}
 
                                                     <button
                                                         onClick={() => navigate('/track-order', { state: { order } })}
-                                                        className="border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-1.5 px-4 rounded-[4px] text-sm transition-colors whitespace-nowrap"
+                                                        className="border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-1.5 px-4 rounded-[2px] text-sm transition-colors whitespace-nowrap"
                                                     >
                                                         View Details
                                                     </button>
 
                                                     {order.status === 'Pending' && (
                                                         <button
-                                                            className="flex items-center gap-1 text-red-500 hover:text-red-700 font-medium text-sm transition-colors px-2"
+                                                            className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1.5 px-6 rounded-[2px] text-sm shadow-sm transition-colors whitespace-nowrap"
                                                         >
-                                                            <XCircle size={16} /> Cancel
+                                                            Cancel
                                                         </button>
                                                     )}
 
