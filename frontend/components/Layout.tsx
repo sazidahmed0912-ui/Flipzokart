@@ -191,32 +191,6 @@ const Header: React.FC = () => {
                 <ChevronRight size={14} className="ml-auto text-gray-400" />
               </Link>
 
-              {/* Pages Group */}
-              <div className="flex flex-col bg-gray-50/50">
-                <Link
-                  to="/about"
-                  onClick={closeMenus}
-                  className="flex items-center gap-3 px-5 py-3 pl-8 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
-                >
-                  <div className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
-                    <Tag size={14} />
-                  </div>
-                  <span className="font-medium text-xs">About Us</span>
-                  <ChevronRight size={14} className="ml-auto text-gray-400" />
-                </Link>
-                <Link
-                  to="/contact"
-                  onClick={closeMenus}
-                  className="flex items-center gap-3 px-5 py-3 pl-8 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
-                >
-                  <div className="w-7 h-7 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center">
-                    <MessageCircle size={14} />
-                  </div>
-                  <span className="font-medium text-xs">Contact Us</span>
-                  <ChevronRight size={14} className="ml-auto text-gray-400" />
-                </Link>
-              </div>
-
               {user ? (
                 <>
                   <Link
@@ -245,6 +219,32 @@ const Header: React.FC = () => {
                     </Link>
                   )}
 
+                  {/* Pages Group - Moved below Profile as requested */}
+                  <div className="flex flex-col bg-gray-50/50">
+                    <Link
+                      to="/about"
+                      onClick={closeMenus}
+                      className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
+                        <Tag size={14} />
+                      </div>
+                      <span className="font-medium text-xs">About Us</span>
+                      <ChevronRight size={14} className="ml-auto text-gray-400" />
+                    </Link>
+                    <Link
+                      to="/contact"
+                      onClick={closeMenus}
+                      className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center">
+                        <MessageCircle size={14} />
+                      </div>
+                      <span className="font-medium text-xs">Contact Us</span>
+                      <ChevronRight size={14} className="ml-auto text-gray-400" />
+                    </Link>
+                  </div>
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 border-b border-gray-100 transition-colors w-full text-left"
@@ -256,17 +256,45 @@ const Header: React.FC = () => {
                   </button>
                 </>
               ) : (
-                <Link
-                  to="/login"
-                  onClick={closeMenus}
-                  className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full bg-[#f28c28] text-white flex items-center justify-center">
-                    <User size={16} />
+                <>
+                  {/* Pages Group for Guests */}
+                  <div className="flex flex-col bg-gray-50/50">
+                    <Link
+                      to="/about"
+                      onClick={closeMenus}
+                      className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
+                        <Tag size={14} />
+                      </div>
+                      <span className="font-medium text-xs">About Us</span>
+                      <ChevronRight size={14} className="ml-auto text-gray-400" />
+                    </Link>
+                    <Link
+                      to="/contact"
+                      onClick={closeMenus}
+                      className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center">
+                        <MessageCircle size={14} />
+                      </div>
+                      <span className="font-medium text-xs">Contact Us</span>
+                      <ChevronRight size={14} className="ml-auto text-gray-400" />
+                    </Link>
                   </div>
-                  <span className="font-medium text-sm">Login / Sign Up</span>
-                  <ChevronRight size={14} className="ml-auto text-gray-400" />
-                </Link>
+
+                  <Link
+                    to="/login"
+                    onClick={closeMenus}
+                    className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-[#f28c28] text-white flex items-center justify-center">
+                      <User size={16} />
+                    </div>
+                    <span className="font-medium text-sm">Login / Sign Up</span>
+                    <ChevronRight size={14} className="ml-auto text-gray-400" />
+                  </Link>
+                </>
               )}
             </div>
           </div>
