@@ -382,7 +382,10 @@ const getAllOrders = async (req, res) => {
     const formattedOrders = orders.map(order => ({
       ...order.toObject(),
       id: order._id,
+      id: order._id,
       userName: order.user ? order.user.name : 'Unknown User',
+      email: order.user ? order.user.email : 'N/A', // Added for Admin CSV
+      address: order.shippingAddress, // Map to frontend expected 'address'
       items: order.products.map(p => {
         if (!p.productId) {
           return {

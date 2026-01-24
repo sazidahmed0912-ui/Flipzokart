@@ -69,13 +69,14 @@ export interface Order {
   id: string;
   userId: string;
   userName: string;
+  email?: string; // Populated from User
   items: CartItem[];
   total: number;
   status: 'Pending' | 'Paid' | 'Shipped' | 'Delivered' | 'Cancelled';
   paymentMethod: 'COD' | 'Razorpay';
-  paymentStatus: 'PENDING' | 'PAID' | 'FAILED'; // Added this
+  paymentStatus: 'PENDING' | 'PAID' | 'FAILED';
   createdAt: string;
-  address: {
+  address: string | { // Allow string (legacy/backend) or object
     fullName: string;
     street: string;
     city: string;

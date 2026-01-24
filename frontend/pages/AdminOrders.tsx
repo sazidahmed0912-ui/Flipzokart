@@ -129,6 +129,37 @@ export const AdminOrders: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const handleExportCSV = () => {
+    const headers = ["Order ID", "Date", "Customer Name", "Email", "Items", "Total", "Status", "Payment Method", "Address"];
+
+    const rows = orders.map(o => [
+      o.id,
+      new Date(o.createdAt).toLocaleString(),
+      o.userName,
+      o.email || "N/A",
+      o.items.map(i => `${i.name} (x${i.quantity})`).join("; "),
+      o.total,
+      o.status,
+      o.paymentMethod,
+      typeof o.address === 'string'
+        ? o.address.replace(/,/g, ' ')
+        : o.address
+          ? `${o.address.street} ${o.address.city} ${o.address.zipCode}`.replace(/,/g, ' ')
+          : 'N/A'
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8,"
+      + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `orders_export_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
       <AdminSidebar />
@@ -190,7 +221,7 @@ export const AdminOrders: React.FC = () => {
               <h1 className="text-2xl font-bold text-gray-800">Order Management</h1>
               <p className="text-xs text-gray-500 font-medium mt-1">Track and manage customer orders.</p>
             </div>
-            <button className="bg-white border border-gray-200 text-gray-700 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm">
+            <button onClick={handleExportCSV} className="bg-white border border-gray-200 text-gray-700 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm">
               <ExternalLink size={16} /> Export CSV
             </button>
           </div>
