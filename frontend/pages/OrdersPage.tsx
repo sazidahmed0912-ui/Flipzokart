@@ -190,97 +190,120 @@ const OrdersPage = () => {
                             </div>
                         ) : (
                             filteredOrders.map((order: any) => (
-                                <div key={order._id || order.id} className="bg-white rounded-[4px] shadow-sm hover:shadow-md transition-shadow border border-gray-100 mb-4 overflow-hidden">
-                                    {/* Card Header: Ordered On */}
-                                    <div className="bg-white px-6 py-3 border-b border-gray-50 flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium text-gray-800">
-                                                Ordered on <span className="font-bold">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                                            </span>
+                                <div key={order._id || order.id} className="bg-white rounded-[8px] shadow-sm hover:shadow-md transition-shadow border border-gray-200 mb-6 overflow-hidden">
+                                    {/* Order Header */}
+                                    <div className="bg-[#F1F3F6] px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Order Placed</span>
+                                                <span className="text-sm font-semibold text-gray-900">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Total</span>
+                                                <span className="text-sm font-semibold text-gray-900">₹{order.total?.toLocaleString() || order.items?.reduce((acc: number, i: any) => acc + (i.price * i.quantity), 0).toLocaleString()}</span>
+                                            </div>
                                         </div>
-                                        {order.paymentMethod === 'UPI' && <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-500">Paid via UPI</span>}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-gray-500">Order # {order._id || order.id}</span>
+                                        </div>
                                     </div>
 
+                                    {/* Order Items */}
                                     {order.items?.map((item: any, idx: number) => (
-                                        <div key={idx} className={`p-6 flex flex-col md:flex-row gap-6 ${idx > 0 ? 'border-t border-gray-100' : ''}`}>
-                                            {/* Image */}
-                                            <div className="w-24 h-24 flex-shrink-0 relative">
+                                        <div key={idx} className={`p-6 flex flex-col lg:flex-row gap-6 ${idx > 0 ? 'border-t border-gray-100' : ''}`}>
+                                            {/* Left: Image */}
+                                            <div className="w-32 h-32 flex-shrink-0 border border-gray-200 rounded-md p-2 flex items-center justify-center bg-white cursor-pointer" onClick={() => navigate(`/product/${item.productId}`)}>
                                                 <img
                                                     src={item.image}
                                                     alt={item.name}
-                                                    className="w-full h-full object-contain"
+                                                    className="max-w-full max-h-full object-contain hover:scale-105 transition-transform"
                                                 />
                                             </div>
 
-                                            {/* Details & Status */}
-                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* Middle: Details & Status */}
+                                            <div className="flex-1 flex flex-col justify-between">
                                                 <div>
-                                                    <h3 className="font-medium text-gray-900 text-base hover:text-[#2874F0] cursor-pointer line-clamp-2" onClick={() => navigate(`/product/${item.productId}`)}>
+                                                    <h3 className="font-bold text-gray-900 text-lg hover:text-[#2874F0] cursor-pointer line-clamp-2" onClick={() => navigate(`/product/${item.productId}`)}>
                                                         {item.name}
                                                     </h3>
-                                                    <div className="text-xs text-gray-500 mt-1">
-                                                        {item.selectedVariants?.Color && <span>Color: {item.selectedVariants.Color}</span>}
+                                                    <div className="text-sm text-gray-500 mt-1 flex gap-3">
+                                                        {item.selectedVariants?.Color && <span>Color: <span className="text-gray-900 font-medium">{item.selectedVariants.Color}</span></span>}
+                                                        {item.selectedVariants?.Size && <span>Size: <span className="text-gray-900 font-medium">{item.selectedVariants.Size}</span></span>}
+                                                        <span>Qty: <span className="text-gray-900 font-medium">{item.quantity}</span></span>
                                                     </div>
                                                 </div>
 
-                                                <div className="text-right md:text-left">
-                                                    <span className="font-bold text-gray-900 text-lg">₹{(item.price || 0).toLocaleString()}</span>
-                                                </div>
-
-                                                {/* Status Bar */}
-                                                <div className="col-span-1 md:col-span-2 mt-2">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <div className={`w-2.5 h-2.5 rounded-full ${order.status === 'Cancelled' ? 'bg-red-500' : 'bg-green-600'}`}></div>
-                                                        <span className="font-semibold text-gray-900 text-sm">
-                                                            {order.status} {order.status === 'Delivered' ? `on ${new Date(order.updatedAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}` : ''}
+                                                <div className="mt-4">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        {order.status === 'Cancelled' ? (
+                                                            <XCircle size={18} className="text-red-500" />
+                                                        ) : order.status === 'Delivered' ? (
+                                                            <CheckCircle size={18} className="text-green-600" />
+                                                        ) : (
+                                                            <Truck size={18} className="text-[#2874F0]" />
+                                                        )}
+                                                        <span className={`font-bold text-base ${order.status === 'Cancelled' ? 'text-red-600' : order.status === 'Delivered' ? 'text-green-600' : 'text-gray-900'}`}>
+                                                            {order.status === 'Delivered' ? `Delivered on ${new Date(order.updatedAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}` : order.status}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-gray-500 mb-2">
-                                                        {order.status === 'Shipped' ? 'Your item is out for delivery' : order.status === 'Cancelled' ? 'As per your request' : 'Your order has been placed'}
-                                                    </p>
 
-                                                    {order.status !== 'Cancelled' && (
-                                                        <div className="h-1 bg-gray-100 rounded-full w-full max-w-sm relative mt-2">
-                                                            <div className="absolute h-full bg-green-500 rounded-full" style={{ width: getProgressWidth(order.status) }}></div>
-                                                            {/* Dots for status */}
-                                                            <div className="absolute top-1/2 -translate-y-1/2 left-0 w-2 h-2 bg-green-500 rounded-full"></div>
-                                                            <div className={`absolute top-1/2 -translate-y-1/2 left-1/2 w-2 h-2 rounded-full ${['Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) ? 'bg-green-500' : 'bg-gray-200'}`}></div>
-                                                            <div className={`absolute top-1/2 -translate-y-1/2 right-0 w-2 h-2 rounded-full ${order.status === 'Delivered' ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                                                    {/* Progress Bar (Only standard statuses) */}
+                                                    {['Pending', 'Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) && (
+                                                        <div className="relative w-full max-w-md mt-1">
+                                                            <div className="h-1.5 bg-gray-200 rounded-full w-full">
+                                                                <div className="h-full bg-green-500 rounded-full transition-all duration-500" style={{ width: getProgressWidth(order.status) }}></div>
+                                                            </div>
+                                                            <div className="text-xs text-gray-400 mt-1.5 flex justify-between font-medium">
+                                                                <span>Ordered</span>
+                                                                <span>Shipped</span>
+                                                                <span>Out for Delivery</span>
+                                                                <span>Delivered</span>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
 
-                                            {/* Actions */}
-                                            <div className="flex flex-col gap-3 justify-start min-w-[150px]">
-                                                {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                                            {/* Right: Price & Actions */}
+                                            <div className="flex flex-col items-end gap-4 min-w-[180px]">
+                                                <div className="text-xl font-bold text-gray-900">₹{(item.price || 0).toLocaleString()}</div>
+
+                                                <div className="flex flex-col gap-2.5 w-full">
+                                                    {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                                                        <div className="relative group w-full">
+                                                            <button
+                                                                onClick={() => navigate('/track-order', { state: { order } })}
+                                                                className="w-full bg-[#F9C74F] hover:bg-yellow-400 text-black font-semibold py-2 px-4 rounded-[4px] text-sm shadow-sm transition-colors flex items-center justify-center gap-2"
+                                                            >
+                                                                Track
+                                                            </button>
+                                                            {/* Tooltip */}
+                                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-max bg-[#2874F0] text-white text-xs px-2 py-1 rounded shadow-lg z-10">
+                                                                Track Order
+                                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#2874F0]"></div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
                                                     <button
                                                         onClick={() => navigate('/track-order', { state: { order } })}
-                                                        className="bg-[#F9C74F] hover:bg-yellow-400 text-black font-medium py-2 px-6 rounded-[2px] text-sm shadow-sm transition-colors text-center"
+                                                        className="w-full border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-2 px-4 rounded-[4px] text-sm transition-colors"
                                                     >
-                                                        Track
+                                                        View Details
                                                     </button>
-                                                )}
 
-                                                <button onClick={() => { }} className="border border-gray-200 hover:bg-gray-50 text-gray-800 font-medium py-2 px-4 rounded-[2px] text-sm transition-colors">
-                                                    View Details
-                                                </button>
+                                                    {order.status === 'Delivered' && (
+                                                        <button className="w-full bg-[#2874F0] hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-[4px] text-sm transition-colors shadow-sm">
+                                                            Buy Again
+                                                        </button>
+                                                    )}
 
-                                                {order.status === 'Delivered' ? (
-                                                    <button className="bg-[#2874F0] text-white hover:bg-blue-600 font-medium py-2 px-4 rounded-[2px] text-sm transition-colors shadow-sm">
-                                                        Buy Again
-                                                    </button>
-                                                ) : order.status === 'Pending' ? (
-                                                    <button className="text-red-500 hover:text-red-600 font-semibold text-sm flex items-center gap-1 justify-center mt-1">
-                                                        <XCircle size={16} /> Cancel
-                                                    </button>
-                                                ) : null}
-
-                                                {order.status === 'Delivered' && (
-                                                    <button className="text-[#2874F0] text-sm font-medium hover:underline flex items-center gap-1 justify-center">
-                                                        <span className="text-yellow-500">★</span> Rate & Review
-                                                    </button>
-                                                )}
+                                                    {order.status === 'Pending' && (
+                                                        <button className="w-full text-red-500 hover:bg-red-50 hover:text-red-600 font-medium py-2 px-4 rounded-[4px] text-sm transition-colors border border-transparent hover:border-red-100">
+                                                            Cancel Order
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
