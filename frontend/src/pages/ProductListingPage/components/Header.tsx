@@ -7,7 +7,9 @@ const Header: React.FC = () => {
       <header className="main-header">
         <div className="header-left">
           <button className="hamburger-menu">☰</button> {/* Mobile */}
-          <div className="flipzokart-logo"></div>
+          <div className="text-2xl font-bold flex items-center" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <span className="text-[#222]">Fzo</span><span className="text-[#f28c28]">kart</span>
+          </div>
         </div>
         <div className="header-center">
           <div className="search-bar-container">
