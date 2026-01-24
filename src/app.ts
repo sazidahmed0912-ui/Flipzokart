@@ -11,12 +11,17 @@ const app = express();
 
 app.use(helmet());
 app.use(helmet());
-app.use(cors({
-    origin: ['https://www.flipzokart.com', 'http://localhost:5173', 'http://localhost:3000', 'https://flipzokart.vercel.app'],
+
+const corsOptions = {
+    origin: ['https://www.flipzokart.com', 'http://localhost:5173', 'http://localhost:3000', 'https://flipzokart.vercel.app', 'https://flipzokart-backend.onrender.com'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
+
 app.use(json());
 app.get('/', (req, res) => {
     res.send({ message: 'Welcome to Flipzokart API' });

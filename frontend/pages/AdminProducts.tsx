@@ -442,8 +442,20 @@ export const AdminProducts: React.FC = () => {
       }
       setIsModalOpen(false);
     } catch (error: any) {
-      console.error("Product Save Error:", error);
-      alert(`Failed to save product: ${error.response?.data?.message || error.message}`);
+      console.error("Product Save Error Object:", error);
+
+      // Detailed logging for debugging "J" or undefined errors
+      if (typeof error === 'object') {
+        console.log("Error keys:", Object.keys(error));
+        console.log("Error response:", error.response);
+        console.log("Error message:", error.message);
+      } else {
+        console.log("Error type:", typeof error);
+        console.log("Error value:", error);
+      }
+
+      const errorMessage = error.response?.data?.message || error.message || "Unknown error occurred";
+      alert(`Failed to save product: ${errorMessage}`);
     }
   };
 
@@ -818,8 +830,8 @@ export const AdminProducts: React.FC = () => {
                                   type="button"
                                   onClick={() => setFormData(prev => ({ ...prev, defaultColor: prev.defaultColor === opt ? '' : opt }))}
                                   className={`px-3 py-1.5 rounded border text-xs font-bold transition-all ${formData.defaultColor === opt
-                                      ? 'bg-blue-600 text-white border-blue-600'
-                                      : 'bg-white border-gray-300 text-gray-600 hover:border-blue-400'
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white border-gray-300 text-gray-600 hover:border-blue-400'
                                     }`}
                                 >
                                   {opt}
