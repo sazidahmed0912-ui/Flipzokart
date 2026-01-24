@@ -161,7 +161,7 @@ const PaymentPage: React.FC = () => {
         key: RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
-        name: "Flipzokart",
+        name: "Fzokart",
         description: "Order Payment",
         order_id: order.id,
         handler: async (response: any) => {

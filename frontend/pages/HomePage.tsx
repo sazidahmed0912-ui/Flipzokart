@@ -38,7 +38,7 @@ export const HomePage: React.FC = () => {
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center text-center lg:text-left">
                         <div className="flex flex-col items-center lg:items-start">
-                            <h2 className="text-sm md:text-base text-gray-700 mb-2">Featured on <span className="font-bold text-[#222]">Flip<span className="text-[#f28c28]">zokart</span></span></h2>
+                            <h2 className="text-sm md:text-base text-gray-700 mb-2">Featured on <span className="font-bold text-[#222]">F<span className="text-[#f28c28]">zokart</span></span></h2>
                             <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6">Up to 70% Off</h1>
                             <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-md lg:max-w-none mx-auto lg:mx-0">Discover amazing deals on your favorite products</p>
                             <Link to="/shop" className="bg-white text-[#f28c28] px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors shadow-md w-full sm:w-auto">Shop Now</Link>
@@ -91,12 +91,29 @@ export const HomePage: React.FC = () => {
                 </SmoothReveal>
             </section>
 
+            {/* Offers Banner Section */}
+            <section className="py-4 px-4 md:px-8">
+                <SmoothReveal direction="up" delay={500}>
+                    <div className="relative max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-md cursor-pointer group">
+                        <img
+                            src="https://images.unsplash.com/photo-1472851294608-4151050935d4?q=80&w=1200&auto=format&fit=crop"
+                            alt="Special Offers"
+                            className="w-full h-48 md:h-64 object-cover transform group-hover:scale-105 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6 flex flex-col items-center justify-center pointer-events-none">
+                            <h3 className="text-white text-2xl md:text-4xl font-bold uppercase tracking-widest drop-shadow-md">Exclusive Offers</h3>
+                            <p className="text-white/90 mt-2 text-sm md:text-base font-medium">Grab the best deals before they are gone!</p>
+                        </div>
+                    </div>
+                </SmoothReveal>
+            </section>
+
             <section className="py-8 px-4 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <div className="mb-6">
                         <h2 className="text-2xl md:text-3xl font-bold mb-2">
                             <span className="text-gray-600">Featured on </span>
-                            <span className="text-[#222]">Flip</span><span className="text-[#f28c28]">zokart</span>
+                            <span className="text-[#222]">F</span><span className="text-[#f28c28]">zokart</span>
                         </h2>
                         <div className="w-20 h-1 bg-[#f28c28] rounded"></div>
                     </div>
@@ -188,7 +205,7 @@ export const HomePage: React.FC = () => {
                     <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
                         <div className="grid md:grid-cols-2 gap-8 items-center">
                             <div className="text-center md:text-left">
-                                <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop Smarter with <span className="text-[#222]">Flip</span><span className="text-[#f28c28]">zokart</span></h2>
+                                <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop Smarter with <span className="text-[#222]">F</span><span className="text-[#f28c28]">zokart</span></h2>
                                 <p className="text-gray-600 text-lg mb-6">Download our mobile app and get exclusive deals, faster checkout, and personalized recommendations.</p>
                                 <div className="space-y-4 md:space-y-0 md:space-x-4 md:flex">
                                     <button className="w-full md:w-auto bg-[#f28c28] hover:bg-opacity-90 text-white font-semibold px-8 py-3 rounded-lg transition-colors">Download App</button>

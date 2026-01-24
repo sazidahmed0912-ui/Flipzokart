@@ -69,7 +69,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
             <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-800">
                 <Info className="flex-shrink-0 mt-0.5" size={18} />
                 <p>
-                    Flipzokart ensures contactless delivery. Please consider paying online for a safer experience.
+                    Fzokart ensures contactless delivery. Please consider paying online for a safer experience.
                 </p>
             </div>
 

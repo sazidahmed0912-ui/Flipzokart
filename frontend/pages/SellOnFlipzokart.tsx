@@ -67,7 +67,7 @@ const SellOnFlipzokart: React.FC = () => {
                             <Store size={24} className="text-white" />
                         </div>
                         <h1 className="text-3xl font-bold mb-2">Sell Online</h1>
-                        <p className="text-blue-100 leading-relaxed">Join thousands of sellers and grow your business with Flipzokart.</p>
+                        <p className="text-blue-100 leading-relaxed">Join thousands of sellers and grow your business with Fzokart.</p>
                     </div>
 
                     <div className="mt-8 space-y-4">
@@ -107,7 +107,7 @@ const SellOnFlipzokart: React.FC = () => {
                         <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100 flex gap-3">
                             <AlertTriangle className="text-yellow-600 min-w-[20px]" size={20} />
                             <p className="text-sm text-yellow-800">
-                                By submitting this application, you agree to Flipzokart's Seller Terms & Conditions.
+                                By submitting this application, you agree to Fzokart's Seller Terms & Conditions.
                                 Your account status will be set to "Pending" until approved by an admin.
                             </p>
                         </div>

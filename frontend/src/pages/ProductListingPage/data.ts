@@ -13,11 +13,11 @@ export interface Product {
   category: string;
 }
 
-// Mock product data for Flipzokart
+// Mock product data for Fzokart
 export const products: Product[] = [
   {
     id: '1',
-    name: 'Flipzokart Smartwatch with Health Tracking',
+    name: 'Fzokart Smartwatch with Health Tracking',
     image: 'https://via.placeholder.com/150/2874F0/FFFFFF?text=Smartwatch',
     rating: 4.5,
     reviewCount: 12345,

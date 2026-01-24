@@ -167,7 +167,7 @@ export const AdminSellers: React.FC = () => {
                 <div className="p-8 space-y-6">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800">Seller Management Panel</h1>
-                        <p className="text-sm text-gray-500 mt-1">Manage and oversee all sellers on FlipZokart.</p>
+                        <p className="text-sm text-gray-500 mt-1">Manage and oversee all sellers on Fzokart.</p>
                     </div>
 
                     <div className="flex items-center gap-4">

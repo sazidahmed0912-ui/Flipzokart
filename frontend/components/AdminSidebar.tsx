@@ -27,7 +27,7 @@ export const AdminSidebar: React.FC = () => {
           <span className="font-bold italic text-lg">F</span>
         </div>
         <div>
-          <h1 className="font-bold text-[#2874F0] text-lg tracking-tight italic">Flipzokart</h1>
+          <h1 className="font-bold text-[#2874F0] text-lg tracking-tight italic">Fzokart</h1>
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Admin Panel</p>
         </div>
       </div>

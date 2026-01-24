@@ -83,7 +83,7 @@ const AddNewAddress: React.FC = () => {
                 <div className="flex items-start gap-3 bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-gray-700">
                     <Info className="text-blue-600 mt-0.5" size={18} />
                     <p>
-                        Flipzokart ensures contactless delivery. Please pay online for a safer experience.
+                        Fzokart ensures contactless delivery. Please pay online for a safer experience.
                     </p>
                 </div>
 

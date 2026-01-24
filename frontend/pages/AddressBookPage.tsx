@@ -43,7 +43,7 @@ const AddressBookPage: React.FC = () => {
         { name: "Orders", path: "/orders", icon: Package },
         { name: "Wishlist", path: "/wishlist", icon: Heart },
         { name: "Coupons", path: "/coupons", icon: Tag },
-        { name: "Sell on Flipzokart", path: "/sell", icon: Store },
+        { name: "Sell on Fzokart", path: "/sell", icon: Store },
         { name: "Account Security", path: "/account-security", icon: ShieldCheck },
         { name: "Address Book", path: "/address-book", icon: MapPin },
         { name: "Help Center", path: "/help-center", icon: HelpCircle },

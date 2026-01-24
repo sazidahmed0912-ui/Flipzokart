@@ -414,7 +414,7 @@ export const ProductDetails: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm sm:text-base font-semibold text-gray-900">5% Unlimited Cashback</p>
-                  <p className="text-xs sm:text-sm text-gray-600">on Flipzokart Axis Bank Credit Card</p>
+                  <p className="text-xs sm:text-sm text-gray-600">on Fzokart Axis Bank Credit Card</p>
                 </div>
               </div>
               <div className="flex gap-2 sm:gap-3">
@@ -432,7 +432,7 @@ export const ProductDetails: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm sm:text-base font-semibold text-gray-900">Pay Later & Get 10% Cashback</p>
-                  <p className="text-xs sm:text-sm text-gray-600">on Flipzokart Pay Later</p>
+                  <p className="text-xs sm:text-sm text-gray-600">on Fzokart Pay Later</p>
                 </div>
               </div>
             </div>

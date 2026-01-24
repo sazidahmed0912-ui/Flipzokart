@@ -66,8 +66,8 @@ export const LoginPage: React.FC = () => {
             style={{ background: 'linear-gradient(180deg, #2874F0 0%, #4f9cff 100%)' }}
           >
             <div className="flex items-center gap-2.5 font-bold text-[22px] mb-10">
-              <div className="w-9 h-9 bg-[#F9C74F] text-[#1f3fbf] font-extrabold flex items-center justify-center rounded-lg">f</div>
-              Flipzokart
+              <div className="w-9 h-9 bg-[#F9C74F] text-[#1f3fbf] font-extrabold flex items-center justify-center rounded-lg">F</div>
+              Fzokart
             </div>
 
             <h1 className="text-[30px] font-bold mb-3 leading-tight">Login</h1>
@@ -135,7 +135,7 @@ export const LoginPage: React.FC = () => {
                   </div>
 
                   <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
-                    New to Flipzokart? <Link to="/signup" className="font-bold hover:underline" style={{ color: '#FF3333' }}>Sign up</Link>
+                    New to Fzokart? <Link to="/signup" className="font-bold hover:underline" style={{ color: '#FF3333' }}>Sign up</Link>
                   </div>
                 </form>
               </div>

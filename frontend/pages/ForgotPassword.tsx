@@ -65,8 +65,8 @@ export const ForgotPasswordPage: React.FC = () => {
             style={{ background: 'linear-gradient(180deg, #2874F0 0%, #4f9cff 100%)' }}
           >
             <div className="flex items-center gap-2.5 font-bold text-[22px] mb-10">
-              <div className="w-9 h-9 bg-[#F9C74F] text-[#1f3fbf] font-extrabold flex items-center justify-center rounded-lg">f</div>
-              Flipzokart
+              <div className="w-9 h-9 bg-[#F9C74F] text-[#1f3fbf] font-extrabold flex items-center justify-center rounded-lg">F</div>
+              Fzokart
             </div>
 
             <h1 className="text-[30px] font-bold mb-3 leading-tight">Forgot Password</h1>

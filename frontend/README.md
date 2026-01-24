@@ -1,5 +1,5 @@
 
-# Flipzokart Full Stack Auth System
+# Fzokart Full Stack Auth System
 
 ## 🚀 Setup Instructions
 

@@ -10,16 +10,16 @@ export const PrivacyPolicyPage: React.FC = () => {
         <div className="bg-gray-50 min-h-screen py-10 px-4 md:px-8 font-sans text-gray-800">
             <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8 md:p-12">
                 <SmoothReveal>
-                    <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 border-b pb-4">Privacy Policy for Flipzokart</h1>
+                    <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 border-b pb-4">Privacy Policy for Fzokart</h1>
 
                     <div className="prose prose-blue max-w-none text-sm md:text-base leading-relaxed text-gray-700 space-y-6">
                         <p className="font-semibold">Effective Date: [24/01/2026]</p>
 
                         <p>
-                            Flipzokart ("Flipzokart", "we", "our", "us") operates a full-scale ecommerce website and mobile application. We are committed to protecting user privacy and maintaining the highest standards of data security. This Privacy Policy is specifically designed to comply with Razorpay payment gateway approval requirements and applicable Indian IT laws.
+                            Fzokart ("Fzokart", "we", "our", "us") operates a full-scale ecommerce website and mobile application. We are committed to protecting user privacy and maintaining the highest standards of data security. This Privacy Policy is specifically designed to comply with Razorpay payment gateway approval requirements and applicable Indian IT laws.
                         </p>
                         <p>
-                            By using Flipzokart, you agree to the practices described in this policy.
+                            By using Fzokart, you agree to the practices described in this policy.
                         </p>
 
                         <hr className="my-6 border-gray-100" />
@@ -38,7 +38,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                             </ul>
 
                             <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">1.2 Payment Information (Razorpay)</h3>
-                            <p>Flipzokart does NOT collect, store, or process sensitive payment details such as:</p>
+                            <p>Fzokart does NOT collect, store, or process sensitive payment details such as:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Debit/Credit card numbers</li>
                                 <li>CVV</li>
@@ -82,7 +82,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
                         <section>
                             <h2 className="text-xl font-bold text-gray-900 mb-3">3. Razorpay Payment Gateway Security</h2>
-                            <p>Flipzokart integrates Razorpay using industry best practices:</p>
+                            <p>Fzokart integrates Razorpay using industry best practices:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>End-to-end SSL encryption</li>
                                 <li>Secure API-based payment processing</li>
@@ -97,7 +97,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
                         <section>
                             <h2 className="text-xl font-bold text-gray-900 mb-3">4. Data Sharing & Third Parties</h2>
-                            <p>Flipzokart does not sell or misuse customer data.</p>
+                            <p>Fzokart does not sell or misuse customer data.</p>
                             <p>Data may be shared only with:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Razorpay (for payment processing)</li>
@@ -112,7 +112,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
                         <section>
                             <h2 className="text-xl font-bold text-gray-900 mb-3">5. Cookies & Tracking</h2>
-                            <p>Flipzokart uses cookies to:</p>
+                            <p>Fzokart uses cookies to:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Maintain secure login sessions</li>
                                 <li>Store cart and checkout preferences</li>
@@ -166,7 +166,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
                         <section>
                             <h2 className="text-xl font-bold text-gray-900 mb-3">9. Children’s Privacy</h2>
-                            <p>Flipzokart does not knowingly collect personal data from individuals under 18 years of age.</p>
+                            <p>Fzokart does not knowingly collect personal data from individuals under 18 years of age.</p>
                         </section>
 
                         <hr className="my-6 border-gray-100" />
@@ -198,7 +198,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
                         <section>
                             <h2 className="text-xl font-bold text-gray-900 mb-3">12. Policy Updates</h2>
-                            <p>Flipzokart reserves the right to update this policy at any time. Updates will be posted on this page.</p>
+                            <p>Fzokart reserves the right to update this policy at any time. Updates will be posted on this page.</p>
                         </section>
 
                         <hr className="my-6 border-gray-100" />
@@ -207,7 +207,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                             <h2 className="text-xl font-bold text-gray-900 mb-3">13. Contact & Grievance Officer</h2>
                             <p>For privacy concerns or grievances, contact:</p>
                             <div className="mt-2 bg-gray-50 p-4 rounded border border-gray-200">
-                                <p><strong>Flipzokart Grievance Officer</strong></p>
+                                <p><strong>Fzokart Grievance Officer</strong></p>
                                 <p>Name: Shahid Afridi</p>
                                 <p>Email: <a href="mailto:flipzokartshop@gmail.com" className="text-blue-600 hover:underline">flipzokartshop@gmail.com</a></p>
                                 <p>Response Time: Within 48 hours</p>
@@ -218,7 +218,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
                         <section>
                             <h2 className="text-xl font-bold text-gray-900 mb-3">14. User Consent</h2>
-                            <p>By accessing or using Flipzokart, you explicitly consent to the collection, use, and processing of your information as described in this Privacy Policy.</p>
+                            <p>By accessing or using Fzokart, you explicitly consent to the collection, use, and processing of your information as described in this Privacy Policy.</p>
                         </section>
 
                         <hr className="my-6 border-gray-100" />
@@ -226,7 +226,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <div className="text-center mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <p className="text-gray-600 font-medium flex items-center justify-center gap-2">
                                 <span>🔒</span>
-                                <i>Flipzokart is committed to safe, secure, and transparent ecommerce for all users.</i>
+                                <i>Fzokart is committed to safe, secure, and transparent ecommerce for all users.</i>
                             </p>
                         </div>
                     </div>

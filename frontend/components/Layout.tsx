@@ -52,7 +52,7 @@ const Header: React.FC = () => {
         <div className="hidden md:flex items-center justify-between h-16">
           <div className="text-2xl font-bold">
             <Link to="/">
-              <span className="text-[#222]">Flip</span><span className="text-[#f28c28]">zokart</span>
+              <span className="text-[#222]">F</span><span className="text-[#f28c28]">zokart</span>
             </Link>
           </div>
 
@@ -228,7 +228,7 @@ const Header: React.FC = () => {
                     <div className="w-8 h-8 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center">
                       <Store size={16} />
                     </div>
-                    <span className="font-medium text-sm">Sell on Flipzokart</span>
+                    <span className="font-medium text-sm">Sell on Fzokart</span>
                     <ChevronRight size={14} className="ml-auto text-gray-400" />
                   </Link>
 
@@ -383,7 +383,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
         <div className="border-t border-gray-300 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-600 text-sm">© 2024 All rights reserved.</p>
+          <p className="text-gray-600 text-sm">© 2024 Fzokart. All rights reserved.</p>
         </div>
       </div>
     </footer>

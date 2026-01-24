@@ -54,7 +54,7 @@ export const BannedPage: React.FC = () => {
                         Account {user.status}
                     </h1>
                     <p className="mt-2 text-red-100 font-medium opacity-90">
-                        Access to flipzokart has been restricted.
+                        Access to Fzokart has been restricted.
                     </p>
                 </div>
 
