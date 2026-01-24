@@ -26,6 +26,7 @@ import AddressCard from './CheckoutPage/components/AddressCard';
 import AddressForm from './CheckoutPage/components/AddressForm';
 import Modal from './CheckoutPage/components/Modal';
 import './CheckoutPage/components/Modal.css';
+import './CheckoutPage/CheckoutPage.css'; // Import Checkout Styles for AddressCard
 
 const AddressBookPage: React.FC = () => {
     const navigate = useNavigate();
@@ -224,6 +225,7 @@ const AddressBookPage: React.FC = () => {
                                         onEdit={handleEditAddress}
                                         onDeliverHere={handleDeliverHereDummy}
                                         isLoading={false}
+                                        hideRadio={true} // Hide Radio for Address Book
                                     />
                                 ))
                             )}

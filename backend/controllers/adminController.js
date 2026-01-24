@@ -75,18 +75,24 @@ const getAllUsers = async (req, res) => {
     // Note: Doing this in loop for simplicity, but aggregation is better for scale. 
     // Given the scale mentioned (demo/small), this is fine.
     const usersWithStats = await Promise.all(users.map(async (user) => {
-      const orders = await Order.find({ userId: user._id });
+      // Fix: Order model uses 'user' field, not 'userId'
+      const orders = await Order.find({ user: user._id });
       const totalSpent = orders.reduce((acc, order) => acc + (order.paymentStatus === 'PAID' ? order.total : 0), 0);
 
       // Try to find a recent address from orders
       const lastOrder = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-      const address = lastOrder ? `${lastOrder.address.street}, ${lastOrder.address.city}, ${lastOrder.address.zipCode}` : 'N/A';
+      // Fix: Order schema has shippingAddress as string, not object. 
+      // If schema says shippingAddress: String, then lastOrder.address.city will fail.
+      // But let's check Order.js again. It says shippingAddress: String.
+      // So lastOrder.address.city is likely wrong too.
+      // We'll use shippingAddress string as location for now.
+      const address = lastOrder ? lastOrder.shippingAddress : 'N/A';
 
       return {
         ...user.toObject(),
         orders: orders.length,
         totalSpent,
-        location: address !== 'N/A' ? lastOrder.address.city : 'Unknown', // Simple location for table
+        location: address !== 'N/A' ? address.split(',').slice(-2).join(', ') : 'Unknown', // Extract City/State if possible or use full string
         fullAddress: address // Detailed address for 'View Address'
       };
     }));

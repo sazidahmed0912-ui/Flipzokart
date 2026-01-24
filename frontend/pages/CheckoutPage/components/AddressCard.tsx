@@ -9,6 +9,7 @@ interface AddressCardProps {
     onEdit: (address: Address) => void;
     onDeliverHere: () => void;
     isLoading: boolean;
+    hideRadio?: boolean;
 }
 
 const AddressCard: React.FC<AddressCardProps> = ({
@@ -18,13 +19,16 @@ const AddressCard: React.FC<AddressCardProps> = ({
     onDelete,
     onEdit,
     onDeliverHere,
-    isLoading
+    isLoading,
+    hideRadio = false
 }) => {
     return (
         <div className={`address-card ${isSelected ? 'selected' : ''}`} onClick={() => onSelect(address.id)}>
-            <div className="address-card-radio">
-                <input type="radio" name="address" checked={isSelected} readOnly />
-            </div>
+            {!hideRadio && (
+                <div className="address-card-radio">
+                    <input type="radio" name="address" checked={isSelected} readOnly />
+                </div>
+            )}
             <div className="address-card-details">
                 <div className="address-card-header">
                     <h3>{address.name}</h3>
