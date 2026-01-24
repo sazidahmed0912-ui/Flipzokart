@@ -176,120 +176,121 @@ const OrdersPage = () => {
                     </div>
 
                     {/* Orders List */}
-                    {loading && orders.length === 0 ? (
-                        <div className="text-center py-12">Loading orders...</div>
-                    ) : filteredOrders.length === 0 ? (
-                        <div className="bg-white rounded-[2px] shadow-sm p-12 text-center flex flex-col items-center justify-center">
-                            <ShoppingBag size={48} className="text-gray-200 mb-4" />
-                            <h3 className="text-lg font-bold text-gray-800">No orders found</h3>
-                            <p className="text-gray-500 mb-6">Change filters or go shopping!</p>
-                            <button onClick={() => navigate('/shop')} className="bg-[#2874F0] text-white px-8 py-2.5 rounded-[2px] font-bold shadow-sm hover:bg-blue-600 transition-colors">
-                                Shop Now
-                            </button>
-                        </div>
-                    ) : (
-                        filteredOrders.map((order: any) => (
-                            <div key={order._id || order.id} className="bg-white rounded-[4px] shadow-sm hover:shadow-md transition-shadow border border-gray-100 mb-4 overflow-hidden">
-                                {/* Card Header: Ordered On */}
-                                <div className="bg-white px-6 py-3 border-b border-gray-50 flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium text-gray-800">
-                                            Ordered on <span className="font-bold">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                                        </span>
-                                    </div>
-                                    {order.paymentMethod === 'UPI' && <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-500">Paid via UPI</span>}
-                                </div>
-
-                                {order.items?.map((item: any, idx: number) => (
-                                    <div key={idx} className={`p-6 flex flex-col md:flex-row gap-6 ${idx > 0 ? 'border-t border-gray-100' : ''}`}>
-                                        {/* Image */}
-                                        <div className="w-24 h-24 flex-shrink-0 relative">
-                                            <img
-                                                src={item.image}
-                                                alt={item.name}
-                                                className="w-full h-full object-contain"
-                                            />
+                    <SmoothReveal>
+                        {loading && orders.length === 0 ? (
+                            <div className="text-center py-12">Loading orders...</div>
+                        ) : filteredOrders.length === 0 ? (
+                            <div className="bg-white rounded-[2px] shadow-sm p-12 text-center flex flex-col items-center justify-center">
+                                <ShoppingBag size={48} className="text-gray-200 mb-4" />
+                                <h3 className="text-lg font-bold text-gray-800">No orders found</h3>
+                                <p className="text-gray-500 mb-6">Change filters or go shopping!</p>
+                                <button onClick={() => navigate('/shop')} className="bg-[#2874F0] text-white px-8 py-2.5 rounded-[2px] font-bold shadow-sm hover:bg-blue-600 transition-colors">
+                                    Shop Now
+                                </button>
+                            </div>
+                        ) : (
+                            filteredOrders.map((order: any) => (
+                                <div key={order._id || order.id} className="bg-white rounded-[4px] shadow-sm hover:shadow-md transition-shadow border border-gray-100 mb-4 overflow-hidden">
+                                    {/* Card Header: Ordered On */}
+                                    <div className="bg-white px-6 py-3 border-b border-gray-50 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium text-gray-800">
+                                                Ordered on <span className="font-bold">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                            </span>
                                         </div>
+                                        {order.paymentMethod === 'UPI' && <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-500">Paid via UPI</span>}
+                                    </div>
 
-                                        {/* Details & Status */}
-                                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <h3 className="font-medium text-gray-900 text-base hover:text-[#2874F0] cursor-pointer line-clamp-2" onClick={() => navigate(`/product/${item.productId}`)}>
-                                                    {item.name}
-                                                </h3>
-                                                <div className="text-xs text-gray-500 mt-1">
-                                                    {item.selectedVariants?.Color && <span>Color: {item.selectedVariants.Color}</span>}
-                                                </div>
+                                    {order.items?.map((item: any, idx: number) => (
+                                        <div key={idx} className={`p-6 flex flex-col md:flex-row gap-6 ${idx > 0 ? 'border-t border-gray-100' : ''}`}>
+                                            {/* Image */}
+                                            <div className="w-24 h-24 flex-shrink-0 relative">
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name}
+                                                    className="w-full h-full object-contain"
+                                                />
                                             </div>
 
-                                            <div className="text-right md:text-left">
-                                                <span className="font-bold text-gray-900 text-lg">₹{(item.price || 0).toLocaleString()}</span>
-                                            </div>
-
-                                            {/* Status Bar */}
-                                            <div className="col-span-1 md:col-span-2 mt-2">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <div className={`w-2.5 h-2.5 rounded-full ${order.status === 'Cancelled' ? 'bg-red-500' : 'bg-green-600'}`}></div>
-                                                    <span className="font-semibold text-gray-900 text-sm">
-                                                        {order.status} {order.status === 'Delivered' ? `on ${new Date(order.updatedAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}` : ''}
-                                                    </span>
-                                                </div>
-                                                <p className="text-xs text-gray-500 mb-2">
-                                                    {order.status === 'Shipped' ? 'Your item is out for delivery' : order.status === 'Cancelled' ? 'As per your request' : 'Your order has been placed'}
-                                                </p>
-
-                                                {order.status !== 'Cancelled' && (
-                                                    <div className="h-1 bg-gray-100 rounded-full w-full max-w-sm relative mt-2">
-                                                        <div className="absolute h-full bg-green-500 rounded-full" style={{ width: getProgressWidth(order.status) }}></div>
-                                                        {/* Dots for status */}
-                                                        <div className="absolute top-1/2 -translate-y-1/2 left-0 w-2 h-2 bg-green-500 rounded-full"></div>
-                                                        <div className={`absolute top-1/2 -translate-y-1/2 left-1/2 w-2 h-2 rounded-full ${['Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) ? 'bg-green-500' : 'bg-gray-200'}`}></div>
-                                                        <div className={`absolute top-1/2 -translate-y-1/2 right-0 w-2 h-2 rounded-full ${order.status === 'Delivered' ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                                            {/* Details & Status */}
+                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <h3 className="font-medium text-gray-900 text-base hover:text-[#2874F0] cursor-pointer line-clamp-2" onClick={() => navigate(`/product/${item.productId}`)}>
+                                                        {item.name}
+                                                    </h3>
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        {item.selectedVariants?.Color && <span>Color: {item.selectedVariants.Color}</span>}
                                                     </div>
+                                                </div>
+
+                                                <div className="text-right md:text-left">
+                                                    <span className="font-bold text-gray-900 text-lg">₹{(item.price || 0).toLocaleString()}</span>
+                                                </div>
+
+                                                {/* Status Bar */}
+                                                <div className="col-span-1 md:col-span-2 mt-2">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <div className={`w-2.5 h-2.5 rounded-full ${order.status === 'Cancelled' ? 'bg-red-500' : 'bg-green-600'}`}></div>
+                                                        <span className="font-semibold text-gray-900 text-sm">
+                                                            {order.status} {order.status === 'Delivered' ? `on ${new Date(order.updatedAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}` : ''}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-gray-500 mb-2">
+                                                        {order.status === 'Shipped' ? 'Your item is out for delivery' : order.status === 'Cancelled' ? 'As per your request' : 'Your order has been placed'}
+                                                    </p>
+
+                                                    {order.status !== 'Cancelled' && (
+                                                        <div className="h-1 bg-gray-100 rounded-full w-full max-w-sm relative mt-2">
+                                                            <div className="absolute h-full bg-green-500 rounded-full" style={{ width: getProgressWidth(order.status) }}></div>
+                                                            {/* Dots for status */}
+                                                            <div className="absolute top-1/2 -translate-y-1/2 left-0 w-2 h-2 bg-green-500 rounded-full"></div>
+                                                            <div className={`absolute top-1/2 -translate-y-1/2 left-1/2 w-2 h-2 rounded-full ${['Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                                                            <div className={`absolute top-1/2 -translate-y-1/2 right-0 w-2 h-2 rounded-full ${order.status === 'Delivered' ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Actions */}
+                                            <div className="flex flex-col gap-3 justify-start min-w-[150px]">
+                                                {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                                                    <button
+                                                        onClick={() => navigate('/track-order', { state: { order } })}
+                                                        className="bg-[#F9C74F] hover:bg-yellow-400 text-black font-medium py-2 px-6 rounded-[2px] text-sm shadow-sm transition-colors text-center"
+                                                    >
+                                                        Track
+                                                    </button>
+                                                )}
+
+                                                <button onClick={() => { }} className="border border-gray-200 hover:bg-gray-50 text-gray-800 font-medium py-2 px-4 rounded-[2px] text-sm transition-colors">
+                                                    View Details
+                                                </button>
+
+                                                {order.status === 'Delivered' ? (
+                                                    <button className="bg-[#2874F0] text-white hover:bg-blue-600 font-medium py-2 px-4 rounded-[2px] text-sm transition-colors shadow-sm">
+                                                        Buy Again
+                                                    </button>
+                                                ) : order.status === 'Pending' ? (
+                                                    <button className="text-red-500 hover:text-red-600 font-semibold text-sm flex items-center gap-1 justify-center mt-1">
+                                                        <XCircle size={16} /> Cancel
+                                                    </button>
+                                                ) : null}
+
+                                                {order.status === 'Delivered' && (
+                                                    <button className="text-[#2874F0] text-sm font-medium hover:underline flex items-center gap-1 justify-center">
+                                                        <span className="text-yellow-500">★</span> Rate & Review
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
-
-                                        {/* Actions */}
-                                        <div className="flex flex-col gap-3 justify-start min-w-[150px]">
-                                            {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
-                                                <button
-                                                    onClick={() => navigate('/track-order', { state: { order } })}
-                                                    className="bg-[#F9C74F] hover:bg-yellow-400 text-black font-medium py-2 px-6 rounded-[2px] text-sm shadow-sm transition-colors text-center"
-                                                >
-                                                    Track
-                                                </button>
-                                            )}
-
-                                            <button onClick={() => { }} className="border border-gray-200 hover:bg-gray-50 text-gray-800 font-medium py-2 px-4 rounded-[2px] text-sm transition-colors">
-                                                View Details
-                                            </button>
-
-                                            {order.status === 'Delivered' ? (
-                                                <button className="bg-[#2874F0] text-white hover:bg-blue-600 font-medium py-2 px-4 rounded-[2px] text-sm transition-colors shadow-sm">
-                                                    Buy Again
-                                                </button>
-                                            ) : order.status === 'Pending' ? (
-                                                <button className="text-red-500 hover:text-red-600 font-semibold text-sm flex items-center gap-1 justify-center mt-1">
-                                                    <XCircle size={16} /> Cancel
-                                                </button>
-                                            ) : null}
-
-                                            {order.status === 'Delivered' && (
-                                                <button className="text-[#2874F0] text-sm font-medium hover:underline flex items-center gap-1 justify-center">
-                                                    <span className="text-yellow-500">★</span> Rate & Review
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ))
-                    )}
-                </SmoothReveal>
+                                    ))}
+                                </div>
+                            ))
+                        )}
+                    </SmoothReveal>
+                </div>
             </div>
         </div>
-        </div >
     );
 };
 
