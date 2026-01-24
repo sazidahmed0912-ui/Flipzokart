@@ -4,7 +4,8 @@ const Product = require("../models/Product");
 const router = express.Router();
 
 // ➕ ADD PRODUCT
-router.post("/add", async (req, res) => {
+// ➕ ADD PRODUCT
+const createProduct = async (req, res) => {
   try {
     console.log("👉 [POST /add] Payload:", JSON.stringify(req.body, null, 2));
     const product = new Product(req.body);
@@ -14,7 +15,10 @@ router.post("/add", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-});
+};
+
+router.post("/add", createProduct);
+router.post("/", createProduct); // Alias for frontend compatibility
 
 // 📦 GET ALL PRODUCTS
 router.get("/", async (req, res) => {

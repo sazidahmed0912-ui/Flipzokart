@@ -85,20 +85,24 @@ connectDB();
    =============================== */
 app.use(express.json());
 
-app.use(
-  cors({
-    origin: CLIENT_URLS,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-  })
-);
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://flipzokart.com",
+    "https://www.flipzokart.com",
+    "https://flipzokart-backend.onrender.com"
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"]
+}));
 
 /* ===============================
    ✅ ROUTES
    =============================== */
 app.get("/", (req, res) => {
-  res.send("Flipzokart backend running 🚀");
+  res.send("Flipzokart backend running 🚀 v2.0 (Legacy Fixes Applied)");
 });
 
 // 🔐 Auth

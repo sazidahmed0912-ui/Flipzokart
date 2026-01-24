@@ -35,7 +35,7 @@ export const BannedPage: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await API.post('/api/auth/appeal', { message: appealText, userId: user.id });
+            await API.post('/api/user/appeal', { message: appealText, userId: user.id });
             setSubmitted(true);
         } catch (error: any) {
             console.error('Appeal error:', error.response?.data || error.message);
