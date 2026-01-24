@@ -268,12 +268,12 @@ const OrdersPage = () => {
                                             <div className="flex flex-col items-end gap-4 min-w-[180px]">
                                                 <div className="text-xl font-bold text-gray-900">₹{(item.price || 0).toLocaleString()}</div>
 
-                                                <div className="flex flex-col gap-2.5 w-full">
+                                                <div className="flex flex-row items-center gap-2 mt-2">
                                                     {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
-                                                        <div className="relative group w-full">
+                                                        <div className="relative group">
                                                             <button
                                                                 onClick={() => navigate('/track-order', { state: { order } })}
-                                                                className="w-full bg-[#F9C74F] hover:bg-yellow-400 text-black font-semibold py-2 px-4 rounded-[4px] text-sm shadow-sm transition-colors flex items-center justify-center gap-2"
+                                                                className="bg-[#F9C74F] hover:bg-yellow-400 text-black font-semibold py-1.5 px-6 rounded-[4px] text-sm shadow-sm transition-colors whitespace-nowrap"
                                                             >
                                                                 Track
                                                             </button>
@@ -287,20 +287,22 @@ const OrdersPage = () => {
 
                                                     <button
                                                         onClick={() => navigate('/track-order', { state: { order } })}
-                                                        className="w-full border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-2 px-4 rounded-[4px] text-sm transition-colors"
+                                                        className="border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-1.5 px-4 rounded-[4px] text-sm transition-colors whitespace-nowrap"
                                                     >
                                                         View Details
                                                     </button>
 
-                                                    {order.status === 'Delivered' && (
-                                                        <button className="w-full bg-[#2874F0] hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-[4px] text-sm transition-colors shadow-sm">
-                                                            Buy Again
+                                                    {order.status === 'Pending' && (
+                                                        <button
+                                                            className="flex items-center gap-1 text-red-500 hover:text-red-700 font-medium text-sm transition-colors px-2"
+                                                        >
+                                                            <XCircle size={16} /> Cancel
                                                         </button>
                                                     )}
 
-                                                    {order.status === 'Pending' && (
-                                                        <button className="w-full text-red-500 hover:bg-red-50 hover:text-red-600 font-medium py-2 px-4 rounded-[4px] text-sm transition-colors border border-transparent hover:border-red-100">
-                                                            Cancel Order
+                                                    {order.status === 'Delivered' && (
+                                                        <button className="bg-[#2874F0] hover:bg-blue-600 text-white font-medium py-1.5 px-4 rounded-[4px] text-sm transition-colors shadow-sm whitespace-nowrap">
+                                                            Buy Again
                                                         </button>
                                                     )}
                                                 </div>
