@@ -35,10 +35,11 @@ export const BannedPage: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await API.post('/api/users/appeal', { message: appealText, userId: user.id });
+            await API.post('/api/auth/appeal', { message: appealText, userId: user.id });
             setSubmitted(true);
-        } catch (error) {
-            alert('Failed to submit appeal. Please try again.');
+        } catch (error: any) {
+            console.error('Appeal error:', error.response?.data || error.message);
+            alert(error.response?.data?.message || 'Failed to submit appeal. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -63,7 +64,7 @@ export const BannedPage: React.FC = () => {
                         <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-center">
                             <p className="text-xs font-bold text-gray-500 uppercase mb-1">Current Time</p>
                             <div className="text-xl font-mono font-bold text-gray-800">
-                                {currentTime.toLocaleTimeString()}
+                                {currentTime.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                             </div>
                             <div className="text-xs text-gray-400 font-medium">
                                 {currentTime.toLocaleDateString()}

@@ -7,4 +7,5 @@ const router = (0, express_1.Router)();
 const adminController = new admin_controller_1.AdminController();
 router.use(auth_middleware_1.protect, (0, auth_middleware_1.restrictTo)('ADMIN'));
 router.get('/dashboard', adminController.getDashboardStats);
+router.get('/dashboard-stats', adminController.getDashboardStats);
 exports.default = router;

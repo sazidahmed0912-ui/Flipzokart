@@ -36,6 +36,7 @@ model User {
   password  String
   role      Role     @default(USER)
   isVerified Boolean @default(false)
+  avatar    String?  // URL/Path to avatar image
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -44,6 +45,18 @@ model User {
   orders    Order[]
   cart      Cart?
   chats     Chat[]
+  activities Activity[]
+}
+
+model Activity {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  message   String
+  ip        String?
+  device    String?
+  createdAt DateTime @default(now())
 }
 
 model Address {

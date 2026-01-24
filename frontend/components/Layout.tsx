@@ -164,73 +164,108 @@ const Header: React.FC = () => {
             </button>
           </div>
 
-          {/* Grid Content */}
-          <div className="flex-1 p-6 flex items-center justify-center">
-            <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+          {/* List Content (Profile Design) */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="flex flex-col">
               <Link
                 to="/"
                 onClick={closeMenus}
-                className="flex flex-col items-center justify-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-[#f28c28]/30 transition-all group"
+                className="flex items-center gap-4 px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
               >
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <Home size={24} />
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Home size={20} />
                 </div>
-                <span className="font-bold text-gray-700">Home</span>
+                <span className="font-medium text-base">Home</span>
+                <ChevronRight size={18} className="ml-auto text-gray-400" />
               </Link>
 
               <Link
                 to="/shop"
                 onClick={closeMenus}
-                className="flex flex-col items-center justify-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-[#f28c28]/30 transition-all group"
+                className="flex items-center gap-4 px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
               >
-                <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <LayoutGrid size={24} />
+                <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <LayoutGrid size={20} />
                 </div>
-                <span className="font-bold text-gray-700">Shop</span>
+                <span className="font-medium text-base">Shop</span>
+                <ChevronRight size={18} className="ml-auto text-gray-400" />
               </Link>
+
+              {/* Pages Group */}
+              <div className="flex flex-col bg-gray-50/50">
+                <Link
+                  to="/about"
+                  onClick={closeMenus}
+                  className="flex items-center gap-4 px-6 py-4 pl-8 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
+                    <Tag size={16} />
+                  </div>
+                  <span className="font-medium text-sm">About Us</span>
+                  <ChevronRight size={16} className="ml-auto text-gray-400" />
+                </Link>
+                <Link
+                  to="/contact"
+                  onClick={closeMenus}
+                  className="flex items-center gap-4 px-6 py-4 pl-8 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center">
+                    <MessageCircle size={16} />
+                  </div>
+                  <span className="font-medium text-sm">Contact Us</span>
+                  <ChevronRight size={16} className="ml-auto text-gray-400" />
+                </Link>
+              </div>
 
               {user ? (
                 <>
                   <Link
                     to="/profile"
                     onClick={closeMenus}
-                    className="flex flex-col items-center justify-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-[#f28c28]/30 transition-all group"
+                    className="flex items-center gap-4 px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
                   >
-                    <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                      <User size={24} />
+                    <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <User size={20} />
                     </div>
-                    <span className="font-bold text-gray-700">Profile</span>
+                    <span className="font-medium text-base">My Profile</span>
+                    <ChevronRight size={18} className="ml-auto text-gray-400" />
                   </Link>
-
-                  <button
-                    onClick={handleLogout}
-                    className="flex flex-col items-center justify-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-red-200 transition-all group"
-                  >
-                    <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                      <LogOut size={24} />
-                    </div>
-                    <span className="font-bold text-gray-700">Logout</span>
-                  </button>
 
                   {isAdmin && (
                     <Link
                       to="/admin"
                       onClick={closeMenus}
-                      className="col-span-2 flex items-center justify-between p-4 bg-gray-900 text-white rounded-xl shadow-lg mt-2"
+                      className="flex items-center gap-4 px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
                     >
-                      <span className="font-bold flex items-center gap-2"><LayoutDashboard size={18} /> Admin Dashboard</span>
-                      <ChevronRight size={18} />
+                      <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-800 flex items-center justify-center">
+                        <LayoutDashboard size={20} />
+                      </div>
+                      <span className="font-medium text-base">Admin Dashboard</span>
+                      <ChevronRight size={18} className="ml-auto text-gray-400" />
                     </Link>
                   )}
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-4 px-6 py-4 text-red-600 hover:bg-red-50 border-b border-gray-100 transition-colors w-full text-left"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
+                      <LogOut size={20} />
+                    </div>
+                    <span className="font-medium text-base">Logout</span>
+                  </button>
                 </>
               ) : (
                 <Link
                   to="/login"
                   onClick={closeMenus}
-                  className="col-span-2 flex flex-col items-center justify-center p-6 bg-[#f28c28] text-white rounded-2xl shadow-lg hover:bg-[#e07b1f] transition-all"
+                  className="flex items-center gap-4 px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
                 >
-                  <span className="text-lg font-bold">Login / Sign Up</span>
-                  <span className="text-xs opacity-90 mt-1">Access your account</span>
+                  <div className="w-10 h-10 rounded-full bg-[#f28c28] text-white flex items-center justify-center">
+                    <User size={20} />
+                  </div>
+                  <span className="font-medium text-base">Login / Sign Up</span>
+                  <ChevronRight size={18} className="ml-auto text-gray-400" />
                 </Link>
               )}
             </div>

@@ -223,10 +223,21 @@ export const ProductDetails: React.FC = () => {
   };
 
   const handleVariantSelect = (name: string, value: string) => {
+    console.log(`Selecting variant: ${name} = ${value}`);
     setSelectedVariants(prev => {
       const next = { ...prev, [name]: value };
-      const match = product.inventory?.find(inv => Object.entries(next).every(([k, v]) => inv.options[k] === v));
-      if (match?.image) setActiveImage(match.image);
+      console.log('New variants state:', next);
+
+      const match = product.inventory?.find(inv =>
+        Object.entries(next).every(([k, v]) => inv.options[k] === v)
+      );
+
+      console.log('Found inventory match:', match);
+
+      if (match?.image) {
+        console.log('Switching image to:', match.image);
+        setActiveImage(match.image);
+      }
       return next;
     });
   };

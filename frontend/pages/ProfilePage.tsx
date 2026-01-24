@@ -99,11 +99,45 @@ const ProfilePage = () => {
     { name: "Address Book", path: "/address-book", icon: MapPin },
   ];
 
-  // Helper for Member Since Format: "Jan 21"
+  // Helper for Member Since Format: "Jan 21" - Removing comma as requested
   const getMemberSince = () => {
     if (!profileData.createdAt) return "N/A";
     const date = new Date(profileData.createdAt);
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" }).replace(",", "'");
+    // Format: Jan 21 24 (removing comma)
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" }).replace(/,/g, '');
+  };
+
+  const handleAvatarClick = () => {
+    document.getElementById('avatar-input')?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    try {
+      const response = await API.post('/api/auth/upload-avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      // Update profile data with new avatar URL/path
+      // Assuming backend returns path, we might need to prefix it with base URL if it's relative
+      // Or if frontend <img src> can handle the path returned.
+      // E.g. user.avatar = 'uploads/filename.jpg' -> valid if public folder serves it.
+      // But we need to serve 'uploads' folder in backend (static).
+      // Let's assume URL is handled or we use a helper.
+
+      // Ideally, backend should return full URL or we prefix it.
+      // For now, update state.
+      const newAvatar = response.data.data.path; // or user.avatar
+      setProfileData((prev: any) => ({ ...prev, avatar: newAvatar }));
+      // Also update context if possible
+    } catch (error) {
+      console.error("Avatar upload failed", error);
+      alert("Failed to upload image");
+    }
   };
 
   return (
@@ -116,12 +150,16 @@ const ProfilePage = () => {
 
           {/* User Hello Card */}
           <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#f0f5ff] flex items-center justify-center border border-[#e0e0e0]">
-              <img
-                src="https://static-assets-web.flixcart.com/fk-p-linchpin-web/fk-cp-zion/img/profile-pic-male_4811a1.svg"
-                alt="User"
-                className="w-8 h-8 opacity-80"
-              />
+            <div className="w-12 h-12 rounded-full bg-[#f0f5ff] flex items-center justify-center border border-[#e0e0e0] overflow-hidden">
+              {profileData.avatar ? (
+                <img src={profileData.avatar.startsWith('http') ? profileData.avatar : `/${profileData.avatar}`} alt="User" className="w-full h-full object-cover" />
+              ) : (
+                <img
+                  src="https://static-assets-web.flixcart.com/fk-p-linchpin-web/fk-cp-zion/img/profile-pic-male_4811a1.svg"
+                  alt="User"
+                  className="w-8 h-8 opacity-80"
+                />
+              )}
             </div>
             <div>
               <div className="text-xs text-gray-500 font-medium">Hello,</div>
@@ -176,9 +214,20 @@ const ProfilePage = () => {
           <SmoothReveal direction="up" delay={200}>
             <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex items-center gap-6">
-                <div className="w-24 h-24 rounded-full bg-[#FFE11B] flex items-center justify-center text-3xl font-bold text-[#1F2937] border-4 border-white shadow-sm">
-                  {profileData.name?.[0]?.toUpperCase() || "U"}
+                <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
+                  <div className="w-24 h-24 rounded-full bg-[#FFE11B] flex items-center justify-center text-3xl font-bold text-[#1F2937] border-4 border-white shadow-sm overflow-hidden">
+                    {profileData.avatar ? (
+                      <img src={profileData.avatar.startsWith('http') ? profileData.avatar : `/${profileData.avatar}`} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      profileData.name?.[0]?.toUpperCase() || "U"
+                    )}
+                  </div>
+                  <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Edit2 size={24} className="text-white" />
+                  </div>
+                  <input type="file" id="avatar-input" className="hidden" accept="image/*" onChange={handleFileChange} />
                 </div>
+
                 <div className="space-y-1">
                   <h2 className="text-2xl font-bold text-[#1F2937] flex items-center gap-2">
                     {profileData.name || "User Name"}

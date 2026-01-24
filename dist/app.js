@@ -10,6 +10,7 @@ const body_parser_1 = require("body-parser");
 const routes_1 = __importDefault(require("./routes"));
 const error_middleware_1 = require("./middlewares/error.middleware");
 const AppError_1 = require("./utils/AppError");
+const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const app = (0, express_1.default)();
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)());
@@ -19,8 +20,9 @@ app.get('/', (req, res) => {
 });
 console.log('Mounting routes...');
 app.use('/api/v1', routes_1.default);
+app.use('/admin', admin_routes_1.default); // Support header-less frontend path
 console.log('Routes mounted.');
-app.all('*', (req, res, next) => {
+app.use((req, res, next) => {
     next(new AppError_1.AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 app.use(error_middleware_1.globalErrorHandler);

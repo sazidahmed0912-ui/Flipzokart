@@ -61,4 +61,34 @@ export class UserService {
         if (!user) throw new AppError('User not found', 404);
         return user;
     }
+
+    async submitAppeal(userId: string, message: string, ip: string) {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            throw new AppError('User not found', 404);
+        }
+
+        await prisma.activity.create({
+            data: {
+                userId,
+                type: 'appeal',
+                message: `User Appeal: ${message}`,
+                ip: String(ip)
+            }
+        });
+
+        return { message: 'Appeal submitted successfully' };
+    }
+
+    async updateAvatar(userId: string, avatarPath: string) {
+        // Construct full URL or relative path? Frontend usually expects URL.
+        // For now, we store relative path 'uploads/filename...'.
+        // We'll assume the backend serves 'uploads' folder statically.
+
+        // We might want to clear old avatar if exists to save space (omitted for safety).
+        return await prisma.user.update({
+            where: { id: userId },
+            data: { avatar: avatarPath }, // Ensure 'avatar' field exists in schema or we add it? 'types.ts' has it. Model?
+        });
+    }
 }

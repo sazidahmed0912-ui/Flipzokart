@@ -5,6 +5,7 @@ import cartRoutes from './cart.routes';
 import orderRoutes from './order.routes';
 import chatRoutes from './chat.routes';
 import adminRoutes from './admin.routes';
+import reviewRoutes from './review.routes';
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use('/cart', cartRoutes);
 router.use('/orders', orderRoutes);
 router.use('/chat', chatRoutes);
 router.use('/admin', adminRoutes);
+router.use('/reviews', reviewRoutes);
 
 export default router;
