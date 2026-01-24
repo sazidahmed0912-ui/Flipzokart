@@ -180,9 +180,53 @@ const sendUserNotice = async (req, res) => {
   }
 };
 
+// @desc    Update user role
+// @route   PUT /api/admin/users/:id/role
+// @access  Private/Admin
+const updateUserRole = async (req, res) => {
+  const { role } = req.body;
+
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.role = role;
+    await user.save();
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Delete user
+// @route   DELETE /api/admin/users/:id
+// @access  Private/Admin
+const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await user.deleteOne();
+    res.json({ success: true, message: 'User removed' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAllUsers,
   updateUserStatus,
-  sendUserNotice
+  sendUserNotice,
+  updateUserRole,
+  deleteUser
 };

@@ -35,6 +35,7 @@ const AboutUsPage = lazy(() => import("./pages/AboutUsPage").then(module => ({ d
 const ContactUsPage = lazy(() => import("./pages/ContactUsPage").then(module => ({ default: module.ContactUsPage })));
 const TrackOrderPage = lazy(() => import("./pages/TrackOrderPage").then(module => ({ default: module.TrackOrderPage })));
 const AddNewAddress = lazy(() => import("./components/AddNewAddress"));
+const SellOnFlipzokart = lazy(() => import("./pages/SellOnFlipzokart"));
 import { BannedPage } from "./pages/BannedPage";
 
 const BannedPageWrapper = () => (
@@ -183,6 +184,18 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
             <Route path="/track-order" element={<TrackOrderPage />} />
             <Route path="/add-address" element={<AddNewAddress />} />
             <Route path="/banned" element={<BannedPageWrapper />} />
+
+            <Route path="/add-address" element={<AddNewAddress />} />
+            <Route path="/banned" element={<BannedPageWrapper />} />
+
+            <Route
+              path="/sell"
+              element={
+                <ProtectedRoute>
+                  <SellOnFlipzokart />
+                </ProtectedRoute>
+              }
+            />
 
             {/* User Protected */}
             <Route

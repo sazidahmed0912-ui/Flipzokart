@@ -124,6 +124,7 @@ export const AdminUsers: React.FC = () => {
           <div className="flex items-center w-full max-w-xl bg-[#F0F5FF] rounded-lg px-4 py-2.5 transition-all focus-within:ring-2 focus-within:ring-[#2874F0]/20">
             <Search size={18} className="text-[#2874F0]" />
             <input
+              id="user-search"
               type="text"
               placeholder="Search users..."
               className="w-full bg-transparent border-none outline-none text-sm ml-3 text-gray-700 placeholder-gray-400 font-medium"
@@ -165,7 +166,7 @@ export const AdminUsers: React.FC = () => {
               <h1 className="text-2xl font-bold text-gray-800">Customers</h1>
               <p className="text-xs text-gray-500 font-medium mt-1">Manage user accounts and activity.</p>
             </div>
-            <button className="bg-white border border-gray-200 text-gray-700 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm">
+            <button onClick={() => document.getElementById('user-search')?.focus()} className="bg-white border border-gray-200 text-gray-700 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm">
               <Filter size={16} /> Filter List
             </button>
           </div>

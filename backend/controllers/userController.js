@@ -15,6 +15,11 @@ const updateProfile = async (req, res) => {
 
             // If email update is allowed in future, add validation here
 
+            // Allow requesting seller status
+            if (req.body.role === 'pending_seller' && user.role === 'user') {
+                user.role = 'pending_seller';
+            }
+
             const updatedUser = await user.save();
 
             // Log activity

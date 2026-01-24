@@ -247,9 +247,9 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <button className="w-full mt-4 py-3 bg-gray-50 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-100 transition-colors">
+                <Link to="/admin/products" className="w-full mt-4 py-3 bg-gray-50 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-100 transition-colors block text-center">
                   View Inventory
-                </button>
+                </Link>
               </div>
             </SmoothReveal>
           </div>

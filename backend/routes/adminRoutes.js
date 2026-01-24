@@ -16,4 +16,10 @@ router.route('/users/:id/status')
 router.route('/users/:id/notice')
   .post(protect, authorize(['admin']), sendUserNotice);
 
+router.route('/users/:id/role')
+  .put(protect, authorize(['admin']), require('../controllers/adminController').updateUserRole);
+
+router.route('/users/:id')
+  .delete(protect, authorize(['admin']), require('../controllers/adminController').deleteUser);
+
 module.exports = router;
