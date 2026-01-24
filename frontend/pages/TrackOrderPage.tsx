@@ -253,12 +253,14 @@ export const TrackOrderPage: React.FC = () => {
               <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80 flex items-center justify-between h-5">
                 Delivery Address
               </h3>
-              <div className="text-sm text-gray-800 leading-relaxed">
-                <div className="font-bold text-base mb-1">{foundOrder.user?.name || user?.name || 'Mark Sebastian'}</div>
-                <p>{foundOrder.shippingAddress || '(2011) Venture Heights, JP Nagar, Bangalore, Karnataka - 560078'}</p>
-                <div className="mt-2 font-medium">
-                  <span className="text-gray-600">Phone: </span>
-                  <span>{foundOrder.user?.phone || '+91 99965 12345'}</span>
+              <div className="text-sm text-gray-800 leading-relaxed border border-gray-200 rounded-[4px] p-4 bg-gray-50/50">
+                <div className="font-bold text-base mb-2">{foundOrder.user?.name || user?.name || 'Mark Sebastian'}</div>
+                <p className="text-justify mb-3 text-gray-600">
+                  {foundOrder.shippingAddress || 'undefined, Barthal Doloigaon, Moirabari, Morigaon, New Delhi, Maharashtra - 782126'}
+                </p>
+                <div className="font-medium flex flex-col gap-1">
+                  <span className="text-gray-500 text-xs uppercase font-bold">Phone Number</span>
+                  <span className="text-gray-900 font-semibold tracking-wide">{foundOrder.user?.phone || '+91 99965 12345'}</span>
                 </div>
               </div>
             </div>
