@@ -117,19 +117,20 @@ export const TrackOrderPage: React.FC = () => {
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
               {/* Stepper */}
               {!isCancelled && (
-                <div className="relative flex items-center justify-between w-full max-w-2xl">
-                  {/* Connector Line */}
-                  <div className="absolute top-[14px] left-0 w-full h-1 bg-gray-200 -z-10 rounded-full"></div>
+                <div className="relative flex items-center justify-between w-full max-w-2xl px-2">
+                  {/* Connector Line Container */}
+                  <div className="absolute top-[14px] left-0 w-full h-1 bg-gray-200 -z-10 rounded-full mx-2"></div>
+                  {/* Active Progress Line */}
                   <div
-                    className="absolute top-[14px] left-0 h-1 bg-green-600 -z-10 rounded-full transition-all duration-500"
+                    className="absolute top-[14px] left-0 h-1 bg-green-600 -z-10 rounded-full transition-all duration-500 mx-2"
                     style={{ width: `${(currentStatusIndex / (statuses.length - 1)) * 100}%` }}
                   ></div>
 
                   {statuses.map((status, idx) => {
                     const completed = idx <= currentStatusIndex;
                     return (
-                      <div key={status} className="flex flex-col items-center gap-2 bg-white px-2">
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center ${completed ? 'bg-green-600 text-white' : 'bg-gray-200 text-transparent'}`}>
+                      <div key={status} className="flex flex-col items-center gap-2 relative bg-white px-2 z-10">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 ${completed ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-300 text-transparent'}`}>
                           <CheckCircle2 size={16} className={`${completed ? 'opacity-100' : 'opacity-0'}`} />
                         </div>
                         <span className={`text-sm font-semibold ${completed ? 'text-gray-900' : 'text-gray-400'}`}>{status}</span>
@@ -189,45 +190,44 @@ export const TrackOrderPage: React.FC = () => {
             )}
           </div>
 
-          {/* 2. Product Information */}
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="font-bold text-gray-800">Product Information</span>
-              <span className="text-[#2874F0] text-xs font-bold cursor-pointer hover:underline">Need Help?</span>
+          {/* 2. Product Information & Grid */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+              <h3 className="text-lg font-bold text-gray-800">Product Information</h3>
+              <span className="text-[#2874F0] text-sm font-semibold cursor-pointer hover:underline flex items-center gap-1">
+                <HelpCircle size={16} /> Need Help?
+              </span>
             </div>
 
+            {/* Product Card Styled */}
             {(foundOrder.items || []).map((item: any, idx: number) => (
-              <div key={idx} className="flex flex-col md:flex-row gap-6 items-start pb-6 border-b border-gray-50 last:border-0 last:pb-0">
-                <div className="w-24 h-24 flex-shrink-0 border border-gray-200 p-2 rounded-[2px] bg-white">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+              <div key={idx} className="flex flex-col md:flex-row gap-6 p-6 border border-gray-200 rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-32 h-32 flex-shrink-0 p-2 border border-gray-100 rounded-[4px] flex items-center justify-center">
+                  <img src={item.image} alt={item.name} className="max-w-full max-h-full object-contain" />
                 </div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium text-gray-900 text-lg hover:text-[#2874F0] cursor-pointer line-clamp-1">{item.name}</h4>
-                      <div className="text-xs text-gray-500 flex gap-3 mt-1">
-                        {item.selectedVariants?.Color && <span>Color: {item.selectedVariants.Color}</span>}
-                        {item.selectedVariants?.Size && <span>Size: {item.selectedVariants.Size}</span>}
+
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-900 line-clamp-2">{item.name}</h4>
+                    <div className="mt-2 text-sm text-gray-500 space-y-1">
+                      <div>Seller: <span className="font-medium text-gray-900">Alpha Mobiles</span></div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-xl font-bold text-gray-900">₹{(item.price || 0).toLocaleString()}</span>
+                        <span className="bg-green-50 text-green-700 text-xs px-2 py-0.5 rounded border border-green-100">2 Offers Applied</span>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Seller: <span className="text-gray-900 font-medium">Alpha Mobiles</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-lg">₹{(item.price || 0).toLocaleString()}</div>
-                      <div className="text-xs text-gray-500">Qty: {item.quantity}</div>
+                      <div>Qty: <span className="font-medium text-gray-900">{item.quantity}</span></div>
                     </div>
                   </div>
 
-                  {/* Action Row */}
-                  <div className="flex gap-4 pt-2">
-                    <button className="text-[#2874F0] text-sm font-semibold hover:underline flex items-center gap-1">
-                      <HelpCircle size={14} /> Need help?
+                  <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-50">
+                    <button className="text-[#2874F0] font-semibold text-sm hover:underline">
+                      Need help?
                     </button>
                     {!isCancelled && foundOrder.status === 'Pending' && (
-                      <button className="text-gray-600 text-sm font-semibold hover:text-red-600 hover:underline">Cancel Order</button>
+                      <button className="text-red-500 font-semibold text-sm hover:text-red-600 hover:underline">
+                        Cancel Order
+                      </button>
                     )}
-                    <button className="text-gray-400 hover:text-gray-600"><MoreHorizontal size={20} /></button>
                   </div>
                 </div>
               </div>
