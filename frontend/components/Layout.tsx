@@ -52,7 +52,7 @@ const Header: React.FC = () => {
         <div className="hidden md:flex items-center justify-between h-16">
           <div className="text-2xl font-bold">
             <Link to="/">
-              <span className="text-[#222]">F</span><span className="text-[#f28c28]">zokart</span>
+              <span className="text-[#222]">Fzo</span><span className="text-[#f28c28]">kart</span>
             </Link>
           </div>
 
@@ -154,7 +154,7 @@ const Header: React.FC = () => {
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b border-gray-100">
             <div className="text-2xl font-bold">
-              <span className="text-gray-800">Flip</span><span className="text-[#f28c28]">zokart</span>
+              <span className="text-[#222]">Fzo</span><span className="text-[#f28c28]">kart</span>
             </div>
             <button
               onClick={() => setIsMenuOpen(false)}
