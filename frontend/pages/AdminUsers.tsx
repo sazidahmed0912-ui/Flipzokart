@@ -4,7 +4,7 @@ import {
   UserX, ShieldCheck, Mail, Phone,
   ChevronDown, MapPin, Calendar, Clock,
   Bell, User, LogOut, CheckCircle, XCircle,
-  Eye, Home
+  Eye, Home, AlertTriangle
 } from 'lucide-react';
 import { AdminSidebar } from '../components/AdminSidebar';
 import { useApp } from '../store/Context';
@@ -19,7 +19,7 @@ export const AdminUsers: React.FC = () => {
 
   // Modal States
   const [addressModalUser, setAddressModalUser] = useState<any | null>(null);
-  const [actionModal, setActionModal] = useState<{ type: 'suspend' | 'ban' | 'notice' | 'unban', user: any } | null>(null);
+  const [actionModal, setActionModal] = useState<{ type: 'suspend' | 'ban' | 'notice' | 'unban' | 'warning', user: any } | null>(null);
 
   // Advanced Suspension State
   const [suspendDuration, setSuspendDuration] = useState(3);
@@ -91,13 +91,20 @@ export const AdminUsers: React.FC = () => {
 
   const handleSendNotice = async () => {
     if (!actionModal?.user || !noticeMessage) return;
+    const isWarning = actionModal.type === 'warning';
+
     try {
-      await sendUserNotice(actionModal.user.id || actionModal.user._id, noticeMessage);
-      addToast('success', 'Notice sent successfully');
+      await sendUserNotice(
+        actionModal.user.id || actionModal.user._id,
+        noticeMessage,
+        isWarning ? 'warning' : 'adminNotice'
+      );
+
+      addToast('success', isWarning ? 'Warning sent successfully' : 'Notice sent successfully');
       setActionModal(null);
       setNoticeMessage('');
     } catch (error) {
-      addToast('error', 'Failed to send notice');
+      addToast('error', 'Failed to send message');
     }
   };
 
@@ -235,6 +242,10 @@ export const AdminUsers: React.FC = () => {
                               <CheckCircle size={14} /> Unban / Reactivate
                             </button>
                             <hr className="border-gray-100 my-1" />
+                            {/* WARNING BUTTON (Inserted above Suspend) */}
+                            <button onClick={() => { setActionModal({ type: 'warning', user }); setOpenDropdownId(null); }} className="w-full text-left px-4 py-2 text-xs font-semibold text-yellow-600 hover:bg-yellow-50 flex items-center gap-2">
+                              <AlertTriangle size={14} /> Warning
+                            </button>
                             <button onClick={() => { setActionModal({ type: 'suspend', user }); setOpenDropdownId(null); }} className="w-full text-left px-4 py-2 text-xs font-semibold text-orange-600 hover:bg-orange-50 flex items-center gap-2">
                               <Clock size={14} /> Suspend
                             </button>
@@ -321,11 +332,24 @@ export const AdminUsers: React.FC = () => {
                 </div>
               )}
 
-              {actionModal.type === 'notice' && (
+              {/* Notice OR Warning */}
+              {(actionModal.type === 'notice' || actionModal.type === 'warning') && (
                 <div className="space-y-4">
-                  <label className="block text-sm font-semibold text-gray-700">Notice Message</label>
-                  <textarea value={noticeMessage} onChange={(e) => setNoticeMessage(e.target.value)} className="w-full p-2 border rounded-lg h-32 bg-gray-50" placeholder="Write your emergency notice here..." />
-                  <button onClick={handleSendNotice} className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700">Send Notice</button>
+                  <label className="block text-sm font-semibold text-gray-700">
+                    {actionModal.type === 'warning' ? 'Warning Message' : 'Notice Message'}
+                  </label>
+                  <textarea
+                    value={noticeMessage}
+                    onChange={(e) => setNoticeMessage(e.target.value)}
+                    className={`w-full p-2 border rounded-lg h-32 bg-gray-50 ${actionModal.type === 'warning' ? 'border-yellow-200 bg-yellow-50' : ''}`}
+                    placeholder={actionModal.type === 'warning' ? "Enter warning details..." : "Write your notice here..."}
+                  />
+                  <button
+                    onClick={handleSendNotice}
+                    className={`w-full py-2 rounded-lg font-bold text-white ${actionModal.type === 'warning' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+                  >
+                    {actionModal.type === 'warning' ? 'Send Warning' : 'Send Notice'}
+                  </button>
                 </div>
               )}
             </div>

@@ -170,6 +170,7 @@ const sendUserNotice = async (req, res) => {
     const io = req.app.get('socketio');
     if (io) {
       io.to(user._id.toString()).emit('newNotification', notification);
+      io.to(user._id.toString()).emit('notification', { message, type: type || 'info' }); // For Toast
       io.to(user._id.toString()).emit('adminNotice', { message, type: 'emergency' }); // Special event for emergency popup
     }
 

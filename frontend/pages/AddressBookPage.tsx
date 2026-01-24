@@ -12,25 +12,40 @@ import {
     Plus,
     Trash2,
     Home,
-    Briefcase
+    Briefcase,
+    Tag,
+    HelpCircle
 } from "lucide-react";
 import { SmoothReveal } from "../components/SmoothReveal";
 import { useApp } from "../store/Context";
 import API from "../services/api";
+import { Address } from '../types';
+
+// Importing Checkout Components for EXACT MATCH
+import AddressCard from './CheckoutPage/components/AddressCard';
+import AddressForm from './CheckoutPage/components/AddressForm';
+import Modal from './CheckoutPage/components/Modal';
+import './CheckoutPage/components/Modal.css';
 
 const AddressBookPage: React.FC = () => {
     const navigate = useNavigate();
     const { user, logout } = useApp();
-    const [addresses, setAddresses] = useState<any[]>([]);
+    const [addresses, setAddresses] = useState<Address[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // UI State for Modal
+    const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
+    const [addressToEdit, setAddressToEdit] = useState<Address | null>(null);
 
     const sidebarItems = [
         { name: "My Profile", path: "/profile", icon: User },
         { name: "Orders", path: "/orders", icon: Package },
         { name: "Wishlist", path: "/wishlist", icon: Heart },
+        { name: "Coupons", path: "/coupons", icon: Tag },
         { name: "Sell on Flipzokart", path: "/sell", icon: Store },
         { name: "Account Security", path: "/account-security", icon: ShieldCheck },
         { name: "Address Book", path: "/address-book", icon: MapPin },
+        { name: "Help Center", path: "/help-center", icon: HelpCircle },
     ];
 
     const handleNavigation = (path: string) => {
@@ -45,7 +60,9 @@ const AddressBookPage: React.FC = () => {
     const fetchAddresses = async () => {
         try {
             const { data } = await API.get('/api/user/address');
-            setAddresses(data.addresses || []);
+            const list = data.addresses || [];
+            // Ensure ID compatibility
+            setAddresses(list.map((a: any) => ({ ...a, id: a._id, name: a.fullName || a.name })));
         } catch (error) {
             console.error("Failed to fetch addresses", error);
         } finally {
@@ -57,21 +74,65 @@ const AddressBookPage: React.FC = () => {
         if (user) {
             fetchAddresses();
         }
-        // Real-time sync: Fetch intermittently
+        // Polling if needed, but manual updates (save/delete) should suffice for responsiveness
+        // Keeping it for sync across tabs
         const interval = setInterval(fetchAddresses, 5000);
         return () => clearInterval(interval);
     }, [user]);
 
-    const handleDelete = async (id: string) => {
+    // Handle Actions (Matching Checkout interactions)
+
+    const handleAddNewAddressClick = () => {
+        setAddressToEdit(null); // Clear for new
+        setIsAddressFormOpen(true);
+    };
+
+    const handleEditAddress = (address: Address) => {
+        setAddressToEdit(address);
+        setIsAddressFormOpen(true);
+    };
+
+    const handleDeleteAddress = async (id: number | string) => {
         if (window.confirm("Delete this address?")) {
             try {
                 await API.delete(`/api/user/address/${id}`);
-                setAddresses(addresses.filter(a => a._id !== id));
+                setAddresses(prev => prev.filter(a => a.id !== id));
             } catch (error) {
                 console.error("Delete failed");
             }
         }
     }
+
+    const handleSaveAddress = async (address: Address) => {
+        setLoading(true);
+        try {
+            if (addressToEdit) {
+                // UPDATE
+                await API.put(`/api/user/address/${address.id}`, address);
+            } else {
+                // CREATE
+                // Ensure we don't send a temp ID if backend generates it, but Form generates ID.
+                // Backend ignores ID usually on create.
+                await API.post('/api/user/address', address);
+            }
+            await fetchAddresses(); // Refresh list to get clean IDs etc
+            setIsAddressFormOpen(false);
+            setAddressToEdit(null);
+        } catch (error) {
+            console.error("Save failed", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const handleCancel = () => {
+        setIsAddressFormOpen(false);
+        setAddressToEdit(null);
+    };
+
+    // Dummy prop for AddressCard since we are not selecting for delivery here
+    const handleSelectDummy = () => { };
+    const handleDeliverHereDummy = () => { };
 
     return (
         <div className="bg-[#F5F7FA] min-h-screen font-sans text-[#1F2937]">
@@ -132,66 +193,52 @@ const AddressBookPage: React.FC = () => {
                 {/* ──────── MAIN CONTENT ──────── */}
                 <div className="flex-1 space-y-6">
                     <SmoothReveal direction="down" delay={100}>
-                        <h1 className="text-2xl font-bold text-[#1F2937]">Manage Addresses</h1>
+                        <div className="flex items-center justify-between">
+                            <h1 className="text-2xl font-bold text-[#1F2937]">Manage Addresses</h1>
+                        </div>
                     </SmoothReveal>
 
                     <SmoothReveal direction="up" delay={200}>
-                        <div className="bg-white p-6 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] mb-6 cursor-pointer hover:bg-blue-50 transition-colors border border-dashed border-[#2874F0] flex items-center gap-3 text-[#2874F0] font-bold"
-                            onClick={() => navigate('/add-address')}
+                        {/* Add New Address Button (Trigger Modal) */}
+                        <div className="bg-white p-6 rounded-[2px] shadow-sm mb-6 cursor-pointer hover:shadow-md transition-shadow border border-gray-200 flex items-center gap-3 text-[#2874F0] font-bold"
+                            onClick={handleAddNewAddressClick}
                         >
                             <Plus size={20} />
                             ADD A NEW ADDRESS
                         </div>
 
+                        {/* List utilizing Checkout's AddressCard */}
                         <div className="space-y-4">
-                            {loading ? (
+                            {loading && addresses.length === 0 ? (
                                 <div className="text-center py-8">Loading addresses...</div>
                             ) : addresses.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">No addresses saved. Add one now!</div>
                             ) : (
                                 addresses.map((addr) => (
-                                    <div key={addr._id} className="bg-white p-6 rounded-[2px] shadow-sm border border-gray-200 flex justify-between items-start hover:shadow-md transition-shadow">
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-3">
-                                                <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-[2px] text-[11px] font-bold uppercase tracking-wide">
-                                                    {addr.type || 'HOME'}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <h3 className="font-semibold text-[15px] text-[#212121]">
-                                                    {addr.fullName || addr.name}
-                                                </h3>
-                                                <span className="text-[15px] font-semibold text-[#212121]">{addr.phone}</span>
-                                            </div>
-                                            <p className="text-[14px] text-[#212121] leading-relaxed max-w-lg">
-                                                {addr.address}, {addr.city}, {addr.state} - <span className="font-semibold">{addr.pincode}</span>
-                                            </p>
-                                        </div>
-
-                                        {/* Actions (Vertical Dots or Explicit Buttons) */}
-                                        <div className="flex items-start gap-0 relative">
-                                            {/* Explicit Edit Trigger as requested */}
-                                            <div className="flex flex-col gap-2">
-                                                <button
-                                                    onClick={() => navigate('/add-address', { state: { addressToEdit: addr } })}
-                                                    className="p-2 text-[#2874F0] hover:bg-blue-50 rounded-full transition-colors font-medium text-sm flex items-center gap-1"
-                                                >
-                                                    {/* <Edit2 size={16} /> */} Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(addr._id)}
-                                                    className="p-2 text-gray-400 hover:text-red-500 rounded-full transition-colors flex items-center justify-center"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <AddressCard
+                                        key={addr.id}
+                                        address={addr}
+                                        isSelected={true} // Always show actions
+                                        onSelect={handleSelectDummy} // No-op for selection in manager
+                                        onDelete={handleDeleteAddress}
+                                        onEdit={handleEditAddress}
+                                        onDeliverHere={handleDeliverHereDummy}
+                                        isLoading={false}
+                                    />
                                 ))
                             )}
                         </div>
                     </SmoothReveal>
+
+                    {/* Modal with Checkout's AddressForm */}
+                    <Modal isOpen={isAddressFormOpen} onClose={handleCancel}>
+                        <AddressForm
+                            addressToEdit={addressToEdit}
+                            onSave={handleSaveAddress}
+                            onCancel={handleCancel}
+                        />
+                    </Modal>
+
                 </div>
             </div>
         </div>

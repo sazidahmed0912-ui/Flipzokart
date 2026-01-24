@@ -12,11 +12,12 @@ import {
   LogOut,
   CheckCircle2,
   Calendar,
-  Lock,
   Smartphone,
   Mail,
   Edit2,
-  Info
+  Info,
+  Tag,
+  HelpCircle
 } from "lucide-react";
 // import Modal from "../components/Modal"; // Removed to implement inline Card Form Mode
 import "./ProfilePage.css";
@@ -96,9 +97,11 @@ const ProfilePage = () => {
     { name: "My Profile", path: "/profile", icon: User },
     { name: "Orders", path: "/orders", icon: Package },
     { name: "Wishlist", path: "/wishlist", icon: Heart },
+    { name: "Coupons", path: "/coupons", icon: Tag },
     { name: "Sell on Flipzokart", path: "/sell", icon: Store },
     { name: "Account Security", path: "/account-security", icon: ShieldCheck },
     { name: "Address Book", path: "/address-book", icon: MapPin },
+    { name: "Help Center", path: "/help-center", icon: HelpCircle },
   ];
 
   // Helper for Member Since Format: "17/Jan/2026"

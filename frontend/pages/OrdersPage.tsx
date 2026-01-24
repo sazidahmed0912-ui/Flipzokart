@@ -13,7 +13,9 @@ import {
     Clock,
     CheckCircle,
     XCircle,
-    Truck
+    Truck,
+    Tag,
+    HelpCircle
 } from "lucide-react";
 import { SmoothReveal } from "../components/SmoothReveal";
 import { useApp } from "../store/Context";
@@ -29,9 +31,11 @@ const OrdersPage = () => {
         { name: "My Profile", path: "/profile", icon: User },
         { name: "Orders", path: "/orders", icon: Package },
         { name: "Wishlist", path: "/wishlist", icon: Heart },
+        { name: "Coupons", path: "/coupons", icon: Tag },
         { name: "Sell on Flipzokart", path: "/sell", icon: Store },
         { name: "Account Security", path: "/account-security", icon: ShieldCheck },
         { name: "Address Book", path: "/address-book", icon: MapPin },
+        { name: "Help Center", path: "/help-center", icon: HelpCircle },
     ];
 
     const handleNavigation = (path: string) => {
