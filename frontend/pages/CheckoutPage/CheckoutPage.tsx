@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Loader } from 'lucide-react';
-import { calculateShipping } from '../../services/api';
+import API, { calculateShipping } from '../../services/api';
 import { useApp } from '../../store/Context';
 import { useToast } from '../../components/toast';
 import { Address } from '../../types';
@@ -11,66 +11,98 @@ import Modal from './components/Modal';
 import './components/Modal.css';
 import './CheckoutPage.css';
 
-const initialAddresses: Address[] = [];
-
 const CheckoutPage = () => {
-    const { cart, selectedAddress: contextAddress, setSelectedAddress: setContextAddress } = useApp();
+    const { cart, selectedAddress: contextAddress, setSelectedAddress: setContextAddress, user } = useApp();
     const { addToast } = useToast();
     const navigate = useNavigate();
 
-    const [addresses, setAddresses] = useState<Address[]>(() => {
-        const saved = localStorage.getItem('checkout_addresses');
-        return saved ? JSON.parse(saved) : initialAddresses;
-    });
-    const [selectedAddressId, setSelectedAddressId] = useState<number | null>(contextAddress?.id ?? null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [addresses, setAddresses] = useState<Address[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<string | number | null>(
+        contextAddress ? (contextAddress._id || contextAddress.id || null) : null
+    );
+    const [isLoading, setIsLoading] = useState(true);
     const [isPlaceOrderLoading, setIsPlaceOrderLoading] = useState(false);
     const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
     const [addressToEdit, setAddressToEdit] = useState<Address | null>(null);
     const [deliveryCharges, setDeliveryCharges] = useState(0);
 
-    // Save to local storage whenever addresses change
+    // Fetch addresses from backend on mount
     React.useEffect(() => {
-        localStorage.setItem('checkout_addresses', JSON.stringify(addresses));
-    }, [addresses]);
+        const fetchAddresses = async () => {
+            if (!user) {
+                setIsLoading(false);
+                return;
+            }
+            try {
+                const { data } = await API.get('/api/user/address');
+                const userAddresses = data.addresses || [];
+                // Map backend addresses to frontend Address type
+                const formatted: Address[] = userAddresses.map((a: any) => ({
+                    ...a,
+                    id: a._id, // Map _id to id
+                    name: a.fullName || a.name // Ensure name property exists
+                }));
+                setAddresses(formatted);
+
+                // If no selected address but we have addresses, select the first one
+                if (!selectedAddressId && formatted.length > 0) {
+                    const firstId = formatted[0].id;
+                    setSelectedAddressId(firstId);
+                    // We need to call handleSelectAddress but it depends on state. 
+                    // Let's set context directly here or effectively select it.
+                    setContextAddress(formatted[0]);
+
+                    if (formatted[0].pincode) {
+                        calculateShippingCost(formatted[0].pincode);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch addresses", error);
+                addToast('error', "Failed to load addresses");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchAddresses();
+    }, [user]);
+
+    const calculateShippingCost = async (pincode: string) => {
+        try {
+            const { data } = await calculateShipping(pincode);
+            setDeliveryCharges(data.shippingCost);
+        } catch (error) {
+            console.error("Failed to calculate shipping:", error);
+            setDeliveryCharges(50);
+        }
+    }
 
     const subtotal = cart.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 1)), 0);
-    const discount = 0; // Placeholder
+    const discount = 0;
     const totalPayable = subtotal + deliveryCharges - discount;
 
-    const handleSelectAddress = async (id: number) => {
+    const handleSelectAddress = async (id: string | number) => {
         setSelectedAddressId(id);
         const selected = addresses.find(addr => addr.id === id);
-        if (selected && selected.pincode) {
-            try {
-                const { data } = await calculateShipping(selected.pincode);
-                setDeliveryCharges(data.shippingCost);
-            } catch (error) {
-                console.error("Failed to calculate shipping:", error);
-                setDeliveryCharges(50); // Set a default/fallback shipping cost
+
+        if (selected) {
+            setContextAddress(selected);
+            if (selected.pincode) {
+                calculateShippingCost(selected.pincode);
             }
         }
     };
 
     const handleDeliverHere = () => {
-        if (selectedAddressId === null) {
+        if (!selectedAddressId) {
             addToast('warning', 'Please select or add a delivery address first!');
             return;
         }
 
-        setIsLoading(true);
-
         const addressToSave = addresses.find(addr => addr.id === selectedAddressId);
-
         if (addressToSave) {
-            // Simulate API call
-            setTimeout(() => {
-                setContextAddress(addressToSave);
-                setIsLoading(false);
-            }, 1000);
-        } else {
-            addToast('warning', 'Selected address not found.');
-            setIsLoading(false);
+            setContextAddress(addressToSave);
+            addToast('success', 'Address selected!');
         }
     };
 
@@ -84,26 +116,56 @@ const CheckoutPage = () => {
         setIsAddressFormOpen(true);
     };
 
-    const handleDeleteAddress = (id: number) => {
+    const handleDeleteAddress = async (id: string | number) => {
         if (window.confirm('Are you sure you want to delete this address?')) {
-            // Simulate API Call
-            setAddresses(prevAddresses => prevAddresses.filter(address => address.id !== id));
-            if (selectedAddressId === id) {
-                setSelectedAddressId(null);
-                setContextAddress(null);
+            try {
+                // Determine if we are deleting by mongo _id (string) or local timestamp id (number - if any)
+                // Backend expects _id string. If it's a number, it might be a guest address not supported yet.
+                await API.delete(`/api/user/address/${id}`);
+                setAddresses(prev => prev.filter(addr => addr.id !== id));
+                addToast('success', "Address deleted");
+                if (selectedAddressId === id) {
+                    setSelectedAddressId(null);
+                    setContextAddress(null);
+                }
+            } catch (e) {
+                addToast('error', "Failed to delete address");
             }
         }
     };
 
-    const handleSaveAddress = (address: Address) => {
-        // Simulate API Call
-        if (addressToEdit) {
-            setAddresses(prevAddresses => prevAddresses.map(addr => addr.id === address.id ? address : addr));
-        } else {
-            setAddresses(prevAddresses => [...prevAddresses, { ...address, id: Date.now() }]);
+    const handleSaveAddress = async (address: Partial<Address>) => {
+        try {
+            // AddressForm sends data. We post to backend.
+            const { data } = await API.post('/api/user/address', address);
+
+            // Backend returns updated addresses list or the new address? 
+            // userController saveAddress returns { success: true, addresses: [...] }
+
+            const updatedRaw = data.addresses || [];
+            const updatedAddresses: Address[] = updatedRaw.map((a: any) => ({
+                ...a,
+                id: a._id,
+                name: a.fullName || a.name
+            }));
+
+            setAddresses(updatedAddresses);
+            addToast('success', "Address saved successfully");
+            setIsAddressFormOpen(false);
+            setAddressToEdit(null);
+
+            // Select the new one (last in array)
+            const newAddr = updatedAddresses[updatedAddresses.length - 1];
+            if (newAddr) {
+                setSelectedAddressId(newAddr.id);
+                setContextAddress(newAddr);
+                if (newAddr.pincode) calculateShippingCost(newAddr.pincode);
+            }
+
+        } catch (e) {
+            console.error(e);
+            addToast('error', "Failed to save address");
         }
-        setIsAddressFormOpen(false);
-        setAddressToEdit(null);
     };
 
     const handleCancel = () => {
@@ -116,10 +178,7 @@ const CheckoutPage = () => {
             addToast('warning', 'Please select or add a delivery address first!');
             return;
         }
-
         setIsPlaceOrderLoading(true);
-
-        // Simulate processing
         setTimeout(() => {
             setIsPlaceOrderLoading(false);
             navigate('/payment');
@@ -142,14 +201,15 @@ const CheckoutPage = () => {
                 <div className="address-section">
                     <h2>Select Delivery Address</h2>
                     <div className="address-list">
-                        {addresses.map((addr) => (
+                        {isLoading && <div className="p-4">Loading addresses...</div>}
+                        {!isLoading && addresses.map((addr) => (
                             <AddressCard
                                 key={addr.id}
                                 address={addr}
                                 isSelected={selectedAddressId === addr.id}
-                                onSelect={handleSelectAddress}
-                                onDelete={handleDeleteAddress}
-                                onEdit={handleEditAddress}
+                                onSelect={() => handleSelectAddress(addr.id)}
+                                onDelete={() => handleDeleteAddress(addr.id)}
+                                onEdit={() => handleEditAddress(addr)}
                                 onDeliverHere={handleDeliverHere}
                                 isLoading={isLoading && selectedAddressId === addr.id}
                             />

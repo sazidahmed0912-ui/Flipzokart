@@ -50,9 +50,12 @@ export interface User {
 }
 
 export interface Address {
-  id: number;
-  name: string;
+  id: string | number;
+  _id?: string;
+  name?: string; // made optional as some components might use fullName
+  fullName?: string; // Backend uses fullName
   phone: string;
+  email?: string;
   address: string;
   city: string;
   state: string;
