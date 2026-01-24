@@ -53,13 +53,6 @@ const deleteNotification = async (req, res) => {
   }
 };
 
-module.exports = {
-  getNotifications,
-  markAsRead,
-  deleteNotification,
-  deleteAllNotifications,
-};
-
 // @desc    Delete all notifications
 // @route   DELETE /api/notifications
 // @access  Private
@@ -72,3 +65,12 @@ const deleteAllNotifications = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+module.exports = {
+  getNotifications,
+  markAsRead,
+  deleteNotification,
+  deleteAllNotifications,
+};
+
+
