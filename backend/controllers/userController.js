@@ -150,10 +150,60 @@ const appealUser = async (req, res) => {
     }
 };
 
+// @desc    Get user addresses
+// @route   GET /api/user/address
+// @access  Private
+const getAddresses = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        res.json({ success: true, addresses: user.addresses || [] });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Save new address
+// @route   POST /api/user/address
+// @access  Private
+const saveAddress = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const newAddress = req.body;
+        user.addresses.push(newAddress);
+        await user.save();
+
+        res.json({ success: true, addresses: user.addresses });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Delete address
+// @route   DELETE /api/user/address/:id
+// @access  Private
+const deleteAddress = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        user.addresses = user.addresses.filter(addr => addr._id.toString() !== req.params.id);
+        await user.save();
+
+        res.json({ success: true, addresses: user.addresses });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     updateProfile,
     changePassword,
     getActivities,
     getDeviceHistory,
-    appealUser
+    appealUser,
+    getAddresses,
+    saveAddress,
+    deleteAddress
 };

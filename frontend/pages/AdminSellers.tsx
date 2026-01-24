@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-    Search, Eye, Edit2, Ban, CheckCircle, ChevronDown, Bell, User, LogOut
+    Search, Eye, Edit2, Ban, CheckCircle, ChevronDown, Bell, User, LogOut, UserPlus, Trash2, XCircle
 } from 'lucide-react';
 import API from '../services/api';
 import { useApp } from '../store/Context';
@@ -14,6 +14,7 @@ interface Seller {
     products: number;
     status: 'Active' | 'Pending' | 'Suspended';
     avatar?: string;
+    role?: string;
 }
 
 export const AdminSellers: React.FC = () => {
@@ -26,48 +27,48 @@ export const AdminSellers: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const sellersPerPage = 10;
 
+    // Toggle for Seller Requests
+    const [showRequests, setShowRequests] = useState(false);
+
+    // Actions State
+    const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+    const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+    // Close dropdown on click outside
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        const handleClickOutside = () => setOpenDropdownId(null);
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
 
-        const loadSellers = async () => {
-            try {
-                // Fetch users from API (assuming admin/users returns all users)
-                // Filter client-side or assume backend filters if we add query
-                // For now, fetching all and filtering for 'seller' role or just showing all users
-                // as 'potential sellers' if role differentiation isn't strict yet.
-                // However, user asked for "Seller section", so ideally we filter by role="seller".
-                // Since I just added "seller" role to backend, existing users are "user" or "admin".
-                // I will display ALL users for now so the table isn't empty, or filter if possible.
-                // Let's fetch all users.
-                const { data } = await API.get('/api/admin/users');
+    const fetchSellers = async () => {
+        try {
+            const { data } = await API.get('/api/admin/users');
+            const usersList = data.users || data;
 
-                // Map API user data to Seller interface
-                // Assuming API returns { users: [...] } or just [...]
-                const usersList = data.users || data;
+            const mappedSellers: Seller[] = usersList.map((u: any) => ({
+                id: u._id,
+                name: u.name,
+                email: u.email,
+                products: u.products?.length || 0,
+                status: u.status || 'Active',
+                avatar: u.avatar,
+                role: u.role
+            }));
 
-                const mappedSellers: Seller[] = usersList.map((u: any) => ({
-                    id: u._id,
-                    name: u.name,
-                    email: u.email,
-                    products: u.products?.length || 0, // Assuming user object might have product count or we default 0
-                    status: u.status || 'Active',
-                    avatar: u.avatar
-                }));
+            setSellers(mappedSellers);
+        } catch (error) {
+            console.error("Failed to fetch sellers", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-                setSellers(mappedSellers);
-            } catch (error) {
-                console.error("Failed to fetch sellers", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadSellers();
-        // interval = setInterval(loadSellers, 5000); // Polling for real-time
-
-        return () => {
-            // if (interval) clearInterval(interval);
-        };
+    useEffect(() => {
+        fetchSellers();
+        const interval = setInterval(fetchSellers, 5000); // 5s Polling
+        return () => clearInterval(interval);
     }, []);
 
     const getStatusColor = (status: Seller['status']) => {
@@ -78,11 +79,41 @@ export const AdminSellers: React.FC = () => {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        if (window.confirm("Are you sure you want to delete this seller? This action cannot be undone.")) {
+            try {
+                await API.delete(`/api/admin/users/${id}`);
+                setSellers(prev => prev.filter(s => s.id !== id));
+            } catch (error) {
+                console.error("Delete failed", error);
+                alert("Failed to delete seller");
+            }
+        }
+    };
+
+    const handleView = (seller: Seller) => {
+        setSelectedSeller(seller);
+        setIsViewModalOpen(true);
+    }
+
     const filteredSellers = sellers.filter(s => {
         const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             s.email.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === 'All' || s.status === statusFilter;
-        return matchesSearch && matchesStatus;
+
+        // Filter Logic:
+        // If showRequests is TRUE, show only 'pending_seller' or 'Pending' status
+        // If showRequests is FALSE, show 'seller' role or everyone else (for now showing all non-pending if flexible)
+        // User asked for "Seller Requests" button to show requests.
+        if (showRequests) {
+            return matchesSearch && (s.role === 'pending_seller' || s.status === 'Pending');
+        }
+
+        // Default View: Show Active Sellers (role 'seller' or 'admin' or just everything except pending)
+        // For demo, if role system isn't strict, we might show all. But let's approximate:
+        // If backend roles are working: return s.role === 'seller';
+        // If not: return matchesSearch && matchesStatus && s.role !== 'pending_seller';
+        return matchesSearch && matchesStatus && s.role !== 'pending_seller';
     });
 
     const totalPages = Math.ceil(filteredSellers.length / sellersPerPage);
@@ -156,18 +187,22 @@ export const AdminSellers: React.FC = () => {
                             onChange={(e) => setStatusFilter(e.target.value as any)}
                             className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2874F0]/20 text-sm font-medium bg-white"
                         >
-                            <option value="All">All</option>
+                            <option value="All">All Status</option>
                             <option value="Active">Active</option>
                             <option value="Pending">Pending</option>
                             <option value="Suspended">Suspended</option>
                         </select>
 
-                        <button className="bg-[#F9C74F] text-gray-800 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-[#f0b52e] transition-all shadow-sm">
-                            Filter
+                        {/* NEW: Seller Requests Button (Toggle) */}
+                        <button
+                            onClick={() => setShowRequests(!showRequests)}
+                            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2 shadow-sm ${showRequests ? 'bg-blue-600 text-white' : 'bg-[#F9C74F] text-gray-800 hover:bg-[#f0b52e]'}`}
+                        >
+                            <Bell size={16} /> {showRequests ? 'Show All Sellers' : 'Seller Requests'}
                         </button>
 
                         <button className="bg-[#F9C74F] text-gray-800 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-[#f0b52e] transition-all flex items-center gap-2 shadow-sm">
-                            + Add Seller
+                            <UserPlus size={16} /> Add Seller
                         </button>
                     </div>
 
@@ -184,53 +219,87 @@ export const AdminSellers: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
-                                    {currentSellers.map((seller, idx) => (
-                                        <tr key={seller.id} className={`transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2874F0] to-[#5a9bff] flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                                                        {seller.name.charAt(0)}
-                                                    </div>
-                                                    <span className="font-semibold text-gray-800 text-sm">{seller.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-600 text-sm">{seller.email}</td>
-                                            <td className="px-6 py-4 font-semibold text-gray-800 text-sm">{seller.products}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(seller.status)}`}>
-                                                    {seller.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="relative inline-block group">
-                                                    <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                                                        <Eye size={16} /> View
-                                                        <ChevronDown size={14} />
-                                                    </button>
-
-                                                    <div className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden hidden group-hover:block z-50">
-                                                        <button className="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                                                            <Eye size={14} /> View
-                                                        </button>
-                                                        <button className="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                                                            <Edit2 size={14} /> Edit
-                                                        </button>
-                                                        <button className="w-full text-left px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2">
-                                                            <Ban size={14} /> Suspend
-                                                        </button>
-                                                    </div>
-                                                </div>
+                                    {currentSellers.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} className="text-center py-8 text-gray-500">
+                                                {showRequests ? "No pending seller requests." : "No sellers found."}
                                             </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        currentSellers.map((seller, idx) => (
+                                            <tr key={seller.id} className={`transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2874F0] to-[#5a9bff] flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                                            {seller.name.charAt(0)}
+                                                        </div>
+                                                        <span className="font-semibold text-gray-800 text-sm">{seller.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-gray-600 text-sm">{seller.email}</td>
+                                                <td className="px-6 py-4 font-semibold text-gray-800 text-sm">{seller.products}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(seller.status)}`}>
+                                                        {seller.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <div className="relative inline-block">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setOpenDropdownId(openDropdownId === seller.id ? null : seller.id);
+                                                            }}
+                                                            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                                                        >
+                                                            Actions <ChevronDown size={14} />
+                                                        </button>
+
+                                                        {openDropdownId === seller.id && (
+                                                            <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                                                                <button
+                                                                    onClick={() => handleView(seller)}
+                                                                    className="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                                                >
+                                                                    <Eye size={14} /> View Details
+                                                                </button>
+
+                                                                {showRequests ? (
+                                                                    <button className="w-full text-left px-4 py-2.5 text-sm font-semibold text-green-600 hover:bg-green-50 flex items-center gap-2">
+                                                                        <CheckCircle size={14} /> Approve Request
+                                                                    </button>
+                                                                ) : (
+                                                                    <button className="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                                                        <Edit2 size={14} /> Edit Profile
+                                                                    </button>
+                                                                )}
+
+                                                                <button className="w-full text-left px-4 py-2.5 text-sm font-semibold text-orange-600 hover:bg-orange-50 flex items-center gap-2">
+                                                                    <Ban size={14} /> Suspend
+                                                                </button>
+
+                                                                <button
+                                                                    onClick={() => handleDelete(seller.id)}
+                                                                    className="w-full text-left px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-50"
+                                                                >
+                                                                    <Trash2 size={14} /> Delete Seller
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
+                    {/* Pagination Controls */}
                     <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-600">
-                            Showing {indexOfFirstSeller + 1} to {Math.min(indexOfLastSeller, filteredSellers.length)} of {filteredSellers.length} sellers
+                            Showing {Math.min(indexOfFirstSeller + 1, filteredSellers.length)} to {Math.min(indexOfLastSeller, filteredSellers.length)} of {filteredSellers.length} sellers
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -242,18 +311,8 @@ export const AdminSellers: React.FC = () => {
                                 Previous
                             </button>
 
-                            {Array.from({ length: Math.min(8, totalPages) }, (_, i) => i + 1).map((page) => (
-                                <button
-                                    key={page}
-                                    onClick={() => setCurrentPage(page)}
-                                    className={`w-10 h-10 rounded-lg font-semibold text-sm transition-colors ${currentPage === page
-                                        ? 'bg-[#2874F0] text-white'
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                        }`}
-                                >
-                                    {page}
-                                </button>
-                            ))}
+                            {/* Simple Page Numbers */}
+                            <span className="text-sm font-bold text-gray-800 px-2">Page {currentPage} of {Math.max(1, totalPages)}</span>
 
                             <button
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
@@ -266,6 +325,55 @@ export const AdminSellers: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* View Modal */}
+            {isViewModalOpen && selectedSeller && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gray-50">
+                            <h2 className="text-xl font-bold text-gray-800">Seller Details</h2>
+                            <button onClick={() => setIsViewModalOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                <XCircle size={24} className="text-gray-500" />
+                            </button>
+                        </div>
+                        <div className="p-8 space-y-6">
+                            <div className="flex flex-col items-center mb-6">
+                                <div className="w-20 h-20 rounded-full bg-[#2874F0] flex items-center justify-center text-white text-3xl font-bold mb-4">
+                                    {selectedSeller.name.charAt(0)}
+                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900">{selectedSeller.name}</h3>
+                                <p className="text-gray-500">{selectedSeller.email}</p>
+                                <span className={`mt-2 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(selectedSeller.status)}`}>
+                                    {selectedSeller.status}
+                                </span>
+                            </div>
+
+                            <div className="bg-gray-50 p-4 rounded-xl space-y-3 border border-gray-100">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600 font-medium">Seller ID</span>
+                                    <span className="text-gray-900 font-mono text-xs">{selectedSeller.id}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600 font-medium">Total Products</span>
+                                    <span className="text-gray-900 font-bold">{selectedSeller.products}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600 font-medium">Role</span>
+                                    <span className="text-gray-900 font-bold capitalize">{selectedSeller.role || 'User'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                            <button onClick={() => setIsViewModalOpen(false)} className="px-6 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">
+                                Close
+                            </button>
+                            <button onClick={() => { setIsViewModalOpen(false); handleDelete(selectedSeller.id); }} className="px-6 py-2.5 bg-red-100 text-red-600 font-bold hover:bg-red-200 rounded-lg transition-colors">
+                                Delete Seller
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -54,6 +54,18 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    addresses: [
+      {
+        fullName: String,
+        phone: String,
+        email: String,
+        address: String,
+        city: String,
+        state: String,
+        pincode: String,
+        type: { type: String, enum: ["Home", "Work", "Other"], default: "Home" },
+      }
+    ],
   },
   { timestamps: true }
 );

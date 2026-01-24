@@ -36,6 +36,8 @@ const ContactUsPage = lazy(() => import("./pages/ContactUsPage").then(module => 
 const TrackOrderPage = lazy(() => import("./pages/TrackOrderPage").then(module => ({ default: module.TrackOrderPage })));
 const AddNewAddress = lazy(() => import("./components/AddNewAddress"));
 const SellOnFlipzokart = lazy(() => import("./pages/SellOnFlipzokart"));
+const OrdersPage = lazy(() => import("./pages/OrdersPage"));
+const AddressBookPage = lazy(() => import("./pages/AddressBookPage"));
 import { BannedPage } from "./pages/BannedPage";
 
 const BannedPageWrapper = () => (
@@ -197,6 +199,22 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
               }
             />
 
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute>
+                  <OrdersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/address-book"
+              element={
+                <ProtectedRoute>
+                  <AddressBookPage />
+                </ProtectedRoute>
+              }
+            />
             {/* User Protected */}
             <Route
               path="/profile"
