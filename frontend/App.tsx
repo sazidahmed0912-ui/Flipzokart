@@ -34,6 +34,8 @@ const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard").then(mo
 const AboutUsPage = lazy(() => import("./pages/AboutUsPage").then(module => ({ default: module.AboutUsPage })));
 const ContactUsPage = lazy(() => import("./pages/ContactUsPage").then(module => ({ default: module.ContactUsPage })));
 const TrackOrderPage = lazy(() => import("./pages/TrackOrderPage").then(module => ({ default: module.TrackOrderPage })));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage").then(module => ({ default: module.PrivacyPolicyPage })));
+const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage").then(module => ({ default: module.TermsOfServicePage })));
 const AddNewAddress = lazy(() => import("./components/AddNewAddress"));
 const SellOnFlipzokart = lazy(() => import("./pages/SellOnFlipzokart"));
 const OrdersPage = lazy(() => import("./pages/OrdersPage"));
@@ -172,6 +174,8 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
             <Route path="/about" element={<AboutUsPage />} />
             <Route path="/about" element={<AboutUsPage />} />
             <Route path="/contact" element={<ContactUsPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms-of-service" element={<TermsOfServicePage />} />
             <Route path="/design/loading" element={<CircularGlassSpinner />} />
 
 
