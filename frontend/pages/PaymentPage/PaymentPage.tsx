@@ -225,12 +225,7 @@ const PaymentPage: React.FC = () => {
   return (
     <div className="payment-page-container">
       <header className="payment-header">
-        <div className="header-top">
-          <div className="logo">Flipzokart</div>
-          <div className="secure-checkout-badge">
-            <Lock size={16} /> Secure Checkout
-          </div>
-        </div>
+
         <div className="checkout-steps">
           Cart <ChevronRight size={14} />
           Address <ChevronRight size={14} />

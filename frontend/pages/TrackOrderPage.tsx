@@ -114,33 +114,60 @@ export const TrackOrderPage: React.FC = () => {
 
           {/* 1. Header & Stepper */}
           <div className="flex flex-col gap-8 border-b border-gray-100 pb-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-800">Order Details</h2>
-            </div>
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+              {/* Stepper */}
+              {!isCancelled && (
+                <div className="relative flex items-center justify-between w-full max-w-2xl">
+                  {/* Connector Line */}
+                  <div className="absolute top-[14px] left-0 w-full h-1 bg-gray-200 -z-10 rounded-full"></div>
+                  <div
+                    className="absolute top-[14px] left-0 h-1 bg-green-600 -z-10 rounded-full transition-all duration-500"
+                    style={{ width: `${(currentStatusIndex / (statuses.length - 1)) * 100}%` }}
+                  ></div>
 
-            {/* Stepper */}
-            {!isCancelled && (
-              <div className="relative flex items-center justify-between max-w-4xl mx-auto w-full px-4">
-                {/* Connector Line */}
-                <div className="absolute top-[18px] left-0 w-full h-1 bg-gray-100 -z-10 rounded-full"></div>
-                <div
-                  className="absolute top-[18px] left-0 h-1 bg-green-500 -z-10 rounded-full transition-all duration-500"
-                  style={{ width: `${(currentStatusIndex / (statuses.length - 1)) * 100}%` }}
-                ></div>
-
-                {statuses.map((status, idx) => {
-                  const completed = idx <= currentStatusIndex;
-                  return (
-                    <div key={status} className="flex flex-col items-center gap-3">
-                      <div className={`w-9 h-9 rounded-full flex items-center justify-center border-4 ${completed ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-200 text-transparent'}`}>
-                        <CheckCircle2 size={18} className={`${completed ? 'opacity-100' : 'opacity-0'}`} />
+                  {statuses.map((status, idx) => {
+                    const completed = idx <= currentStatusIndex;
+                    return (
+                      <div key={status} className="flex flex-col items-center gap-2 bg-white px-2">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center ${completed ? 'bg-green-600 text-white' : 'bg-gray-200 text-transparent'}`}>
+                          <CheckCircle2 size={16} className={`${completed ? 'opacity-100' : 'opacity-0'}`} />
+                        </div>
+                        <span className={`text-sm font-semibold ${completed ? 'text-gray-900' : 'text-gray-400'}`}>{status}</span>
                       </div>
-                      <span className={`text-xs font-semibold ${completed ? 'text-green-600' : 'text-gray-400'}`}>{status}</span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Track Order Button with Dropdown */}
+              <div className="relative group self-end lg:self-auto ml-auto lg:ml-0">
+                <button className="bg-[#F9C74F] hover:bg-yellow-400 text-gray-900 font-bold py-2.5 px-6 rounded-[4px] text-sm shadow-sm transition-colors flex items-center gap-2">
+                  Track Order
+                </button>
+                {/* Dropdown Menu */}
+                <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-100 rounded-[8px] shadow-xl z-20 hidden group-hover:block overflow-hidden">
+                  <div className="py-2">
+                    <button className="w-full text-left px-4 py-3 text-sm text-[#2874F0] font-semibold hover:bg-gray-50 flex items-center gap-3">
+                      <HelpCircle size={16} /> Need Help?
+                    </button>
+                    <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3">
+                      <FileText size={16} /> Get Invoice
+                    </button>
+                    <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3">
+                      <XCircle size={16} /> Cancel & Return
+                    </button>
+                    <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3">
+                      <ShieldCheck size={16} /> Need Assistance
+                    </button>
+                    <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3">
+                      <MapPin size={16} /> Change Address
+                    </button>
+                  </div>
+                  {/* Pointy Tip */}
+                  <div className="absolute -top-1.5 right-8 w-3 h-3 bg-white border-t border-l border-gray-100 transform rotate-45"></div>
+                </div>
               </div>
-            )}
+            </div>
 
             {isCancelled && <div className="p-4 bg-red-50 text-red-600 font-bold border border-red-200 rounded-[2px] text-center">This order has been cancelled</div>}
 
