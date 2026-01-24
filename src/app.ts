@@ -22,7 +22,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
 
-app.use(json());
+app.use(json({ limit: '200mb' }));
+app.use(express.urlencoded({ limit: '200mb', extended: true, parameterLimit: 1000000 }));
 app.get('/', (req, res) => {
     res.send({ message: 'Welcome to Flipzokart API v2.0 (Fixes Applied)', status: 'active' });
 });
