@@ -150,24 +150,43 @@ const AddressBookPage: React.FC = () => {
                                 <div className="text-center py-8 text-gray-500">No addresses saved. Add one now!</div>
                             ) : (
                                 addresses.map((addr) => (
-                                    <div key={addr._id} className="bg-white p-6 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-gray-100 flex justify-between items-start">
-                                        <div className="space-y-2">
+                                    <div key={addr._id} className="bg-white p-6 rounded-[2px] shadow-sm border border-gray-200 flex justify-between items-start hover:shadow-md transition-shadow">
+                                        <div className="space-y-3">
                                             <div className="flex items-center gap-3">
-                                                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
-                                                    {addr.type === 'Work' ? <Briefcase size={10} /> : <Home size={10} />}
-                                                    {addr.type}
+                                                <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-[2px] text-[11px] font-bold uppercase tracking-wide">
+                                                    {addr.type || 'HOME'}
                                                 </span>
                                             </div>
-                                            <h3 className="font-bold text-gray-800 flex items-center gap-4">
-                                                {addr.fullName} <span className="text-sm font-semibold text-gray-500">{addr.phone}</span>
-                                            </h3>
-                                            <p className="text-sm text-gray-600 leading-relaxed max-w-lg">
-                                                {addr.address}, {addr.city}, {addr.state} - <span className="font-bold text-gray-800">{addr.pincode}</span>
+                                            <div className="flex items-center gap-4">
+                                                <h3 className="font-semibold text-[15px] text-[#212121]">
+                                                    {addr.fullName || addr.name}
+                                                </h3>
+                                                <span className="text-[15px] font-semibold text-[#212121]">{addr.phone}</span>
+                                            </div>
+                                            <p className="text-[14px] text-[#212121] leading-relaxed max-w-lg">
+                                                {addr.address}, {addr.city}, {addr.state} - <span className="font-semibold">{addr.pincode}</span>
                                             </p>
                                         </div>
-                                        <button onClick={() => handleDelete(addr._id)} className="text-gray-400 hover:text-red-500 transition-colors p-2">
-                                            <Trash2 size={18} />
-                                        </button>
+
+                                        {/* Actions (Vertical Dots or Explicit Buttons) */}
+                                        <div className="flex items-start gap-0 relative">
+                                            {/* Explicit Edit Trigger as requested */}
+                                            <div className="flex flex-col gap-2">
+                                                <button
+                                                    onClick={() => navigate('/add-address', { state: { addressToEdit: addr } })}
+                                                    className="p-2 text-[#2874F0] hover:bg-blue-50 rounded-full transition-colors font-medium text-sm flex items-center gap-1"
+                                                >
+                                                    {/* <Edit2 size={16} /> */} Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(addr._id)}
+                                                    className="p-2 text-gray-400 hover:text-red-500 rounded-full transition-colors flex items-center justify-center"
+                                                    title="Delete"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 ))
                             )}

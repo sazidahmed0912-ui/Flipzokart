@@ -1,12 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Home, Briefcase, MapPin, Info } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
-import { useToast } from "./toast"; // Assuming toast exists or using alert
+import { useToast } from "./toast";
 
 const AddNewAddress: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { addToast } = useToast();
     const [loading, setLoading] = useState(false);
+
+    // Check if we are in Edit Mode
+    const addressToEdit = location.state?.addressToEdit;
+    const isEditMode = !!addressToEdit;
 
     const [formData, setFormData] = useState({
         fullName: "",
@@ -19,8 +25,23 @@ const AddNewAddress: React.FC = () => {
         type: "Home"
     });
 
+    useEffect(() => {
+        if (isEditMode && addressToEdit) {
+            setFormData({
+                fullName: addressToEdit.fullName || addressToEdit.name || "",
+                phone: addressToEdit.phone || "",
+                email: addressToEdit.email || "",
+                address: addressToEdit.address || "",
+                city: addressToEdit.city || "",
+                state: addressToEdit.state || "",
+                pincode: addressToEdit.pincode || "",
+                type: addressToEdit.type || "Home"
+            });
+        }
+    }, [isEditMode, addressToEdit]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name || 'type']: e.target.value }); // Handle select name safely
+        setFormData({ ...formData, [e.target.name || 'type']: e.target.value });
     };
 
     const handleSave = async () => {
@@ -32,12 +53,20 @@ const AddNewAddress: React.FC = () => {
 
         setLoading(true);
         try {
-            await API.post('/api/user/address', formData);
-            // navigate to Address Book
+            if (isEditMode) {
+                // UPDATE Existing Address
+                // backend route: PUT /api/user/address/:id
+                await API.put(`/api/user/address/${addressToEdit._id || addressToEdit.id}`, formData);
+                addToast?.('success', 'Address updated successfully');
+            } else {
+                // CREATE New Address
+                await API.post('/api/user/address', formData);
+                addToast?.('success', 'Address added successfully');
+            }
             navigate('/address-book');
         } catch (error) {
             console.error("Failed to save address", error);
-            alert("Failed to save address");
+            addToast?.('error', "Failed to save address");
         } finally {
             setLoading(false);
         }
@@ -48,7 +77,7 @@ const AddNewAddress: React.FC = () => {
             <div className="w-full max-w-2xl bg-white rounded-xl shadow-md p-6 space-y-6">
 
                 {/* Title */}
-                <h2 className="text-2xl font-bold text-gray-800">Add a New Address</h2>
+                <h2 className="text-2xl font-bold text-gray-800">{isEditMode ? "Edit Address" : "Add a New Address"}</h2>
 
                 {/* Info Banner */}
                 <div className="flex items-start gap-3 bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-gray-700">
@@ -151,6 +180,7 @@ const AddNewAddress: React.FC = () => {
                             { name: "Other", icon: <MapPin size={16} /> },
                         ].map((item) => (
                             <button
+                                type="button"
                                 key={item.name}
                                 onClick={() => setFormData({ ...formData, type: item.name })}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium ${formData.type === item.name
@@ -178,7 +208,7 @@ const AddNewAddress: React.FC = () => {
                             disabled={loading}
                             className="flex-1 bg-yellow-400 text-black py-3 rounded-lg font-semibold hover:bg-yellow-500 transition disabled:opacity-50"
                         >
-                            {loading ? "Saving..." : "Save"}
+                            {loading ? "Saving..." : (isEditMode ? "Update Address" : "Save Address")}
                         </button>
                     </div>
 

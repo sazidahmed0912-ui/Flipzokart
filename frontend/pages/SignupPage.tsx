@@ -167,7 +167,7 @@ export const SignupPage: React.FC = () => {
                   </button>
 
                   <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
-                    Already have an account? <Link to="/login" className="font-bold hover:underline">Login</Link>
+                    Already have an account? <Link to="/login" className="font-bold hover:underline" style={{ color: '#FF3333' }}>Login</Link>
                   </div>
                 </form>
               </div>

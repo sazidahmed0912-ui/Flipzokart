@@ -131,11 +131,11 @@ export const LoginPage: React.FC = () => {
                   </button>
 
                   <div className="mt-3.5 text-[13px] text-[#2874F0] cursor-pointer hover:underline text-right">
-                    <Link to="/forgot-password" style={{ color: '#F9C74F' }}>Forgot?</Link>
+                    <Link to="/forgot-password" style={{ color: '#FF3333' }}>Forgot?</Link>
                   </div>
 
                   <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
-                    New to Flipzokart? <Link to="/signup" className="font-bold hover:underline" style={{ color: '#F9C74F' }}>Sign up</Link>
+                    New to Flipzokart? <Link to="/signup" className="font-bold hover:underline" style={{ color: '#FF3333' }}>Sign up</Link>
                   </div>
                 </form>
               </div>
