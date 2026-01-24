@@ -118,18 +118,19 @@ export const TrackOrderPage: React.FC = () => {
               {/* Stepper */}
               {!isCancelled && (
                 <div className="relative flex items-center justify-between w-full max-w-2xl px-2">
-                  {/* Connector Line Container */}
-                  <div className="absolute top-[14px] left-0 w-full h-1 bg-gray-200 -z-10 rounded-full mx-2"></div>
-                  {/* Active Progress Line */}
-                  <div
-                    className="absolute top-[14px] left-0 h-1 bg-green-600 -z-10 rounded-full transition-all duration-500 mx-2"
-                    style={{ width: `${(currentStatusIndex / (statuses.length - 1)) * 100}%` }}
-                  ></div>
+                  {/* Connector Line Wrapper */}
+                  <div className="absolute top-[14px] left-[15px] right-[15px] h-1 -z-10">
+                    <div className="absolute top-0 left-0 w-full h-full bg-gray-200 rounded-full"></div>
+                    <div
+                      className="absolute top-0 left-0 h-full bg-green-600 rounded-full transition-all duration-500"
+                      style={{ width: `${(currentStatusIndex / (statuses.length - 1)) * 100}%` }}
+                    ></div>
+                  </div>
 
                   {statuses.map((status, idx) => {
                     const completed = idx <= currentStatusIndex;
                     return (
-                      <div key={status} className="flex flex-col items-center gap-2 relative bg-white px-2 z-10">
+                      <div key={status} className="flex flex-col items-center gap-2 relative z-10 px-2 bg-white/0">
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 ${completed ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-300 text-transparent'}`}>
                           <CheckCircle2 size={16} className={`${completed ? 'opacity-100' : 'opacity-0'}`} />
                         </div>
@@ -208,26 +209,35 @@ export const TrackOrderPage: React.FC = () => {
 
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
-                    <h4 className="text-lg font-bold text-gray-900 line-clamp-2">{item.name}</h4>
-                    <div className="mt-2 text-sm text-gray-500 space-y-1">
-                      <div>Seller: <span className="font-medium text-gray-900">Alpha Mobiles</span></div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-xl font-bold text-gray-900">₹{(item.price || 0).toLocaleString()}</span>
-                        <span className="bg-green-50 text-green-700 text-xs px-2 py-0.5 rounded border border-green-100">2 Offers Applied</span>
+                    <h4 className="font-bold text-gray-900 text-lg hover:text-[#2874F0] cursor-pointer line-clamp-2 md:line-clamp-1">{item.name}</h4>
+                    <div className="mt-4 flex flex-col md:flex-row md:items-center gap-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">Seller:</span>
+                        <span className="font-medium text-gray-900 bg-gray-50 px-2 py-0.5 rounded border border-gray-100">Alpha Mobiles</span>
                       </div>
-                      <div>Qty: <span className="font-medium text-gray-900">{item.quantity}</span></div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl font-bold text-gray-900">₹{(item.price || 0).toLocaleString()}</span>
+                        <span className="text-green-600 text-xs font-bold bg-green-50 px-2 py-0.5 rounded border border-green-100">2 Offers Applied</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-50">
-                    <button className="text-[#2874F0] font-semibold text-sm hover:underline">
-                      Need help?
-                    </button>
-                    {!isCancelled && foundOrder.status === 'Pending' && (
-                      <button className="text-red-500 font-semibold text-sm hover:text-red-600 hover:underline">
-                        Cancel Order
+                  <div className="mt-6 flex flex-wrap items-center gap-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900 border border-gray-200 px-3 py-1.5 rounded-[2px] bg-gray-50">
+                      Qty: {item.quantity}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button className="flex items-center gap-2 text-[#2874F0] font-semibold text-sm border border-gray-200 hover:border-[#2874F0] px-4 py-1.5 rounded-[2px] transition-colors shadow-sm">
+                        <HelpCircle size={15} /> Need help?
                       </button>
-                    )}
+
+                      {!isCancelled && foundOrder.status === 'Pending' && (
+                        <button className="flex items-center gap-2 text-red-600 font-semibold text-sm border border-gray-200 hover:border-red-600 hover:bg-red-50 px-4 py-1.5 rounded-[2px] transition-colors shadow-sm">
+                          <XCircle size={15} /> Cancel Order
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -235,11 +245,13 @@ export const TrackOrderPage: React.FC = () => {
           </div>
 
           {/* 3. Info Footer Grid (Address | Payment | Progress) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6 border-t border-gray-100">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6 border-t border-gray-100 items-start">
 
             {/* Delivery Address */}
             <div className="space-y-4">
-              <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80">Delivery Address</h3>
+              <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80 flex items-center justify-between h-5">
+                Delivery Address
+              </h3>
               <div className="text-sm text-gray-800 leading-relaxed">
                 <div className="font-bold text-base mb-1">{foundOrder.user?.name || user?.name || 'Mark Sebastian'}</div>
                 <p>{foundOrder.shippingAddress || '(2011) Venture Heights, JP Nagar, Bangalore, Karnataka - 560078'}</p>
@@ -252,7 +264,9 @@ export const TrackOrderPage: React.FC = () => {
 
             {/* Payment */}
             <div className="space-y-4">
-              <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80">Payment</h3>
+              <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80 flex items-center justify-between h-5">
+                Payment
+              </h3>
               <div className="text-sm space-y-2">
                 <div className="flex justify-between items-center text-gray-600">
                   <span>Total Amount</span>
@@ -274,7 +288,7 @@ export const TrackOrderPage: React.FC = () => {
 
             {/* Shipping Progress */}
             <div className="space-y-4">
-              <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80 flex justify-between">
+              <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80 flex items-center justify-between h-5">
                 Shipping Progress
                 <span className="text-[#2874F0] normal-case text-xs cursor-pointer hover:underline">More v</span>
               </h3>
