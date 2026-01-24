@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag, ChevronRight } from 'lucide-react';
+import { Store, ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag, ChevronRight } from 'lucide-react';
 import { useApp } from '../store/Context';
 import NotificationBell from './NotificationBell';
 
@@ -219,12 +219,25 @@ const Header: React.FC = () => {
                     </Link>
                   )}
 
+                  {/* Sell on Flipzokart Link */}
+                  <Link
+                    to="/sell"
+                    onClick={closeMenus}
+                    className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center">
+                      <Store size={16} />
+                    </div>
+                    <span className="font-medium text-sm">Sell on Flipzokart</span>
+                    <ChevronRight size={14} className="ml-auto text-gray-400" />
+                  </Link>
+
                   {/* Pages Group - Moved below Profile as requested */}
                   <div className="flex flex-col bg-gray-50/50">
                     <Link
                       to="/about"
                       onClick={closeMenus}
-                      className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                      className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-100 border-b border-gray-100 transition-colors"
                     >
                       <div className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
                         <Tag size={14} />
@@ -235,7 +248,7 @@ const Header: React.FC = () => {
                     <Link
                       to="/contact"
                       onClick={closeMenus}
-                      className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                      className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-100 border-b border-gray-100 transition-colors"
                     >
                       <div className="w-7 h-7 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center">
                         <MessageCircle size={14} />

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import authService from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import {
+  Store,
   User,
   Package,
   Heart,
@@ -95,6 +96,7 @@ const ProfilePage = () => {
     { name: "My Profile", path: "/profile", icon: User },
     { name: "Orders", path: "/orders", icon: Package },
     { name: "Wishlist", path: "/wishlist", icon: Heart },
+    { name: "Sell on Flipzokart", path: "/sell", icon: Store },
     { name: "Account Security", path: "/account-security", icon: ShieldCheck },
     { name: "Address Book", path: "/address-book", icon: MapPin },
   ];

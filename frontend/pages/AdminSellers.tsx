@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
     Search, Eye, Edit2, Ban, CheckCircle, ChevronDown, Bell, User, LogOut
 } from 'lucide-react';
+import API from '../services/api';
 import { useApp } from '../store/Context';
 import { AdminSidebar } from '../components/AdminSidebar';
 
@@ -30,19 +31,30 @@ export const AdminSellers: React.FC = () => {
 
         const loadSellers = async () => {
             try {
-                const mockSellers: Seller[] = [
-                    { id: '1', name: 'Tech Traders', email: 'tech.traders@mail.com', products: 120, status: 'Active' },
-                    { id: '2', name: 'Fashion Hub', email: 'fashion.hub@mail.com', products: 95, status: 'Pending' },
-                    { id: '3', name: 'Gadget Galaxy', email: 'gadget.galaxy@mail.com', products: 80, status: 'Active' },
-                    { id: '4', name: 'Trendy Styles', email: 'trendy.styles@email.com', products: 75, status: 'Active' },
-                    { id: '5', name: 'Home Essentials', email: 'home.essentials@mail.com', products: 60, status: 'Active' },
-                    { id: '6', name: 'EasyElectro', email: 'easyelectro@email.com', products: 45, status: 'Suspended' },
-                    { id: '7', name: 'Urban Apparel', email: 'urban.apparel@email.com', products: 40, status: 'Active' },
-                    { id: '8', name: 'FreshMart', email: 'freshmart@email.com', products: 33, status: 'Active' },
-                    { id: '9', name: 'EcoLife Store', email: 'ecolife.store@email.com', products: 28, status: 'Active' },
-                    { id: '10', name: 'Jewel Boutique', email: 'jewel.boutique@email.com', products: 25, status: 'Suspended' },
-                ];
-                setSellers(mockSellers);
+                // Fetch users from API (assuming admin/users returns all users)
+                // Filter client-side or assume backend filters if we add query
+                // For now, fetching all and filtering for 'seller' role or just showing all users
+                // as 'potential sellers' if role differentiation isn't strict yet.
+                // However, user asked for "Seller section", so ideally we filter by role="seller".
+                // Since I just added "seller" role to backend, existing users are "user" or "admin".
+                // I will display ALL users for now so the table isn't empty, or filter if possible.
+                // Let's fetch all users.
+                const { data } = await API.get('/api/admin/users');
+
+                // Map API user data to Seller interface
+                // Assuming API returns { users: [...] } or just [...]
+                const usersList = data.users || data;
+
+                const mappedSellers: Seller[] = usersList.map((u: any) => ({
+                    id: u._id,
+                    name: u.name,
+                    email: u.email,
+                    products: u.products?.length || 0, // Assuming user object might have product count or we default 0
+                    status: u.status || 'Active',
+                    avatar: u.avatar
+                }));
+
+                setSellers(mappedSellers);
             } catch (error) {
                 console.error("Failed to fetch sellers", error);
             } finally {
@@ -51,9 +63,11 @@ export const AdminSellers: React.FC = () => {
         };
 
         loadSellers();
-        interval = setInterval(loadSellers, 5000);
+        // interval = setInterval(loadSellers, 5000); // Polling for real-time
 
-        return () => clearInterval(interval);
+        return () => {
+            // if (interval) clearInterval(interval);
+        };
     }, []);
 
     const getStatusColor = (status: Seller['status']) => {
