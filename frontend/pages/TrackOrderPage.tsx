@@ -263,6 +263,9 @@ export const TrackOrderPage: React.FC = () => {
                   <span className="text-gray-900 font-semibold tracking-wide">{foundOrder.user?.phone || '+91 99965 12345'}</span>
                 </div>
               </div>
+               <button className="w-full bg-[#F9C74F] text-black py-2.5 rounded-[2px] font-bold text-sm hover:shadow-md transition-shadow">
+                Update Address
+              </button>
             </div>
 
             {/* Payment */}
@@ -289,7 +292,6 @@ export const TrackOrderPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Shipping Progress */}
             {/* Shipping Progress */}
             <div className="space-y-4">
               <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80 flex items-center justify-between h-5 whitespace-nowrap">
