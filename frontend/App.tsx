@@ -116,6 +116,8 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
     if (!socket || !user) return;
 
     const handleNotification = (data: any) => {
+      const isWarning = data?.type === 'warning';
+
       const notification = {
         _id: Date.now().toString(), // REQUIRED
         recipient: user.id,
@@ -134,8 +136,10 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
       // Show the visual toast
       addToast(notification.status as any, notification.message);
 
-      // Persist the notification to the bell/list
-      showToast(notification);
+      // Persist the notification to the bell/list ONLY if NOT a warning
+      if (!isWarning) {
+        showToast(notification);
+      }
     };
 
     socket.on("notification", handleNotification);

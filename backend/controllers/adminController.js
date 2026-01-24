@@ -164,20 +164,43 @@ const sendUserNotice = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Create Notification
-    const notification = await Notification.create({
-      recipient: user._id,
-      message,
-      type: type || 'adminNotice',
-      isRead: false
-    });
+    // Create Notification (Skip DB for 'warning' type)
+    let notification;
+    if (type !== 'warning') {
+      notification = await Notification.create({
+        recipient: user._id,
+        message,
+        type: type || 'adminNotice',
+        isRead: false
+      });
+    } else {
+      // Mock notification object for frontend
+      notification = {
+        _id: Date.now().toString(),
+        recipient: user._id,
+        message,
+        type: 'warning',
+        createdAt: new Date()
+      };
+    }
 
     // Real-time Push
     const io = req.app.get('socketio');
     if (io) {
-      io.to(user._id.toString()).emit('newNotification', notification);
-      io.to(user._id.toString()).emit('notification', { message, type: type || 'info' }); // For Toast
-      io.to(user._id.toString()).emit('adminNotice', { message, type: 'emergency' }); // Special event for emergency popup
+      if (type !== 'warning') {
+        io.to(user._id.toString()).emit('newNotification', notification);
+      }
+
+      // Emit 'notification' event which App.tsx listens to for Toasts
+      // For warning, this ensures it pops up as a toast.
+      io.to(user._id.toString()).emit('notification', {
+        message,
+        type: type || 'info'
+      });
+
+      if (type === 'emergency') {
+        io.to(user._id.toString()).emit('adminNotice', { message, type: 'emergency' });
+      }
     }
 
     res.json({ success: true, notification });

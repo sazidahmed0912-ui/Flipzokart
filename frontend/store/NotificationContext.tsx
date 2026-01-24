@@ -37,6 +37,7 @@ interface NotificationContextType {
   hideToast: (id: string) => void;
   markNotificationAsRead: (id: string) => void;
   deleteNotification: (id: string) => void;
+  clearAllNotifications: () => void;
   fetchNotifications: () => void;
 }
 
@@ -155,6 +156,21 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
+  const clearAllNotifications = async () => {
+    // Optimistic Update
+    setNotifications([]);
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_URL}/api/notifications`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (error) {
+      console.error("Failed to clear all notifications", error);
+      fetchNotifications(); // Revert on failure
+    }
+  };
+
   return (
     <NotificationContext.Provider
       value={{
@@ -165,6 +181,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
         hideToast,
         markNotificationAsRead,
         deleteNotification,
+        clearAllNotifications,
         fetchNotifications,
       }}
     >

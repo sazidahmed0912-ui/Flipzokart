@@ -3,7 +3,7 @@ import { Bell, XCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react
 import { useNotifications } from '../store/NotificationContext';
 
 const NotificationBell: React.FC = () => {
-  const { notifications, unreadCount, markNotificationAsRead, deleteNotification } = useNotifications();
+  const { notifications, unreadCount, markNotificationAsRead, deleteNotification, clearAllNotifications } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -62,6 +62,14 @@ const NotificationBell: React.FC = () => {
         >
           <div className="flex justify-between items-center px-4 py-2 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
+            {notifications.length > 0 && (
+              <button
+                onClick={clearAllNotifications}
+                className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
+              >
+                Clear All
+              </button>
+            )}
           </div>
           <div className="max-h-80 overflow-y-auto">
             {notifications.length === 0 ? (

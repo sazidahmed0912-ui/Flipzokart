@@ -57,4 +57,18 @@ module.exports = {
   getNotifications,
   markAsRead,
   deleteNotification,
+  deleteAllNotifications,
+};
+
+// @desc    Delete all notifications
+// @route   DELETE /api/notifications
+// @access  Private
+const deleteAllNotifications = async (req, res) => {
+  try {
+    await Notification.deleteMany({ recipient: req.user.id });
+    res.json({ message: 'All notifications cleared' });
+  } catch (error) {
+    console.error('Error deleting all notifications:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
