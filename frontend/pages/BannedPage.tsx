@@ -75,7 +75,8 @@ export const BannedPage: React.FC = () => {
                             <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 text-center">
                                 <p className="text-xs font-bold text-orange-600 uppercase mb-1">Unban Date</p>
                                 <div className="text-xl font-mono font-bold text-orange-800">
-                                    {unbanDate.toLocaleTimeString()}
+                                    {/* Using same formatting logic for consistency, although unban date is static, user might want it to look 'real time' formatted */}
+                                    {unbanDate.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })}
                                 </div>
                                 <div className="text-xs text-orange-600 font-medium">
                                     {unbanDate.toLocaleDateString()}

@@ -99,12 +99,15 @@ const ProfilePage = () => {
     { name: "Address Book", path: "/address-book", icon: MapPin },
   ];
 
-  // Helper for Member Since Format: "Jan 21" - Removing comma as requested
+  // Helper for Member Since Format: "17/Jan/2026"
   const getMemberSince = () => {
     if (!profileData.createdAt) return "N/A";
     const date = new Date(profileData.createdAt);
-    // Format: Jan 21 24 (removing comma)
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" }).replace(/,/g, '');
+    // Format: 17/Jan/2026
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = date.toLocaleDateString("en-US", { month: "short" });
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   const handleAvatarClick = () => {

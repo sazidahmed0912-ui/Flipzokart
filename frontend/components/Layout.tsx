@@ -170,25 +170,25 @@ const Header: React.FC = () => {
               <Link
                 to="/"
                 onClick={closeMenus}
-                className="flex items-center gap-4 px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
               >
-                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <Home size={20} />
+                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Home size={16} />
                 </div>
-                <span className="font-medium text-base">Home</span>
-                <ChevronRight size={18} className="ml-auto text-gray-400" />
+                <span className="font-medium text-sm">Home</span>
+                <ChevronRight size={14} className="ml-auto text-gray-400" />
               </Link>
 
               <Link
                 to="/shop"
                 onClick={closeMenus}
-                className="flex items-center gap-4 px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
               >
-                <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
-                  <LayoutGrid size={20} />
+                <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <LayoutGrid size={16} />
                 </div>
-                <span className="font-medium text-base">Shop</span>
-                <ChevronRight size={18} className="ml-auto text-gray-400" />
+                <span className="font-medium text-sm">Shop</span>
+                <ChevronRight size={14} className="ml-auto text-gray-400" />
               </Link>
 
               {/* Pages Group */}
@@ -196,24 +196,24 @@ const Header: React.FC = () => {
                 <Link
                   to="/about"
                   onClick={closeMenus}
-                  className="flex items-center gap-4 px-6 py-4 pl-8 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                  className="flex items-center gap-3 px-5 py-3 pl-8 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
-                    <Tag size={16} />
+                  <div className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
+                    <Tag size={14} />
                   </div>
-                  <span className="font-medium text-sm">About Us</span>
-                  <ChevronRight size={16} className="ml-auto text-gray-400" />
+                  <span className="font-medium text-xs">About Us</span>
+                  <ChevronRight size={14} className="ml-auto text-gray-400" />
                 </Link>
                 <Link
                   to="/contact"
                   onClick={closeMenus}
-                  className="flex items-center gap-4 px-6 py-4 pl-8 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                  className="flex items-center gap-3 px-5 py-3 pl-8 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center">
-                    <MessageCircle size={16} />
+                  <div className="w-7 h-7 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center">
+                    <MessageCircle size={14} />
                   </div>
-                  <span className="font-medium text-sm">Contact Us</span>
-                  <ChevronRight size={16} className="ml-auto text-gray-400" />
+                  <span className="font-medium text-xs">Contact Us</span>
+                  <ChevronRight size={14} className="ml-auto text-gray-400" />
                 </Link>
               </div>
 
@@ -222,50 +222,50 @@ const Header: React.FC = () => {
                   <Link
                     to="/profile"
                     onClick={closeMenus}
-                    className="flex items-center gap-4 px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                    className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
                   >
-                    <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                      <User size={20} />
+                    <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <User size={16} />
                     </div>
-                    <span className="font-medium text-base">My Profile</span>
-                    <ChevronRight size={18} className="ml-auto text-gray-400" />
+                    <span className="font-medium text-sm">My Profile</span>
+                    <ChevronRight size={14} className="ml-auto text-gray-400" />
                   </Link>
 
                   {isAdmin && (
                     <Link
                       to="/admin"
                       onClick={closeMenus}
-                      className="flex items-center gap-4 px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                      className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
                     >
-                      <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-800 flex items-center justify-center">
-                        <LayoutDashboard size={20} />
+                      <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-800 flex items-center justify-center">
+                        <LayoutDashboard size={16} />
                       </div>
-                      <span className="font-medium text-base">Admin Dashboard</span>
-                      <ChevronRight size={18} className="ml-auto text-gray-400" />
+                      <span className="font-medium text-sm">Admin Dashboard</span>
+                      <ChevronRight size={14} className="ml-auto text-gray-400" />
                     </Link>
                   )}
 
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-4 px-6 py-4 text-red-600 hover:bg-red-50 border-b border-gray-100 transition-colors w-full text-left"
+                    className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 border-b border-gray-100 transition-colors w-full text-left"
                   >
-                    <div className="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
-                      <LogOut size={20} />
+                    <div className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
+                      <LogOut size={16} />
                     </div>
-                    <span className="font-medium text-base">Logout</span>
+                    <span className="font-medium text-sm">Logout</span>
                   </button>
                 </>
               ) : (
                 <Link
                   to="/login"
                   onClick={closeMenus}
-                  className="flex items-center gap-4 px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                  className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#f28c28] text-white flex items-center justify-center">
-                    <User size={20} />
+                  <div className="w-8 h-8 rounded-full bg-[#f28c28] text-white flex items-center justify-center">
+                    <User size={16} />
                   </div>
-                  <span className="font-medium text-base">Login / Sign Up</span>
-                  <ChevronRight size={18} className="ml-auto text-gray-400" />
+                  <span className="font-medium text-sm">Login / Sign Up</span>
+                  <ChevronRight size={14} className="ml-auto text-gray-400" />
                 </Link>
               )}
             </div>
