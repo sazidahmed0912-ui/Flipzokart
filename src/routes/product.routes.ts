@@ -11,6 +11,7 @@ router.get('/:slug', productController.getProduct);
 router.use(protect, restrictTo('ADMIN'));
 
 router.post('/', productController.createProduct);
+router.post('/add', productController.createProduct); // Fallback for cached frontends
 router.put('/:id', productController.updateProduct);
 router.delete('/:id', productController.deleteProduct);
 

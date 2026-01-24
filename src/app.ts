@@ -24,7 +24,7 @@ app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
 
 app.use(json());
 app.get('/', (req, res) => {
-    res.send({ message: 'Welcome to Flipzokart API' });
+    res.send({ message: 'Welcome to Flipzokart API v2.0 (Fixes Applied)', status: 'active' });
 });
 
 console.log('Mounting routes...');
