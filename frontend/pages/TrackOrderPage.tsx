@@ -116,10 +116,11 @@ export const TrackOrderPage: React.FC = () => {
           <div className="flex flex-col gap-8 border-b border-gray-100 pb-8">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
               {/* Stepper */}
+              {/* Stepper */}
               {!isCancelled && (
-                <div className="relative flex items-center justify-between w-full max-w-2xl px-2">
+                <div className="relative flex w-full max-w-4xl items-start">
                   {/* Connector Line Wrapper */}
-                  <div className="absolute top-[14px] left-[15px] right-[15px] h-1 -z-10">
+                  <div className="absolute top-[14px] left-[12.5%] right-[12.5%] h-1 -z-10">
                     <div className="absolute top-0 left-0 w-full h-full bg-gray-200 rounded-full"></div>
                     <div
                       className="absolute top-0 left-0 h-full bg-green-600 rounded-full transition-all duration-500"
@@ -130,11 +131,11 @@ export const TrackOrderPage: React.FC = () => {
                   {statuses.map((status, idx) => {
                     const completed = idx <= currentStatusIndex;
                     return (
-                      <div key={status} className="flex flex-col items-center gap-2 relative z-10 px-2 bg-white/0">
+                      <div key={status} className="flex-1 flex flex-col items-center gap-2 relative z-10 bg-white/0">
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 ${completed ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-300 text-transparent'}`}>
                           <CheckCircle2 size={16} className={`${completed ? 'opacity-100' : 'opacity-0'}`} />
                         </div>
-                        <span className={`text-sm font-semibold ${completed ? 'text-gray-900' : 'text-gray-400'}`}>{status}</span>
+                        <span className={`text-sm font-semibold text-center ${completed ? 'text-gray-900' : 'text-gray-400'}`}>{status}</span>
                       </div>
                     );
                   })}
@@ -287,12 +288,13 @@ export const TrackOrderPage: React.FC = () => {
             </div>
 
             {/* Shipping Progress */}
+            {/* Shipping Progress */}
             <div className="space-y-4">
-              <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80 flex items-center justify-between h-5">
+              <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80 flex items-center justify-between h-5 whitespace-nowrap">
                 Shipping Progress
                 <span className="text-[#2874F0] normal-case text-xs cursor-pointer hover:underline">More v</span>
               </h3>
-              <div className="relative border-l-2 border-gray-100 ml-1.5 space-y-6 pt-1">
+              <div className="relative border-l-2 border-gray-100 ml-1.5 space-y-6">
                 {/* Events */}
                 {['Out for Delivery', 'Shipped', 'Ordered'].map((s, i) => {
                   const isDone = statuses.indexOf(s) <= currentStatusIndex;
