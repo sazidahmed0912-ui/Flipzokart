@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Info } from "lucide-react";
 import { Address } from '../../../types';
 import { AddressFormFields, AddressFormData } from '../../../components/AddressFormFields';
+import { validateAddressForm } from '../../../utils/addressValidation';
 
 interface AddressFormProps {
     addressToEdit?: Address | null;
@@ -15,12 +16,14 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
         phone: addressToEdit?.phone ?? '',
         email: '',
         street: addressToEdit?.address ?? '',
-        locality: '',
+        locality: (addressToEdit as any)?.locality ?? '',
         city: addressToEdit?.city ?? '',
         state: addressToEdit?.state ?? '',
         zip: addressToEdit?.pincode ?? '',
         type: (addressToEdit?.type as any) ?? 'Home'
     });
+
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (addressToEdit) {
@@ -29,7 +32,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
                 phone: addressToEdit.phone,
                 email: '',
                 street: addressToEdit.address,
-                locality: '',
+                locality: (addressToEdit as any).locality || '',
                 city: addressToEdit.city,
                 state: addressToEdit.state,
                 zip: addressToEdit.pincode,
@@ -41,10 +44,16 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Validate Form
+        const validationErrors = validateAddressForm(formData);
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
+        setErrors({});
+
         // Combine street and locality for the final address string
-        const finalAddressString = formData.locality
-            ? `${formData.street}, ${formData.locality}`
-            : formData.street;
+        const finalAddressString = formData.street; // Keep street clean in address field
 
         const finalAddress: Address = {
             id: addressToEdit?.id ?? Date.now(),
@@ -54,8 +63,9 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
             city: formData.city,
             state: formData.state,
             pincode: formData.zip,
-            type: formData.type
-        };
+            type: formData.type,
+            locality: formData.locality
+        } as Address;
 
         onSave(finalAddress);
     };
@@ -84,6 +94,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
                     <AddressFormFields
                         formData={formData}
                         setFormData={setFormData}
+                        errors={errors}
                     />
                 </div>
 
@@ -97,7 +108,10 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
                     </button>
                     <button
                         type="submit"
-                        className="flex-1 px-6 py-3.5 bg-yellow-400 hover:bg-yellow-500 text-black rounded-xl font-bold shadow-sm transition-all duration-200 hover:shadow-md active:transform active:scale-[0.98]"
+                        className={`flex-1 px-6 py-3.5 rounded-xl font-bold shadow-sm transition-all duration-200 ${Object.keys(errors).length > 0
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                : "bg-yellow-400 hover:bg-yellow-500 text-black hover:shadow-md active:transform active:scale-[0.98]"
+                            }`}
                     >
                         Save Address
                     </button>
