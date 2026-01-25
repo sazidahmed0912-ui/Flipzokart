@@ -319,24 +319,28 @@ export const TrackOrderPage: React.FC = () => {
               <div className="text-sm text-gray-800 leading-relaxed border border-gray-200 rounded-[4px] p-4 bg-gray-50/50">
                 <div className="font-bold text-base mb-2">{foundOrder.user?.name || user?.name || ''}</div>
                 <div className="text-justify mb-3 text-gray-600">
-                  {typeof foundOrder.shippingAddress === 'string' ? (
-                    foundOrder.shippingAddress
-                  ) : (
-                    <>
-                      <p>{foundOrder.shippingAddress?.street || foundOrder.address?.address || ''}</p>
-                      <p>{foundOrder.shippingAddress?.locality || foundOrder.address?.locality || ''}</p>
-                      <p>
-                        {foundOrder.shippingAddress?.city || foundOrder.address?.city || ''},{' '}
-                        {foundOrder.shippingAddress?.state || foundOrder.address?.state || ''} -{' '}
-                        {foundOrder.shippingAddress?.zip || foundOrder.address?.pincode || ''}
-                      </p>
-                    </>
-                  )}
+                  {(() => {
+                    const addr = foundOrder.shippingAddress || foundOrder.address;
+                    if (!addr) return 'Address not available';
+                    if (typeof addr === 'string') return addr;
+
+                    return (
+                      <>
+                        <p>{addr.street || ''}</p>
+                        {addr.locality && <p>{addr.locality}</p>}
+                        <p>
+                          {addr.city || ''}{addr.state ? `, ${addr.state}` : ''}
+                          {addr.zip || addr.pincode ? ` - ${addr.zip || addr.pincode}` : ''}
+                        </p>
+                        {addr.country && <p>{addr.country}</p>}
+                      </>
+                    );
+                  })()}
                 </div>
                 <div className="font-medium flex flex-col gap-1">
                   <span className="text-gray-500 text-xs uppercase font-bold">Phone Number</span>
                   <span className="text-gray-900 font-semibold tracking-wide">
-                    {foundOrder.shippingAddress?.phone || foundOrder.address?.phone || foundOrder.user?.phone || 'N/A'}
+                    {(foundOrder.shippingAddress || foundOrder.address)?.phone || foundOrder.user?.phone || 'N/A'}
                   </span>
                 </div>
               </div>

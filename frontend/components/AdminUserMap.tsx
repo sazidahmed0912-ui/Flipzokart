@@ -55,9 +55,9 @@ const AdminUserMap: React.FC = () => {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-4 border-b border-gray-100 flex justify-between items-center">
-                <h3 className="font-semibold text-gray-800">Live User Activity</h3>
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                    {users.length} Active Users
+                <h3 className="font-semibold text-gray-800">User Distribution</h3>
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                    {users.length} Users Mapped
                 </span>
             </div>
 

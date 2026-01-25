@@ -32,8 +32,13 @@ interface OrderDetail {
         street: string;
         city: string;
         state: string;
-        zip: string;
-        country: string;
+        zip?: string;
+        zipCode?: string;
+        pincode?: string;
+        country?: string;
+        fullName?: string;
+        locality?: string;
+        phone?: string;
     } | string; // Address could be string in legacy data
 }
 
@@ -113,17 +118,22 @@ export const AdminOrderDetails: React.FC = () => {
 
     // Helper to safely render address
     const renderAddress = () => {
-        if (typeof order.address === 'string') return order.address;
-        if (typeof order.address === 'object' && order.address !== null) {
-            return (
-                <>
-                    {order.address.street},<br />
-                    {order.address.city}, {order.address.state} - {order.address.zip}<br />
-                    {order.address.country}
-                </>
-            );
-        }
-        return 'N/A';
+        const addr = order.address;
+        if (!addr) return 'N/A';
+        if (typeof addr === 'string') return addr;
+
+        return (
+            <>
+                <div className="font-semibold mb-1">{addr.fullName || order.userName}</div>
+                <div>{addr.street}</div>
+                {addr.locality && <div>{addr.locality}</div>}
+                <div>
+                    {addr.city}, {addr.state} - {addr.zip || addr.zipCode || addr.pincode}
+                </div>
+                {addr.country && <div>{addr.country}</div>}
+                {addr.phone && <div className="mt-2 text-xs font-bold text-gray-500">Phone: <span className="text-gray-700">{addr.phone}</span></div>}
+            </>
+        );
     };
 
     return (

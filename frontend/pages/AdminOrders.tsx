@@ -48,7 +48,7 @@ export const AdminOrders: React.FC = () => {
      Interval: 10000ms
      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: any;
 
     const loadOrders = async () => {
       try {

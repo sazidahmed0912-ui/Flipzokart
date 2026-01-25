@@ -147,14 +147,14 @@ export const AdminMap: React.FC = () => {
                     <SmoothReveal direction="down" delay={100} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                                <Globe className="text-blue-600" /> Real-World User Map
+                                <Globe className="text-blue-600" /> User Location Map
                             </h1>
-                            <p className="text-sm text-gray-500 mt-1">Live active users mapped directly from addresses (OpenStreetMap)</p>
+                            <p className="text-sm text-gray-500 mt-1">Map of all registered users with saved addresses</p>
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl">
-                                <div className={`w-2 h-2 rounded-full ${activeUsers.length > 0 ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
-                                <span className="text-xs font-semibold text-gray-600">{activeUsers.length} Online</span>
+                                <div className={`w-2 h-2 rounded-full ${activeUsers.length > 0 ? 'bg-blue-500' : 'bg-gray-400'}`}></div>
+                                <span className="text-xs font-semibold text-gray-600">{activeUsers.length} Mapped Users</span>
                             </div>
 
                             {/* Full Screen Button */}
