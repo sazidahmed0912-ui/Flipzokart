@@ -2,6 +2,7 @@ import API from "./api";
 
 export const getDashboardStats = () => API.get("/admin/dashboard-stats");
 export const fetchAllUsers = () => API.get("/admin/users");
+export const createSeller = (data: any) => API.post("/admin/users", { ...data, role: 'seller' });
 export const updateUserStatus = (id: string, status: string, days?: number, reason?: string, suspensionEnd?: string) => API.put(`/admin/users/${id}/status`, { status, days, reason, suspensionEnd });
 export const sendUserNotice = (id: string, message: string, type: string = 'adminNotice') => API.post(`/admin/users/${id}/notice`, { message, type });
 

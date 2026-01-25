@@ -50,7 +50,8 @@ const createOrder = async (req, res) => {
     }));
 
 
-    // Check for stock availability (with Auto-Restock for Testing)
+    // Check for stock availability and build snapshot
+    const finalOrderProducts = [];
     for (const item of validatedProducts) {
       const product = await Product.findById(item.productId);
 
@@ -68,12 +69,22 @@ const createOrder = async (req, res) => {
       if (product.countInStock < item.quantity) {
         return res.status(400).json({ message: `Product ${product.name} is out of stock.` });
       }
+
+      // Add to final array with snapshot data
+      finalOrderProducts.push({
+        productId: item.productId,
+        quantity: item.quantity,
+        name: product.name,
+        image: product.image,
+        price: product.price,
+        selectedVariants: item.selectedVariants || {}
+      });
     }
 
     // Create order
     const order = new Order({
       user: req.user.id,
-      products: validatedProducts,
+      products: finalOrderProducts,
       shippingAddress: address,
       paymentMethod: 'COD',
       paymentStatus: 'PENDING',
@@ -347,20 +358,17 @@ const getUserOrders = async (req, res) => {
     // Format order items to match frontend CartItem structure
     const formattedOrders = orders.map(order => {
       const formattedProducts = order.products.map(item => {
-        if (!item.productId) {
-          return {
-            quantity: item.quantity,
-            price: 0,
-            name: 'Unknown Product (Deleted)',
-            image: '',
-            id: 'deleted'
-          };
-        }
+        // Use snapshot data if available, otherwise fallback to populated product data
+        const productRef = item.productId || {};
+
         return {
-          ...item.productId.toObject(), // Spread product details
+          id: productRef._id || 'deleted',
+          name: item.name || productRef.name || 'Unknown Product',
+          image: item.image || productRef.image || '',
+          price: item.price !== undefined ? item.price : (productRef.price || 0),
           quantity: item.quantity,
-          price: item.productId.price || 0, // Ensure price is included
-          id: item.productId._id // Ensure id is present for product
+          selectedVariants: item.selectedVariants || {},
+          productId: productRef._id // Keep reference
         };
       });
 
@@ -484,7 +492,8 @@ const updateOrderStatus = async (req, res) => {
     const { status } = req.body;
 
     // Validate status
-    const validStatuses = ['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled'];
+    // Validate status
+    const validStatuses = ['Pending', 'Processing', 'Paid', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status value' });
     }

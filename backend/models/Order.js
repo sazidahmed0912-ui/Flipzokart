@@ -13,10 +13,17 @@ const orderSchema = new mongoose.Schema({
         ref: 'Product',
         required: true,
       },
+      name: String, // Snapshot
+      image: String, // Snapshot
+      price: Number, // Snapshot
       quantity: {
         type: Number,
         required: true,
       },
+      selectedVariants: {
+        type: Map,
+        of: String
+      }
     },
   ],
   shippingAddress: {
@@ -26,7 +33,7 @@ const orderSchema = new mongoose.Schema({
   status: {
     type: String,
     default: 'Pending',
-    enum: ['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled'],
+    enum: ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'],
   },
   paymentMethod: {
     type: String,

@@ -4,6 +4,7 @@ import {
     Search, Eye, Edit2, Ban, CheckCircle, ChevronDown, Bell, User, LogOut, UserPlus, Trash2, XCircle
 } from 'lucide-react';
 import API from '../services/api';
+import { createSeller } from '../services/adminService';
 import { useApp } from '../store/Context';
 import { AdminSidebar } from '../components/AdminSidebar';
 
@@ -34,6 +35,7 @@ export const AdminSellers: React.FC = () => {
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
     const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false); // New State
 
     // Close dropdown on click outside
     useEffect(() => {
@@ -201,7 +203,10 @@ export const AdminSellers: React.FC = () => {
                             <Bell size={16} /> {showRequests ? 'Show All Sellers' : 'Seller Requests'}
                         </button>
 
-                        <button className="bg-[#F9C74F] text-gray-800 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-[#f0b52e] transition-all flex items-center gap-2 shadow-sm">
+                        <button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="bg-[#F9C74F] text-gray-800 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-[#f0b52e] transition-all flex items-center gap-2 shadow-sm"
+                        >
                             <UserPlus size={16} /> Add Seller
                         </button>
                     </div>
@@ -374,6 +379,98 @@ export const AdminSellers: React.FC = () => {
                     </div>
                 </div>
             )}
+            {/* Add Seller Modal */}
+            {isAddModalOpen && (
+                <AddSellerModal
+                    onClose={() => setIsAddModalOpen(false)}
+                    onSuccess={() => {
+                        setIsAddModalOpen(false);
+                        fetchSellers();
+                    }}
+                />
+            )}
+        </div>
+    );
+};
+
+// Add Seller Modal Component
+const AddSellerModal = ({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) => {
+    const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            await createSeller(formData);
+            alert('Seller created successfully!');
+            onSuccess();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to create seller');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 className="text-lg font-bold text-gray-800">Add New Seller</h3>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full text-gray-500">
+                        <XCircle size={20} />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {error && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">{error}</div>}
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Store/Seller Name</label>
+                        <input
+                            type="text"
+                            required
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#2874F0]"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Email Address</label>
+                        <input
+                            type="email"
+                            required
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#2874F0]"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Password</label>
+                        <input
+                            type="password"
+                            required
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#2874F0]"
+                        />
+                    </div>
+
+                    <div className="pt-4 flex justify-end gap-3">
+                        <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg">Cancel</button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="px-6 py-2 bg-[#2874F0] text-white font-bold rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                        >
+                            {loading ? 'Creating...' : 'Create Seller'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

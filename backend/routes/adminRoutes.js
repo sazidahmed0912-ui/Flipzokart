@@ -8,7 +8,8 @@ router.route('/dashboard-stats')
   .get(protect, authorize(['admin']), getDashboardStats);
 
 router.route('/users')
-  .get(protect, authorize(['admin']), getAllUsers);
+  .get(protect, authorize(['admin']), getAllUsers)
+  .post(protect, authorize(['admin']), require('../controllers/adminController').createUser);
 
 router.route('/users/:id/status')
   .put(protect, authorize(['admin']), updateUserStatus);
