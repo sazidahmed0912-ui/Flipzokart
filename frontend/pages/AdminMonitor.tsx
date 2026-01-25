@@ -36,8 +36,8 @@ export const AdminMonitor: React.FC = () => {
     const handleScroll = () => {
         if (logsContainerRef.current) {
             const { scrollTop, scrollHeight, clientHeight } = logsContainerRef.current;
-            // If user is near bottom (within 50px), enable auto-scroll. Else disable.
-            const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
+            // If user is actively scrolling up (more than 20px from bottom), pause auto-scroll
+            const isNearBottom = scrollHeight - scrollTop - clientHeight < 20;
             setShouldAutoScroll(isNearBottom);
         }
     };
@@ -179,6 +179,14 @@ export const AdminMonitor: React.FC = () => {
                         ))}
                         <div ref={logsEndRef} />
                     </div>
+                    {!shouldAutoScroll && (
+                        <button
+                            onClick={() => { setShouldAutoScroll(true); logsEndRef.current?.scrollIntoView({ behavior: "smooth" }); }}
+                            className="absolute bottom-8 right-8 bg-blue-600 text-white px-3 py-1 text-xs rounded-full shadow-lg animate-bounce"
+                        >
+                            ⬇ New Logs
+                        </button>
+                    )}
                 </div>
 
                 <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">

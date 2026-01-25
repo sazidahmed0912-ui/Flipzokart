@@ -9,10 +9,12 @@ import {
 import { SmoothReveal } from "../components/SmoothReveal";
 import { useApp } from "../store/Context";
 import API from "../services/api";
+import { useSocket } from "../hooks/useSocket";
 
 const OrdersPage = () => {
     const navigate = useNavigate();
     const { user, logout } = useApp();
+    const socket = useSocket(localStorage.getItem('token')); // Connect Socket
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('All');
@@ -51,10 +53,25 @@ const OrdersPage = () => {
 
     useEffect(() => {
         fetchOrders();
-        // Real-time Sync (5s)
-        const interval = setInterval(fetchOrders, 5000);
-        return () => clearInterval(interval);
-    }, [user]);
+
+        // Real-time listener
+        if (socket) {
+            socket.on('notification', (data: any) => {
+                if (data.type === 'orderStatusUpdate') {
+                    console.log("⚡ Order update received:", data);
+                    fetchOrders(); // Refresh immediately
+                }
+            });
+        }
+
+        // Keep polling as backup
+        const interval = setInterval(fetchOrders, 10000); // Relaxed polling to 10s
+
+        return () => {
+            clearInterval(interval);
+            if (socket) socket.off('notification');
+        };
+    }, [user, socket]);
 
     // Filter Logic
     const filteredOrders = orders.filter(order => {

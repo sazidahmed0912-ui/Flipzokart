@@ -9,12 +9,14 @@ import {
 import { useApp } from '../store/Context';
 import { Order } from '../types';
 import { fetchOrderById } from '../services/api';
+import { useSocket } from '../hooks/useSocket';
 
 export const TrackOrderPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useApp();
+  const socket = useSocket(localStorage.getItem('token'));
   const queryId = searchParams.get('id') || '';
   const initialOrder = location.state?.order;
 
@@ -46,14 +48,28 @@ export const TrackOrderPage: React.FC = () => {
 
   useEffect(() => {
     if (!foundOrder) return;
+
+    // Real-time listener
+    if (socket) {
+      socket.on('notification', (data: any) => {
+        if (data.type === 'orderStatusUpdate' && (data.orderId === foundOrder._id || data.orderId === foundOrder.id)) {
+          console.log("⚡ Live update for this order");
+          handleTrack(foundOrder._id || foundOrder.id);
+        }
+      });
+    }
+
     const interval = setInterval(async () => {
       try {
         const { data } = await fetchOrderById(foundOrder._id || foundOrder.id);
         setFoundOrder(data);
       } catch (e) { }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [foundOrder?._id]);
+    }, 10000); // Relax polling
+    return () => {
+      clearInterval(interval);
+      if (socket) socket.off('notification');
+    };
+  }, [foundOrder?._id, socket]);
 
   if (loading) return <div className="flex h-screen items-center justify-center">Loading...</div>;
 
@@ -263,7 +279,7 @@ export const TrackOrderPage: React.FC = () => {
                   <span className="text-gray-900 font-semibold tracking-wide">{foundOrder.user?.phone || '+91 99965 12345'}</span>
                 </div>
               </div>
-               <button className="w-full bg-[#F9C74F] text-black py-2.5 rounded-[2px] font-bold text-sm hover:shadow-md transition-shadow">
+              <button className="w-full bg-[#F9C74F] text-black py-2.5 rounded-[2px] font-bold text-sm hover:shadow-md transition-shadow">
                 Update Address
               </button>
             </div>

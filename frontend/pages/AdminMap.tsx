@@ -3,7 +3,7 @@ import { AdminSidebar } from '../components/AdminSidebar';
 import { SmoothReveal } from '../components/SmoothReveal';
 import {
     Search, Bell, User, LogOut, ChevronDown,
-    Globe, MapPin, Users, Activity, Layers, Maximize
+    Globe, MapPin, Users, Activity, Layers, Maximize, Share2
 } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { useSocket } from '../hooks/useSocket';
@@ -124,6 +124,15 @@ export const AdminMap: React.FC = () => {
                             <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
                                 <Maximize size={16} /> Fullscreen
                             </button>
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(window.location.href);
+                                    alert("Map Link Copied!");
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#2874F0] text-white border border-[#2874F0] rounded-xl text-sm font-bold hover:bg-blue-600 transition-colors shadow-sm"
+                            >
+                                <Share2 size={16} /> Share View
+                            </button>
                         </div>
                     </SmoothReveal>
 
@@ -150,7 +159,11 @@ export const AdminMap: React.FC = () => {
                                 {/* Tooltip */}
                                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-white rounded-lg shadow-xl p-2 text-center opacity-0 group-hover/marker:opacity-100 transition-opacity pointer-events-none z-10">
                                     <p className="text-xs font-bold text-gray-800">{u.name}</p>
-                                    <p className="text-[10px] text-gray-500">{u.email}</p>
+                                    <p className="text-[10px] text-gray-500 mb-1">{u.email}</p>
+                                    <div className="border-t border-gray-100 pt-1 mt-1 flex justify-between text-[9px] text-gray-400">
+                                        <span>Network</span>
+                                        <span className="text-green-500 font-mono">4G • 24ms</span>
+                                    </div>
                                     <div className="absolute top-100 left-1/2 transform -translate-x-1/2 border-8 border-transparent border-t-white"></div>
                                 </div>
                             </div>
