@@ -147,9 +147,17 @@ export const AdminMap: React.FC = () => {
                                 <span className="text-xs font-semibold text-gray-600">{activeUsers.length} Online</span>
                             </div>
                             <button
-                                onClick={() => {
-                                    navigator.clipboard.writeText(window.location.href);
-                                    alert("Map Link Copied!");
+                                onClick={async () => {
+                                    try {
+                                        await navigator.clipboard.writeText(window.location.href);
+                                        // Simple fallback if useToast isn't set up, or add it if context allows.
+                                        // For now, let's use a cleaner alert or prompt if we can't easily hook toast.
+                                        // But wait, I can import usage.
+                                        alert("Link copied to clipboard! Share it with others.");
+                                    } catch (err) {
+                                        console.error('Failed to copy', err);
+                                        prompt("Copy this link:", window.location.href);
+                                    }
                                 }}
                                 className="flex items-center gap-2 px-4 py-2 bg-[#2874F0] text-white border border-[#2874F0] rounded-xl text-sm font-bold hover:bg-blue-600 transition-colors shadow-sm"
                             >
