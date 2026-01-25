@@ -84,13 +84,13 @@ export const initSocket = (httpServer: HttpServer) => {
     });
 
     // System Monitor Loop (Every 2 seconds)
-    setInterval(() => {
+    setInterval(async () => {
         const activeUsers = io.engine.clientsCount;
         const uptime = process.uptime(); // Seconds
 
         // Memory Usage
         const totalMem = os.totalmem();
-        const freeMem = os.freememo(); // Note: os.freemem() is correct, fixed typo if any
+        const freeMem = os.freemem(); // Note: os.freemem() is correct, fixed typo if any
         const usedMem = totalMem - os.freemem();
         const memPercentage = Math.round((usedMem / totalMem) * 100);
 
@@ -98,13 +98,36 @@ export const initSocket = (httpServer: HttpServer) => {
         const cpus = os.cpus();
         const load = cpus.length > 0 ? (cpus[0].times.user / (cpus[0].times.user + cpus[0].times.idle)) * 100 : 0;
 
+        // Get active users with location data (last updated within 24 hours)
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const activeUserList = await prisma.user.findMany({
+            where: {
+                latitude: { not: null },
+                longitude: { not: null },
+                lastLocationUpdate: {
+                    gte: twentyFourHoursAgo,
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                latitude: true,
+                longitude: true,
+                city: true,
+                country: true,
+                countryCode: true,
+            },
+        });
+
         // Emit stats to monitor room
         io.to('admin-monitor').emit('monitor:stats', {
             activeUsers,
             serverLoad: Math.round(load) || Math.floor(Math.random() * 20) + 5, // Fallback if calculation is weird
             memoryUsage: memPercentage,
             uptime: Math.floor(uptime),
-            systemStatus: memPercentage > 90 ? 'Critical' : 'Operational'
+            systemStatus: memPercentage > 90 ? 'Critical' : 'Operational',
+            activeUserList, // Include location data for map
         });
 
     }, 2000);

@@ -10,6 +10,8 @@ router.post('/register', userController.register);
 router.post('/login', userController.login);
 router.post('/appeal', protect, userController.submitAppeal);
 router.post('/upload-avatar', protect, upload.single('avatar'), userController.uploadAvatar);
+router.post('/update-location', protect, userController.updateLocation);
+router.get('/map-data', protect, userController.getMapData);
 // router.get('/user/profile', protect, userController.getProfile);
 
 export default router;

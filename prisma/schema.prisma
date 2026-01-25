@@ -40,6 +40,15 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Geolocation fields
+  latitude         Float?
+  longitude        Float?
+  city             String?
+  country          String?
+  countryCode      String?
+  ipAddress        String?
+  lastLocationUpdate DateTime?
+
   addresses Address[]
   reviews   Review[]
   orders    Order[]

@@ -2,6 +2,7 @@ import { PrismaClient, User, Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { AppError } from '../utils/AppError';
+import geolocationService from './geolocation.service';
 
 const prisma = new PrismaClient();
 
@@ -90,5 +91,56 @@ export class UserService {
             where: { id: userId },
             data: { avatar: avatarPath }, // Ensure 'avatar' field exists in schema or we add it? 'types.ts' has it. Model?
         });
+    }
+
+    async updateUserLocation(userId: string, ipAddress: string) {
+        // Get location data from IP
+        const locationData = await geolocationService.getLocationFromIP(ipAddress);
+
+        if (!locationData) {
+            throw new AppError('Could not determine location', 500);
+        }
+
+        // Update user with location data
+        return await prisma.user.update({
+            where: { id: userId },
+            data: {
+                latitude: locationData.latitude,
+                longitude: locationData.longitude,
+                city: locationData.city,
+                country: locationData.country,
+                countryCode: locationData.countryCode,
+                ipAddress: ipAddress,
+                lastLocationUpdate: new Date(),
+            },
+        });
+    }
+
+    async getActiveUsersMapData() {
+        // Get all users with location data (recent activity within last 24 hours)
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+        const users = await prisma.user.findMany({
+            where: {
+                latitude: { not: null },
+                longitude: { not: null },
+                lastLocationUpdate: {
+                    gte: twentyFourHoursAgo,
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                latitude: true,
+                longitude: true,
+                city: true,
+                country: true,
+                countryCode: true,
+                lastLocationUpdate: true,
+            },
+        });
+
+        return users;
     }
 }

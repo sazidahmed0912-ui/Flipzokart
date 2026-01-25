@@ -67,4 +67,28 @@ export class UserController {
             }
         });
     });
+
+    updateLocation = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const userId = (req as any).user.id;
+        const ipAddress = req.headers['x-forwarded-for']?.toString().split(',')[0].trim() ||
+            req.headers['x-real-ip']?.toString() ||
+            req.socket.remoteAddress ||
+            '127.0.0.1';
+
+        const updatedUser = await userService.updateUserLocation(userId, ipAddress);
+
+        res.status(200).json({
+            status: 'success',
+            data: { user: updatedUser },
+        });
+    });
+
+    getMapData = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const mapData = await userService.getActiveUsersMapData();
+
+        res.status(200).json({
+            status: 'success',
+            data: { users: mapData },
+        });
+    });
 }

@@ -1,54 +1,187 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { AdminSidebar } from '../components/AdminSidebar';
 import { SmoothReveal } from '../components/SmoothReveal';
 import {
     Search, Bell, User, LogOut, ChevronDown,
-    Globe, MapPin, Users, Activity, Layers, Maximize, Share2
+    Globe, MapPin, Users, Activity, Layers, Maximize, Share2, Map as MapIcon
 } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { useSocket } from '../hooks/useSocket';
 
-// Simple World Map SVG Path (Simplified for performance & visuals)
-const WorldMapSVG = () => (
-    <svg viewBox="0 0 1000 500" className="w-full h-full fill-gray-200 stroke-gray-300 stroke-[0.5]">
-        <path d="M836,75c-1-1-5-1-8-2c-2,0-5,1-7,1c-2,1-1,4-1,6c0,2-2,3-3,3c-2,0-3-4-2-6c1-2,1-4,3-6c1-2,0-4-3-4c-1-1-4-1-6,0c-1,1-1,3-1,5c1,3,2,6,2,9c0,2-1,3-2,4c-1,0-2-1-3-2c-1-1-1-3-2-5c0-1,0-2-1-3c-1-2-1-4-2-7c-1-2,1-5,3-6c1-1,2-1,3,0c1,2,3,2,5,1c1-1,0-3-1-4c-2-1-5-1-7,1c-1,1-1,3-1,4c1,1,2,2,3,2c1,0,2-1,2-2c0-1-1-1-1-2c0-1,1-2,2-3c1-1,1-2,0-3c-1-1-3-1-4,0c-1,2-2,4-3,6c-1,2-3,2-4,2c-1,0-1-2,0-3c0-1,2-2,3-2c1,0,2,1,2,3c0,1,1,2,1,3c1,1,2,1,2,0c0-1-1-2-2-3c-1-1-2-2-3-3c-1-1-2-1-3,0c-1,1-1,3-1,4c0,2-2,3-3,3c-1,0-2-2-2-4c0-2,1-4,2-5c1-2,0-3-2-3c-2,0-3,2-4,4c-1,2-1,4-1,6c0,1,1,2,1,3c1,1,2,1,2,0c0-1-1-2-2-3c-1-1-1-2-2-4c-1-1-2-2-2-3c0-1,1-2,2-3c1-1,2-1,3,0c1,1,1,2,1,3c0,1,1,1,2,1c0-1-1-2-1-3c0-1,1-2,2-3c1-1,2-1,3,0c1,1,1,3,1,5c0,2-2,3-4,3c-1,0-3-1-4-2c-1-1-2-3-2-5c0-2,0-4,1-6c1-2,2-3,3-5c1-2,1-4,0-6c-1-1-3-1-5,0c-2,1-3,3-4,5c-1,2-2,4-2,6c-1,2-1,4-1,6c0,1,1,3,2,4c1,1,3,1,4,1c1,0,2-1,2-2c0-1-1-2-2-3c-1-1-2-1-2-2c0-1,1-2,2-3c1-1,3-1,4-1c1,0,1,2,1,4c-1,2-1,4-1,6c0,2,1,3,2,4c1,1,2,1,3,0c1-1,1-2,1-4c0-2-1-3-2-4c-1-1-3-1-4,0c-2,1-3,3-4,5c-1,2-1,4-1,6c0,2,1,4,3,5c1,1,3,1,5,0c1-1,2-2,2-3c0-1-1-2-2-3c-1-1-2-1-3-1c-2,0-3,2-4,4c-1,2-1,5-1,7c0,2,0,5,1,7c0,2,1,4,2,6c1,1,1,3,1,5c-1,1-2,2-4,2c-2,0-3-2-4-4c-1-2-1-5-1-7c0-2,0-4,1-6c0-1,1-2,1-4c1-2,1-3,0-5c-1-1-2-2-3-2c-1,0-2,1-3,2c-1,1-1,3-1,5c0,1,1,3,2,4c0,1,1,2,1,3c-1,1-2,1-3,0c-1-1-2-3-2-5c0-1,0-3,1-4c0-2,1-3,1-5c0-1-1-2-2-3c-1-1-3-1-4,0c-2,1-3,3-4,5c-1,2-1,4-1,6c0,2,0,5,1,7c0,2,1,4,2,5c1,1,1,3,1,4c-1,1-2,1-3,0c-1-1-2-2-3-4c-1-1-2-3-2-5c0-2,0-4,1-5c0-2,1-3,2-5c0-1,1-2,1-3c0-1-1-2-2-3c-1-1-3-1-4,0c-1,1-2,2-3,4s-1,3-1,5c0,1,1,2,2,3c0,0,1,1,1,1c1,0,2-1,2-2c0-1-1-2-1-3c-1-1-1-2-1-3c0-1,1-2,2-2c1,0,2,1,2,2c0,1-1,2-2,3c-1,1-2,1-3,0c-1-1-2-2-2-4c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,0,3,1,4c1,1,2,1,3,0c1-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-2-2c-1-1-1-3-1-5c0-1,1-3,2-4c0-1,1-2,2-2c0,0,1,1,1,2c0,1-1,2-2,3c-1,1-2,2-3,2c-1,0-2-1-3-2c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,1,2,1,3c-1,1-2,1-3,0c-1-1-2-2-2-4c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c1-1,1-2,1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c1-1,1-2,1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4s-1,4-1,6c0,1,1,3,2,4s2,1,3,0c1-1,1-3,1-5c0-1,0-3-1-4c0-1-1-2-1-3c0-1,1-2,2-2c1,0,2,1,2,2c0,1-1,2-2,3s-2,2-3,2c-1,0-2-1-3-2c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4s-1,4-1,6c0,1,1,3,2,4s2,1,3,0c1-1,1-3,1-5c0-1,0-3-1-4c0-1-1-2-1-3c0-1,1-2,2-2c1,0,2,1,2,2c0,1-1,2-2,3s-2,2-3,2c-1,0-2-1-3-2c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4s-1,4-1,6c0,1,1,3,2,4s2,1,3,0c1-1,1-3,1-5c0-1,0-3-1-4c0-1-1-2-1-3c0-1,1-2,2-2c1,0,2,1,2,2c0,1-1,2-2,3s-2,2-3,2c-1,0-2-1-3-2c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4s-1,4-1,6c0,1,1,3,2,4s2,1,3,0c1-1,1-3,1-5c0-1,0-3-1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4s-1,4-1,6c0,1,1,3,2,4s2,1,3,0c1-1,1-3,1-5c0-1,0-3-1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4s-1,4-1,6c0,1,1,3,2,4s2,1,3,0c1-1,1-3,1-5c0-1,0-3-1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4s-1,4-1,6c0,1,1,3,2,4s2,1,3,0c1-1,1-3,1-5c0-1,0-3-1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4s-1,4-1,6c0,1,1,3,2,4s2,1,3,0c1-1,1-3,1-5c0-1,0-3-1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4s-1,4-1,6c0,1,1,3,2,4s2,1,3,0c1-1,1-3,1-5c0-1,0-3-1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4s-1,4-1,6c0,1,1,3,2,4s2,1,3,0c1-1,1-3,1-5c0-1,0-3-1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5c-1,2-1,4-1,6c0,1,1,3,2,4c0,1,0,2-1,3s-2,1-3,0c-1-1-1-3-1-5c0-1,0-3,1-4c0-1,1-2,1-3c0-1,0-2-1-3c-1-1-2-1-3-1c-1,0-2,2-2,4s-1,4-1,6c0,1,1,3,2,4s2,1,3,0c1-1,1-3,1-5c0-1,0-3-1-4c0-1,0-2-1-3c-1-1-2-1-3,0c-1,1-2,3-2,5" />
-    </svg>
-);
+// Fix Leaflet default marker icons
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Custom pulsing marker icon
+const createCustomIcon = (isOnline: boolean = true) => {
+    const color = isOnline ? '#2874F0' : '#94a3b8';
+    return L.divIcon({
+        className: 'custom-marker',
+        html: `
+            <div style="position: relative; width: 40px; height: 40px;">
+                <div style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 20px;
+                    height: 20px;
+                    background: ${color};
+                    border-radius: 50%;
+                    border: 3px solid white;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    z-index: 2;
+                "></div>
+                ${isOnline ? `
+                <div style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 20px;
+                    height: 20px;
+                    background: ${color};
+                    border-radius: 50%;
+                    opacity: 0.6;
+                    animation: pulse 2s infinite;
+                "></div>
+                ` : ''}
+            </div>
+        `,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+        popupAnchor: [0, -20],
+    });
+};
+
+// Add CSS for pulse animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0.6;
+        }
+        50% {
+            transform: translate(-50%, -50%) scale(2.5);
+            opacity: 0;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+interface UserLocation {
+    id: string;
+    name: string;
+    email: string;
+    lat: number;
+    lng: number;
+    city?: string;
+    country?: string;
+    status?: string;
+    lastActive?: string;
+}
+
+// Map layer switcher component
+const LayerControl: React.FC<{ onLayerChange: (layer: string) => void; currentLayer: string }> = ({ onLayerChange, currentLayer }) => {
+    const layers = [
+        { name: 'Street', value: 'street', tile: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' },
+        { name: 'Dark', value: 'dark', tile: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' },
+        { name: 'Satellite', value: 'satellite', tile: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' },
+    ];
+
+    return (
+        <div className="absolute top-4 left-4 z-[1000] bg-white rounded-xl shadow-xl p-2 flex gap-2">
+            {layers.map(layer => (
+                <button
+                    key={layer.value}
+                    onClick={() => onLayerChange(layer.value)}
+                    className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all ${currentLayer === layer.value
+                        ? 'bg-[#2874F0] text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                >
+                    {layer.name}
+                </button>
+            ))}
+        </div>
+    );
+};
+
+// Component to handle map centering
+const MapCenterController: React.FC<{ center: [number, number] }> = ({ center }) => {
+    const map = useMap();
+    useEffect(() => {
+        map.setView(center, map.getZoom());
+    }, [center, map]);
+    return null;
+};
 
 export const AdminMap: React.FC = () => {
     const { user, logout } = useApp();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeUsers, setActiveUsers] = useState<any[]>([]);
+    const [activeUsers, setActiveUsers] = useState<UserLocation[]>([]);
+    const [mapCenter, setMapCenter] = useState<[number, number]>([20, 0]);
+    const [mapZoom, setMapZoom] = useState(2);
+    const [currentLayer, setCurrentLayer] = useState('street');
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const mapContainerRef = useRef<HTMLDivElement>(null);
 
     // Socket Connection
     const token = localStorage.getItem("token");
     const socket = useSocket(token);
 
+    // Get user's real geolocation or create mock data
     useEffect(() => {
         if (!socket) return;
         socket.emit('join_monitor');
 
         const handleStats = (data: any) => {
             if (data.activeUserList) {
-                // Generate deterministic position based on User ID
-                // This ensures the user stays in the same spot (simulating real location)
-                const usersWithLoc = data.activeUserList.map((u: any) => {
-                    // Simple hash function for string to number
-                    let hash = 0;
-                    const str = u.id || 'default';
-                    for (let i = 0; i < str.length; i++) {
-                        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                // Use real location data from backend
+                const usersWithLocation = data.activeUserList.map((u: any) => {
+                    // If user has real geolocation data, use it; otherwise fall back to mock
+                    if (u.latitude && u.longitude) {
+                        return {
+                            id: u.id,
+                            name: u.name || 'Anonymous',
+                            email: u.email || 'N/A',
+                            lat: u.latitude,
+                            lng: u.longitude,
+                            city: u.city || 'Unknown',
+                            country: u.country || 'Unknown',
+                            status: 'online',
+                            lastActive: new Date().toISOString(),
+                        };
+                    } else {
+                        // Fallback to mock location if no real data
+                        const mockLoc = getMockLocationFromId(u.id);
+                        return {
+                            id: u.id,
+                            name: u.name || 'Anonymous',
+                            email: u.email || 'N/A',
+                            lat: mockLoc.lat,
+                            lng: mockLoc.lng,
+                            city: mockLoc.city,
+                            country: mockLoc.country,
+                            status: 'online',
+                            lastActive: new Date().toISOString(),
+                        };
                     }
-
-                    // Normalize hash to map dimensions (1000x500 svg)
-                    // We stick to land-mass likely areas (approx) or just random stable
-                    const x = Math.abs(hash % 900) + 50;
-                    const y = Math.abs((hash >> 8) % 400) + 50;
-
-                    return { ...u, x, y };
                 });
-                setActiveUsers(usersWithLoc);
+                setActiveUsers(usersWithLocation);
             }
         };
 
@@ -58,6 +191,79 @@ export const AdminMap: React.FC = () => {
         };
     }, [socket]);
 
+    // Mock location function - returns realistic city coordinates based on user ID
+    const getMockLocationFromId = (id: string): { lat: number; lng: number; city: string; country: string } => {
+        const cities = [
+            { lat: 40.7128, lng: -74.0060, city: 'New York', country: 'USA' },
+            { lat: 51.5074, lng: -0.1278, city: 'London', country: 'UK' },
+            { lat: 35.6762, lng: 139.6503, city: 'Tokyo', country: 'Japan' },
+            { lat: 28.7041, lng: 77.1025, city: 'New Delhi', country: 'India' },
+            { lat: -33.8688, lng: 151.2093, city: 'Sydney', country: 'Australia' },
+            { lat: 55.7558, lng: 37.6173, city: 'Moscow', country: 'Russia' },
+            { lat: -23.5505, lng: -46.6333, city: 'São Paulo', country: 'Brazil' },
+            { lat: 19.4326, lng: -99.1332, city: 'Mexico City', country: 'Mexico' },
+            { lat: 1.3521, lng: 103.8198, city: 'Singapore', country: 'Singapore' },
+            { lat: 25.2048, lng: 55.2708, city: 'Dubai', country: 'UAE' },
+            { lat: 52.5200, lng: 13.4050, city: 'Berlin', country: 'Germany' },
+            { lat: 48.8566, lng: 2.3522, city: 'Paris', country: 'France' },
+            { lat: 37.7749, lng: -122.4194, city: 'San Francisco', country: 'USA' },
+            { lat: -1.2921, lng: 36.8219, city: 'Nairobi', country: 'Kenya' },
+            { lat: 39.9042, lng: 116.4074, city: 'Beijing', country: 'China' },
+        ];
+
+        // Use hash to deterministically select a city
+        let hash = 0;
+        for (let i = 0; i < id.length; i++) {
+            hash = id.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash % cities.length);
+        return cities[index];
+    };
+
+    // Get tile layer URL based on current layer
+    const getTileLayerUrl = () => {
+        switch (currentLayer) {
+            case 'dark':
+                return 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+            case 'satellite':
+                return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+            default:
+                return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        }
+    };
+
+    const getTileLayerAttribution = () => {
+        switch (currentLayer) {
+            case 'dark':
+                return '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+            case 'satellite':
+                return 'Tiles &copy; Esri';
+            default:
+                return '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+        }
+    };
+
+    const toggleFullscreen = () => {
+        if (!mapContainerRef.current) return;
+
+        if (!isFullscreen) {
+            if (mapContainerRef.current.requestFullscreen) {
+                mapContainerRef.current.requestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+        setIsFullscreen(!isFullscreen);
+    };
+
+    const filteredUsers = activeUsers.filter(u =>
+        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.country?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
@@ -71,7 +277,7 @@ export const AdminMap: React.FC = () => {
                             <Search size={18} className="text-[#2874F0]" />
                             <input
                                 type="text"
-                                placeholder="Search regions, users..."
+                                placeholder="Search locations, users, cities..."
                                 className="w-full bg-transparent border-none outline-none text-sm ml-3 text-gray-700 placeholder-gray-400 font-medium"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -113,15 +319,19 @@ export const AdminMap: React.FC = () => {
                     <SmoothReveal direction="down" delay={100} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                                <Globe className="text-blue-600" /> Live User Map
+                                <Globe className="text-blue-600" /> Real-World User Map
                             </h1>
-                            <p className="text-sm text-gray-500 mt-1">Real-time visualization of active users across the globe.</p>
+                            <p className="text-sm text-gray-500 mt-1">Live geographic visualization of active users worldwide</p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
-                                <Layers size={16} /> Layers
-                            </button>
-                            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+                            <div className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <span className="text-xs font-semibold text-gray-600">{activeUsers.length} Online</span>
+                            </div>
+                            <button
+                                onClick={toggleFullscreen}
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                            >
                                 <Maximize size={16} /> Fullscreen
                             </button>
                             <button
@@ -137,56 +347,76 @@ export const AdminMap: React.FC = () => {
                     </SmoothReveal>
 
                     {/* Map Container */}
-                    <SmoothReveal direction="up" delay={200} className="flex-1 bg-[#0f172a] rounded-3xl border border-gray-800 shadow-2xl relative overflow-hidden group">
-
-                        {/* Map SVG */}
-                        <div className="absolute inset-0 opacity-40 group-hover:opacity-50 transition-opacity duration-1000">
-                            <WorldMapSVG />
-                        </div>
-
-                        {/* Active User Markers */}
-                        {activeUsers.map((u, i) => (
-                            <div
-                                key={i}
-                                className="absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 group/marker"
-                                style={{ left: `${u.x}px`, top: `${u.y}px` }}
+                    <SmoothReveal direction="up" delay={200} className="flex-1 bg-white rounded-3xl border border-gray-200 shadow-2xl relative overflow-hidden min-h-[600px]">
+                        <div ref={mapContainerRef} className="w-full h-full relative">
+                            <MapContainer
+                                center={mapCenter}
+                                zoom={mapZoom}
+                                className="w-full h-full rounded-3xl"
+                                zoomControl={true}
                             >
-                                <span className="absolute inline-flex h-4 w-4 rounded-full bg-blue-400 opacity-75 animate-ping"></span>
-                                <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-500 border-2 border-white shadow-lg items-center justify-center">
-                                    <span className="w-1 h-1 bg-white rounded-full"></span>
-                                </span>
+                                <TileLayer
+                                    attribution={getTileLayerAttribution()}
+                                    url={getTileLayerUrl()}
+                                />
+                                <MapCenterController center={mapCenter} />
 
-                                {/* Tooltip */}
-                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-white rounded-lg shadow-xl p-2 text-center opacity-0 group-hover/marker:opacity-100 transition-opacity pointer-events-none z-10">
-                                    <p className="text-xs font-bold text-gray-800">{u.name}</p>
-                                    <p className="text-[10px] text-gray-500 mb-1">{u.email}</p>
-                                    <div className="border-t border-gray-100 pt-1 mt-1 flex justify-between text-[9px] text-gray-400">
-                                        <span>Network</span>
-                                        <span className="text-green-500 font-mono">4G • 24ms</span>
+                                {/* User Markers */}
+                                {filteredUsers.map((user) => (
+                                    <Marker
+                                        key={user.id}
+                                        position={[user.lat, user.lng]}
+                                        icon={createCustomIcon(user.status === 'online')}
+                                    >
+                                        <Popup className="custom-popup">
+                                            <div className="p-2 min-w-[200px]">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                                                        {user.name.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-gray-800 text-sm">{user.name}</p>
+                                                        <p className="text-xs text-gray-500">{user.email}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="border-t border-gray-100 pt-2 mt-2 space-y-1">
+                                                    <div className="flex items-center gap-2 text-xs">
+                                                        <MapPin size={12} className="text-blue-600" />
+                                                        <span className="text-gray-700">{user.city}, {user.country}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-xs">
+                                                        <Activity size={12} className="text-green-600" />
+                                                        <span className="text-gray-700">Active Now</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Popup>
+                                    </Marker>
+                                ))}
+                            </MapContainer>
+
+                            {/* Layer Control */}
+                            <LayerControl onLayerChange={setCurrentLayer} currentLayer={currentLayer} />
+
+                            {/* Stats Overlay */}
+                            <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-md border border-gray-200 p-4 rounded-2xl shadow-xl z-[1000]">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-3 bg-blue-500 rounded-xl text-white">
+                                        <Users size={24} />
                                     </div>
-                                    <div className="absolute top-100 left-1/2 transform -translate-x-1/2 border-8 border-transparent border-t-white"></div>
+                                    <div>
+                                        <p className="text-xs font-medium text-gray-500">Active Users</p>
+                                        <p className="text-2xl font-bold text-gray-800">{filteredUsers.length}</p>
+                                    </div>
                                 </div>
                             </div>
-                        ))}
 
-                        {/* Stats Overlay */}
-                        <div className="absolute bottom-6 left-6 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-500/20 rounded-lg text-blue-300">
-                                    <Users size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-medium text-blue-200">Active Users</p>
-                                    <p className="text-xl font-bold text-white">{activeUsers.length}</p>
-                                </div>
+                            {/* Live Indicator */}
+                            <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-md border border-gray-200 p-3 rounded-xl text-xs font-semibold text-gray-700 z-[1000] shadow-lg flex items-center gap-2">
+                                <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                Real-Time Tracking
                             </div>
                         </div>
-
-                        <div className="absolute top-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 p-2 rounded-lg text-xs font-mono text-gray-400">
-                            Live Sync Active
-                            <span className="inline-block w-2 h-2 bg-green-500 rounded-full ml-2 animate-pulse"></span>
-                        </div>
-
                     </SmoothReveal>
                 </div>
             </div>

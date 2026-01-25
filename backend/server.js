@@ -115,7 +115,8 @@ setInterval(async () => {
 
   // Emit stats to monitor room
   io.to('admin-monitor').emit('monitor:stats', {
-    activeUsers,
+    activeUsers: uniqueUsers.length, // Send unique authenticated user count
+    totalConnections: activeUsers, // Optional: send raw sockets if needed
     activeUserList: uniqueUsers, // Send list of names
     serverLoad: Math.round(load) || Math.floor(Math.random() * 20) + 5,
     memoryUsage: memPercentage,
