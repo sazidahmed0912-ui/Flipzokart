@@ -10,6 +10,7 @@ router.put('/password', changePassword);
 router.get('/activity', getActivities);
 router.get('/devices', getDeviceHistory);
 router.post('/appeal', appealUser);
+
 router.get('/locations', getUserLocations);
 
 router.route('/address')

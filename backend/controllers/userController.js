@@ -257,6 +257,8 @@ const getUserLocations = async (req, res) => {
         const users = await User.find({ "addresses.0": { $exists: true } })
             .select('name email addresses role createdAt');
 
+
+
         const mapData = users.map(user => {
             // Use optimal address (preferably Home or first one)
             const address = user.addresses.find(a => a.type === 'Home') || user.addresses[0];
