@@ -105,7 +105,7 @@ export const AdminOrderDetails: React.FC = () => {
             case 'Delivered': return 'text-green-600 bg-green-50';
             case 'Processing': return 'text-blue-600 bg-blue-50';
             case 'Shipped': return 'text-indigo-600 bg-indigo-50';
-            case 'Out for Delivery': return 'text-orange-600 bg-orange-50';
+            case 'Out for Delivery': return 'text-purple-600 bg-purple-50';
             case 'Cancelled': return 'text-red-600 bg-red-50';
             default: return 'text-yellow-600 bg-yellow-50';
         }

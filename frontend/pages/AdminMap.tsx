@@ -169,7 +169,7 @@ export const AdminMap: React.FC = () => {
                     </SmoothReveal>
 
                     {/* Map Container - ID for Fullscreen */}
-                    <SmoothReveal direction="up" delay={200} className="flex-1 bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden relative" >
+                    <div className="flex-1 bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden relative" >
                         <div id="admin-map-container" className="w-full h-full bg-white relative">
                             {activeUsers.length === 0 && (
                                 <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[400] bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-gray-200">
@@ -182,7 +182,7 @@ export const AdminMap: React.FC = () => {
                                 className="w-full h-full"
                             />
                         </div>
-                    </SmoothReveal>
+                    </div>
                 </div>
             </div>
         </div>

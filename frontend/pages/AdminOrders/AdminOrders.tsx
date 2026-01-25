@@ -91,6 +91,7 @@ export const AdminOrders: React.FC = () => {
             case 'Delivered': return 'bg-green-50 text-green-600 border-green-100';
             case 'Processing': return 'bg-blue-50 text-blue-600 border-blue-100';
             case 'Shipped': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
+            case 'Out for Delivery': return 'bg-purple-50 text-purple-600 border-purple-100';
             case 'Cancelled': return 'bg-red-50 text-red-600 border-red-100';
             default: return 'bg-yellow-50 text-yellow-600 border-yellow-100';
         }
@@ -101,6 +102,7 @@ export const AdminOrders: React.FC = () => {
             case 'Delivered': return <CheckCircle size={14} />;
             case 'Processing': return <Clock size={14} />;
             case 'Shipped': return <Truck size={14} />;
+            case 'Out for Delivery': return <Truck size={14} />;
             case 'Cancelled': return <XCircle size={14} />;
             default: return <Package size={14} />;
         }
@@ -171,8 +173,8 @@ export const AdminOrders: React.FC = () => {
                                     key={status}
                                     onClick={() => setStatusFilter(status)}
                                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${statusFilter === status
-                                            ? 'bg-[#2874F0] text-white shadow-md shadow-blue-200'
-                                            : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                                        ? 'bg-[#2874F0] text-white shadow-md shadow-blue-200'
+                                        : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
                                         }`}
                                 >
                                     {status}

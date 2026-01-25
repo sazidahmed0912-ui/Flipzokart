@@ -224,10 +224,10 @@ const CartPage = () => {
                     </button>
                   </div>
 
-                  <div className="action-buttons">
-                    <button className="cart-action-button">SAVE FOR LATER</button>
+                  <div className="action-buttons desktop-layout-actions">
+                    <button className="cart-action-btn border-r">SAVE FOR LATER</button>
                     <button
-                      className="cart-action-button"
+                      className="cart-action-btn"
                       onClick={() => removeItem(item)}
                     >
                       REMOVE

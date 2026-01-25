@@ -61,6 +61,7 @@ export interface Address {
   state: string;
   pincode: string;
   type: 'Home' | 'Work' | 'Other';
+  locality?: string;
 }
 
 export interface CartItem extends Product {

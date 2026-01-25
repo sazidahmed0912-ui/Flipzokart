@@ -12,15 +12,15 @@ interface AddressFormProps {
 
 const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCancel }) => {
     const [formData, setFormData] = useState<AddressFormData>({
-        name: addressToEdit?.name ?? '',
-        phone: addressToEdit?.phone ?? '',
-        email: '',
-        street: addressToEdit?.address ?? '',
-        locality: (addressToEdit as any)?.locality ?? '',
-        city: addressToEdit?.city ?? '',
-        state: addressToEdit?.state ?? '',
-        zip: addressToEdit?.pincode ?? '',
-        type: (addressToEdit?.type as any) ?? 'Home'
+        name: addressToEdit?.name || addressToEdit?.fullName || '',
+        phone: addressToEdit?.phone || '',
+        email: addressToEdit?.email || '',
+        street: addressToEdit?.address || '',
+        locality: addressToEdit?.locality || '',
+        city: addressToEdit?.city || '',
+        state: addressToEdit?.state || '',
+        zip: addressToEdit?.pincode || '',
+        type: (addressToEdit?.type as any) || 'Home'
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -28,14 +28,14 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
     useEffect(() => {
         if (addressToEdit) {
             setFormData({
-                name: addressToEdit.name,
-                phone: addressToEdit.phone,
-                email: '',
-                street: addressToEdit.address,
-                locality: (addressToEdit as any).locality || '',
-                city: addressToEdit.city,
-                state: addressToEdit.state,
-                zip: addressToEdit.pincode,
+                name: addressToEdit.name || addressToEdit.fullName || '',
+                phone: addressToEdit.phone || '',
+                email: addressToEdit.email || '',
+                street: addressToEdit.address || '',
+                locality: addressToEdit.locality || '',
+                city: addressToEdit.city || '', // Ensure city persists
+                state: addressToEdit.state || '',
+                zip: addressToEdit.pincode || '',
                 type: (addressToEdit.type as any) || 'Home'
             });
         }
@@ -52,19 +52,18 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
         }
         setErrors({});
 
-        // Combine street and locality for the final address string
-        const finalAddressString = formData.street; // Keep street clean in address field
-
         const finalAddress: Address = {
             id: addressToEdit?.id ?? Date.now(),
             name: formData.name,
+            fullName: formData.name, // Ensure consistency
             phone: formData.phone,
-            address: finalAddressString,
+            address: formData.street, // Keep strict schema
             city: formData.city,
             state: formData.state,
             pincode: formData.zip,
             type: formData.type,
-            locality: formData.locality
+            locality: formData.locality,
+            email: formData.email
         } as Address;
 
         onSave(finalAddress);
@@ -109,8 +108,8 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
                     <button
                         type="submit"
                         className={`flex-1 px-6 py-3.5 rounded-xl font-bold shadow-sm transition-all duration-200 ${Object.keys(errors).length > 0
-                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                : "bg-yellow-400 hover:bg-yellow-500 text-black hover:shadow-md active:transform active:scale-[0.98]"
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : "bg-yellow-400 hover:bg-yellow-500 text-black hover:shadow-md active:transform active:scale-[0.98]"
                             }`}
                     >
                         Save Address

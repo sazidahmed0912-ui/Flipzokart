@@ -148,6 +148,7 @@ export const TrackOrderPage: React.FC = () => {
                 @page { margin: 0; size: auto; }
                 body { visibility: hidden; background: white; }
                 #invoice-template { 
+                    display: block !important;
                     visibility: visible; 
                     position: fixed; 
                     left: 0; 

@@ -36,7 +36,7 @@ const AddNewAddress: React.FC = () => {
                 phone: addressToEdit.phone || "",
                 email: addressToEdit.email || "",
                 street: addressToEdit.address || "",
-                locality: addressToEdit.locality || "", // Now mapped correctly from backend
+                locality: addressToEdit.locality || "",
                 city: addressToEdit.city || "",
                 state: addressToEdit.state || "",
                 zip: addressToEdit.pincode || "",

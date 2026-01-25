@@ -126,9 +126,7 @@ const PaymentPage: React.FC = () => {
         deliveryCharges,
         discount,
         total: totalPayable,
-        address: selectedAddress
-          ? `${selectedAddress.name}, ${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}`
-          : "Default Address",
+        address: selectedAddress,
       });
 
       clearCart();
@@ -178,9 +176,7 @@ const PaymentPage: React.FC = () => {
               deliveryCharges,
               discount,
               total: totalPayable,
-              address: selectedAddress
-                ? `${selectedAddress.name}, ${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}`
-                : "Default Address",
+              address: selectedAddress,
             });
 
             clearCart();
@@ -237,31 +233,40 @@ const PaymentPage: React.FC = () => {
       <main className="payment-main">
         {/* LEFT */}
         <div className="payment-options-section">
-          <h2>Choose a payment method</h2>
-
-          <div
-            className={`payment-option-card ${paymentMethod === "COD" ? "selected" : ""
-              }`}
-            onClick={() => setPaymentMethod("COD")}
-          >
-            <Banknote />
-            <h3>Cash on Delivery</h3>
-            {paymentMethod === "COD" && <CheckCircle2 />}
+          <div>
+            <h2>Choose Payment Mode</h2>
+            <p className="sub-heading">Select a payment method to complete this order.</p>
           </div>
 
           <div
-            className={`payment-option-card ${paymentMethod === "RAZORPAY" ? "selected" : ""
-              }`}
+            className={`payment-option-card ${paymentMethod === "COD" ? "selected" : ""}`}
+            onClick={() => setPaymentMethod("COD")}
+          >
+            <div className="icon-wrapper cod-icon-bg">
+              <Banknote size={28} />
+            </div>
+            <div className="option-content">
+              <h3>Cash on Delivery</h3>
+              <p className="option-description">Pay in cash when your order arrives</p>
+            </div>
+            {paymentMethod === "COD" ? <CheckCircle2 className="check-circle" /> : <div className="w-6 h-6 rounded-full border-2 border-gray-200"></div>}
+          </div>
+
+          <div
+            className={`payment-option-card ${paymentMethod === "RAZORPAY" ? "selected" : ""}`}
             onClick={() => setPaymentMethod("RAZORPAY")}
           >
-            <img
-              src="https://razorpay.com/assets/razorpay-logo.svg"
-              alt="Razorpay"
-              className="razorpay-logo"
-            />
-            <h3>Online Payment</h3>
-            <ShieldCheck size={16} /> 100% Secure
-            {paymentMethod === "RAZORPAY" && <CheckCircle2 />}
+            <div className="icon-wrapper online-icon-bg">
+              <ShieldCheck size={28} />
+            </div>
+            <div className="option-content">
+              <h3>Online Payment</h3>
+              <p className="option-description">UPI, Cards, Wallets, NetBanking</p>
+              <div className="secure-badge">
+                <Lock size={10} /> 100% Secure Transaction
+              </div>
+            </div>
+            {paymentMethod === "RAZORPAY" ? <CheckCircle2 className="check-circle" /> : <div className="w-6 h-6 rounded-full border-2 border-gray-200"></div>}
           </div>
         </div>
 

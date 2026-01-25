@@ -36,7 +36,7 @@ export const InvoiceTemplate: React.FC<InvoiceProps> = ({ invoice }) => {
     }, [order]);
 
     return (
-        <div id="invoice-content" className="max-w-[210mm] mx-auto p-12 bg-white text-[#1F2937] font-sans h-full relative border border-gray-100 shadow-sm print:border-none print:shadow-none">
+        <div id="invoice-content" className="max-w-[210mm] mx-auto p-12 bg-white text-[#1F2937] font-sans h-full relative border border-gray-100 shadow-sm print:border-none print:shadow-none bg-white print:bg-white [print-color-adjust:exact]">
             {/* Header */}
             <div className="flex justify-between items-start border-b border-gray-300 pb-6 mb-8">
                 <div className="space-y-4">
@@ -86,15 +86,18 @@ export const InvoiceTemplate: React.FC<InvoiceProps> = ({ invoice }) => {
                             <p>{order.shippingAddress}</p>
                         ) : (
                             <>
-                                <p>{order.shippingAddress?.street || order.address?.street || ''}</p>
+                                <p>{order.shippingAddress?.street || order.address?.street || order.address?.address || ''}</p>
+                                <p>
+                                    {order.shippingAddress?.locality || order.address?.locality || ''}
+                                </p>
                                 <p>
                                     {order.shippingAddress?.city || order.address?.city || ''}, {' '}
                                     {order.shippingAddress?.state || order.address?.state || ''} - {' '}
-                                    {order.shippingAddress?.zip || order.address?.zip || ''}
+                                    {order.shippingAddress?.zip || order.shippingAddress?.zipCode || order.address?.pincode || order.address?.zip || ''}
                                 </p>
                             </>
                         )}
-                        <p className="mt-1 font-medium text-gray-900">Phone: {order.user?.phone || order.phone || 'N/A'}</p>
+                        <p className="mt-1 font-medium text-gray-900">Phone: {order.shippingAddress?.phone || order.address?.phone || order.user?.phone || order.phone || 'N/A'}</p>
                     </div>
                 </div>
             </div>
@@ -143,17 +146,24 @@ export const InvoiceTemplate: React.FC<InvoiceProps> = ({ invoice }) => {
                         <span className="text-sm font-bold text-gray-900">₹{calculations.shipping.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
 
-                    <div className="flex justify-between py-2.5 px-4 bg-[#FCECD8] mt-4 rounded-[2px] items-center border border-[#F5D0A9]">
-                        <span className="text-sm font-bold text-gray-800">GRAND Total (in words):</span>
-                        <span className="text-lg font-bold text-gray-900">₹{calculations.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <div className="flex flex-col mt-4">
+                        <div className="flex justify-between py-2.5 px-4 bg-[#FCECD8] rounded-t-[2px] items-center border border-[#F5D0A9]">
+                            <span className="text-sm font-bold text-gray-800">GRAND Total:</span>
+                            <span className="text-lg font-bold text-gray-900">₹{calculations.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                        <div className="py-2 px-4 bg-[#FCECD8]/50 border-x border-b border-[#F5D0A9] rounded-b-[2px] text-right">
+                            <span className="text-xs font-semibold text-gray-600 italic">
+                                ({numberToWords(Math.round(calculations.total))})
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Footer */}
-            <div className="mt-12 pt-6 border-t border-gray-300 text-center space-y-6">
-                <p className="font-bold text-gray-800 text-sm">
-                    Thank you for shopping with us! <span className="italic font-medium text-gray-600 ml-2">{numberToWords(Math.round(calculations.total))}</span>
+            <div className="mt-12 pt-6 border-t border-gray-300 flex flex-col items-center justify-center space-y-6">
+                <p className="font-bold text-gray-800 text-sm text-center">
+                    Thank you for shopping with us!
                 </p>
 
                 <p className="text-[10px] text-gray-400 italic mt-8 bg-gray-50 inline-block px-4 py-1 rounded-full">
