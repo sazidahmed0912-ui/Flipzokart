@@ -306,6 +306,26 @@ const PaymentPage: React.FC = () => {
           </div>
         </div>
       </main>
+      {/* Mobile Sticky Footer */}
+      <div className="sticky-mobile-footer">
+        <div className="mobile-total-info">
+          <span className="text-xs text-gray-500 font-medium">Total Payable</span>
+          <span className="text-lg font-bold text-[#212121]">₹{totalPayable}</span>
+        </div>
+        <button
+          className="action-button mobile-pay-btn"
+          disabled={(!paymentMethod && !!user) || loading}
+          onClick={handleSubmit}
+        >
+          {loading ? (
+            <Loader2 className="spinner" />
+          ) : paymentMethod === "COD" ? (
+            "PLACE ORDER"
+          ) : (
+            `PAY ₹${totalPayable}`
+          )}
+        </button>
+      </div>
     </div>
   );
 };

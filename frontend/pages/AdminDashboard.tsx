@@ -48,7 +48,7 @@ export const AdminDashboard: React.FC = () => {
      Safety: Clears on unmount
      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setInterval>;
 
     const fetchStats = async () => {
       try {

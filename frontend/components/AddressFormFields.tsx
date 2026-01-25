@@ -56,16 +56,24 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
         setFormData({ ...formData, type });
     };
 
-    const inputClasses = "w-full bg-transparent outline-none text-gray-800 placeholder-gray-400 font-medium py-2.5";
-    const containerClasses = "flex items-center bg-gray-50 border border-gray-200 rounded-xl px-4 focus-within:border-[#2874F0] focus-within:ring-4 focus-within:ring-blue-500/10 transition-all duration-200 group";
-    const labelClasses = "text-sm text-gray-500 font-medium whitespace-nowrap mr-3 min-w-[80px]";
+    const inputClasses = "w-full bg-transparent outline-none text-gray-800 placeholder-gray-400 font-medium py-3"; // increased touch target
+    const containerClasses = "flex flex-wrap sm:flex-nowrap items-center bg-gray-50 border border-gray-200 rounded-xl px-4 focus-within:border-[#2874F0] focus-within:ring-4 focus-within:ring-blue-500/10 transition-all duration-200 group relative";
+    // Label: Fixed width on desktop, flexible on mobile but prefer inline
+    const labelClasses = "text-sm text-gray-500 font-bold uppercase tracking-wide whitespace-nowrap mr-4 w-full sm:w-[100px] sm:flex-shrink-0 pt-2 sm:pt-0 mb-1 sm:mb-0"; // Mobile: stacked slightly if needed, Desktop: fixed width
+
+    // User requested "Mobile: label left, input right (stack only if space is very small)"
+    // We can try to force row on mobile too for 360px+, but stack on <360px?
+    // Actually, "flex-wrap" with input min-width will handle strictness.
+    // Let's optimize specifically for the "Row" feel.
+    const mobileRowContainer = "flex flex-row items-center bg-gray-50 border border-gray-200 rounded-xl px-4 focus-within:border-[#2874F0] focus-within:ring-4 focus-within:ring-blue-500/10 transition-all duration-200";
+    const mobileRowLabel = "text-xs sm:text-sm text-gray-500 font-bold uppercase tracking-wide mr-3 min-w-[70px] sm:min-w-[100px]";
 
     return (
         <div className="space-y-4">
             {/* Name */}
             <div>
-                <div className={`${containerClasses} ${errors.name ? 'border-red-300 bg-red-50' : ''}`}>
-                    <label className={labelClasses}>Name</label>
+                <div className={`${mobileRowContainer} ${errors.name ? 'border-red-300 bg-red-50' : ''}`}>
+                    <label className={mobileRowLabel}>Name</label>
                     <input
                         type="text"
                         name="name"
@@ -80,8 +88,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
 
             {/* Phone */}
             <div>
-                <div className={`${containerClasses} ${errors.phone ? 'border-red-300 bg-red-50' : ''}`}>
-                    <label className={labelClasses}>Phone</label>
+                <div className={`${mobileRowContainer} ${errors.phone ? 'border-red-300 bg-red-50' : ''}`}>
+                    <label className={mobileRowLabel}>Phone</label>
                     <div className="flex items-center w-full">
                         <span className="text-gray-500 mr-2">+91</span>
                         <input
@@ -102,8 +110,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
 
             {/* Email (Optional) */}
             <div>
-                <div className={containerClasses}>
-                    <label className={labelClasses}>Email</label>
+                <div className={mobileRowContainer}>
+                    <label className={mobileRowLabel}>Email</label>
                     <input
                         type="email"
                         name="email"
@@ -117,8 +125,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
 
             {/* Address (Street) */}
             <div>
-                <div className={`${containerClasses} ${errors.street ? 'border-red-300 bg-red-50' : ''}`}>
-                    <label className={labelClasses}>Address</label>
+                <div className={`${mobileRowContainer} ${errors.street ? 'border-red-300 bg-red-50' : ''}`}>
+                    <label className={mobileRowLabel}>Address</label>
                     <input
                         type="text"
                         name="street"
@@ -133,8 +141,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
 
             {/* Locality */}
             <div>
-                <div className={containerClasses}>
-                    <label className={labelClasses}>Locality</label>
+                <div className={mobileRowContainer}>
+                    <label className={mobileRowLabel}>Locality</label>
                     <input
                         type="text"
                         name="locality"
@@ -149,8 +157,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* State */}
                 <div>
-                    <div className={`${containerClasses} ${errors.state ? 'border-red-300 bg-red-50' : ''}`}>
-                        <label className={labelClasses}>State</label>
+                    <div className={`${mobileRowContainer} ${errors.state ? 'border-red-300 bg-red-50' : ''}`}>
+                        <label className={mobileRowLabel}>State</label>
                         <div className="flex-1 relative">
                             <select
                                 name="state"
@@ -177,8 +185,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
 
                 {/* City */}
                 <div>
-                    <div className={`${containerClasses} ${errors.city ? 'border-red-300 bg-red-50' : ''}`}>
-                        <label className={labelClasses}>City</label>
+                    <div className={`${mobileRowContainer} ${errors.city ? 'border-red-300 bg-red-50' : ''}`}>
+                        <label className={mobileRowLabel}>City</label>
                         <div className="flex-1 relative">
                             <select
                                 name="city"
@@ -208,8 +216,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Pincode */}
                 <div>
-                    <div className={`${containerClasses} ${errors.zip ? 'border-red-300 bg-red-50' : ''}`}>
-                        <label className={labelClasses}>Pincode</label>
+                    <div className={`${mobileRowContainer} ${errors.zip ? 'border-red-300 bg-red-50' : ''}`}>
+                        <label className={mobileRowLabel}>Pincode</label>
                         <input
                             type="text"
                             name="zip"
@@ -227,8 +235,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
 
                 {/* Country (Fixed) */}
                 <div>
-                    <div className="flex items-center bg-gray-100 border border-gray-200 rounded-xl px-4 cursor-not-allowed">
-                        <label className={labelClasses}>Country</label>
+                    <div className={`${mobileRowContainer} bg-gray-100 cursor-not-allowed`}>
+                        <label className={mobileRowLabel}>Country</label>
                         <input
                             type="text"
                             value="India"
@@ -253,8 +261,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
                             key={item.name}
                             onClick={() => handleTypeChange(item.value as any)}
                             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200 ${formData.type === item.value
-                                    ? "bg-blue-600 border-blue-600 text-white shadow-md transform scale-[1.02]"
-                                    : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                                ? "bg-blue-600 border-blue-600 text-white shadow-md transform scale-[1.02]"
+                                : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"
                                 }`}
                         >
                             {item.icon}
