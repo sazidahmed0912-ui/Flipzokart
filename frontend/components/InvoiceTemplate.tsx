@@ -82,8 +82,18 @@ export const InvoiceTemplate: React.FC<InvoiceProps> = ({ invoice }) => {
                     <h3 className="font-bold text-gray-900 text-sm border-b border-gray-200 pb-1 mb-3">Billing Address</h3>
                     <p className="font-bold text-gray-900 text-base">{invoice.customer}</p>
                     <div className="text-sm text-gray-600 leading-snug mt-1">
-                        <p>{order.shippingAddress?.street || order.address?.street}</p>
-                        <p>{order.shippingAddress?.city || order.address?.city}, {order.shippingAddress?.state || order.address?.state} - {order.shippingAddress?.zip || order.address?.zip}</p>
+                        {typeof order.shippingAddress === 'string' ? (
+                            <p>{order.shippingAddress}</p>
+                        ) : (
+                            <>
+                                <p>{order.shippingAddress?.street || order.address?.street || ''}</p>
+                                <p>
+                                    {order.shippingAddress?.city || order.address?.city || ''}, {' '}
+                                    {order.shippingAddress?.state || order.address?.state || ''} - {' '}
+                                    {order.shippingAddress?.zip || order.address?.zip || ''}
+                                </p>
+                            </>
+                        )}
                         <p className="mt-1 font-medium text-gray-900">Phone: {order.user?.phone || order.phone || 'N/A'}</p>
                     </div>
                 </div>
