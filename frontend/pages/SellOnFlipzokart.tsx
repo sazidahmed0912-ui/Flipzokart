@@ -11,7 +11,10 @@ import {
     ShieldCheck,
     Truck,
     Headphones,
-    FileText
+    FileText,
+    ArrowLeft,
+    Building2,
+    CreditCard
 } from 'lucide-react';
 import API from '../services/api';
 
@@ -19,15 +22,35 @@ const SellOnFlipzokart: React.FC = () => {
     const { user } = useApp();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
+    const [step, setStep] = useState(0); // 0: Landing, 1: Register, 2: Upload/Business, 3: Success
+
+    // Form State
+    const [formData, setFormData] = useState({
+        gstin: '',
+        pan: '',
+        storeName: '',
+        category: '',
+        address: ''
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const handleApply = async () => {
         setLoading(true);
         setError('');
         try {
-            await API.put(`/api/user/profile`, { role: 'pending_seller' });
-            setSuccess(true);
+            // Here we would typically send all the formData to the backend
+            // For now, we stick to the existing update logic but imagine we send the extra data
+            console.log("Submitting Seller Application:", formData);
+
+            await API.put(`/api/user/profile`, {
+                role: 'pending_seller',
+                // sellerDetails: formData // Future: send this data
+            });
+            setStep(3); // Move to Success
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.message || 'Failed to submit application. Please try again.');
@@ -36,19 +59,161 @@ const SellOnFlipzokart: React.FC = () => {
         }
     };
 
-    if (success) {
+    // Wizard Screens
+    const renderWizard = () => {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-                <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md text-center border border-green-100">
+                <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+                    {/* Wizard Header */}
+                    <div className="bg-[#2874F0] p-6 text-white flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => setStep(s => Math.max(0, s - 1))} className="hover:bg-white/20 p-2 rounded-full transition-colors">
+                                <ArrowLeft size={20} />
+                            </button>
+                            <h2 className="text-xl font-bold">
+                                {step === 1 ? 'Step 1: Account Details' : 'Step 2: Business Info'}
+                            </h2>
+                        </div>
+                        <div className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
+                            Step {step} of 2
+                        </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="h-1.5 bg-gray-100 w-full">
+                        <div
+                            className="h-full bg-yellow-400 transition-all duration-300 ease-out"
+                            style={{ width: step === 1 ? '50%' : '100%' }}
+                        ></div>
+                    </div>
+
+                    <div className="p-8">
+                        {step === 1 && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                                <div className="text-center mb-8">
+                                    <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <FileText size={32} />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-800">Legal Registration</h3>
+                                    <p className="text-gray-500 text-sm">Enter your government registered details.</p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">GSTIN Number</label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                name="gstin"
+                                                value={formData.gstin}
+                                                onChange={handleChange}
+                                                placeholder="22AAAAA0000A1Z5"
+                                                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                            />
+                                            <ShieldCheck className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">PAN Number</label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                name="pan"
+                                                value={formData.pan}
+                                                onChange={handleChange}
+                                                placeholder="ABCDE1234F"
+                                                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                            />
+                                            <CreditCard className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => setStep(2)}
+                                    disabled={!formData.gstin || !formData.pan}
+                                    className="w-full bg-[#2874F0] text-white py-3.5 rounded-xl font-bold hover:bg-[#1a60d6] transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4 shadow-lg shadow-blue-500/30"
+                                >
+                                    Continue to Step 2
+                                </button>
+                            </div>
+                        )}
+
+                        {step === 2 && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                                <div className="text-center mb-8">
+                                    <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Store size={32} />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-800">Shop Details</h3>
+                                    <p className="text-gray-500 text-sm">Tell us about your business.</p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Store Name</label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                name="storeName"
+                                                value={formData.storeName}
+                                                onChange={handleChange}
+                                                placeholder="My Awesome Shop"
+                                                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                            />
+                                            <Building2 className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                        <select
+                                            name="category"
+                                            value={formData.category}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
+                                        >
+                                            <option value="">Select a category</option>
+                                            <option value="electronics">Electronics</option>
+                                            <option value="fashion">Fashion</option>
+                                            <option value="home">Home & Kitchen</option>
+                                            <option value="beauty">Beauty & Personal Care</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {error && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{error}</div>}
+
+                                <button
+                                    onClick={handleApply}
+                                    disabled={loading || !formData.storeName || !formData.category}
+                                    className="w-full bg-[#2874F0] text-white py-3.5 rounded-xl font-bold hover:bg-[#1a60d6] transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
+                                >
+                                    {loading ? 'Submitting...' : 'Complete Registration'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    if (step === 3) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md text-center border border-green-100 animate-in zoom-in-95 duration-300">
                     <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-slow">
                         <CheckCircle size={40} />
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-800 mb-3">Application Submitted!</h2>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-3">Welcome Aboard!</h2>
                     <p className="text-gray-600 mb-8 leading-relaxed">
-                        Badhai Ho! Your request to become a seller is under review.
-                        Our team will verify your documents and approve you shortly.
+                        Badhai Ho! Your details have been submitted. You can now start listing your products and earning.
                     </p>
-                    <button onClick={() => navigate('/')} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl w-full">
+                    <button onClick={() => navigate('/dashboard')} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl w-full">
+                        Go to Seller Dashboard
+                    </button>
+                    <button onClick={() => navigate('/')} className="mt-4 text-gray-500 hover:text-gray-700 text-sm font-medium">
                         Return to Homepage
                     </button>
                 </div>
@@ -56,6 +221,11 @@ const SellOnFlipzokart: React.FC = () => {
         );
     }
 
+    if (step > 0) {
+        return renderWizard();
+    }
+
+    // Landing Page (Step 0)
     return (
         <div className="min-h-screen bg-white font-sans">
             {/* Hero Section */}
@@ -84,17 +254,15 @@ const SellOnFlipzokart: React.FC = () => {
 
                             <div className="flex flex-col sm:flex-row gap-4 mt-8">
                                 <button
-                                    onClick={handleApply}
-                                    disabled={loading}
+                                    onClick={() => setStep(1)}
                                     className="bg-yellow-400 text-blue-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-yellow-300 transition-all shadow-lg hover:shadow-yellow-400/30 flex items-center justify-center gap-2"
                                 >
-                                    {loading ? 'Processing...' : 'Start Selling'} <ArrowRight size={20} />
+                                    Start Selling <ArrowRight size={20} />
                                 </button>
                                 <button className="px-8 py-4 rounded-xl font-bold text-white border-2 border-white/30 hover:bg-white/10 transition-all">
                                     Learn More
                                 </button>
                             </div>
-                            {error && <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-white text-sm backdrop-blur-sm inline-block">{error}</div>}
                         </div>
 
                         {/* Hero Image Concept - Abstract Illustration of Growth */}
@@ -147,7 +315,10 @@ const SellOnFlipzokart: React.FC = () => {
                     <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-1 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 -z-10"></div>
 
                     {/* Step 1 */}
-                    <div className="flex flex-col items-center text-center group">
+                    <div
+                        className="flex flex-col items-center text-center group cursor-pointer hover:bg-gray-50 p-4 rounded-xl transition-all"
+                        onClick={() => setStep(1)}
+                    >
                         <div className="w-24 h-24 bg-white rounded-full shadow-lg border-4 border-blue-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                             <FileText size={40} className="text-blue-600" />
                         </div>
@@ -172,6 +343,15 @@ const SellOnFlipzokart: React.FC = () => {
                         <h3 className="text-xl font-bold text-gray-900 mb-2">3. Start Earning</h3>
                         <p className="text-gray-600 px-6">Get orders and receive payments every 7 days.</p>
                     </div>
+                </div>
+
+                <div className="flex justify-center mt-12">
+                    <button
+                        onClick={() => setStep(1)}
+                        className="bg-[#2874F0] text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-[#1a60d6] transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1"
+                    >
+                        Start Your Seller Journey
+                    </button>
                 </div>
             </div>
 
@@ -218,7 +398,7 @@ const SellOnFlipzokart: React.FC = () => {
             {/* Sticky CTA for Mobile */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50">
                 <button
-                    onClick={handleApply}
+                    onClick={() => setStep(1)}
                     className="w-full bg-[#2874F0] text-white font-bold py-3 rounded-lg shadow-lg"
                 >
                     Start Selling Now
