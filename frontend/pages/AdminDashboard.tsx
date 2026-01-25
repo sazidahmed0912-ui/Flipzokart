@@ -193,7 +193,7 @@ export const AdminDashboard: React.FC = () => {
 
 
 
-          {/* Charts Row */}
+          {/* Stats Row 2: Recent Orders & Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Revenue Chart */}
             <SmoothReveal direction="up" delay={600} className="lg:col-span-2">
@@ -255,6 +255,85 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </SmoothReveal>
           </div>
+
+          {/* Recent Orders Table Widget */}
+          <SmoothReveal direction="up" delay={800} className="w-full">
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.03)]">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-bold text-gray-800">Recent Orders</h3>
+                <Link to="/admin/orders" className="text-xs font-bold text-[#2874F0] hover:underline flex items-center gap-1">
+                  View All <ChevronDown size={14} className="-rotate-90" />
+                </Link>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-left border-b border-gray-100">
+                      <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider pl-4">Order ID</th>
+                      <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
+                      <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Product</th>
+                      <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
+                      <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Amount</th>
+                      <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider pr-4 text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {stats?.recentOrders?.map((order) => (
+                      <tr key={order._id} className="hover:bg-gray-50/50 transition-colors group">
+                        <td className="py-4 pl-4">
+                          <span className="text-xs font-bold text-gray-600">#{order._id.substring(20)}</span>
+                        </td>
+                        <td className="py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs uppercase">
+                              {order.user?.name?.charAt(0) || 'U'}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-gray-800">{order.user?.name || 'Unknown'}</p>
+                              <p className="text-[10px] text-gray-400">{order.user?.email || 'No Email'}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4">
+                          <p className="text-xs font-medium text-gray-600 truncate max-w-[200px]">
+                            {order.products?.[0]?.productId?.name || 'Product Deleted'}
+                            {order.products?.length > 1 && <span className="text-gray-400 ml-1">+{order.products.length - 1} more</span>}
+                          </p>
+                        </td>
+                        <td className="py-4">
+                          <p className="text-xs text-gray-500 font-medium">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </p>
+                        </td>
+                        <td className="py-4">
+                          <p className="text-xs font-bold text-gray-800">₹{order.total?.toLocaleString()}</p>
+                        </td>
+                        <td className="py-4 pr-4 text-right">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide
+                            ${order.orderStatus === 'Delivered' ? 'bg-green-50 text-green-600' :
+                              order.orderStatus === 'Processing' ? 'bg-blue-50 text-blue-600' :
+                                order.orderStatus === 'Cancelled' ? 'bg-red-50 text-red-600' :
+                                  'bg-yellow-50 text-yellow-600'
+                            }`}
+                          >
+                            {order.orderStatus}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {(!stats?.recentOrders || stats.recentOrders.length === 0) && (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-sm text-gray-400">
+                          No recent orders found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </SmoothReveal>
         </div>
       </div>
     </div>

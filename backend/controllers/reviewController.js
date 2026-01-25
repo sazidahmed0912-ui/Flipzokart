@@ -195,6 +195,23 @@ const getUserReviews = async (req, res) => {
   }
 };
 
+// @desc    Get all reviews (Admin)
+// @route   GET /api/reviews/admin/all
+// @access  Private/Admin
+const getAllReviews = async (req, res) => {
+  try {
+    const reviews = await Review.find({})
+      .populate("user", "name email")
+      .populate("product", "name image")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, count: reviews.length, data: reviews });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 module.exports = {
   createReview,
   getProductReviews,
@@ -202,4 +219,5 @@ module.exports = {
   updateReview,
   deleteReview,
   getUserReviews,
+  getAllReviews
 };

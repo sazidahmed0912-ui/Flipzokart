@@ -9,7 +9,11 @@ const {
   updateReview,
   deleteReview,
   getUserReviews, // Import the new controller function
+  getAllReviews
 } = require("../controllers/reviewController");
+
+// Admin routes
+router.get("/admin/all", protect, authorize(['admin']), getAllReviews);
 
 // Public routes
 router.get("/products/:productId/reviews", getProductReviews);

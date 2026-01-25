@@ -4,18 +4,22 @@ import {
   LayoutDashboard, Package, ShoppingCart,
   Users, TicketPercent, Settings,
   ChevronRight, Activity, LogOut, CreditCard,
-  FileText, Truck, Globe
+  FileText, Truck, Globe, Bell, Star, BarChart
 } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
   { name: 'Products', path: '/admin/products', icon: Package },
-  { name: 'Orders Management', path: '/admin/orders', icon: ShoppingCart },
+  { name: 'Inventory', path: '/admin/inventory', icon: Package },
+  { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
   { name: 'Users', path: '/admin/users', icon: Users },
+  { name: 'Reviews', path: '/admin/reviews', icon: Star },
   { name: 'Sellers', path: '/admin/sellers', icon: Users },
+  { name: 'Notifications', path: '/admin/notifications', icon: Bell },
   { name: 'Payments', path: '/admin/payments', icon: CreditCard },
   { name: 'Monitor', path: '/admin/monitor', icon: Activity },
   { name: 'Invoices', path: '/admin/invoices', icon: FileText },
+  { name: 'Reports', path: '/admin/reports', icon: BarChart },
   { name: 'Shipping', path: '/admin/shipping', icon: Truck },
   { name: 'Live Map', path: '/admin/map', icon: Globe },
   { name: 'Settings', path: '/admin/settings', icon: Settings },

@@ -52,10 +52,17 @@ const BannedPageWrapper = () => (
 /* ---------- ADMIN (LAZY LOADED) ---------- */
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then(module => ({ default: module.AdminDashboard })));
 const AdminProducts = lazy(() => import("./pages/AdminProducts").then(module => ({ default: module.AdminProducts })));
+const AdminProductEditor = lazy(() => import("./pages/AdminProducts").then(module => ({ default: module.AdminProductEditor })));
+const AdminInventory = lazy(() => import("./pages/AdminProducts").then(module => ({ default: module.AdminInventory })));
 const AdminOrders = lazy(() => import("./pages/AdminOrders").then(module => ({ default: module.AdminOrders })));
+const AdminOrderDetails = lazy(() => import("./pages/AdminOrders").then(module => ({ default: module.AdminOrderDetails })));
 const AdminSellers = lazy(() => import("./pages/AdminSellers").then(module => ({ default: module.AdminSellers })));
 const AdminUsers = lazy(() => import("./pages/AdminUsers").then(module => ({ default: module.AdminUsers })));
 const AdminMonitor = lazy(() => import("./pages/AdminMonitor").then(module => ({ default: module.AdminMonitor })));
+const AdminReviews = lazy(() => import("./pages/AdminReviews").then(module => ({ default: module.AdminReviews })));
+const AdminNotifications = lazy(() => import("./pages/AdminNotifications").then(module => ({ default: module.AdminNotifications })));
+const AdminSettings = lazy(() => import("./pages/AdminSettings").then(module => ({ default: module.AdminSettings })));
+const AdminReports = lazy(() => import("./pages/AdminReports").then(module => ({ default: module.AdminReports })));
 const AdminCoupons = lazy(() => import("./pages/AdminCoupons").then(module => ({ default: module.AdminCoupons })));
 const AdminPayments = lazy(() => import("./pages/AdminPayments").then(module => ({ default: module.AdminPayments })));
 const AdminInvoices = lazy(() => import("./pages/AdminInvoices").then(module => ({ default: module.AdminInvoices })));
@@ -273,10 +280,42 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
               }
             />
             <Route
+              path="/admin/inventory"
+              element={
+                <AdminRoute>
+                  <AdminInventory />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/products/new"
+              element={
+                <AdminRoute>
+                  <AdminProductEditor />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/products/edit/:id"
+              element={
+                <AdminRoute>
+                  <AdminProductEditor />
+                </AdminRoute>
+              }
+            />
+            <Route
               path="/admin/orders"
               element={
                 <AdminRoute>
                   <AdminOrders />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/orders/:id"
+              element={
+                <AdminRoute>
+                  <AdminOrderDetails />
                 </AdminRoute>
               }
             />
@@ -293,6 +332,38 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
               element={
                 <AdminRoute>
                   <AdminMonitor />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/reviews"
+              element={
+                <AdminRoute>
+                  <AdminReviews />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/notifications"
+              element={
+                <AdminRoute>
+                  <AdminNotifications />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <AdminRoute>
+                  <AdminSettings />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/reports"
+              element={
+                <AdminRoute>
+                  <AdminReports />
                 </AdminRoute>
               }
             />
