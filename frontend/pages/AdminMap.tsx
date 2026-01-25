@@ -31,12 +31,23 @@ export const AdminMap: React.FC = () => {
 
         const handleStats = (data: any) => {
             if (data.activeUserList) {
-                // Determine mock locations based on name slightly for demo randomness if coordinates missing
-                const usersWithLoc = data.activeUserList.map((u: any, i: number) => ({
-                    ...u,
-                    x: Math.random() * 800 + 100, // Random X on map
-                    y: Math.random() * 400 + 50   // Random Y on map
-                }));
+                // Generate deterministic position based on User ID
+                // This ensures the user stays in the same spot (simulating real location)
+                const usersWithLoc = data.activeUserList.map((u: any) => {
+                    // Simple hash function for string to number
+                    let hash = 0;
+                    const str = u.id || 'default';
+                    for (let i = 0; i < str.length; i++) {
+                        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                    }
+
+                    // Normalize hash to map dimensions (1000x500 svg)
+                    // We stick to land-mass likely areas (approx) or just random stable
+                    const x = Math.abs(hash % 900) + 50;
+                    const y = Math.abs((hash >> 8) % 400) + 50;
+
+                    return { ...u, x, y };
+                });
                 setActiveUsers(usersWithLoc);
             }
         };

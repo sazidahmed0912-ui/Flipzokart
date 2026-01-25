@@ -137,7 +137,7 @@ app.use((req, res, next) => {
     if (io) {
       io.to('admin-monitor').emit('monitor:log', {
         id: Date.now() + Math.random(), // Unique ID
-        time: new Date().toLocaleTimeString(),
+        timestamp: Date.now(), // Raw timestamp for client-side formatting
         type: logType,
         message: `${req.method} ${req.originalUrl} - ${res.statusCode} (${duration}ms)`,
         source: 'Network'
@@ -152,7 +152,7 @@ app.use((req, res, next) => {
 const broadcastLog = (type, message, source = 'System') => {
   io.to('admin-monitor').emit('monitor:log', {
     id: Date.now(),
-    time: new Date().toLocaleTimeString(),
+    timestamp: Date.now(),
     type,
     message,
     source

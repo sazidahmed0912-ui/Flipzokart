@@ -22,11 +22,26 @@ export const AdminMonitor: React.FC = () => {
     const token = localStorage.getItem("token");
     const socket = useSocket(token);
 
-    // Auto-scroll logs
+    // Auto-scroll logs smart handling
     const logsEndRef = useRef<HTMLDivElement>(null);
+    const logsContainerRef = useRef<HTMLDivElement>(null);
+    const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+
     const scrollToBottom = () => {
-        logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (shouldAutoScroll) {
+            logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
     };
+
+    const handleScroll = () => {
+        if (logsContainerRef.current) {
+            const { scrollTop, scrollHeight, clientHeight } = logsContainerRef.current;
+            // If user is near bottom (within 50px), enable auto-scroll. Else disable.
+            const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
+            setShouldAutoScroll(isNearBottom);
+        }
+    };
+
     useEffect(scrollToBottom, [logs]);
 
     useEffect(() => {
@@ -139,13 +154,19 @@ export const AdminMonitor: React.FC = () => {
                     <h2 className="font-bold text-gray-200 mb-4 flex items-center gap-2">
                         <Terminal size={18} className="text-green-500" /> System Logs Stream
                     </h2>
-                    <div className="flex-1 overflow-y-auto font-mono text-sm space-y-1.5 pr-2 custom-scrollbar">
+                    <div
+                        ref={logsContainerRef}
+                        onScroll={handleScroll}
+                        className="flex-1 overflow-y-auto font-mono text-sm space-y-1.5 pr-2 custom-scrollbar"
+                    >
                         {logs.length === 0 && (
                             <div className="text-gray-600 italic text-center mt-10">Waiting for logs...</div>
                         )}
                         {logs.map((log) => (
                             <div key={log.id} className="flex gap-3 text-gray-300 border-b border-gray-800/30 pb-1">
-                                <span className="text-gray-500 shrink-0">[{log.time}]</span>
+                                <span className="text-gray-500 shrink-0 select-none">
+                                    [{new Date(log.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}]
+                                </span>
                                 <span className={`font-bold shrink-0 ${log.type === 'error' ? 'text-red-400' :
                                     log.type === 'warning' ? 'text-yellow-400' :
                                         log.type === 'success' ? 'text-green-400' : 'text-blue-400'
@@ -167,7 +188,12 @@ export const AdminMonitor: React.FC = () => {
                     <div className="space-y-4">
                         {/* Filter logs for security related items or show recent logs */}
                         {logs.filter(l => l.type === 'warning' || l.type === 'error').slice(-5).map(log => (
-                            <SecurityLog key={log.id} time={log.time} message={log.message} type={log.type === 'error' ? 'danger' : 'warning'} />
+                            <SecurityLog
+                                key={log.id}
+                                time={new Date(log.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                message={log.message}
+                                type={log.type === 'error' ? 'danger' : 'warning'}
+                            />
                         ))}
                         {logs.filter(l => l.type === 'warning' || l.type === 'error').length === 0 && (
                             <p className="text-sm text-gray-500 text-center py-4">No recent security alerts.</p>
@@ -216,7 +242,9 @@ const SecurityLog = ({ time, message, type }: any) => {
     return (
         <div className={`p-3 text-sm rounded-r-lg ${types[type]} flex justify-between items-center bg-white border shadow-sm`}>
             <span className="text-gray-700 font-medium truncate pr-2">{message}</span>
-            <span className="text-xs text-gray-400 font-mono shrink-0">{time}</span>
+            <span className="text-xs text-gray-400 font-mono shrink-0">
+                {time ? time : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+            </span>
         </div>
     );
 };

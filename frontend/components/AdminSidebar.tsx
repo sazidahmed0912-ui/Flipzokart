@@ -10,7 +10,7 @@ import {
 const navItems = [
   { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
   { name: 'Products', path: '/admin/products', icon: Package },
-  { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+  { name: 'Orders Management', path: '/admin/orders', icon: ShoppingCart },
   { name: 'Users', path: '/admin/users', icon: Users },
   { name: 'Sellers', path: '/admin/sellers', icon: Users },
   { name: 'Payments', path: '/admin/payments', icon: CreditCard },

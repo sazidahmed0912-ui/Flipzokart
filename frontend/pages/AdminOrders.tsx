@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import {
   ChevronLeft, Search, Filter,
   Clock, CheckCircle, Truck, XCircle, CreditCard, Banknote,
-  ExternalLink, Eye, ChevronDown, Bell, User, LogOut, ShoppingBag, Trash2
+  ExternalLink, Eye, ChevronDown, Bell, User, LogOut, ShoppingBag, Trash2, FileText
 } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { Order } from '../types';
@@ -18,6 +18,7 @@ export const AdminOrders: React.FC = () => {
   const { updateOrderStatus, user, logout } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Order['status'] | 'All'>('All');
+  const [activeTab, setActiveTab] = useState('status'); // status | tracking | refunds | history
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Real-time Order State
@@ -125,8 +126,15 @@ export const AdminOrders: React.FC = () => {
     const matchesSearch = displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       o.userName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || o.status === statusFilter;
-    return matchesSearch && matchesStatus;
+
+    // Tab Logic
+    let matchesTab = false;
+    if (activeTab === 'status') matchesTab = ['Pending', 'Paid', 'Processing'].includes(o.status);
+    if (activeTab === 'tracking') matchesTab = o.status === 'Shipped';
+    if (activeTab === 'refunds') matchesTab = ['Cancelled', 'Refunded'].includes(o.status);
+    if (activeTab === 'history') matchesTab = o.status === 'Delivered';
+
+    return matchesSearch && matchesTab;
   });
 
   const handleExportCSV = () => {
@@ -226,51 +234,56 @@ export const AdminOrders: React.FC = () => {
             </button>
           </div>
 
-          {/* Status Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Tab Navigation */}
+          <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-full md:w-auto self-start overflow-x-auto">
             {[
-              { label: 'All Orders', count: orders.length, status: 'All', color: '#2874F0', bg: 'bg-blue-50' },
-              { label: 'Pending', count: orders.filter(o => o.status === 'Pending').length, status: 'Pending', color: '#f97316', bg: 'bg-orange-50' },
-              { label: 'Shipped', count: orders.filter(o => o.status === 'Shipped').length, status: 'Shipped', color: '#3b82f6', bg: 'bg-blue-50' },
-              { label: 'Delivered', count: orders.filter(o => o.status === 'Delivered').length, status: 'Delivered', color: '#22c55e', bg: 'bg-green-50' },
-            ].map((s, i) => (
+              { id: 'status', label: 'Order Status', icon: Clock },
+              { id: 'tracking', label: 'Shipment Tracking', icon: Truck },
+              { id: 'refunds', label: 'Refunds', icon: Banknote },
+              { id: 'history', label: 'Order History', icon: FileText },
+            ].map(tab => (
               <button
-                key={i}
-                onClick={() => setStatusFilter(s.status as any)}
-                className={`p-4 rounded-xl border transition-all text-left group ${statusFilter === s.status
-                  ? `border-[${s.color}] ring-1 ring-[${s.color}]/50 bg-white shadow-md`
-                  : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setStatusFilter('All'); }}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id
+                  ? 'bg-white text-[#2874F0] shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                   }`}
-                style={{ borderColor: statusFilter === s.status ? s.color : '' }}
               >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">{s.label}</p>
-                    <p className="text-xl font-bold text-gray-800 group-hover:text-[#2874F0] transition-colors">{s.count}</p>
-                  </div>
-                  <div className={`p-2 rounded-lg ${s.bg}`}>
-                    <ShoppingBag size={16} style={{ color: s.color }} />
-                  </div>
-                </div>
+                <tab.icon size={16} />
+                {tab.label}
               </button>
             ))}
           </div>
 
-          {/* Orders Table */}
+          {/* Dynamic Content Based on Tab */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            {/* Header for Specific Tab */}
+            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+              <h2 className="font-bold text-gray-700 flex items-center gap-2">
+                {activeTab === 'status' && <><Clock size={16} className="text-blue-500" /> Active Orders</>}
+                {activeTab === 'tracking' && <><Truck size={16} className="text-orange-500" /> Shipments in Transit</>}
+                {activeTab === 'refunds' && <><Banknote size={16} className="text-red-500" /> Refund Requests & Cancelled</>}
+                {activeTab === 'history' && <><FileText size={16} className="text-green-500" /> Completed Order History</>}
+              </h2>
+              <span className="text-xs font-bold bg-gray-200 text-gray-600 px-2 py-1 rounded-md">
+                {filteredOrders.length} Records
+              </span>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-[#F5F7FA] border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  <tr className="bg-white border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
                     <th className="px-6 py-4">Order ID</th>
-                    <th className="px-6 py-4">Date</th>
+                    <th className="px-6 py-4">Date & Time</th>
                     <th className="px-6 py-4">Customer</th>
-                    <th className="px-6 py-4">Value</th>
-                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Total Value</th>
+                    <th className="px-6 py-4">Current Status</th>
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-50">
                   {filteredOrders.map((order, idx) => (
                     <tr key={order.id} className={`group transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                       <td className="px-6 py-4">
