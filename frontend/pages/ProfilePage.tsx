@@ -17,7 +17,8 @@ import {
   Edit2,
   Info,
   Tag,
-  HelpCircle
+  HelpCircle,
+  Lock
 } from "lucide-react";
 // import Modal from "../components/Modal"; // Removed to implement inline Card Form Mode
 import "./ProfilePage.css";
@@ -255,7 +256,7 @@ const ProfilePage = () => {
           </SmoothReveal>
 
           {/* 3️⃣ QUICK INFO CARDS */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               { label: "Total Orders", value: orderCount.toString(), icon: Package },
               { label: "Account Status", value: profileData.status || "Active", icon: ShieldCheck, isStatus: true },
@@ -302,7 +303,7 @@ const ProfilePage = () => {
                 />
               ) : (
                 /* VIEW MODE */
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Full Name</label>
                     <div className="font-semibold text-[#1F2937] text-base">{profileData.name || "N/A"}</div>
@@ -354,6 +355,7 @@ const ProfilePage = () => {
           <SmoothReveal direction="up" delay={800}>
             <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 md:p-8">
               <h3 className="text-lg font-bold text-[#1F2937] mb-6">Login & Security</h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <h4 className="font-semibold text-gray-700">Account Password</h4>

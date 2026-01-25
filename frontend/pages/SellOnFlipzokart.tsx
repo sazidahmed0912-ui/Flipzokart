@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { useApp } from '../store/Context';
-import { Store, CheckCircle, AlertTriangle, User } from 'lucide-react';
-import API from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import {
+    Store,
+    UploadCloud,
+    IndianRupee,
+    CheckCircle,
+    ArrowRight,
+    TrendingUp,
+    ShieldCheck,
+    Truck,
+    Headphones,
+    FileText
+} from 'lucide-react';
+import API from '../services/api';
 
 const SellOnFlipzokart: React.FC = () => {
     const { user } = useApp();
@@ -15,25 +26,10 @@ const SellOnFlipzokart: React.FC = () => {
         setLoading(true);
         setError('');
         try {
-            // Update user role to 'pending_seller'
-            // Using generic user update link if specific one doesn't exist, logic depends on backend
-            // For now assuming we can PUT to /api/auth/me or /api/user/profile to update role request 
-            // Or a specific endpoint. Let's try to update self.
-            // If backend doesn't allow self-role update, we might need a specific 'request-seller' endpoint.
-            // Let's assume /api/user/request-seller is best, if not we will use a workaround.
-
-            // Workaround: We will use the generic profile update if available, or just mock success if backend logic is missing
-            // But since user asked for Sync, I will try to hit the user update endpoint.
-
             await API.put(`/api/user/profile`, { role: 'pending_seller' });
-            // Note: Valid backend should probably sanitize this, but for this task we assume it works or we add the logic.
-
             setSuccess(true);
         } catch (err: any) {
-            // If standard update fails, maybe try a dedicated endpoint or show error
             console.error(err);
-            // Fallback attempt: maybe custom endpoint I should add?
-            // Let's try to add a specific route in backend if this fails, but for UI:
             setError(err.response?.data?.message || 'Failed to submit application. Please try again.');
         } finally {
             setLoading(false);
@@ -43,14 +39,17 @@ const SellOnFlipzokart: React.FC = () => {
     if (success) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-                <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md text-center">
-                    <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle size={32} />
+                <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md text-center border border-green-100">
+                    <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-slow">
+                        <CheckCircle size={40} />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Application Submitted!</h2>
-                    <p className="text-gray-600 mb-6">Your request to become a seller is under review. You will be notified once approved.</p>
-                    <button onClick={() => navigate('/')} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                        Return Home
+                    <h2 className="text-3xl font-bold text-gray-800 mb-3">Application Submitted!</h2>
+                    <p className="text-gray-600 mb-8 leading-relaxed">
+                        Badhai Ho! Your request to become a seller is under review.
+                        Our team will verify your documents and approve you shortly.
+                    </p>
+                    <button onClick={() => navigate('/')} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl w-full">
+                        Return to Homepage
                     </button>
                 </div>
             </div>
@@ -58,79 +57,172 @@ const SellOnFlipzokart: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#F5F7FA] py-8 px-4 flex justify-center">
-            <div className="max-w-4xl w-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row">
-                {/* Sidebar (Visual consistency with Profile) */}
-                <div className="bg-gradient-to-br from-[#2874F0] to-[#1a60d6] p-8 text-white md:w-1/3 flex flex-col justify-between">
-                    <div>
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
-                            <Store size={24} className="text-white" />
-                        </div>
-                        <h1 className="text-3xl font-bold mb-2">Sell Online</h1>
-                        <p className="text-blue-100 leading-relaxed">Join thousands of sellers and grow your business with Fzokart.</p>
-                    </div>
+        <div className="min-h-screen bg-white font-sans">
+            {/* Hero Section */}
+            <div className="relative bg-[#2874F0] overflow-hidden">
+                {/* Decorative Pattern Background */}
+                <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#1a60d6] to-transparent"></div>
 
-                    <div className="mt-8 space-y-4">
-                        <div className="flex items-center gap-3 text-sm text-blue-100">
-                            <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">1</div>
-                            <span>Register your account</span>
-                        </div>
-                        <div className="w-0.5 h-4 bg-white/20 ml-3"></div>
-                        <div className="flex items-center gap-3 text-sm text-blue-100">
-                            <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">2</div>
-                            <span>Submit documents</span>
-                        </div>
-                        <div className="w-0.5 h-4 bg-white/20 ml-3"></div>
-                        <div className="flex items-center gap-3 text-sm font-bold text-white">
-                            <div className="w-6 h-6 rounded-full bg-white text-blue-600 flex items-center justify-center text-xs font-bold">3</div>
-                            <span>Start Selling</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Main Content */}
-                <div className="p-8 md:w-2/3">
-                    <h2 className="text-xl font-bold text-gray-800 mb-6">Seller Application</h2>
-
-                    <div className="space-y-6">
-                        <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                            <div className="min-w-[40px] h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                                <User size={20} /> {/* Should import User */}
+                <div className="max-w-7xl mx-auto px-4 pt-16 pb-24 sm:px-6 lg:px-8 relative z-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div className="text-white space-y-6">
+                            <div className="inline-flex items-center gap-2 bg-yellow-400 text-blue-900 px-3 py-1 rounded-full font-bold text-sm tracking-wide shadow-md">
+                                <TrendingUp size={16} />
+                                <span>#1 Seller Platform in India</span>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-gray-800">Account Details</h3>
-                                <p className="text-sm text-gray-600 mt-1">You are applying as: <b>{user?.name || 'Guest'}</b></p>
-                                <p className="text-sm text-gray-500">{user?.email}</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100 flex gap-3">
-                            <AlertTriangle className="text-yellow-600 min-w-[20px]" size={20} />
-                            <p className="text-sm text-yellow-800">
-                                By submitting this application, you agree to Fzokart's Seller Terms & Conditions.
-                                Your account status will be set to "Pending" until approved by an admin.
+                            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
+                                Sell Online to <br />
+                                <span className="text-yellow-400">50 Crore+ Indians</span>
+                            </h1>
+                            <p className="text-xl md:text-2xl text-blue-100 font-medium">
+                                Growth ki nayi shuruwat karo with Flipzokart.
                             </p>
+                            <p className="text-blue-200 max-w-lg">
+                                Join 14 Lakh+ sellers who trust Flipzokart to grow their business across India. 0% Commission for first 30 days!
+                            </p>
+
+                            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                                <button
+                                    onClick={handleApply}
+                                    disabled={loading}
+                                    className="bg-yellow-400 text-blue-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-yellow-300 transition-all shadow-lg hover:shadow-yellow-400/30 flex items-center justify-center gap-2"
+                                >
+                                    {loading ? 'Processing...' : 'Start Selling'} <ArrowRight size={20} />
+                                </button>
+                                <button className="px-8 py-4 rounded-xl font-bold text-white border-2 border-white/30 hover:bg-white/10 transition-all">
+                                    Learn More
+                                </button>
+                            </div>
+                            {error && <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-white text-sm backdrop-blur-sm inline-block">{error}</div>}
                         </div>
 
-                        {error && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">{error}</div>}
-
-                        <div className="flex justify-end gap-3 mt-4">
-                            <button
-                                onClick={() => navigate('/profile')}
-                                className="px-6 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleApply}
-                                disabled={loading}
-                                className="bg-[#2874F0] text-white px-8 py-2.5 rounded-lg font-bold hover:bg-[#1a60d6] transition-all shadow-sm disabled:opacity-70 flex items-center gap-2"
-                            >
-                                {loading ? 'Submitting...' : 'Submit Application'}
-                            </button>
+                        {/* Hero Image Concept - Abstract Illustration of Growth */}
+                        <div className="hidden md:flex justify-center relative">
+                            <div className="relative w-full max-w-md aspect-square">
+                                <div className="absolute inset-0 bg-white/10 backdrop-blur-lg rounded-full animate-pulse-slow"></div>
+                                <div className="absolute inset-4 bg-white/20 backdrop-blur-md rounded-full"></div>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="grid grid-cols-2 gap-4 p-4">
+                                        <div className="bg-white p-6 rounded-2xl shadow-xl transform rotate-[-6deg] hover:rotate-0 transition-all duration-500">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className="p-2 bg-green-100 rounded-lg text-green-600"><TrendingUp size={24} /></div>
+                                                <div className="text-sm font-bold text-gray-500">Review</div>
+                                            </div>
+                                            <div className="text-2xl font-bold text-gray-800">4.8/5</div>
+                                            <div className="text-xs text-green-600 font-semibold">+12% this week</div>
+                                        </div>
+                                        <div className="bg-white p-6 rounded-2xl shadow-xl transform rotate-[6deg] hover:rotate-0 transition-all duration-500 mt-8">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><IndianRupee size={24} /></div>
+                                                <div className="text-sm font-bold text-gray-500">Revenue</div>
+                                            </div>
+                                            <div className="text-2xl font-bold text-gray-800">₹1.2L</div>
+                                            <div className="text-xs text-green-600 font-semibold">Today's earning</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Curved Divider */}
+                <div className="absolute bottom-0 left-0 right-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" className="fill-white w-full h-auto block">
+                        <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            {/* 3 Steps Process Section */}
+            <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Start Selling in 3 Simple Steps</h2>
+                    <p className="text-xl text-gray-600">Bus 3 steps aur aapka business online!</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+                    {/* Connecting Line (Desktop) */}
+                    <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-1 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 -z-10"></div>
+
+                    {/* Step 1 */}
+                    <div className="flex flex-col items-center text-center group">
+                        <div className="w-24 h-24 bg-white rounded-full shadow-lg border-4 border-blue-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <FileText size={40} className="text-blue-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">1. Register Account</h3>
+                        <p className="text-gray-600 px-6">Enter your GST & PAN details. Verified in minutes.</p>
+                    </div>
+
+                    {/* Step 2 */}
+                    <div className="flex flex-col items-center text-center group">
+                        <div className="w-24 h-24 bg-white rounded-full shadow-lg border-4 border-blue-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <UploadCloud size={40} className="text-blue-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">2. Upload Products</h3>
+                        <p className="text-gray-600 px-6">Upload your catalogue and set your prices.</p>
+                    </div>
+
+                    {/* Step 3 */}
+                    <div className="flex flex-col items-center text-center group">
+                        <div className="w-24 h-24 bg-white rounded-full shadow-lg border-4 border-blue-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <IndianRupee size={40} className="text-blue-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">3. Start Earning</h3>
+                        <p className="text-gray-600 px-6">Get orders and receive payments every 7 days.</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Why Sell With Us? (Benefits) */}
+            <div className="bg-blue-50 py-16">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-gray-900">Why Sellers Choose Flipzokart?</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[
+                            { icon: <IndianRupee size={28} />, title: "Lowest Cost", desc: "Sell with minimal commission fees." },
+                            { icon: <Truck size={28} />, title: "Pan-India Reach", desc: "Deliver to 19,000+ pincodes." },
+                            { icon: <ShieldCheck size={28} />, title: "Secure Payments", desc: "Regular settlements directly to bank." },
+                            { icon: <Headphones size={28} />, title: "Seller Support", desc: "24/7 dedicated support for you." }
+                        ].map((item, idx) => (
+                            <div key={idx} className="bg-white p-6 rounded-xl hover:shadow-md transition-shadow">
+                                <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4">
+                                    {item.icon}
+                                </div>
+                                <h4 className="font-bold text-lg text-gray-900 mb-2">{item.title}</h4>
+                                <p className="text-gray-600 text-sm">{item.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Testimonial / Trust */}
+            <div className="max-w-5xl mx-auto px-4 py-20 text-center">
+                <h2 className="text-3xl font-bold text-gray-900 mb-8">Trusted by Indians Like You</h2>
+                <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-2xl p-8 md:p-12 relative overflow-hidden">
+                    <div className="relative z-10 flex flex-col items-center">
+                        <div className="w-20 h-20 bg-gray-600 rounded-full mb-6 border-4 border-gray-700 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1556157382-97eda2d62296?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80')" }}></div>
+                        <blockquote className="text-xl md:text-2xl font-medium italic mb-6">
+                            "Flipzokart helped me take my small handicraft business from Jaipur to customers in Kerala. The payments are always on time!"
+                        </blockquote>
+                        <cite className="not-italic font-bold text-lg text-yellow-400">- Rajesh Kumar, Jaipur Attributes</cite>
+                    </div>
+                </div>
+            </div>
+
+            {/* Sticky CTA for Mobile */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50">
+                <button
+                    onClick={handleApply}
+                    className="w-full bg-[#2874F0] text-white font-bold py-3 rounded-lg shadow-lg"
+                >
+                    Start Selling Now
+                </button>
             </div>
         </div>
     );

@@ -91,22 +91,7 @@ export const HomePage: React.FC = () => {
                 </SmoothReveal>
             </section>
 
-            {/* Offers Banner Section */}
-            <section className="py-4 px-4 md:px-8">
-                <SmoothReveal direction="up" delay={500}>
-                    <div className="relative max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-md cursor-pointer group">
-                        <img
-                            src="https://images.unsplash.com/photo-1472851294608-4151050935d4?q=80&w=1200&auto=format&fit=crop"
-                            alt="Special Offers"
-                            className="w-full h-48 md:h-64 object-cover transform group-hover:scale-105 transition-transform duration-700"
-                        />
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6 flex flex-col items-center justify-center pointer-events-none">
-                            <h3 className="text-white text-2xl md:text-4xl font-bold uppercase tracking-widest drop-shadow-md">Exclusive Offers</h3>
-                            <p className="text-white/90 mt-2 text-sm md:text-base font-medium">Grab the best deals before they are gone!</p>
-                        </div>
-                    </div>
-                </SmoothReveal>
-            </section>
+
 
             <section className="py-8 px-4 bg-white">
                 <div className="max-w-7xl mx-auto">
