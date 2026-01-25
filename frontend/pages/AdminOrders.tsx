@@ -104,7 +104,7 @@ export const AdminOrders: React.FC = () => {
     switch (status) {
       case 'Delivered': return 'bg-green-100 text-green-700';
       case 'Shipped': return 'bg-blue-100 text-blue-700';
-      case 'Paid': return 'bg-purple-100 text-purple-700';
+
       case 'Cancelled': return 'bg-red-100 text-red-700';
       default: return 'bg-orange-100 text-orange-700';
     }
@@ -114,7 +114,7 @@ export const AdminOrders: React.FC = () => {
     switch (status) {
       case 'Delivered': return <CheckCircle size={14} />;
       case 'Shipped': return <Truck size={14} />;
-      case 'Paid': return <CreditCard size={14} />;
+
       case 'Cancelled': return <XCircle size={14} />;
       default: return <Clock size={14} />;
     }
@@ -129,7 +129,7 @@ export const AdminOrders: React.FC = () => {
 
     // Tab Logic
     let matchesTab = false;
-    if (activeTab === 'status') matchesTab = ['Pending', 'Paid', 'Processing'].includes(o.status);
+    if (activeTab === 'status') matchesTab = ['Pending', 'Processing'].includes(o.status);
     if (activeTab === 'tracking') matchesTab = o.status === 'Shipped';
     if (activeTab === 'refunds') matchesTab = ['Cancelled', 'Refunded'].includes(o.status);
     if (activeTab === 'history') matchesTab = o.status === 'Delivered';
@@ -327,7 +327,7 @@ export const AdminOrders: React.FC = () => {
                               style={{ top: dropdownPosition.top - window.scrollY, left: dropdownPosition.left - window.scrollX }}
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {(['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled'] as Order['status'][]).map(s => (
+                              {(['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'] as Order['status'][]).map(s => (
                                 <button
                                   key={s}
                                   onClick={() => {
