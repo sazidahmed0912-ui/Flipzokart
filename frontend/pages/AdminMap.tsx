@@ -9,7 +9,6 @@ import {
     Globe, MapPin, Users, Activity, Layers, Maximize, Share2, Map as MapIcon
 } from 'lucide-react';
 import { useApp } from '../store/Context';
-import { useSocket } from '../hooks/useSocket';
 
 // Fix Leaflet default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -84,12 +83,14 @@ document.head.appendChild(style);
 interface UserLocation {
     id: string;
     name: string;
-    email: string;
+    role: string;
+    city: string;
+    state: string;
     lat: number;
     lng: number;
-    city?: string;
-    country?: string;
+    email?: string; // Optional if not returned
     status?: string;
+    country?: string;
     lastActive?: string;
 }
 
@@ -139,86 +140,45 @@ export const AdminMap: React.FC = () => {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const mapContainerRef = useRef<HTMLDivElement>(null);
 
-    // Socket Connection
-    const token = localStorage.getItem("token");
-    const socket = useSocket(token);
-
-    // Get user's real geolocation or create mock data
+    // API Connection
     useEffect(() => {
-        if (!socket) return;
-        socket.emit('join_monitor');
-
-        const handleStats = (data: any) => {
-            if (data.activeUserList) {
-                // Use real location data from backend
-                const usersWithLocation = data.activeUserList.map((u: any) => {
-                    // If user has real geolocation data, use it; otherwise fall back to mock
-                    if (u.latitude && u.longitude) {
-                        return {
-                            id: u.id,
-                            name: u.name || 'Anonymous',
-                            email: u.email || 'N/A',
-                            lat: u.latitude,
-                            lng: u.longitude,
-                            city: u.city || 'Unknown',
-                            country: u.country || 'Unknown',
-                            status: 'online',
-                            lastActive: new Date().toISOString(),
-                        };
-                    } else {
-                        // Fallback to mock location if no real data
-                        const mockLoc = getMockLocationFromId(u.id);
-                        return {
-                            id: u.id,
-                            name: u.name || 'Anonymous',
-                            email: u.email || 'N/A',
-                            lat: mockLoc.lat,
-                            lng: mockLoc.lng,
-                            city: mockLoc.city,
-                            country: mockLoc.country,
-                            status: 'online',
-                            lastActive: new Date().toISOString(),
-                        };
+        const fetchLocations = async () => {
+            try {
+                // We reuse the same API endpoint and type logic from AdminUserMap
+                // but adapted for this full page view
+                const token = localStorage.getItem("token");
+                const response = await fetch('http://localhost:5000/api/user/locations', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
                     }
                 });
-                setActiveUsers(usersWithLocation);
+                const data = await response.json();
+
+                if (data.success) {
+                    const mappedUsers = data.users.map((u: any) => ({
+                        id: u.id,
+                        name: u.name,
+                        email: u.email || 'N/A', // Endpoint might need to return email if not already
+                        lat: u.lat,
+                        lng: u.lng,
+                        city: u.city,
+                        state: u.state,
+                        role: u.role,
+                        status: 'online', // For now assume visible users are "active" in DB context or just show them
+                        lastActive: u.joined
+                    }));
+                    setActiveUsers(mappedUsers);
+                }
+            } catch (error) {
+                console.error("Failed to load map data", error);
             }
         };
 
-        socket.on('monitor:stats', handleStats);
-        return () => {
-            socket.off('monitor:stats', handleStats);
-        };
-    }, [socket]);
-
-    // Mock location function - returns realistic city coordinates based on user ID
-    const getMockLocationFromId = (id: string): { lat: number; lng: number; city: string; country: string } => {
-        const cities = [
-            { lat: 40.7128, lng: -74.0060, city: 'New York', country: 'USA' },
-            { lat: 51.5074, lng: -0.1278, city: 'London', country: 'UK' },
-            { lat: 35.6762, lng: 139.6503, city: 'Tokyo', country: 'Japan' },
-            { lat: 28.7041, lng: 77.1025, city: 'New Delhi', country: 'India' },
-            { lat: -33.8688, lng: 151.2093, city: 'Sydney', country: 'Australia' },
-            { lat: 55.7558, lng: 37.6173, city: 'Moscow', country: 'Russia' },
-            { lat: -23.5505, lng: -46.6333, city: 'São Paulo', country: 'Brazil' },
-            { lat: 19.4326, lng: -99.1332, city: 'Mexico City', country: 'Mexico' },
-            { lat: 1.3521, lng: 103.8198, city: 'Singapore', country: 'Singapore' },
-            { lat: 25.2048, lng: 55.2708, city: 'Dubai', country: 'UAE' },
-            { lat: 52.5200, lng: 13.4050, city: 'Berlin', country: 'Germany' },
-            { lat: 48.8566, lng: 2.3522, city: 'Paris', country: 'France' },
-            { lat: 37.7749, lng: -122.4194, city: 'San Francisco', country: 'USA' },
-            { lat: -1.2921, lng: 36.8219, city: 'Nairobi', country: 'Kenya' },
-            { lat: 39.9042, lng: 116.4074, city: 'Beijing', country: 'China' },
-        ];
-
-        // Use hash to deterministically select a city
-        let hash = 0;
-        for (let i = 0; i < id.length; i++) {
-            hash = id.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        const index = Math.abs(hash % cities.length);
-        return cities[index];
-    };
+        fetchLocations();
+        // Optional: Poll every 30s
+        const interval = setInterval(fetchLocations, 30000);
+        return () => clearInterval(interval);
+    }, []);
 
     // Get tile layer URL based on current layer
     const getTileLayerUrl = () => {
@@ -260,7 +220,7 @@ export const AdminMap: React.FC = () => {
 
     const filteredUsers = activeUsers.filter(u =>
         u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.country?.toLowerCase().includes(searchTerm.toLowerCase())
     );
