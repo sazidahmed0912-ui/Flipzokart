@@ -139,27 +139,27 @@ export const AdminInventory: React.FC = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50">
-                                        {(products || []).map(product => (
-                                            <tr key={product._id} className="hover:bg-gray-50/50 transition-colors">
+                                        {(products || []).map((product, idx) => (
+                                            <tr key={product?._id || idx} className="hover:bg-gray-50/50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <img
-                                                            src={product.image || 'https://via.placeholder.com/40'}
-                                                            alt={product.name}
+                                                            src={product?.image || 'https://via.placeholder.com/40'}
+                                                            alt={product?.name || 'Product'}
                                                             className="w-10 h-10 rounded-lg object-contain bg-gray-50 border border-gray-100"
                                                         />
                                                         <div className="min-w-0 max-w-[200px]">
-                                                            <p className="text-sm font-bold text-gray-800 truncate">{product.name || 'Unnamed Product'}</p>
-                                                            <p className="text-[10px] text-gray-400">{product.category || 'Uncategorized'}</p>
+                                                            <p className="text-sm font-bold text-gray-800 truncate">{product?.name || 'Unnamed Product'}</p>
+                                                            <p className="text-[10px] text-gray-400">{product?.category || 'Uncategorized'}</p>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm font-medium text-gray-600">₹{(product.price || 0).toLocaleString()}</td>
-                                                <td className="px-6 py-4 text-sm font-bold text-gray-900">{product.countInStock || 0}</td>
+                                                <td className="px-6 py-4 text-sm font-medium text-gray-600">₹{(product?.price || 0).toLocaleString()}</td>
+                                                <td className="px-6 py-4 text-sm font-bold text-gray-900">{product?.countInStock || 0}</td>
                                                 <td className="px-6 py-4">
-                                                    {(product.countInStock || 0) === 0 ? (
+                                                    {(product?.countInStock || 0) === 0 ? (
                                                         <span className="px-2 py-1 bg-red-100 text-red-600 text-[10px] font-bold rounded-lg uppercase">Out of Stock</span>
-                                                    ) : (product.countInStock || 0) <= 5 ? (
+                                                    ) : (product?.countInStock || 0) <= 5 ? (
                                                         <span className="px-2 py-1 bg-yellow-100 text-yellow-600 text-[10px] font-bold rounded-lg uppercase">Low Stock</span>
                                                     ) : (
                                                         <span className="px-2 py-1 bg-green-100 text-green-600 text-[10px] font-bold rounded-lg uppercase">In Stock</span>
@@ -172,15 +172,15 @@ export const AdminInventory: React.FC = () => {
                                                             className="w-20 px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold outline-none focus:border-[#2874F0]"
                                                             placeholder="+ Qty"
                                                             min="1"
-                                                            value={quickAddAmount[product._id] ?? ''}
+                                                            value={quickAddAmount[product?._id] ?? ''}
                                                             onChange={(e) => {
                                                                 const val = parseInt(e.target.value);
-                                                                setQuickAddAmount(prev => ({ ...prev, [product._id]: isNaN(val) ? 0 : val }));
+                                                                if (product?._id) setQuickAddAmount(prev => ({ ...prev, [product._id]: isNaN(val) ? 0 : val }));
                                                             }}
                                                         />
                                                         <button
-                                                            onClick={() => handleQuickAdd(product._id, product.countInStock || 0)}
-                                                            disabled={updatingId === product._id || !quickAddAmount[product._id]}
+                                                            onClick={() => product?._id && handleQuickAdd(product._id, product.countInStock || 0)}
+                                                            disabled={!product?._id || updatingId === product._id || !quickAddAmount[product._id]}
                                                             className="p-1.5 bg-[#2874F0] text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
                                                         >
                                                             <Save size={16} />

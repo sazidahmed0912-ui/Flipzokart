@@ -77,8 +77,8 @@ export const AdminMap: React.FC = () => {
 
     // Map to Leaflet Format with Jitter to prevent exact stacking
     const mapLocations: MapLocation[] = filteredUsers.map(u => {
-        // Add tiny random jitter (~10-50 meters) for visual separation of collisions
-        const jitter = () => (Math.random() - 0.5) * 0.001;
+        // Add random jitter (~5km) for visual separation of collisions
+        const jitter = () => (Math.random() - 0.5) * 0.05;
         return {
             id: u.id,
             lat: u.lat + jitter(),

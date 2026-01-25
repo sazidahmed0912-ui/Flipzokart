@@ -372,7 +372,7 @@ export const AdminOrderDetails: React.FC = () => {
                                 <p className="text-sm text-gray-600">Registered Office: Morigaon, Assam, India</p>
                                 <p className="text-sm text-gray-600">GSTIN: <span className="text-gray-900">18ABCDE1234F1Z5</span></p>
                                 <p className="text-sm text-gray-600 mt-2">Customer Care: <span className="text-gray-900 font-medium">fzokart@gmail.com</span></p>
-                                <p className="text-sm text-gray-600">Phone: <span className="text-gray-900 font-medium">6003394539</span></p>
+                                <p className="text-sm text-gray-600">Phone: <span className="text-gray-900 font-medium">6033394539</span></p>
                             </div>
                         </div>
                         <div className="text-right">

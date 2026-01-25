@@ -317,31 +317,57 @@ export const TrackOrderPage: React.FC = () => {
                 Delivery Address
               </h3>
               <div className="text-sm text-gray-800 leading-relaxed border border-gray-200 rounded-[4px] p-4 bg-gray-50/50">
-                <div className="font-bold text-base mb-2">{foundOrder.user?.name || user?.name || ''}</div>
-                <div className="text-justify mb-3 text-gray-600">
+                <div className="text-sm text-gray-800 leading-relaxed border border-gray-200 rounded-[4px] p-4 bg-gray-50/50">
                   {(() => {
                     const addr = foundOrder.shippingAddress || foundOrder.address;
                     if (!addr) return 'Address not available';
-                    if (typeof addr === 'string') return addr;
+                    // Normalize address object
+                    const addressObj = typeof addr === 'string' ? { street: addr } : addr;
 
                     return (
-                      <>
-                        <p>{addr.street || ''}</p>
-                        {addr.locality && <p>{addr.locality}</p>}
-                        <p>
-                          {addr.city || ''}{addr.state ? `, ${addr.state}` : ''}
-                          {addr.zip || addr.pincode ? ` - ${addr.zip || addr.pincode}` : ''}
-                        </p>
-                        {addr.country && <p>{addr.country}</p>}
-                      </>
+                      <div className="flex flex-col gap-3">
+                        {/* Name */}
+                        <div className="font-bold text-base text-gray-900">
+                          {addressObj.fullName || addressObj.name || foundOrder.user?.name || 'Customer'}
+                        </div>
+
+                        {/* Address Body */}
+                        <div className="text-gray-600 leading-snug">
+                          {typeof addr === 'string' ? addr : (
+                            <>
+                              <p>{addressObj.street || ''}</p>
+                              {addressObj.locality && <p>{addressObj.locality}</p>}
+                              <p>
+                                {addressObj.city || ''}{addressObj.state ? `, ${addressObj.state}` : ''}
+                                {addressObj.zip || addressObj.pincode ? ` - ${addressObj.zip || addressObj.pincode}` : ''}
+                              </p>
+                              {addressObj.country && <p>{addressObj.country}</p>}
+                            </>
+                          )}
+                        </div>
+
+                        {/* Contact Details (Email & Phone) */}
+                        <div className="pt-2 border-t border-dashed border-gray-200 mt-1 flex flex-col gap-1.5">
+
+                          {/* Email */}
+                          <div className="flex flex-col">
+                            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Email</span>
+                            <span className="text-sm font-semibold text-gray-900">
+                              {addressObj.email || foundOrder.user?.email || 'N/A'}
+                            </span>
+                          </div>
+
+                          {/* Phone */}
+                          <div className="flex flex-col">
+                            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Phone Number</span>
+                            <span className="text-sm font-semibold text-gray-900">
+                              {addressObj.phone || foundOrder.user?.phone || 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     );
                   })()}
-                </div>
-                <div className="font-medium flex flex-col gap-1">
-                  <span className="text-gray-500 text-xs uppercase font-bold">Phone Number</span>
-                  <span className="text-gray-900 font-semibold tracking-wide">
-                    {(foundOrder.shippingAddress || foundOrder.address)?.phone || foundOrder.user?.phone || 'N/A'}
-                  </span>
                 </div>
               </div>
               <button

@@ -384,17 +384,24 @@
   width: 100%;
 }
 
+/* Mobile default */
 .empty-cart-image {
   max-width: 100%;
   height: auto;
-  max-height: 300px;
-  /* Adjustable height */
+  max-height: 200px;
   object-fit: contain;
   margin-bottom: 24px;
   display: block;
   margin-left: auto;
   margin-right: auto;
 }
+
+@media (min-width: 768px) {
+  .empty-cart-image {
+    max-height: 300px;
+  }
+}
+
 
 .empty-cart-content h2 {
   font-size: 20px;

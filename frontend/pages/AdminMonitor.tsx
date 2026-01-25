@@ -162,9 +162,20 @@ export const AdminMonitor: React.FC = () => {
 
                 {/* Real-time Logs Console */}
                 <div className="lg:col-span-2 bg-[#1e1e1e] p-6 rounded-xl border border-gray-800 shadow-sm flex flex-col h-96">
-                    <h2 className="font-bold text-gray-200 mb-4 flex items-center gap-2">
-                        <Terminal size={18} className="text-green-500" /> System Logs Stream
-                    </h2>
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="font-bold text-gray-200 flex items-center gap-2">
+                            <Terminal size={18} className="text-green-500" /> System Logs Stream
+                        </h2>
+                        <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={shouldAutoScroll}
+                                onChange={(e) => setShouldAutoScroll(e.target.checked)}
+                                className="rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-offset-gray-900"
+                            />
+                            Auto-scroll
+                        </label>
+                    </div>
                     <div
                         ref={logsContainerRef}
                         onScroll={handleScroll}
