@@ -41,6 +41,13 @@ export const AdminInvoices: React.FC = () => {
 
     useEffect(() => {
         loadInvoices();
+
+        // Auto-refresh every 5 seconds to show new Invoices automatically
+        const interval = setInterval(() => {
+            loadInvoices();
+        }, 5000);
+
+        return () => clearInterval(interval);
     }, []);
 
     const loadInvoices = async () => {
@@ -91,13 +98,27 @@ export const AdminInvoices: React.FC = () => {
 
     return (
         <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
-            {/* Print Styles: Hide everything except invoice-template when printing */}
+            {/* Print Styles: Robus hiding mechanism */}
             <style>{`
                 @media print {
-                    body * { visibility: hidden; }
-                    #invoice-template, #invoice-template * { visibility: visible; }
-                    #invoice-template { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; z-index: 9999; }
+                    @page { margin: 0; size: auto; }
+                    body { visibility: hidden; background: white; }
+                    #invoice-template { 
+                        visibility: visible; 
+                        position: fixed; 
+                        left: 0; 
+                        top: 0; 
+                        width: 100%; 
+                        height: 100%; 
+                        z-index: 9999; 
+                        background: white; 
+                        padding: 20px;
+                        margin: 0;
+                    }
+                    #invoice-template * { visibility: visible; }
                     .no-print { display: none !important; }
+                    /* Hide scrollbars */
+                    ::-webkit-scrollbar { display: none; }
                 }
             `}</style>
 
@@ -332,19 +353,22 @@ export const AdminInvoices: React.FC = () => {
                             <div className="w-1/2 space-y-2">
                                 <div className="flex justify-between py-1 border-b border-gray-100">
                                     <span className="text-sm font-medium text-gray-600">Subtotal:</span>
-                                    <span className="text-sm font-bold text-gray-900">₹{selectedInvoice.originalOrder?.subtotal?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    <span className="text-sm font-bold text-gray-900">₹{(selectedInvoice.originalOrder?.subtotal || selectedInvoice.amount / 1.18).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 <div className="flex justify-between py-1 border-b border-gray-100">
-                                    <span className="text-sm font-medium text-gray-600">GST (Included/Extra):</span>
-                                    <span className="text-sm font-bold text-gray-900">₹0.00</span> {/* Tax Logic placeholder */}
+                                    <span className="text-sm font-medium text-gray-600">GST (18%):</span>
+                                    {/* Calculate GST: Assuming Total includes 18% Tax if not split */}
+                                    <span className="text-sm font-bold text-gray-900">
+                                        ₹{(selectedInvoice.originalOrder?.tax || (selectedInvoice.amount - (selectedInvoice.amount / 1.18))).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between py-1 border-b border-gray-100">
                                     <span className="text-sm font-medium text-gray-600">Shipping Charges:</span>
-                                    <span className="text-sm font-bold text-gray-900">₹{selectedInvoice.originalOrder?.deliveryCharges?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    <span className="text-sm font-bold text-gray-900">₹{(selectedInvoice.originalOrder?.deliveryCharges || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 <div className="flex justify-between py-2 px-4 bg-[#FCECD8] mt-2 rounded-[2px] items-center">
                                     <span className="text-sm font-bold text-gray-800">GRAND Total (in words):</span>
-                                    <span className="text-lg font-bold text-gray-900">₹{selectedInvoice.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    <span className="text-lg font-bold text-gray-900">₹{selectedInvoice.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                             </div>
                         </div>
