@@ -110,6 +110,12 @@ const createOrder = async (req, res) => {
       status: 'info'
     });
 
+    // Broadcast Real-time Monitor Log
+    const broadcastLog = req.app.get("broadcastLog");
+    if (broadcastLog) {
+      broadcastLog("success", `New Order #${order._id.toString().slice(-6)} placed by ${req.user.name}`, "Orders");
+    }
+
     // Update stock
     await updateStock(validatedProducts);
 
@@ -259,6 +265,13 @@ const verifyPayment = async (req, res) => {
       userId: req.user.id,
       status: 'info'
     });
+
+    // Broadcast Real-time Monitor Log
+    const broadcastLog = req.app.get("broadcastLog");
+    if (broadcastLog) {
+      broadcastLog("info", `Payment verified for Order #${order._id.toString().slice(-6)}`, "Payments");
+      broadcastLog("success", `New Order #${order._id.toString().slice(-6)} placed (Pre-paid)`, "Orders");
+    }
 
     // Update stock
     await updateStock(products);

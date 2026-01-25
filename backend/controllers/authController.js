@@ -36,6 +36,12 @@ const register = async (req, res) => {
       { expiresIn: "30d" }
     );
 
+    // Broadcast log
+    const broadcastLog = req.app.get("broadcastLog");
+    if (broadcastLog) {
+      broadcastLog("success", `New user registered: ${email}`, "Auth");
+    }
+
     res.status(201).json({
       success: true,
       message: "Account created successfully",
@@ -100,6 +106,12 @@ const login = async (req, res) => {
       device: req.headers['user-agent'] || 'Unknown Device',
       ip: req.ip || '0.0.0.0'
     });
+
+    // Broadcast log
+    const broadcastLog = req.app.get("broadcastLog");
+    if (broadcastLog) {
+      broadcastLog("success", `User ${user.email} logged in`, "Auth");
+    }
 
     res.status(200).json({
       success: true,

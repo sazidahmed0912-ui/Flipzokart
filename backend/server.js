@@ -108,6 +108,28 @@ setInterval(() => {
   });
 }, 2000);
 
+// 🛡️ Mock Security Events (For Demo Purposes)
+setInterval(() => {
+  const events = [
+    { type: 'warning', message: 'Failed login attempt (IP: 45.23.12.98)', source: 'Auth' },
+    { type: 'error', message: 'Database connection spike detected', source: 'Database' },
+    { type: 'warning', message: 'Unauthorized API access blocked', source: 'Firewall' },
+    { type: 'error', message: 'Payment gateway timeout', source: 'Payment' },
+    { type: 'warning', message: 'High memory usage warning', source: 'System' }
+  ];
+
+  if (Math.random() < 0.3) { // 30% chance every 5s
+    const event = events[Math.floor(Math.random() * events.length)];
+    io.to('admin-monitor').emit('monitor:log', {
+      id: Date.now(),
+      time: new Date().toLocaleTimeString(),
+      type: event.type,
+      message: event.message,
+      source: event.source
+    });
+  }
+}, 5000);
+
 // Helper to broadcast logs
 const broadcastLog = (type, message, source = 'System') => {
   io.to('admin-monitor').emit('monitor:log', {

@@ -143,6 +143,12 @@ const updateUserStatus = async (req, res) => {
       // Emit to specific user if possible, or broadcast update
       // For simplicity in this architecture, we emit a general list update or check if we can emit to user room
       io.emit('userStatusChanged', { userId: user._id, status, suspensionEnd: user.suspensionEnd });
+
+      // Broadcast Real-time Monitor Log
+      const broadcastLog = req.app.get("broadcastLog");
+      if (broadcastLog) {
+        broadcastLog("warning", `User ${user.email} status changed to ${status}`, "Admin");
+      }
     }
 
     res.json({ success: true, user });
@@ -201,6 +207,12 @@ const sendUserNotice = async (req, res) => {
       if (type === 'emergency') {
         io.to(user._id.toString()).emit('adminNotice', { message, type: 'emergency' });
       }
+    }
+
+    // Broadcast Real-time Monitor Log
+    const broadcastLog = req.app.get("broadcastLog");
+    if (broadcastLog) {
+      broadcastLog("info", `Notice sent to ${user.name}: "${message}"`, "System");
     }
 
     res.json({ success: true, notification });
