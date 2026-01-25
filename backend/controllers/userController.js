@@ -246,6 +246,43 @@ const deleteAddress = async (req, res) => {
     }
 };
 
+const { getCoordinates } = require('../utils/cityCoordinates');
+
+// @desc    Get user locations for map
+// @route   GET /api/user/locations
+// @access  Private (Admin)
+const getUserLocations = async (req, res) => {
+    try {
+        // Only fetch users who have at least one address
+        const users = await User.find({ "addresses.0": { $exists: true } })
+            .select('name email addresses role createdAt');
+
+        const mapData = users.map(user => {
+            // Use optimal address (preferably Home or first one)
+            const address = user.addresses.find(a => a.type === 'Home') || user.addresses[0];
+
+            if (!address) return null;
+
+            const coords = getCoordinates(address.state, address.city);
+
+            return {
+                id: user._id,
+                name: user.name,
+                role: user.role,
+                city: address.city,
+                state: address.state,
+                lat: coords.lat,
+                lng: coords.lng,
+                joined: user.createdAt
+            };
+        }).filter(item => item !== null);
+
+        res.json({ success: true, count: mapData.length, users: mapData });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     updateProfile,
     changePassword,
@@ -255,5 +292,6 @@ module.exports = {
     getAddresses,
     saveAddress,
     updateAddress,
-    deleteAddress
+    deleteAddress,
+    getUserLocations
 };

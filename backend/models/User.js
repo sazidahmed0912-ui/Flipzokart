@@ -60,6 +60,7 @@ const userSchema = new mongoose.Schema(
         phone: String,
         email: String,
         address: String,
+        locality: String,
         city: String,
         state: String,
         pincode: String,

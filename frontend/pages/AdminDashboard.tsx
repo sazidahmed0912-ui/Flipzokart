@@ -11,6 +11,7 @@ import { AdminSidebar } from '../components/AdminSidebar';
 import { getDashboardStats } from '../services/adminService';
 import CircularGlassSpinner from '../components/CircularGlassSpinner';
 import { SmoothReveal } from '../components/SmoothReveal';
+import AdminUserMap from '../components/AdminUserMap';
 
 // Define interfaces for the dashboard data
 interface SalesOverTimeData {
@@ -190,6 +191,11 @@ export const AdminDashboard: React.FC = () => {
               </SmoothReveal>
             ))}
           </div>
+
+          {/* Live Map Section */}
+          <SmoothReveal direction="up" delay={500}>
+            <AdminUserMap />
+          </SmoothReveal>
 
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

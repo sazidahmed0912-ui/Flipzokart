@@ -4,12 +4,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
 import { useToast } from "./toast";
 import { AddressFormFields, AddressFormData } from "./AddressFormFields";
+import { validateAddressForm } from "../utils/addressValidation";
 
 const AddNewAddress: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { addToast } = useToast();
     const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     // Check if we are in Edit Mode
     const addressToEdit = location.state?.addressToEdit;
@@ -34,7 +36,7 @@ const AddNewAddress: React.FC = () => {
                 phone: addressToEdit.phone || "",
                 email: addressToEdit.email || "",
                 street: addressToEdit.address || "",
-                locality: addressToEdit.locality || "",
+                locality: addressToEdit.locality || "", // Now mapped correctly from backend
                 city: addressToEdit.city || "",
                 state: addressToEdit.state || "",
                 zip: addressToEdit.pincode || "",
@@ -43,19 +45,20 @@ const AddNewAddress: React.FC = () => {
         }
     }, [isEditMode, addressToEdit]);
 
-    // handleChange is handled by AddressFormFields directly setFormData
-
     const handleSave = async () => {
-        // Basic Validation
-        if (!formData.name || !formData.phone || !formData.street || !formData.zip || !formData.city || !formData.state) {
-            alert("Please fill required fields");
+        // Validate Form
+        const validationErrors = validateAddressForm(formData);
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            addToast?.('error', "Please fix the errors in the form");
             return;
         }
+        setErrors({});
 
         setLoading(true);
         try {
-            // Map back to backend expected format if necessary
-            // Backend expects: fullName, phone, email, address, city, state, pincode, type
+            // Map to backend expected format
+            // Backend expects: fullName, phone, email, address, city, state, pincode, type, locality
             const payload = {
                 fullName: formData.name,
                 phone: formData.phone,
@@ -70,7 +73,6 @@ const AddNewAddress: React.FC = () => {
 
             if (isEditMode) {
                 // UPDATE Existing Address
-                // backend route: PUT /api/user/address/:id
                 await API.put(`/api/user/address/${addressToEdit._id || addressToEdit.id}`, payload);
                 addToast?.('success', 'Address updated successfully');
             } else {
@@ -107,6 +109,7 @@ const AddNewAddress: React.FC = () => {
                     <AddressFormFields
                         formData={formData}
                         setFormData={setFormData}
+                        errors={errors}
                     />
 
                     <p className="text-xs text-gray-500">
@@ -121,7 +124,8 @@ const AddNewAddress: React.FC = () => {
                         <button
                             onClick={handleSave}
                             disabled={loading}
-                            className="flex-1 bg-yellow-400 text-black py-3 rounded-lg font-semibold hover:bg-yellow-500 transition disabled:opacity-50"
+                            className={`flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 ${Object.keys(errors).length > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-yellow-400 text-black hover:bg-yellow-500'
+                                }`}
                         >
                             {loading ? "Saving..." : (isEditMode ? "Update Address" : "Save Address")}
                         </button>
