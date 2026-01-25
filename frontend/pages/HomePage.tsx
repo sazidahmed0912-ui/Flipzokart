@@ -15,7 +15,7 @@ const categories = [
     { name: 'Beauty', imageUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100&h=100&fit=crop&q=60', href: '/shop?category=Beauty' },
     { name: 'Home', imageUrl: 'https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=100&h=100&fit=crop&q=60', href: '/shop?category=Home' },
     { name: 'Appliances', imageUrl: 'https://images.unsplash.com/photo-1626806819282-2c1dc01a5e0c?w=100&h=100&fit=crop&q=60', href: '/shop?category=Appliances' },
-    { name: 'Offers', imageUrl: 'https://images.unsplash.com/photo-1570829053985-6667254c9447?w=100&h=100&fit=crop&q=60', href: '/shop?tag=offer' },
+    { name: 'Offers', imageUrl: 'https://rukminim1.flixcart.com/fk-p-flap/80/80/image/0139228b2f7eb413.jpg?q=100', href: '/shop?tag=offer' },
 ];
 
 export const HomePage: React.FC = () => {

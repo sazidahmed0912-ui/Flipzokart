@@ -131,6 +131,7 @@ export const AdminOrders: React.FC = () => {
     let matchesTab = false;
     if (activeTab === 'status') matchesTab = ['Pending', 'Processing'].includes(o.status);
     if (activeTab === 'tracking') matchesTab = o.status === 'Shipped';
+    if (activeTab === 'out-delivery') matchesTab = o.status === 'Out for Delivery' as any;
     if (activeTab === 'refunds') matchesTab = ['Cancelled', 'Refunded'].includes(o.status);
     if (activeTab === 'history') matchesTab = o.status === 'Delivered';
 
@@ -238,7 +239,8 @@ export const AdminOrders: React.FC = () => {
           <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-full md:w-auto self-start overflow-x-auto">
             {[
               { id: 'status', label: 'Order Status', icon: Clock },
-              { id: 'tracking', label: 'Shipment Tracking', icon: Truck },
+              { id: 'tracking', label: 'Shipments', icon: Truck },
+              { id: 'out-delivery', label: 'Out for Delivery', icon: Truck },
               { id: 'refunds', label: 'Refunds', icon: Banknote },
               { id: 'history', label: 'Order History', icon: FileText },
             ].map(tab => (
@@ -262,7 +264,8 @@ export const AdminOrders: React.FC = () => {
             <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
               <h2 className="font-bold text-gray-700 flex items-center gap-2">
                 {activeTab === 'status' && <><Clock size={16} className="text-blue-500" /> Active Orders</>}
-                {activeTab === 'tracking' && <><Truck size={16} className="text-orange-500" /> Shipments in Transit</>}
+                {activeTab === 'tracking' && <><Truck size={16} className="text-indigo-500" /> Shipments in Transit</>}
+                {activeTab === 'out-delivery' && <><Truck size={16} className="text-purple-500" /> Orders Out for Delivery</>}
                 {activeTab === 'refunds' && <><Banknote size={16} className="text-red-500" /> Refund Requests & Cancelled</>}
                 {activeTab === 'history' && <><FileText size={16} className="text-green-500" /> Completed Order History</>}
               </h2>

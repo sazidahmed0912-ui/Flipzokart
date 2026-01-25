@@ -94,12 +94,8 @@ const getCoordinates = (state, city) => {
 
     // 2. Try State match
     if (state && indiaCoordinates[state]) {
-        // Add small random noise to prevent exact stacking if multiple users in same state
-        const noise = () => (Math.random() - 0.5) * 0.05;
-        return {
-            lat: indiaCoordinates[state].lat + noise(),
-            lng: indiaCoordinates[state].lng + noise()
-        };
+        // Return exact state center (Removed random noise to prevent "fake" data appearance)
+        return indiaCoordinates[state];
     }
 
     // 3. Fallback to India Center

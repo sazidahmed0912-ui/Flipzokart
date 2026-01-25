@@ -53,16 +53,18 @@ export const CartPage: React.FC = () => {
 
   if (cart.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-32 text-center space-y-6">
+      <div className="container mx-auto px-4 py-12 text-center space-y-6 animate-in fade-in duration-500">
         <div className="flex justify-center mb-6">
-          <div className="w-48 h-48 bg-orange-50 rounded-full flex items-center justify-center shadow-inner">
-            <ShoppingBag size={100} className="text-primary opacity-50" />
-          </div>
+          <img
+            src="https://rukminim2.flixcart.com/www/800/800/promos/16/05/2019/d438a32e-765a-4d8b-b4a6-520b560971e8.png"
+            alt="Empty Cart"
+            className="w-64 h-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
+          />
         </div>
-        <h2 className="text-3xl font-bold text-dark">Your bag is empty</h2>
-        <p className="text-gray-500 max-w-sm mx-auto">Looks like you haven't added anything to your cart yet. Let's find something premium for you!</p>
-        <Link to="/shop" className="inline-flex items-center gap-2 bg-primary text-white px-10 py-4 rounded-xl font-bold hover:shadow-2xl hover:-translate-y-1 transition-all">
-          Start Shopping <ArrowRight size={20} />
+        <h2 className="text-2xl font-bold text-gray-800">Your bag is empty</h2>
+        <p className="text-gray-500 max-w-sm mx-auto text-sm">Looks like you haven't added anything to your cart yet.</p>
+        <Link to="/shop" className="inline-flex items-center gap-2 bg-[#2874F0] text-white px-12 py-3 rounded-[2px] font-bold shadow-md hover:shadow-lg transition-all text-sm uppercase tracking-wide">
+          Shop Now
         </Link>
       </div>
     );

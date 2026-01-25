@@ -138,7 +138,7 @@ export const AdminInventory: React.FC = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50">
-                                        {products.map(product => (
+                                        {(products || []).map(product => (
                                             <tr key={product._id} className="hover:bg-gray-50/50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">

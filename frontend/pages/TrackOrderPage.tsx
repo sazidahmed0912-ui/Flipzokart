@@ -317,15 +317,27 @@ export const TrackOrderPage: React.FC = () => {
                 Delivery Address
               </h3>
               <div className="text-sm text-gray-800 leading-relaxed border border-gray-200 rounded-[4px] p-4 bg-gray-50/50">
-                <div className="font-bold text-base mb-2">{foundOrder.user?.name || user?.name || 'Mark Sebastian'}</div>
+                <div className="font-bold text-base mb-2">{foundOrder.user?.name || user?.name || ''}</div>
                 <div className="text-justify mb-3 text-gray-600">
-                  {typeof foundOrder.shippingAddress === 'string'
-                    ? foundOrder.shippingAddress
-                    : `${foundOrder.shippingAddress?.street || ''}, ${foundOrder.shippingAddress?.city || ''}, ${foundOrder.shippingAddress?.state || ''} - ${foundOrder.shippingAddress?.zip || ''}`}
+                  {typeof foundOrder.shippingAddress === 'string' ? (
+                    foundOrder.shippingAddress
+                  ) : (
+                    <>
+                      <p>{foundOrder.shippingAddress?.street || foundOrder.address?.address || ''}</p>
+                      <p>{foundOrder.shippingAddress?.locality || foundOrder.address?.locality || ''}</p>
+                      <p>
+                        {foundOrder.shippingAddress?.city || foundOrder.address?.city || ''},{' '}
+                        {foundOrder.shippingAddress?.state || foundOrder.address?.state || ''} -{' '}
+                        {foundOrder.shippingAddress?.zip || foundOrder.address?.pincode || ''}
+                      </p>
+                    </>
+                  )}
                 </div>
                 <div className="font-medium flex flex-col gap-1">
                   <span className="text-gray-500 text-xs uppercase font-bold">Phone Number</span>
-                  <span className="text-gray-900 font-semibold tracking-wide">{foundOrder.user?.phone || '+91 99965 12345'}</span>
+                  <span className="text-gray-900 font-semibold tracking-wide">
+                    {foundOrder.shippingAddress?.phone || foundOrder.address?.phone || foundOrder.user?.phone || 'N/A'}
+                  </span>
                 </div>
               </div>
               <button
