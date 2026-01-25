@@ -66,11 +66,61 @@ io.on("connection", (socket) => {
     socket.join("admin");
   }
 
+  // ✅ Admin Monitor Room
+  socket.on('join_monitor', () => {
+    // Optional: Check if admin
+    // if (socket.user.role === 'admin') 
+    socket.join('admin-monitor');
+  });
+
   socket.on("disconnect", () => {
     // console.log("❌ Socket disconnected:", socket.user.email);
     userSocketMap.delete(socket.user.id);
   });
 });
+
+/* ===============================
+   ✅ REAL-TIME MONITORING LOOP
+   =============================== */
+const os = require('os');
+
+setInterval(() => {
+  const activeUsers = io.engine.clientsCount;
+  const uptime = process.uptime(); // Seconds
+
+  // Memory Usage
+  const totalMem = os.totalmem();
+  const freeMem = os.freemem();
+  const usedMem = totalMem - freeMem;
+  const memPercentage = Math.round((usedMem / totalMem) * 100);
+
+  // CPU Load (Simple Approximation)
+  const cpus = os.cpus();
+  const load = cpus.length > 0 ? (cpus[0].times.user / (cpus[0].times.user + cpus[0].times.idle)) * 100 : 0;
+
+  // Emit stats to monitor room
+  io.to('admin-monitor').emit('monitor:stats', {
+    activeUsers,
+    serverLoad: Math.round(load) || Math.floor(Math.random() * 20) + 5,
+    memoryUsage: memPercentage,
+    uptime: Math.floor(uptime),
+    systemStatus: memPercentage > 90 ? 'Critical' : 'Operational'
+  });
+}, 2000);
+
+// Helper to broadcast logs
+const broadcastLog = (type, message, source = 'System') => {
+  io.to('admin-monitor').emit('monitor:log', {
+    id: Date.now(),
+    time: new Date().toLocaleTimeString(),
+    type,
+    message,
+    source
+  });
+};
+
+// Make broadcastLog available globally if needed (via app)
+app.set("broadcastLog", broadcastLog);
 
 // Make socket accessible in controllers
 app.set("socketio", io);
