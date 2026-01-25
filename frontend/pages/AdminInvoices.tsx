@@ -53,18 +53,26 @@ export const AdminInvoices: React.FC = () => {
     const loadInvoices = async () => {
         try {
             const { data } = await fetchAllOrders();
+            console.log("Fetched Orders for Invoices:", data); // Debug Log
+
+            if (!data || !Array.isArray(data)) {
+                setInvoices([]);
+                return;
+            }
+
             // Map Orders to Invoices
             const mappedInvoices = data.map((order: any) => ({
-                id: `INV-${order._id.slice(-6).toUpperCase()}`,
-                orderId: order._id, // Real Order ID
-                originalOrder: order, // Keep full object
+                id: `INV-${(order._id || 'UNKNOWN').slice(-6).toUpperCase()}`,
+                orderId: order._id,
+                originalOrder: order,
                 date: new Date(order.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }),
-                customer: order.userName || order.user?.name || 'Unknown',
-                email: order.email || order.user?.email, // Ensure email is available
-                amount: order.total,
-                status: order.paymentStatus === 'PAID' ? 'Paid' : (order.status === 'Delivered' ? 'Paid' : 'Pending'), // Assume COD delivered is Paid
-                items: order.items
+                customer: order.userName || order.user?.name || 'Guest User',
+                email: order.email || order.user?.email || 'N/A',
+                amount: order.total || 0,
+                status: order.paymentStatus === 'PAID' ? 'Paid' : (order.status === 'Delivered' ? 'Paid' : 'Pending'),
+                items: order.items || []
             }));
+
             setInvoices(mappedInvoices);
         } catch (error) {
             console.error("Failed to load invoices", error);
@@ -103,17 +111,20 @@ export const AdminInvoices: React.FC = () => {
                 @media print {
                     @page { margin: 0; size: auto; }
                     body { visibility: hidden; background: white; }
+                    /* Crucial: Must override the Tailwind 'hidden' class (display: none) */
                     #invoice-template { 
+                        display: block !important; 
                         visibility: visible; 
                         position: fixed; 
                         left: 0; 
                         top: 0; 
-                        width: 100%; 
-                        height: 100%; 
+                        width: 100vw; 
+                        height: 100vh; 
                         z-index: 9999; 
                         background: white; 
                         padding: 20px;
                         margin: 0;
+                        overflow: visible;
                     }
                     #invoice-template * { visibility: visible; }
                     .no-print { display: none !important; }

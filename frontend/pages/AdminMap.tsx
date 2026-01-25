@@ -83,6 +83,15 @@ export const AdminMap: React.FC = () => {
         description: `User Location - ${u.city}, ${u.state}` // Exact format requested
     }));
 
+    // Fullscreen Toggle
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            document.getElementById('admin-map-container')?.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
     return (
         <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
             <AdminSidebar />
@@ -143,36 +152,35 @@ export const AdminMap: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <div className={`w-2 h-2 rounded-full ${activeUsers.length > 0 ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
                                 <span className="text-xs font-semibold text-gray-600">{activeUsers.length} Online</span>
                             </div>
+
+                            {/* Full Screen Button */}
                             <button
-                                onClick={async () => {
-                                    try {
-                                        await navigator.clipboard.writeText(window.location.href);
-                                        // Simple fallback if useToast isn't set up, or add it if context allows.
-                                        // For now, let's use a cleaner alert or prompt if we can't easily hook toast.
-                                        // But wait, I can import usage.
-                                        alert("Link copied to clipboard! Share it with others.");
-                                    } catch (err) {
-                                        console.error('Failed to copy', err);
-                                        prompt("Copy this link:", window.location.href);
-                                    }
-                                }}
-                                className="flex items-center gap-2 px-4 py-2 bg-[#2874F0] text-white border border-[#2874F0] rounded-xl text-sm font-bold hover:bg-blue-600 transition-colors shadow-sm"
+                                onClick={toggleFullScreen}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-200 transition-colors"
                             >
-                                <Share2 size={16} /> Share View
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3" /><path d="M16 3h3a2 2 0 0 1 2 2v3" /><path d="M8 21H5a2 2 0 0 1-2-2v-3" /><path d="M16 21h3a2 2 0 0 0 2-2v-3" /></svg>
+                                Full Screen
                             </button>
                         </div>
                     </SmoothReveal>
 
-                    {/* Map Container */}
-                    <SmoothReveal direction="up" delay={200} className="flex-1 bg-white rounded-3xl border border-gray-200 shadow-xl p-4 min-h-[500px]">
-                        <LeafletMap
-                            locations={mapLocations}
-                            height="100%"
-                            className="rounded-2xl"
-                        />
+                    {/* Map Container - ID for Fullscreen */}
+                    <SmoothReveal direction="up" delay={200} className="flex-1 bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden relative" >
+                        <div id="admin-map-container" className="w-full h-full bg-white relative">
+                            {activeUsers.length === 0 && (
+                                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[400] bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-gray-200">
+                                    <span className="text-sm font-medium text-gray-500">No active users with addresses found.</span>
+                                </div>
+                            )}
+                            <LeafletMap
+                                locations={mapLocations}
+                                height="100%"
+                                className="w-full h-full"
+                            />
+                        </div>
                     </SmoothReveal>
                 </div>
             </div>
