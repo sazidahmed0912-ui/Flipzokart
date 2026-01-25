@@ -1,78 +1,137 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Activity, Users, ShoppingCart, ShieldAlert,
-    Globe, Server, Cpu, Clock
+    Globe, Server, Cpu, Clock, Terminal
 } from 'lucide-react';
-import { fetchAllOrders } from '../services/api'; // Reuse existing API
-import { fetchAllUsers } from '../services/adminService';
+import { useSocket } from '../hooks/useSocket';
+import { useApp } from '../store/Context';
 
 export const AdminMonitor: React.FC = () => {
+    const { user } = useApp();
     const [stats, setStats] = useState({
         activeUsers: 0,
         serverLoad: 0,
-        recentActivities: [] as any[],
-        systemStatus: 'Operational'
+        memoryUsage: 0,
+        uptime: 0,
+        systemStatus: 'Connecting...'
     });
+    const [logs, setLogs] = useState<any[]>([]);
 
-    // Simulator for "Real-time" feel (until full socket presence is ready)
+    // Connect to socket using the hook
+    const token = localStorage.getItem("token");
+    const socket = useSocket(token);
+
+    // Auto-scroll logs
+    const logsEndRef = useRef<HTMLDivElement>(null);
+    const scrollToBottom = () => {
+        logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+    useEffect(scrollToBottom, [logs]);
+
     useEffect(() => {
-        const interval = setInterval(() => {
-            setStats(prev => ({
-                ...prev,
-                activeUsers: Math.floor(Math.random() * (150 - 50) + 50), // Fake active users between 50-150
-                serverLoad: Math.floor(Math.random() * (40 - 10) + 10),   // Fake CPU load
-            }));
-        }, 3000);
-        return () => clearInterval(interval);
-    }, []);
+        if (!socket) return;
+
+        // Join the monitor room to receive updates
+        socket.emit('join_monitor');
+
+        const handleStats = (data: any) => {
+            setStats(prev => ({ ...prev, ...data }));
+        };
+
+        const handleLog = (log: any) => {
+            setLogs(prev => {
+                const newLogs = [...prev, log];
+                if (newLogs.length > 50) newLogs.shift(); // Keep last 50
+                return newLogs;
+            });
+        };
+
+        socket.on('monitor:stats', handleStats);
+        socket.on('monitor:log', handleLog);
+
+        return () => {
+            socket.off('monitor:stats', handleStats);
+            socket.off('monitor:log', handleLog);
+        };
+    }, [socket]);
+
+    // Format Uptime
+    const formatUptime = (seconds: number) => {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        return `${h}h ${m}m`;
+    };
 
     return (
         <div className="p-8 bg-[#F5F7FA] min-h-screen">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                    <Activity className="text-blue-600" /> Real-time System Monitor
-                </h1>
-                <p className="text-gray-500 text-sm mt-1">Live infrastructure and user activity tracking.</p>
+            <div className="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                        <Activity className="text-blue-600 animate-pulse" /> Real-time System Monitor
+                    </h1>
+                    <p className="text-gray-500 text-sm mt-1">Live infrastructure and user activity tracking.</p>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-wider">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    Live Sync
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <MonitorCard
-                    title="Active Users (Live)"
+                    title="Active Users (Sockets)"
                     value={stats.activeUsers.toString()}
                     icon={Users}
                     color="blue"
-                    change="+12% since last hour"
+                    change="Real-time Count"
                 />
                 <MonitorCard
-                    title="Server Load"
+                    title="Server Load (CPU)"
                     value={`${stats.serverLoad}%`}
                     icon={Cpu}
                     color={stats.serverLoad > 80 ? 'red' : 'green'}
-                    change="Optimal Performance"
+                    change="OS Load Average"
                 />
                 <MonitorCard
-                    title="System Status"
-                    value={stats.systemStatus}
+                    title="Memory Usage"
+                    value={`${stats.memoryUsage}%`}
                     icon={Server}
-                    color="green"
-                    change="Uptime: 99.98%"
+                    color={stats.memoryUsage > 90 ? 'red' : 'purple'}
+                    change={`System RAM`}
                 />
                 <MonitorCard
-                    title="Avg Response Time"
-                    value="45ms"
+                    title="System Uptime"
+                    value={formatUptime(stats.uptime)}
                     icon={Clock}
-                    color="purple"
-                    change="Global latency"
+                    color="green"
+                    change={stats.systemStatus}
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                    <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <Globe size={18} className="text-indigo-500" /> Live Traffic Map
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Real-time Logs Console */}
+                <div className="lg:col-span-2 bg-[#1e1e1e] p-6 rounded-xl border border-gray-800 shadow-sm flex flex-col h-96">
+                    <h2 className="font-bold text-gray-200 mb-4 flex items-center gap-2">
+                        <Terminal size={18} className="text-green-500" /> System Logs Stream
                     </h2>
-                    <div className="h-64 bg-indigo-50 rounded-lg flex items-center justify-center border border-indigo-100 border-dashed">
-                        <span className="text-indigo-400 font-medium italic">Interactive Map Module Loading...</span>
+                    <div className="flex-1 overflow-y-auto font-mono text-sm space-y-1.5 pr-2 custom-scrollbar">
+                        {logs.length === 0 && (
+                            <div className="text-gray-600 italic text-center mt-10">Waiting for logs...</div>
+                        )}
+                        {logs.map((log) => (
+                            <div key={log.id} className="flex gap-3 text-gray-300 border-b border-gray-800/30 pb-1">
+                                <span className="text-gray-500 shrink-0">[{log.time}]</span>
+                                <span className={`font-bold shrink-0 ${log.type === 'error' ? 'text-red-400' :
+                                        log.type === 'warning' ? 'text-yellow-400' :
+                                            log.type === 'success' ? 'text-green-400' : 'text-blue-400'
+                                    }`}>
+                                    {log.type.toUpperCase()}
+                                </span>
+                                <span className="text-gray-400 shrink-0">[{log.source}]</span>
+                                <span>{log.message}</span>
+                            </div>
+                        ))}
+                        <div ref={logsEndRef} />
                     </div>
                 </div>
 
@@ -81,11 +140,13 @@ export const AdminMonitor: React.FC = () => {
                         <ShieldAlert size={18} className="text-orange-500" /> Security Events
                     </h2>
                     <div className="space-y-4">
-                        {/* Fake Security Logs */}
-                        <SecurityLog time="10:42:05" message="Failed login attempt (IP: 192.168.1.45)" type="warning" />
-                        <SecurityLog time="10:38:12" message="User Ban: ID #8823 (Suspicious Activity)" type="danger" />
-                        <SecurityLog time="10:15:00" message="System Backup Completed" type="success" />
-                        <SecurityLog time="09:55:23" message="New Admin Login detected" type="info" />
+                        {/* Filter logs for security related items or show recent logs */}
+                        {logs.filter(l => l.type === 'warning' || l.type === 'error').slice(-5).map(log => (
+                            <SecurityLog key={log.id} time={log.time} message={log.message} type={log.type === 'error' ? 'danger' : 'warning'} />
+                        ))}
+                        {logs.filter(l => l.type === 'warning' || l.type === 'error').length === 0 && (
+                            <p className="text-sm text-gray-500 text-center py-4">No recent security alerts.</p>
+                        )}
                     </div>
                 </div>
             </div>
@@ -128,9 +189,9 @@ const SecurityLog = ({ time, message, type }: any) => {
     };
 
     return (
-        <div className={`p-3 text-sm rounded-r-lg ${types[type]} flex justify-between items-center`}>
-            <span className="text-gray-700 font-medium">{message}</span>
-            <span className="text-xs text-gray-400 font-mono">{time}</span>
+        <div className={`p-3 text-sm rounded-r-lg ${types[type]} flex justify-between items-center bg-white border shadow-sm`}>
+            <span className="text-gray-700 font-medium truncate pr-2">{message}</span>
+            <span className="text-xs text-gray-400 font-mono shrink-0">{time}</span>
         </div>
     );
 };

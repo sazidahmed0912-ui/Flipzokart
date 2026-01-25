@@ -57,6 +57,9 @@ const AdminSellers = lazy(() => import("./pages/AdminSellers").then(module => ({
 const AdminUsers = lazy(() => import("./pages/AdminUsers").then(module => ({ default: module.AdminUsers })));
 const AdminMonitor = lazy(() => import("./pages/AdminMonitor").then(module => ({ default: module.AdminMonitor })));
 const AdminCoupons = lazy(() => import("./pages/AdminCoupons").then(module => ({ default: module.AdminCoupons })));
+const AdminPayments = lazy(() => import("./pages/AdminPayments").then(module => ({ default: module.AdminPayments })));
+const AdminInvoices = lazy(() => import("./pages/AdminInvoices").then(module => ({ default: module.AdminInvoices })));
+const AdminShipping = lazy(() => import("./pages/AdminShipping").then(module => ({ default: module.AdminShipping })));
 
 /* ---------- SOCKET ---------- */
 import { useSocket } from "./hooks/useSocket";
@@ -305,6 +308,30 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
               element={
                 <AdminRoute>
                   <AdminCoupons />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/payments"
+              element={
+                <AdminRoute>
+                  <AdminPayments />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/invoices"
+              element={
+                <AdminRoute>
+                  <AdminInvoices />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/shipping"
+              element={
+                <AdminRoute>
+                  <AdminShipping />
                 </AdminRoute>
               }
             />

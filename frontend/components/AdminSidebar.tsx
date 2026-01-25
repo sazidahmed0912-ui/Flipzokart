@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingCart,
   Users, TicketPercent, Settings,
-  ChevronRight, Activity, LogOut
+  ChevronRight, Activity, LogOut, CreditCard,
+  FileText, Truck
 } from 'lucide-react';
 
 const navItems = [
@@ -12,8 +13,10 @@ const navItems = [
   { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
   { name: 'Users', path: '/admin/users', icon: Users },
   { name: 'Sellers', path: '/admin/sellers', icon: Users },
-  { name: 'Payments', path: '/admin/payments', icon: TicketPercent },
-  { name: 'Monitor', path: '/admin/monitor', icon: Activity }, // New Monitor Link
+  { name: 'Payments', path: '/admin/payments', icon: CreditCard },
+  { name: 'Monitor', path: '/admin/monitor', icon: Activity },
+  { name: 'Invoices', path: '/admin/invoices', icon: FileText },
+  { name: 'Shipping', path: '/admin/shipping', icon: Truck },
   { name: 'Settings', path: '/admin/settings', icon: Settings },
 ];
 
