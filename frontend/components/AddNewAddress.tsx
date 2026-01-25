@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Home, Briefcase, MapPin, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
 import { useToast } from "./toast";
+import { AddressFormFields, AddressFormData } from "./AddressFormFields";
 
 const AddNewAddress: React.FC = () => {
     const navigate = useNavigate();
@@ -14,53 +15,67 @@ const AddNewAddress: React.FC = () => {
     const addressToEdit = location.state?.addressToEdit;
     const isEditMode = !!addressToEdit;
 
-    const [formData, setFormData] = useState({
-        fullName: "",
+    const [formData, setFormData] = useState<AddressFormData>({
+        name: "",
         phone: "",
         email: "",
-        address: "",
+        street: "",
+        locality: "",
         city: "",
         state: "",
-        pincode: "",
+        zip: "",
         type: "Home"
     });
 
     useEffect(() => {
         if (isEditMode && addressToEdit) {
             setFormData({
-                fullName: addressToEdit.fullName || addressToEdit.name || "",
+                name: addressToEdit.fullName || addressToEdit.name || "",
                 phone: addressToEdit.phone || "",
                 email: addressToEdit.email || "",
-                address: addressToEdit.address || "",
+                street: addressToEdit.address || "",
+                locality: addressToEdit.locality || "",
                 city: addressToEdit.city || "",
                 state: addressToEdit.state || "",
-                pincode: addressToEdit.pincode || "",
-                type: addressToEdit.type || "Home"
+                zip: addressToEdit.pincode || "",
+                type: (addressToEdit.type as any) || "Home"
             });
         }
     }, [isEditMode, addressToEdit]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name || 'type']: e.target.value });
-    };
+    // handleChange is handled by AddressFormFields directly setFormData
 
     const handleSave = async () => {
         // Basic Validation
-        if (!formData.fullName || !formData.phone || !formData.address || !formData.pincode) {
+        if (!formData.name || !formData.phone || !formData.street || !formData.zip || !formData.city || !formData.state) {
             alert("Please fill required fields");
             return;
         }
 
         setLoading(true);
         try {
+            // Map back to backend expected format if necessary
+            // Backend expects: fullName, phone, email, address, city, state, pincode, type
+            const payload = {
+                fullName: formData.name,
+                phone: formData.phone,
+                email: formData.email,
+                address: formData.street,
+                locality: formData.locality,
+                city: formData.city,
+                state: formData.state,
+                pincode: formData.zip,
+                type: formData.type
+            };
+
             if (isEditMode) {
                 // UPDATE Existing Address
                 // backend route: PUT /api/user/address/:id
-                await API.put(`/api/user/address/${addressToEdit._id || addressToEdit.id}`, formData);
+                await API.put(`/api/user/address/${addressToEdit._id || addressToEdit.id}`, payload);
                 addToast?.('success', 'Address updated successfully');
             } else {
                 // CREATE New Address
-                await API.post('/api/user/address', formData);
+                await API.post('/api/user/address', payload);
                 addToast?.('success', 'Address added successfully');
             }
             navigate('/address-book');
@@ -88,111 +103,11 @@ const AddNewAddress: React.FC = () => {
                 </div>
 
                 {/* Form */}
-                <div className="space-y-4">
-
-                    {/* Name */}
-                    <input
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        type="text"
-                        placeholder="Enter full name"
-                        className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <div className="space-y-6">
+                    <AddressFormFields
+                        formData={formData}
+                        setFormData={setFormData}
                     />
-
-                    {/* Phone */}
-                    <div className="flex gap-3">
-                        <select className="border rounded-lg px-3 py-3 bg-white">
-                            <option>+91</option>
-                        </select>
-                        <input
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            type="tel"
-                            placeholder="10-digit mobile number"
-                            className="flex-1 border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-
-                    {/* Email */}
-                    <input
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        type="email"
-                        placeholder="Email (optional)"
-                        className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-
-                    {/* Address */}
-                    <textarea
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        rows={3}
-                        placeholder="House No, Building, Street, Area"
-                        className="w-full border rounded-lg px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-
-                    {/* City & State (Simplified for now, can be auto-filled via PIN in future) */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <input
-                            name="city"
-                            value={formData.city}
-                            onChange={handleChange}
-                            type="text"
-                            placeholder="City / District"
-                            className="border rounded-lg px-4 py-3"
-                        />
-                        <input
-                            name="state"
-                            value={formData.state}
-                            onChange={handleChange}
-                            type="text"
-                            placeholder="State"
-                            className="border rounded-lg px-4 py-3"
-                        />
-                    </div>
-
-                    {/* Locality & Pincode */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <input
-                            type="text"
-                            placeholder="Locality (Optional)"
-                            className="border rounded-lg px-4 py-3"
-                        />
-                        <input
-                            name="pincode"
-                            value={formData.pincode}
-                            onChange={handleChange}
-                            type="number"
-                            placeholder="6-digit pincode"
-                            className="border rounded-lg px-4 py-3"
-                        />
-                    </div>
-
-                    {/* Address Type */}
-                    <div className="flex gap-3 pt-2">
-                        {[
-                            { name: "Home", icon: <Home size={16} /> },
-                            { name: "Work", icon: <Briefcase size={16} /> },
-                            { name: "Other", icon: <MapPin size={16} /> },
-                        ].map((item) => (
-                            <button
-                                type="button"
-                                key={item.name}
-                                onClick={() => setFormData({ ...formData, type: item.name })}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium ${formData.type === item.name
-                                    ? "bg-blue-50 border-blue-500 text-blue-700"
-                                    : "border-gray-300 text-gray-600"
-                                    }`}
-                            >
-                                {item.icon}
-                                {item.name}
-                            </button>
-                        ))}
-                    </div>
 
                     <p className="text-xs text-gray-500">
                         Your address will be saved as per chosen category.

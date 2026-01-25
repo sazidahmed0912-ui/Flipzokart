@@ -162,6 +162,8 @@ const getAddresses = async (req, res) => {
     }
 };
 
+const { validateAddress } = require('../utils/addressValidation');
+
 // @desc    Save new address
 // @route   POST /api/user/address
 // @access  Private
@@ -171,7 +173,54 @@ const saveAddress = async (req, res) => {
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         const newAddress = req.body;
+
+        // Backend Validation for State & City
+        // Assuming payload has state and city fields
+        if (newAddress.state && newAddress.city) {
+            const validation = validateAddress(newAddress.state, newAddress.city);
+            if (!validation.isValid) {
+                return res.status(400).json({ success: false, message: validation.error });
+            }
+        }
+
         user.addresses.push(newAddress);
+        await user.save();
+
+        res.json({ success: true, addresses: user.addresses });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Update existing address
+// @route   PUT /api/user/address/:id
+// @access  Private
+const updateAddress = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const addressId = req.params.id;
+        const updatedData = req.body;
+
+        const addressIndex = user.addresses.findIndex(addr => addr._id.toString() === addressId);
+        if (addressIndex === -1) {
+            return res.status(404).json({ success: false, message: 'Address not found' });
+        }
+
+        // Backend Validation
+        if (updatedData.state && updatedData.city) {
+            const validation = validateAddress(updatedData.state, updatedData.city);
+            if (!validation.isValid) {
+                return res.status(400).json({ success: false, message: validation.error });
+            }
+        }
+
+        // Merge existing address with updates
+        // Don't overwrite _id
+        const existingAddress = user.addresses[addressIndex].toObject();
+        user.addresses[addressIndex] = { ...existingAddress, ...updatedData };
+
         await user.save();
 
         res.json({ success: true, addresses: user.addresses });
@@ -205,5 +254,6 @@ module.exports = {
     appealUser,
     getAddresses,
     saveAddress,
+    updateAddress,
     deleteAddress
 };
