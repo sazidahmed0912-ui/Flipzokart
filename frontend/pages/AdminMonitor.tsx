@@ -37,8 +37,8 @@ export const AdminMonitor: React.FC = () => {
     const handleScroll = () => {
         if (logsContainerRef.current) {
             const { scrollTop, scrollHeight, clientHeight } = logsContainerRef.current;
-            // Tolerance of 50px to consider "at bottom"
-            const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+            // Tolerance of 100px to consider "at bottom" (Smoother)
+            const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
 
             // Update state: If user scrolls up, stop auto-scrolling
             if (shouldAutoScroll && !isAtBottom) {

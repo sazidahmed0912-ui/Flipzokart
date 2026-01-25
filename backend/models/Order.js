@@ -27,7 +27,7 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   shippingAddress: {
-    type: String,
+    type: mongoose.Schema.Types.Mixed, // Allow full object storage
     required: true,
   },
   status: {

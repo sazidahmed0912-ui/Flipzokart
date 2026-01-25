@@ -36,11 +36,12 @@ export const AdminInventory: React.FC = () => {
     const loadInventory = async () => {
         try {
             const { data } = await fetchProducts();
-            const list = Array.isArray(data) ? data : (data.products || []);
-            // Sort by low stock first
-            setProducts(list.sort((a: Product, b: Product) => a.countInStock - b.countInStock));
+            // Critical crash safeguard: Ensure list is an array
+            const list = Array.isArray(data) ? data : (data?.products || []);
+            setProducts(Array.isArray(list) ? list.sort((a: Product, b: Product) => a.countInStock - b.countInStock) : []);
         } catch (error) {
             console.error("Failed to load inventory", error);
+            setProducts([]); // Fallback to empty to prevent render crash
         } finally {
             setLoading(false);
         }

@@ -75,14 +75,18 @@ export const AdminMap: React.FC = () => {
         u.state?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Map to Leaflet Format
-    const mapLocations: MapLocation[] = filteredUsers.map(u => ({
-        id: u.id,
-        lat: u.lat,
-        lng: u.lng,
-        title: u.name,
-        description: `User Location - ${u.city}, ${u.state}` // Exact format requested
-    }));
+    // Map to Leaflet Format with Jitter to prevent exact stacking
+    const mapLocations: MapLocation[] = filteredUsers.map(u => {
+        // Add tiny random jitter (~10-50 meters) for visual separation of collisions
+        const jitter = () => (Math.random() - 0.5) * 0.001;
+        return {
+            id: u.id,
+            lat: u.lat + jitter(),
+            lng: u.lng + jitter(),
+            title: u.name,
+            description: `User Location - ${u.city}, ${u.state}`
+        };
+    });
 
     // Fullscreen Toggle
     const toggleFullScreen = () => {
