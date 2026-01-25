@@ -491,10 +491,12 @@ const updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    // Validate status
+    console.log(`Updating order ${id} to status: ${status}`);
+
     // Validate status
     const validStatuses = ['Pending', 'Processing', 'Paid', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
     if (!validStatuses.includes(status)) {
+      console.warn(`Invalid status attempt: ${status}`);
       return res.status(400).json({ message: 'Invalid status value' });
     }
 
@@ -502,6 +504,9 @@ const updateOrderStatus = async (req, res) => {
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
+
+    // Capture old status for logging
+    const oldStatus = order.status;
 
     order.status = status;
 
@@ -512,25 +517,39 @@ const updateOrderStatus = async (req, res) => {
 
     await order.save();
 
-    // Create Notification and Emit Socket
-    const message = `Your order #${order._id.toString().slice(-6)} is now ${status}`;
+    console.log(`Order ${id} updated from ${oldStatus} to ${status}`);
 
-    // Persist
-    await Notification.create({
-      recipient: order.user,
-      message,
-      type: 'orderStatusUpdate',
-      relatedId: order._id
-    });
+    // Safely handle notifications
+    try {
+      if (order.user) {
+        // Create Notification and Emit Socket
+        const message = `Your order #${order._id.toString().slice(-6)} is now ${status}`;
 
-    // Emit
-    const io = req.app.get('socketio');
-    io.to(order.user.toString()).emit('notification', {
-      type: 'orderStatusUpdate',
-      message,
-      orderId: order._id,
-      status: 'info'
-    });
+        // Persist
+        await Notification.create({
+          recipient: order.user,
+          message,
+          type: 'orderStatusUpdate',
+          relatedId: order._id
+        });
+
+        // Emit
+        const io = req.app.get('socketio');
+        if (io) {
+          io.to(order.user.toString()).emit('notification', {
+            type: 'orderStatusUpdate',
+            message,
+            orderId: order._id,
+            status: 'info'
+          });
+        }
+      } else {
+        console.warn(`Order ${id} has no associated user. Skipping user notification.`);
+      }
+    } catch (notifyError) {
+      console.error('Non-critical error sending notification:', notifyError);
+      // Suppress notification errors so the main action succeeds
+    }
 
     res.json({ message: 'Order status updated', order });
   } catch (error) {
@@ -538,7 +557,7 @@ const updateOrderStatus = async (req, res) => {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Order not found (Invalid ID)' });
     }
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
