@@ -447,8 +447,14 @@ export const TrackOrderPage: React.FC = () => {
               <div className="space-y-1">
                 <h3 className="font-bold text-gray-900 text-sm border-b border-gray-200 pb-1 mb-2">Billing Address</h3>
                 <p className="font-bold text-gray-900 text-base">{foundOrder.user?.name || user?.name || 'Customer'}</p>
-                <p className="text-sm text-gray-600 leading-snug max-w-xs">{foundOrder.shippingAddress?.street || foundOrder.shippingAddress}</p>
-                <p className="text-sm text-gray-600 leading-snug">{foundOrder.shippingAddress?.city}, {foundOrder.shippingAddress?.state} - {foundOrder.shippingAddress?.zip}</p>
+                {typeof foundOrder.shippingAddress === 'string' ? (
+                  <p className="text-sm text-gray-600 leading-snug max-w-xs">{foundOrder.shippingAddress}</p>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-600 leading-snug max-w-xs">{foundOrder.shippingAddress?.street || ''}</p>
+                    <p className="text-sm text-gray-600 leading-snug">{foundOrder.shippingAddress?.city || ''}, {foundOrder.shippingAddress?.state || ''} - {foundOrder.shippingAddress?.zip || ''}</p>
+                  </>
+                )}
                 <p className="text-sm text-gray-600 mt-1">Phone: <span className="font-medium text-gray-900">{foundOrder.user?.phone || 'N/A'}</span></p>
               </div>
             </div>
