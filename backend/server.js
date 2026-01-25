@@ -84,7 +84,7 @@ io.on("connection", (socket) => {
    =============================== */
 const os = require('os');
 
-setInterval(() => {
+setInterval(async () => {
   const activeUsers = io.engine.clientsCount;
   const uptime = process.uptime(); // Seconds
 
@@ -98,9 +98,25 @@ setInterval(() => {
   const cpus = os.cpus();
   const load = cpus.length > 0 ? (cpus[0].times.user / (cpus[0].times.user + cpus[0].times.idle)) * 100 : 0;
 
+  // Gather Active User Names
+  const activeUserList = [];
+  const sockets = await io.fetchSockets();
+  for (const socket of sockets) {
+    if (socket.user && socket.user.name) {
+      activeUserList.push({ id: socket.user.id, name: socket.user.name, email: socket.user.email });
+    }
+  }
+  // Remove duplicates
+  const uniqueUsers = Array.from(new Set(activeUserList.map(a => a.id)))
+    .map(id => {
+      return activeUserList.find(a => a.id === id)
+    });
+
+
   // Emit stats to monitor room
   io.to('admin-monitor').emit('monitor:stats', {
     activeUsers,
+    activeUserList: uniqueUsers, // Send list of names
     serverLoad: Math.round(load) || Math.floor(Math.random() * 20) + 5,
     memoryUsage: memPercentage,
     uptime: Math.floor(uptime),
@@ -108,27 +124,29 @@ setInterval(() => {
   });
 }, 2000);
 
-// 🛡️ Mock Security Events (For Demo Purposes)
-setInterval(() => {
-  const events = [
-    { type: 'warning', message: 'Failed login attempt (IP: 45.23.12.98)', source: 'Auth' },
-    { type: 'error', message: 'Database connection spike detected', source: 'Database' },
-    { type: 'warning', message: 'Unauthorized API access blocked', source: 'Firewall' },
-    { type: 'error', message: 'Payment gateway timeout', source: 'Payment' },
-    { type: 'warning', message: 'High memory usage warning', source: 'System' }
-  ];
+// 🛡️ Real Request Logger Middleware
+app.use((req, res, next) => {
+  const start = Date.now();
 
-  if (Math.random() < 0.3) { // 30% chance every 5s
-    const event = events[Math.floor(Math.random() * events.length)];
-    io.to('admin-monitor').emit('monitor:log', {
-      id: Date.now(),
-      time: new Date().toLocaleTimeString(),
-      type: event.type,
-      message: event.message,
-      source: event.source
-    });
-  }
-}, 5000);
+  // Capture response finish to calculate duration and get status
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const logType = res.statusCode >= 400 ? (res.statusCode >= 500 ? 'error' : 'warning') : 'info';
+
+    // Broadcast to Admin Monitor
+    if (io) {
+      io.to('admin-monitor').emit('monitor:log', {
+        id: Date.now() + Math.random(), // Unique ID
+        time: new Date().toLocaleTimeString(),
+        type: logType,
+        message: `${req.method} ${req.originalUrl} - ${res.statusCode} (${duration}ms)`,
+        source: 'Network'
+      });
+    }
+  });
+
+  next();
+});
 
 // Helper to broadcast logs
 const broadcastLog = (type, message, source = 'System') => {

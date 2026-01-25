@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Package, ShoppingCart,
   Users, TicketPercent, Settings,
   ChevronRight, Activity, LogOut, CreditCard,
-  FileText, Truck
+  FileText, Truck, Globe
 } from 'lucide-react';
 
 const navItems = [
@@ -17,6 +17,7 @@ const navItems = [
   { name: 'Monitor', path: '/admin/monitor', icon: Activity },
   { name: 'Invoices', path: '/admin/invoices', icon: FileText },
   { name: 'Shipping', path: '/admin/shipping', icon: Truck },
+  { name: 'Live Map', path: '/admin/map', icon: Globe },
   { name: 'Settings', path: '/admin/settings', icon: Settings },
 ];
 

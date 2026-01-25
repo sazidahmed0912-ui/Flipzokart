@@ -10,6 +10,7 @@ export const AdminMonitor: React.FC = () => {
     const { user } = useApp();
     const [stats, setStats] = useState({
         activeUsers: 0,
+        activeUserList: [] as any[], // New State
         serverLoad: 0,
         memoryUsage: 0,
         uptime: 0,
@@ -109,6 +110,30 @@ export const AdminMonitor: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Active Users List */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col h-96">
+                    <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <Users size={18} className="text-blue-500" /> Active Users
+                    </h2>
+                    <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
+                        {stats.activeUserList?.length === 0 && (
+                            <div className="text-gray-500 italic text-sm text-center mt-10">No active users connected.</div>
+                        )}
+                        {stats.activeUserList?.map((u: any, i: number) => (
+                            <div key={i} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors border border-gray-100">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+                                    {u.name?.charAt(0) || 'U'}
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-sm font-semibold text-gray-800 truncate">{u.name || 'Unknown User'}</p>
+                                    <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                                </div>
+                                <span className="ml-auto w-2 h-2 bg-green-500 rounded-full shrink-0"></span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 {/* Real-time Logs Console */}
                 <div className="lg:col-span-2 bg-[#1e1e1e] p-6 rounded-xl border border-gray-800 shadow-sm flex flex-col h-96">
                     <h2 className="font-bold text-gray-200 mb-4 flex items-center gap-2">
@@ -122,8 +147,8 @@ export const AdminMonitor: React.FC = () => {
                             <div key={log.id} className="flex gap-3 text-gray-300 border-b border-gray-800/30 pb-1">
                                 <span className="text-gray-500 shrink-0">[{log.time}]</span>
                                 <span className={`font-bold shrink-0 ${log.type === 'error' ? 'text-red-400' :
-                                        log.type === 'warning' ? 'text-yellow-400' :
-                                            log.type === 'success' ? 'text-green-400' : 'text-blue-400'
+                                    log.type === 'warning' ? 'text-yellow-400' :
+                                        log.type === 'success' ? 'text-green-400' : 'text-blue-400'
                                     }`}>
                                     {log.type.toUpperCase()}
                                 </span>
