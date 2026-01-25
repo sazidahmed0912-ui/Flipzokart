@@ -1,84 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useState, useEffect, useCallback } from 'react';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
 import { AdminSidebar } from '../components/AdminSidebar';
 import { SmoothReveal } from '../components/SmoothReveal';
 import {
-    Search, Bell, User, LogOut, ChevronDown,
-    Globe, MapPin, Users, Activity, Layers, Maximize, Share2, Map as MapIcon
+    Search, Bell, LogOut, ChevronDown,
+    Globe, MapPin, Users, Activity, Maximize, Share2
 } from 'lucide-react';
 import { useApp } from '../store/Context';
-
-// Fix Leaflet default marker icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-// Custom pulsing marker icon
-const createCustomIcon = (isOnline: boolean = true) => {
-    const color = isOnline ? '#2874F0' : '#94a3b8';
-    return L.divIcon({
-        className: 'custom-marker',
-        html: `
-            <div style="position: relative; width: 40px; height: 40px;">
-                <div style="
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: 20px;
-                    height: 20px;
-                    background: ${color};
-                    border-radius: 50%;
-                    border: 3px solid white;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                    z-index: 2;
-                "></div>
-                ${isOnline ? `
-                <div style="
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: 20px;
-                    height: 20px;
-                    background: ${color};
-                    border-radius: 50%;
-                    opacity: 0.6;
-                    animation: pulse 2s infinite;
-                "></div>
-                ` : ''}
-            </div>
-        `,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20],
-        popupAnchor: [0, -20],
-    });
-};
-
-// Add CSS for pulse animation
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes pulse {
-        0% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0.6;
-        }
-        50% {
-            transform: translate(-50%, -50%) scale(2.5);
-            opacity: 0;
-        }
-        100% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
 
 interface UserLocation {
     id: string;
@@ -88,65 +16,83 @@ interface UserLocation {
     state: string;
     lat: number;
     lng: number;
-    email?: string; // Optional if not returned
+    email?: string;
     status?: string;
     country?: string;
     lastActive?: string;
 }
 
-// Map layer switcher component
-const LayerControl: React.FC<{ onLayerChange: (layer: string) => void; currentLayer: string }> = ({ onLayerChange, currentLayer }) => {
-    const layers = [
-        { name: 'Street', value: 'street', tile: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' },
-        { name: 'Dark', value: 'dark', tile: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' },
-        { name: 'Satellite', value: 'satellite', tile: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' },
-    ];
-
-    return (
-        <div className="absolute top-4 left-4 z-[1000] bg-white rounded-xl shadow-xl p-2 flex gap-2">
-            {layers.map(layer => (
-                <button
-                    key={layer.value}
-                    onClick={() => onLayerChange(layer.value)}
-                    className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all ${currentLayer === layer.value
-                        ? 'bg-[#2874F0] text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                >
-                    {layer.name}
-                </button>
-            ))}
-        </div>
-    );
+// Map Configuration
+const containerStyle = {
+    width: '100%',
+    height: '100%',
+    borderRadius: '1.5rem',
 };
 
-// Component to handle map centering
-const MapCenterController: React.FC<{ center: [number, number] }> = ({ center }) => {
-    const map = useMap();
-    useEffect(() => {
-        map.setView(center, map.getZoom());
-    }, [center, map]);
-    return null;
+// Default India Center
+const defaultCenter = {
+    lat: 20.5937,
+    lng: 78.9629
 };
+
+// Custom Map Styles (Clean Professional Look)
+const mapStyles = [
+    {
+        "featureType": "administrative",
+        "elementType": "labels.text.fill",
+        "stylers": [{ "color": "#444444" }]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "all",
+        "stylers": [{ "color": "#f2f2f2" }]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "all",
+        "stylers": [{ "visibility": "off" }]
+    },
+    {
+        "featureType": "road",
+        "elementType": "all",
+        "stylers": [{ "saturation": -100 }, { "lightness": 45 }]
+    },
+    {
+        "featureType": "water",
+        "elementType": "all",
+        "stylers": [{ "color": "#2874f0" }, { "visibility": "on" }]
+    }
+];
 
 export const AdminMap: React.FC = () => {
     const { user, logout } = useApp();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeUsers, setActiveUsers] = useState<UserLocation[]>([]);
-    const [mapCenter, setMapCenter] = useState<[number, number]>([20, 0]);
-    const [mapZoom, setMapZoom] = useState(2);
-    const [currentLayer, setCurrentLayer] = useState('street');
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const mapContainerRef = useRef<HTMLDivElement>(null);
+    const [selectedUser, setSelectedUser] = useState<UserLocation | null>(null);
+    const [map, setMap] = useState<google.maps.Map | null>(null);
 
-    // API Connection
+    // Load Google Maps Script
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY", // REPLACE THIS WITH REAL KEY
+        language: 'en' // Force English
+    });
+
+    const onLoad = useCallback((map: google.maps.Map) => {
+        setMap(map);
+    }, []);
+
+    const onUnmount = useCallback(() => {
+        setMap(null);
+    }, []);
+
+    // Fetch Real User Locations
     useEffect(() => {
         const fetchLocations = async () => {
             try {
-                // We reuse the same API endpoint and type logic from AdminUserMap
-                // but adapted for this full page view
                 const token = localStorage.getItem("token");
+                // Using the backend API we created earlier
                 const response = await fetch('http://localhost:5000/api/user/locations', {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -158,14 +104,15 @@ export const AdminMap: React.FC = () => {
                     const mappedUsers = data.users.map((u: any) => ({
                         id: u.id,
                         name: u.name,
-                        email: u.email || 'N/A', // Endpoint might need to return email if not already
+                        email: u.email || 'N/A',
                         lat: u.lat,
                         lng: u.lng,
                         city: u.city,
                         state: u.state,
                         role: u.role,
-                        status: 'online', // For now assume visible users are "active" in DB context or just show them
-                        lastActive: u.joined
+                        status: 'online',
+                        lastActive: u.joined,
+                        country: 'India' // Since our system is India-focused for now
                     }));
                     setActiveUsers(mappedUsers);
                 }
@@ -175,54 +122,17 @@ export const AdminMap: React.FC = () => {
         };
 
         fetchLocations();
-        // Optional: Poll every 30s
+        // Poll for updates every 30 seconds
         const interval = setInterval(fetchLocations, 30000);
         return () => clearInterval(interval);
     }, []);
 
-    // Get tile layer URL based on current layer
-    const getTileLayerUrl = () => {
-        switch (currentLayer) {
-            case 'dark':
-                return 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-            case 'satellite':
-                return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-            default:
-                return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-        }
-    };
-
-    const getTileLayerAttribution = () => {
-        switch (currentLayer) {
-            case 'dark':
-                return '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
-            case 'satellite':
-                return 'Tiles &copy; Esri';
-            default:
-                return '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-        }
-    };
-
-    const toggleFullscreen = () => {
-        if (!mapContainerRef.current) return;
-
-        if (!isFullscreen) {
-            if (mapContainerRef.current.requestFullscreen) {
-                mapContainerRef.current.requestFullscreen();
-            }
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            }
-        }
-        setIsFullscreen(!isFullscreen);
-    };
-
+    // Filter Users
     const filteredUsers = activeUsers.filter(u =>
         u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.country?.toLowerCase().includes(searchTerm.toLowerCase())
+        u.state?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -281,19 +191,13 @@ export const AdminMap: React.FC = () => {
                             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                                 <Globe className="text-blue-600" /> Real-World User Map
                             </h1>
-                            <p className="text-sm text-gray-500 mt-1">Live geographic visualization of active users worldwide</p>
+                            <p className="text-sm text-gray-500 mt-1">Live geographic visualization of active users (Google Maps)</p>
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl">
                                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                                 <span className="text-xs font-semibold text-gray-600">{activeUsers.length} Online</span>
                             </div>
-                            <button
-                                onClick={toggleFullscreen}
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-                            >
-                                <Maximize size={16} /> Fullscreen
-                            </button>
                             <button
                                 onClick={() => {
                                     navigator.clipboard.writeText(window.location.href);
@@ -307,76 +211,87 @@ export const AdminMap: React.FC = () => {
                     </SmoothReveal>
 
                     {/* Map Container */}
-                    <SmoothReveal direction="up" delay={200} className="flex-1 bg-white rounded-3xl border border-gray-200 shadow-2xl relative overflow-hidden min-h-[600px]">
-                        <div ref={mapContainerRef} className="w-full h-full relative">
-                            <MapContainer
-                                center={mapCenter}
-                                zoom={mapZoom}
-                                className="w-full h-full rounded-3xl"
-                                zoomControl={true}
-                            >
-                                <TileLayer
-                                    attribution={getTileLayerAttribution()}
-                                    url={getTileLayerUrl()}
-                                />
-                                <MapCenterController center={mapCenter} />
+                    <SmoothReveal direction="up" delay={200} className="flex-1 bg-white rounded-3xl border border-gray-200 shadow-2xl relative overflow-hidden min-h-[600px] p-2">
+                        {isLoaded ? (
+                            <div className="w-full h-full relative rounded-2xl overflow-hidden">
+                                <GoogleMap
+                                    mapContainerStyle={containerStyle}
+                                    center={defaultCenter}
+                                    zoom={5}
+                                    onLoad={onLoad}
+                                    onUnmount={onUnmount}
+                                    options={{
+                                        styles: mapStyles,
+                                        disableDefaultUI: false,
+                                        zoomControl: true,
+                                        streetViewControl: false,
+                                        mapTypeControl: false,
+                                        fullscreenControl: true,
+                                    }}
+                                >
+                                    {filteredUsers.map((user) => (
+                                        <Marker
+                                            key={user.id}
+                                            position={{ lat: user.lat, lng: user.lng }}
+                                            onClick={() => setSelectedUser(user)}
+                                            icon={{
+                                                // Use standard Google marker or custom SVG if needed
+                                                // For now, default red marker is fine, or we can use a blue one
+                                                path: google.maps.SymbolPath.CIRCLE,
+                                                scale: 8,
+                                                fillColor: "#2874F0",
+                                                fillOpacity: 1,
+                                                strokeWeight: 2,
+                                                strokeColor: "#FFFFFF",
+                                            }}
+                                        />
+                                    ))}
 
-                                {/* User Markers */}
-                                {filteredUsers.map((user) => (
-                                    <Marker
-                                        key={user.id}
-                                        position={[user.lat, user.lng]}
-                                        icon={createCustomIcon(user.status === 'online')}
-                                    >
-                                        <Popup className="custom-popup">
+                                    {selectedUser && (
+                                        <InfoWindow
+                                            position={{ lat: selectedUser.lat, lng: selectedUser.lng }}
+                                            onCloseClick={() => setSelectedUser(null)}
+                                        >
                                             <div className="p-2 min-w-[200px]">
                                                 <div className="flex items-center gap-2 mb-2">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                                                        {user.name.charAt(0)}
+                                                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
+                                                        {selectedUser.name.charAt(0)}
                                                     </div>
                                                     <div>
-                                                        <p className="font-bold text-gray-800 text-sm">{user.name}</p>
-                                                        <p className="text-xs text-gray-500">{user.email}</p>
+                                                        <p className="font-bold text-gray-800 text-sm">{selectedUser.name}</p>
+                                                        <p className="text-xs text-gray-500">{selectedUser.email}</p>
                                                     </div>
                                                 </div>
                                                 <div className="border-t border-gray-100 pt-2 mt-2 space-y-1">
                                                     <div className="flex items-center gap-2 text-xs">
                                                         <MapPin size={12} className="text-blue-600" />
-                                                        <span className="text-gray-700">{user.city}, {user.country}</span>
+                                                        <span className="text-gray-700">{selectedUser.city}, {selectedUser.state}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2 text-xs">
                                                         <Activity size={12} className="text-green-600" />
-                                                        <span className="text-gray-700">Active Now</span>
+                                                        <span className="text-gray-700">Role: {selectedUser.role}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </Popup>
-                                    </Marker>
-                                ))}
-                            </MapContainer>
+                                        </InfoWindow>
+                                    )}
+                                </GoogleMap>
 
-                            {/* Layer Control */}
-                            <LayerControl onLayerChange={setCurrentLayer} currentLayer={currentLayer} />
-
-                            {/* Stats Overlay */}
-                            <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-md border border-gray-200 p-4 rounded-2xl shadow-xl z-[1000]">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-blue-500 rounded-xl text-white">
-                                        <Users size={24} />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-medium text-gray-500">Active Users</p>
-                                        <p className="text-2xl font-bold text-gray-800">{filteredUsers.length}</p>
-                                    </div>
+                                {/* Live Indicator */}
+                                <div className="absolute top-4 right-14 bg-white/90 backdrop-blur-md border border-gray-200 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 z-[100] shadow-md flex items-center gap-2">
+                                    <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                    Google Maps Live
                                 </div>
                             </div>
-
-                            {/* Live Indicator */}
-                            <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-md border border-gray-200 p-3 rounded-xl text-xs font-semibold text-gray-700 z-[1000] shadow-lg flex items-center gap-2">
-                                <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                Real-Time Tracking
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-50 rounded-2xl">
+                                <div className="text-center">
+                                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                    <p className="text-gray-500 font-medium">Loading Google Maps...</p>
+                                    <p className="text-xs text-gray-400 mt-2">Make sure you have added your API Key</p>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </SmoothReveal>
                 </div>
             </div>
