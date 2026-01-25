@@ -146,7 +146,7 @@ export const TrackOrderPage: React.FC = () => {
         <style>{`
             @media print {
                 @page { margin: 0; size: auto; }
-                body { visibility: hidden; background: white; }
+                body { visibility: hidden; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 #invoice-template { 
                     display: block !important;
                     visibility: visible; 

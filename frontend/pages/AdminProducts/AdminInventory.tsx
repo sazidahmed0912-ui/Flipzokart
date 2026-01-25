@@ -68,9 +68,9 @@ export const AdminInventory: React.FC = () => {
 
     if (loading) return <CircularGlassSpinner />;
 
-    const lowStockItems = products.filter(p => p.countInStock <= 5);
-    const totalValue = products.reduce((acc, p) => acc + (p.price * p.countInStock), 0);
-    const totalItems = products.reduce((acc, p) => acc + p.countInStock, 0);
+    const lowStockItems = (products || []).filter(p => p.countInStock <= 5);
+    const totalValue = (products || []).reduce((acc, p) => acc + (p.price * p.countInStock), 0);
+    const totalItems = (products || []).reduce((acc, p) => acc + p.countInStock, 0);
 
     return (
         <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">

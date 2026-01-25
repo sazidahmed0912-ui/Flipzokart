@@ -28,6 +28,7 @@ export const AdminMonitor: React.FC = () => {
     const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
     const scrollToBottom = () => {
+        // Only scroll if the user was already at the bottom or just loaded the page
         if (shouldAutoScroll) {
             logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }
@@ -36,13 +37,23 @@ export const AdminMonitor: React.FC = () => {
     const handleScroll = () => {
         if (logsContainerRef.current) {
             const { scrollTop, scrollHeight, clientHeight } = logsContainerRef.current;
-            // If user is actively scrolling up (more than 20px from bottom), pause auto-scroll
-            const isNearBottom = scrollHeight - scrollTop - clientHeight < 20;
-            setShouldAutoScroll(isNearBottom);
+            // Tolerance of 50px to consider "at bottom"
+            const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+
+            // Update state: If user scrolls up, stop auto-scrolling
+            if (shouldAutoScroll && !isAtBottom) {
+                setShouldAutoScroll(false);
+            }
+            // If user manually scrolls back to bottom, resume auto-scrolling
+            else if (!shouldAutoScroll && isAtBottom) {
+                setShouldAutoScroll(true);
+            }
         }
     };
 
-    useEffect(scrollToBottom, [logs]);
+    useEffect(() => {
+        scrollToBottom();
+    }, [logs]); // Dependency on logs updating
 
     useEffect(() => {
         if (!socket) return;
