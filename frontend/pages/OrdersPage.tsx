@@ -330,16 +330,7 @@ const OrdersPage = () => {
                                                     <div className="text-xl font-bold text-gray-900">₹{(item.price || 0).toLocaleString()}</div>
 
                                                     <div className="flex flex-row items-center gap-2 mt-2">
-                                                        {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
-                                                            <div className="relative group">
-                                                                <button
-                                                                    onClick={() => navigate(`/track/${order.trackingId || order.orderNumber || order.id || order._id}`)}
-                                                                    className="bg-[#2874F0] hover:bg-blue-600 text-white font-semibold py-1.5 px-6 rounded-[2px] text-sm shadow-sm transition-colors whitespace-nowrap"
-                                                                >
-                                                                    Track Order
-                                                                </button>
-                                                            </div>
-                                                        )}
+
 
                                                         <button
                                                             onClick={() => {
