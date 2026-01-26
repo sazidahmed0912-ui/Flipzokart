@@ -92,18 +92,45 @@ export const TrackOrderPage: React.FC = () => {
     );
   }
 
-  if (error) {
+  const [inputTrackingId, setInputTrackingId] = useState('');
+
+  const handleManualSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputTrackingId.trim()) {
+      window.location.href = `/track/${inputTrackingId.trim()}`;
+    }
+  };
+
+  if (error || !trackingId) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 pt-20">
         <div className="bg-white p-8 rounded-2xl shadow-lg text-center max-w-md w-full">
-          <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <MapPin size={32} />
+          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Truck size={32} />
           </div>
-          <h1 className="text-xl font-bold text-gray-800 mb-2">Tracking Failed</h1>
-          <p className="text-gray-500 mb-6">{error}</p>
-          <a href="/" className="inline-block bg-[#2874F0] text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-600 transition-colors">
-            Go Home
-          </a>
+          <h1 className="text-xl font-bold text-gray-800 mb-2">Track Your Order</h1>
+          <p className="text-gray-500 mb-6">Enter your Tracking ID sent to your email/SMS.</p>
+
+          <form onSubmit={handleManualSubmit} className="space-y-4">
+            <input
+              type="text"
+              value={inputTrackingId}
+              onChange={(e) => setInputTrackingId(e.target.value)}
+              placeholder="e.g., TRK-12345678"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full bg-[#2874F0] text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-600 transition-colors shadow-sm"
+            >
+              Track Order
+            </button>
+          </form>
+
+          <div className="mt-6 border-t pt-4">
+            <a href="/" className="text-sm font-semibold text-gray-400 hover:text-gray-600">Back to Home</a>
+          </div>
         </div>
       </div>
     );

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Loader } from 'lucide-react';
 import API, { calculateShipping } from '../../services/api';
+import { getSafeAddress } from '../../utils/addressHelper';
 import { useApp } from '../../store/Context';
 import { useToast } from '../../components/toast';
 import { Address } from '../../types';
@@ -37,11 +38,16 @@ const CheckoutPage = () => {
                 const { data } = await API.get('/api/user/address');
                 const userAddresses = data.addresses || [];
                 // Map backend addresses to frontend Address type
-                const formatted: Address[] = userAddresses.map((a: any) => ({
-                    ...a,
-                    id: a._id, // Map _id to id
-                    name: a.fullName || a.name // Ensure name property exists
-                }));
+                // Map backend addresses to frontend Address type using robust normalization
+                const formatted: Address[] = userAddresses.map((a: any) => {
+                    const safe = getSafeAddress(a);
+                    return {
+                        ...safe,
+                        id: a._id || a.id || Date.now(), // Preserve ID
+                        name: safe.fullName, // Legacy compatibility
+                        country: 'India' // Required by Address type
+                    } as Address;
+                });
                 setAddresses(formatted);
 
                 // If no selected address but we have addresses, select the first one
