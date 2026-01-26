@@ -5,6 +5,7 @@ import { ProductCard } from '../components/ProductCard';
 import { GrocerySection } from '../components/GrocerySection';
 import LazyImage from '../components/LazyImage';
 import { SmoothReveal } from '../components/SmoothReveal';
+import { HeroSlider } from '../components/HeroSlider';
 
 // Same category data as before, but will be styled according to new rules.
 const categories = [
@@ -34,29 +35,7 @@ export const HomePage: React.FC = () => {
 
     return (
         <>
-            <section className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl mx-4 md:mx-8 my-6 p-8 md:p-12 shadow-lg">
-                <div className="max-w-7xl mx-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center text-center lg:text-left">
-                        <div className="flex flex-col items-center lg:items-start">
-
-                            <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6">Up to 70% Off</h1>
-                            <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-md lg:max-w-none mx-auto lg:mx-0">Discover amazing deals on your favorite products</p>
-                            <Link to="/shop" className="bg-white text-[#f28c28] px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors shadow-md w-full sm:w-auto">Shop Now</Link>
-                        </div>
-                        <div className="flex justify-center lg:justify-end mt-8 lg:mt-0">
-                            <img
-                                src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=800"
-                                alt="Happy couple shopping"
-                                width="600"
-                                height="450"
-                                className="w-full max-w-md rounded-2xl object-cover shadow-lg"
-                                loading="eager"
-                                fetchPriority="high"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <HeroSlider />
 
 
             <section className="py-8 px-4 md:px-8">
