@@ -50,7 +50,7 @@ export const TrackOrderPage: React.FC = () => {
           return;
         }
       } catch (orderErr) {
-        console.error("Smart Retry failed", orderErr);
+        console.warn("Smart Retry failed, switching to FINAL FALLBACK MODE (Mock Data)");
       }
 
       // FINAL FALLBACK

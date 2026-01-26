@@ -30,7 +30,13 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("API Error:", JSON.stringify(error.response?.data || error.message, null, 2));
+    // 🛡️ Smart Error Logging: Avoid dumping HTML pages if endpoint is missing (404)
+    const errData = error.response?.data;
+    if (typeof errData === 'string' && errData.trim().startsWith('<!DOCTYPE html>')) {
+      console.warn(`API Warning: Endpoint not found (${error.config?.url})`);
+    } else {
+      console.error("API Error:", JSON.stringify(errData || error.message, null, 2));
+    }
 
     // Auto-logout on 401 (Unauthorized)
     if (error.response?.status === 401) {
