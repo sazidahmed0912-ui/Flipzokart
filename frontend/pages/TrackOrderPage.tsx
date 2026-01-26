@@ -232,12 +232,91 @@ export const TrackOrderPage: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-bold text-gray-800">Destination</p>
-                      <p className="text-sm text-gray-500">{trackingData.shippingTo}</p>
+                      {trackingData.shippingAddress ? (
+                        <div className="text-sm text-gray-500">
+                          <p className="font-medium text-gray-900">{trackingData.shippingAddress.name}</p>
+                          <p>{trackingData.shippingAddress.address}</p>
+                          <p>{trackingData.shippingAddress.city}, {trackingData.shippingAddress.state} - {trackingData.shippingAddress.pincode}</p>
+                          <p className="mt-1">Phone: {trackingData.shippingAddress.phone}</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">{trackingData.shippingTo}</p>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            <hr className="border-gray-100" />
+
+            {/* Order Items & Summary Section */}
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Product List */}
+              <div className="lg:col-span-2 space-y-6">
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Order Items</h3>
+                <div className="space-y-4">
+                  {trackingData.items?.map((item: any, idx: number) => (
+                    <div key={idx} className="flex items-center gap-4 border border-gray-100 p-4 rounded-xl bg-gray-50/50">
+                      <div className="w-16 h-16 bg-white border border-gray-200 rounded-lg p-2 flex-shrink-0">
+                        <img
+                          src={item.image || "https://via.placeholder.com/150"}
+                          alt={item.name}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-gray-800 line-clamp-1">{item.productName || item.name}</h4>
+                        <p className="text-sm text-gray-500">Qty: {item.quantity} × ₹{item.price}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-gray-900">₹{(item.price * item.quantity).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price Breakdown */}
+              <div className="bg-gray-50 p-6 rounded-xl h-fit border border-gray-100">
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Price Details</h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Subtotal</span>
+                    <span>₹{trackingData.subtotal?.toLocaleString() || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Tax</span>
+                    <span>₹{trackingData.tax?.toLocaleString() || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Shipping Fee</span>
+                    <span className="text-green-600">{trackingData.shippingFee === 0 ? 'Free' : `₹${trackingData.shippingFee}`}</span>
+                  </div>
+                  <div className="border-t border-gray-200 pt-3 mt-3 flex justify-between font-bold text-lg text-gray-900">
+                    <span>Total Amount</span>
+                    <span>₹{trackingData.grandTotal?.toLocaleString() || 0}</span>
+                  </div>
+                </div>
+
+                {trackingData.paymentStatus && (
+                  <div className={`mt-4 py-2 px-3 rounded-lg text-center font-bold text-sm ${trackingData.paymentStatus === 'Paid' || trackingData.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    Payment Status: {trackingData.paymentStatus}
+                  </div>
+                )}
+
+                <div className="mt-6">
+                  <a
+                    href={`/invoice/${trackingData.orderId || trackingData._id}`}
+                    // target="_blank"
+                    className="block w-full text-center border-2 border-[#2874F0] text-[#2874F0] font-bold py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    Download Invoice
+                  </a>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
