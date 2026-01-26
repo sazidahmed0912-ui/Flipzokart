@@ -35,8 +35,8 @@ export const InvoicePage: React.FC = () => {
             if (data) {
                 console.log("INVOICE DEBUG: Data received", data);
                 // The backend now returns exactly what we need, including 'items'
-                // Handle potential nested structure (like in TrackOrderPage)
-                const rawData = data.trackingData || data.data || data.order || data;
+                // handle potential wrappers, but AVOID picking partial subsets like 'trackingData'
+                const rawData = data.data || data.order || data;
                 const normalized = normalizeOrder(rawData);
                 setOrder(normalized);
             } else {

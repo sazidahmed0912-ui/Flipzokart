@@ -30,8 +30,10 @@ export const TrackOrderPage: React.FC = () => {
             const { data } = await API.get(`/api/tracking/${trackingId}`);
             if (data) {
                 // DATA NORMALIZATION: Use shared utility (Single Source of Truth)
-                // Backend might return { data: order } or { trackingData: order } or just order
-                const rawOrder = data.trackingData || data.data || data.order || data;
+                // FIXED: Prioritize full data object over partial 'trackingData' subset
+                // The backend returns { items, address, ... trackingData: { events } }
+                // We want the ROOT object (or data.data/data.order wrapper), NOT trackingData
+                const rawOrder = data.data || data.order || data;
                 const normalizedOrder = normalizeOrder(rawOrder);
 
                 // Ensure specific fields required by this page are present if normalizeOrder puts them elsewhere
