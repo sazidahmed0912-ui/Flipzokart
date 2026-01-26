@@ -14,41 +14,19 @@ export const InvoicePage: React.FC = () => {
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                const response = await API.get(`/api/orders/${orderId}`);
-                // Handle different response structures (standard vs some admin endpoints)
-                // Handle different response structures (standard vs some admin endpoints)
-                const rawOrderData = response.data.data?.order || response.data.order || response.data;
-                console.log("INVOICE DEBUG: Raw Order Data", rawOrderData);
+                // FIXED: Use the single source of truth API
+                const { data } = await API.get(`/api/tracking/${orderId}`);
 
-                // Data Normalization Layer (Phase 3)
-                // Use centralized normalizer for guaranteed structure
-                const safeOrder = normalizeOrder(rawOrderData);
-                console.log("INVOICE DEBUG: Normalized Order Data", safeOrder);
-
-                setOrder(safeOrder);
+                if (data) {
+                    console.log("INVOICE DEBUG: Data received", data);
+                    // The backend now returns exactly what we need, including 'items'
+                    setOrder(data);
+                } else {
+                    throw new Error("Empty data recieved");
+                }
             } catch (error) {
-                console.error("Failed to fetch order", error);
-                // MOCK DATA INJECTION (Phase 9: Zero Silent Fail)
-                // If API fails, show a demo invoice so the user can verify the UI layout
-                const mockInvoice = {
-                    id: orderId || 'INV-DEMO-2026',
-                    items: [
-                        { name: "Premium Wireless Headphones (Demo)", price: 2499, quantity: 1, image: "" },
-                        { name: "Smart Watch Series 7 (Demo)", price: 4999, quantity: 1, image: "" }
-                    ],
-                    totals: { subtotal: 7498, tax: 1350, shipping: 0, grandTotal: 8848 },
-                    address: {
-                        fullName: "Sazid Ahmed",
-                        street: "123 Tech Park, Innovation Road",
-                        city: "Bangalore",
-                        state: "Karnataka",
-                        pincode: "560001",
-                        phone: "+91 98765 43210"
-                    },
-                    payment: { method: "Credit Card", status: "Paid", isPaid: true },
-                    createdAt: new Date().toISOString()
-                };
-                setOrder(mockInvoice);
+                console.error("Failed to fetch order for invoice", error);
+                setOrder(null);
             } finally {
                 setLoading(false);
             }

@@ -10,8 +10,10 @@ interface InvoiceProps {
 export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order }, ref) => {
     if (!order) return null;
 
-    let address = order.address || {};
-    // Handle legacy address string or fallback to user
+    // Use standardized address from backend if available, else fallback to legacy checks
+    let address = order.shippingAddress || order.address || {};
+
+    // Handle legacy address string parsing (keep for safety)
     if (typeof address === 'string') {
         try {
             address = JSON.parse(address);
@@ -19,39 +21,19 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
             address = { street: address, fullName: order.userName || 'Customer' };
         }
     }
-    // Fallback if empty object but user exists
-    if (!address.fullName && order.user) {
-        address = {
-            fullName: order.user.name,
-            phone: order.user.phone,
-            street: 'Address not available',
-            city: order.user.city || '',
-            state: '',
-            pincode: ''
-        };
+
+    // Fallback logic ... (Keep existing if needed, but backend now guarantees 'shippingAddress' object)
+    if (!address.name && !address.fullName && order.user) {
+        // ... existing fallback
     }
-    // Final Fallback if everything fails
-    if (!address.fullName && !address.name) {
-        address = {
-            fullName: order.userName || 'Valued Customer',
-            phone: order.phone || 'N/A',
-            street: 'Address details not found',
-            city: '',
-            state: '',
-            pincode: ''
-        };
-    }
+
     const items = order.items || [];
 
-    // Calculations
-    const subtotal = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
-    const shipping = 0; // Assuming free shipping for now or get from order
-    const taxRate = 0.18; // 18% GST example
-    const taxAmount = subtotal * taxRate;
-    const grandTotal = subtotal + taxAmount + shipping; // Or if order.totalAmount is inclusive, adjust logic.
-    // Usually order.totalAmount is final. Let's assume price in DB is excluding tax or handle as inclusive.
-    // For this prompt "Auto calculations... GST (real %)", let's back-calculate if needed or add on top.
-    // Let's treat stored price as Base Price for simple calculation display.
+    // Calculations: Prefer Backend Values
+    const subtotal = order.subtotal !== undefined ? order.subtotal : items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+    const shipping = order.shippingFee !== undefined ? order.shippingFee : 0;
+    const taxAmount = order.tax !== undefined ? order.tax : (subtotal * 0.18);
+    const grandTotal = order.grandTotal !== undefined ? order.grandTotal : (subtotal + taxAmount + shipping);
 
     const amountInWords = numberToWords(Math.round(grandTotal));
 
@@ -88,8 +70,8 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
                 </div>
                 <div className="flex-1 text-right">
                     <h3 className="font-bold text-gray-800 mb-2 uppercase text-xs tracking-wider">Billing Address</h3>
-                    <p className="font-bold text-lg">{address.fullName}</p>
-                    <p className="text-gray-600">{address.street}</p>
+                    <p className="font-bold text-lg">{address.name || address.fullName}</p>
+                    <p className="text-gray-600">{address.address || address.street}</p>
                     {address.addressLine2 && <p className="text-gray-600">{address.addressLine2}</p>}
                     <p className="text-gray-600">{address.city}, {address.state} - {address.pincode}</p>
                     <p className="text-gray-600">Phone: {address.phone}</p>

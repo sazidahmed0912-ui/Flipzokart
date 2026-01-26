@@ -17,58 +17,26 @@ export const TrackOrderPage: React.FC = () => {
   const fetchTrackingInfo = async () => {
     try {
       const { data } = await API.get(`/api/tracking/${trackingId}`);
-      if (data && data.data) {
-        setTrackingData(data.data);
+
+      // New Backend Response Structure:
+      // { orderId, status, items, ... trackingData: { events, ... } }
+      if (data && data.trackingData) {
+        setTrackingData(data.trackingData);
         setLoading(false);
         return;
       }
-      throw new Error("No data in tracking response");
-    } catch (err) {
-      console.warn("Tracking API unavailable, attempting Order API fallback...");
 
-      try {
-        // SMART RETRY: Try fetching as Order ID
-        const { data: orderResponse } = await API.get(`/api/order/${trackingId}`);
-        const order = orderResponse.data?.order || orderResponse.order || orderResponse.data;
-
-        if (order) {
-          // Construct Tracking Data from Order
-          const address = order.address || order.shippingAddress || order.shippingInfo || {};
-          const mockTracking = {
-            trackingId: order._id || trackingId,
-            status: order.orderStatus || order.status || 'PENDING',
-            shippingTo: address.fullName || address.name || order.user?.name || 'Valued Customer',
-            shippingFrom: 'Fzokart Pvt. Ltd.',
-            updatedAt: order.updatedAt || new Date().toISOString(),
-            events: [
-              { status: 'Order Placed', date: order.createdAt, completed: true },
-              { status: order.orderStatus || 'Processing', date: order.updatedAt, completed: true }
-            ]
-          };
-          setTrackingData(mockTracking);
-          setLoading(false);
-          return;
-        }
-      } catch (orderErr) {
-        console.warn("Smart Retry failed, switching to FINAL FALLBACK MODE (Mock Data)");
+      // Fallback for immediate stability if backend shape varies slightly
+      if (data && data.events) {
+        setTrackingData(data);
+        setLoading(false);
+        return;
       }
 
-      // FINAL FALLBACK
-      // FINAL FALLBACK - Mock Data for Demo/Broken API
-      const fallbackData = {
-        trackingId: trackingId || 'TRK-DEMO-123',
-        status: 'SHIPPED', // Show active status instead of Pending
-        shippingTo: 'Sazid Ahmed (Recovered)', // Mock Name
-        shippingFrom: 'Flipzokart Premium Warehouse',
-        updatedAt: new Date().toISOString(),
-
-        events: [
-          { status: 'Order Placed', date: new Date().toISOString(), completed: true },
-          { status: 'Processing', date: null, completed: false }
-        ]
-      };
-
-      setTrackingData(fallbackData);
+      throw new Error("No tracking data found");
+    } catch (err) {
+      console.error("Tracking API failed:", err);
+      setError('Tracking information not available for this ID.');
       setLoading(false);
     }
   };
