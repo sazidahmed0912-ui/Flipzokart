@@ -17,11 +17,11 @@
 - **Test Error:** Traceback (most recent call last):
   File "/var/task/handler.py", line 258, in run_with_retry
     exec(code, exec_env)
-  File "<string>", line 109, in <module>
-  File "<string>", line 13, in test_verify_razorpay_payment_signature
-AssertionError: Environment variable RAZORPAY_KEY_SECRET must be set
+  File "<string>", line 73, in <module>
+  File "<string>", line 35, in test_verify_razorpay_payment_signature
+AssertionError: Expected 200 for valid signature but got 401
 
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/bfc8efdd-02c3-44f6-a696-e03fee6d25e8/934b97d6-b55f-4418-a91d-5c201194b4c1
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/e52fa6f7-ea54-4d89-9433-b8fc0e08a2d9/ec82d8a7-c06c-4cb6-b29d-f5879a265ef3
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---

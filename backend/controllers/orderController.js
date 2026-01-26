@@ -244,9 +244,7 @@ const verifyPayment = async (req, res) => {
       shippingAddress: address,
       paymentMethod: 'RAZORPAY',
       paymentStatus: 'PAID',
-      paymentMethod: 'RAZORPAY',
-      paymentStatus: 'PAID',
-      status: 'Paid', // Set status directly matching enum
+      status: 'Processing',
       subtotal,
       deliveryCharges: deliveryCharges || 0,
       discount: discount || 0,

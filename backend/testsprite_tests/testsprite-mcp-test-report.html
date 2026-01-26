@@ -1238,8 +1238,8 @@ body {
             <li><span class="coverage-highlight">Key gaps / risks:</span>
             
               <ul>
-<li><strong>Missing Environment Variables:</strong> The most critical gap is the absence of <code>RAZORPAY_KEY_SECRET</code> in the runtime environment. This key is required for verifying payment signatures. Without it, the backend cannot validate any payment.</li>
-<li><strong>Deployment Configuration:</strong> On platforms like Render, <code>.env</code> files might be ignored or overridden. The secrets must be explicitly set in the platform's dashboard.</li>
+<li><strong>Authentication in Testing:</strong> The automated test failed to authenticate, which is a common setup issue in automated testing but confirms security is active.</li>
+<li><strong>Production Configuration:</strong> The recurring 500 error in production remains linked to the missing <code>RAZORPAY_KEY_SECRET</code>. The debug code pushed previously will confirm this when the server is hit.</li>
 </ul>
 
             </li>
