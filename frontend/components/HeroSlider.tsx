@@ -41,8 +41,9 @@ const slides = [
         subtext: "Flat 50% OFF on Kids Collection & More",
         cta: "Shop Now",
         link: "/shop?category=Kids",
-        gradient: "from-purple-500 to-indigo-600",
+        gradient: "from-[#6717cd] to-[#280590]", // Deep purple/blue to match image bg
         image: "/assets/banner_kids.jpg",
+        imageClassName: "scale-[1.3] md:scale-[1.5] origin-bottom",
         position: "center center",
         textParams: {
             titleColor: "text-white",
@@ -117,7 +118,7 @@ export const HeroSlider: React.FC = () => {
                                     transition={{ delay: 0.2, duration: 0.5 }}
                                     src={slides[currentIndex].image}
                                     alt={slides[currentIndex].title}
-                                    className="max-h-full max-w-full object-contain md:object-cover rounded-xl"
+                                    className={`max-h-full max-w-full object-contain md:object-cover rounded-xl ${slides[currentIndex].imageClassName || ''}`}
                                     style={{
                                         filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.2))'
                                     }}
