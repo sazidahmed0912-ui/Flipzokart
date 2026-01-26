@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { useSocket } from '../hooks/useSocket';
@@ -20,8 +20,12 @@ export const TrackOrderPage: React.FC = () => {
     const token = localStorage.getItem('token');
     const socket = useSocket(token);
 
-    const fetchTrackingInfo = async () => {
+    const fetchTrackingInfo = useCallback(async (isPolling = false) => {
+        if (!trackingId) return;
         try {
+            // Background polling shouldn't set loading to true
+            if (!isPolling && !order) setLoading(true);
+
             const { data } = await API.get(`/api/tracking/${trackingId}`);
             if (data) {
                 // DATA NORMALIZATION
@@ -54,16 +58,17 @@ export const TrackOrderPage: React.FC = () => {
                 }
 
                 setOrder(normalizedOrder);
+                setError('');
             } else {
-                setError("Order not found");
+                if (!order) setError("Order not found");
             }
         } catch (err) {
             console.error("Tracking API failed:", err);
-            setError('Order details not available.');
+            if (!order) setError('Order details not available.');
         } finally {
-            setLoading(false);
+            if (!isPolling) setLoading(false);
         }
-    };
+    }, [trackingId]); // Removed 'order' dependency to allow stable reference, handle 'order' check inside if needed for loading logic
 
     const handleCancelOrder = async () => {
         if (!window.confirm("Are you sure you want to cancel this order?")) return;
@@ -86,22 +91,43 @@ export const TrackOrderPage: React.FC = () => {
     const handleTrackRefresh = async () => {
         setLoading(true);
         await fetchTrackingInfo();
-        addToast('info', 'Order status updated');
+        addToast('info', 'Order status refreshed');
     };
 
+    // Initial Fetch
     useEffect(() => {
-        if (trackingId) fetchTrackingInfo();
-    }, [trackingId]);
+        fetchTrackingInfo();
+    }, [fetchTrackingInfo]);
 
-    // Real-time updates
+    // Build Polling Mechanism (Safe Fallback)
     useEffect(() => {
-        if (socket && order) {
-            socket.on('notification', (data: any) => {
-                if (data.type === 'orderStatusUpdate') fetchTrackingInfo();
-            });
-            return () => { socket.off('notification'); };
-        }
-    }, [socket, order]);
+        const intervalId = setInterval(() => {
+            fetchTrackingInfo(true);
+        }, 10000); // Poll every 10 seconds
+
+        return () => clearInterval(intervalId);
+    }, [fetchTrackingInfo]);
+
+    // Real-time updates via Socket
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleUpdate = (data: any) => {
+            console.log("Socket Update Received:", data);
+            // Optimally, check if data.orderId matches trackingId
+            if (data.type === 'orderStatusUpdate') {
+                fetchTrackingInfo(true);
+                // Optional: Toast limited to once per meaningful update?
+                // addToast('info', 'Order update received'); 
+            }
+        };
+
+        socket.on('notification', handleUpdate);
+
+        return () => {
+            socket.off('notification', handleUpdate);
+        };
+    }, [socket, fetchTrackingInfo]);
 
     if (loading) return <div className="min-h-screen bg-gray-100 flex items-center justify-center">Loading...</div>;
     if (error || !order) return <div className="min-h-screen bg-gray-100 flex items-center justify-center text-red-500">{error || 'Order not found'}</div>;

@@ -9,40 +9,19 @@ interface InvoiceProps {
 export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order }, ref) => {
     if (!order) return null;
 
-    // Use standardized address from backend if available, else fallback to legacy checks
-    let address = order.shippingAddress || order.address || {};
+    // Use normalized address if available, else fallback
+    const address = order.address || order.shippingAddress || {};
 
-    // Handle legacy address string parsing (keep for safety)
-    if (typeof address === 'string') {
-        try {
-            address = JSON.parse(address);
-        } catch (e) {
-            address = { street: address, fullName: order.userName || 'Customer' };
-        }
-    }
-
+    // Use normalized items
     const items = order.items || [];
 
-    // Calculations: Prefer Backend Values but fallback to robust calculation
-    // Note: The new design back-calculates from Total if needed, but we'll try to be precise.
-    const grandTotal = order.grandTotal !== undefined ? order.grandTotal : (order.total || 0);
+    // Calculations: Prefer Normalized Totals
+    const totals = order.totals || {};
 
-    // If tax/subtotal not explicitly provided, assume inclusive tax for display match (as per new design pattern)
-    // or calculate standard way if that was the preference. 
-    // The reference design used: subtotal = total / 1.18
-    const calculateSubtotal = () => {
-        if (order.subtotal) return order.subtotal;
-        return grandTotal / 1.18;
-    };
-    const subtotal = calculateSubtotal();
-
-    const calculateTax = () => {
-        if (order.tax) return order.tax;
-        return grandTotal - subtotal;
-    };
-    const taxAmount = calculateTax();
-
-    const shipping = order.shippingFee !== undefined ? order.shippingFee : 0;
+    const grandTotal = totals.grandTotal !== undefined ? totals.grandTotal : (order.grandTotal !== undefined ? order.grandTotal : (order.total || 0));
+    const subtotal = totals.subtotal !== undefined ? totals.subtotal : (grandTotal / 1.18);
+    const taxAmount = totals.tax !== undefined ? totals.tax : (grandTotal - subtotal);
+    const shipping = totals.shipping !== undefined ? totals.shipping : (order.shippingFee !== undefined ? order.shippingFee : 0);
 
     const amountInWords = numberToWords(Math.round(grandTotal));
 
@@ -55,15 +34,18 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
 
     const renderAddress = () => {
         if (!address) return null;
+        // Normalized address has 'fullName', 'street', 'city', etc.
+        // But legacy might have 'name', 'address'.
+        // Helper 'getSafeAddress' aligns to 'fullName', 'street' etc.
+        // Let's support both.
         return (
             <>
-                <p className="font-bold text-gray-900 text-base">{address.name || address.fullName || order.userName || 'Customer'}</p>
-                <div>{address.address || address.street}</div>
-                {address.addressLine2 && <div>{address.addressLine2}</div>}
-                {address.locality && <div>{address.locality}</div>}
+                <p className="font-bold text-gray-900 text-base">{address.fullName || address.name || order.userName || 'Customer'}</p>
+                <div>{address.street || address.address}</div>
+                {(address.addressLine2 || address.locality) && <div>{address.addressLine2 || address.locality}</div>}
                 <div>
                     {address.city}{address.city && address.state ? ', ' : ''}{address.state}
-                    {address.pincode || address.zip || address.zipCode ? ` - ${address.pincode || address.zip || address.zipCode}` : ''}
+                    {(address.zip || address.pincode || address.zipCode) ? ` - ${address.zip || address.pincode || address.zipCode}` : ''}
                 </div>
                 {address.phone && <div className="mt-1">Phone: {address.phone}</div>}
             </>
