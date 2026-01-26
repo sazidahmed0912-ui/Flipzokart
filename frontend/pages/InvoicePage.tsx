@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import API from '../services/api';
 import { InvoiceTemplate } from '../components/InvoiceTemplate';
+import { getSafeAddress } from '../utils/addressHelper';
 import { Printer } from 'lucide-react';
 
 export const InvoicePage: React.FC = () => {
@@ -17,6 +18,13 @@ export const InvoicePage: React.FC = () => {
                 // Handle different response structures (standard vs some admin endpoints)
                 const orderData = response.data.data?.order || response.data.order || response.data;
                 console.log("INVOICE DEBUG: Received Order Data", orderData);
+
+                // Data Normalization Layer (Phase 3)
+                // Ensure address is safe before passing to "dumb" template
+                if (orderData) {
+                    orderData.address = getSafeAddress(orderData.address || orderData.shippingAddress || (orderData.user ? { name: orderData.user.name, phone: orderData.user.phone } : null));
+                }
+
                 setOrder(orderData);
             } catch (error) {
                 console.error("Failed to fetch order", error);

@@ -10,6 +10,7 @@ export const TrackOrderPage: React.FC = () => {
   const [trackingData, setTrackingData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [inputTrackingId, setInputTrackingId] = useState('');
 
   const socket = useSocket(null);
 
@@ -92,7 +93,7 @@ export const TrackOrderPage: React.FC = () => {
     );
   }
 
-  const [inputTrackingId, setInputTrackingId] = useState('');
+
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
