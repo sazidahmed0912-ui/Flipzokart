@@ -48,9 +48,9 @@ export const TrackOrderPage: React.FC = () => {
                 const orderForUI = {
                     ...normalizedOrder,
                     // Aliases for UI compatibility
-                    grandTotal: normalizedOrder.totals?.grandTotal || normalizedOrder.totalAmount,
-                    total: normalizedOrder.totals?.grandTotal, // some UI might check .total
-                    shippingFee: normalizedOrder.totals?.shipping,
+                    grandTotal: normalizedOrder.totals?.grandTotal || normalizedOrder.totalAmount || 0,
+                    total: normalizedOrder.totals?.grandTotal || 0, // some UI might check .total
+                    shippingFee: normalizedOrder.totals?.shipping || 0,
                     shippingAddress: normalizedOrder.address, // UI uses shippingAddress
                     paymentMethod: normalizedOrder.payment?.method,
                     orderId: normalizedOrder.id // UI uses order.orderId
@@ -255,7 +255,7 @@ export const TrackOrderPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                             <span className="text-base text-gray-800">Arriving by <span className="font-bold text-green-700">{order.expectedDelivery ? formatDate(order.expectedDelivery) : 'Tomorrow'}</span></span>
                         </div>
-                        <div className="text-xl font-bold text-gray-900">₹{(order.grandTotal !== undefined ? order.grandTotal : (order.total || 0)).toLocaleString('en-IN')}</div>
+                        <div className="text-xl font-bold text-gray-900">₹{(order.grandTotal || order.total || 0).toLocaleString('en-IN')}</div>
                     </div>
                 )}
 
@@ -288,7 +288,7 @@ export const TrackOrderPage: React.FC = () => {
                                             <div className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium text-gray-700">
                                                 Qty: {item.quantity}
                                             </div>
-                                            <div className="text-xl font-bold text-gray-900">₹{item.price.toLocaleString()}</div>
+                                            <div className="text-xl font-bold text-gray-900">₹{(item.price || 0).toLocaleString('en-IN')}</div>
                                         </div>
                                         <p className="text-xs text-gray-500 mt-1">Seller: <span className="font-medium text-gray-700">{item.sellerName || 'Alpha Mobiles'}</span></p>
                                     </div>
@@ -334,7 +334,7 @@ export const TrackOrderPage: React.FC = () => {
                         <div className="space-y-4 flex-1">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-900">Price ({order.items?.length || 0} items)</span>
-                                <span className="font-medium text-gray-900">₹{(order.grandTotal).toLocaleString()}</span>
+                                <span className="font-medium text-gray-900">₹{(order.grandTotal || 0).toLocaleString('en-IN')}</span>
                             </div>
                             {/* Placeholder for potential discount if available in future */}
                             {/* <div className="flex justify-between items-center text-sm">
@@ -348,7 +348,7 @@ export const TrackOrderPage: React.FC = () => {
 
                             <div className="border-t border-dashed border-gray-200 my-2 pt-3 flex justify-between items-center">
                                 <span className="font-bold text-lg text-gray-900">Total Amount</span>
-                                <span className="font-bold text-lg text-gray-900">₹{(order.grandTotal).toLocaleString()}</span>
+                                <span className="font-bold text-lg text-gray-900">₹{(order.grandTotal || 0).toLocaleString('en-IN')}</span>
                             </div>
 
                             <div className="text-xs text-green-700 font-medium bg-green-50 p-2 rounded">
