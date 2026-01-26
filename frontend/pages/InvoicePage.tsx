@@ -20,9 +20,13 @@ export const InvoicePage: React.FC = () => {
                 console.log("INVOICE DEBUG: Received Order Data", orderData);
 
                 // Data Normalization Layer (Phase 3)
-                // Ensure address is safe before passing to "dumb" template
+                // Expanded lookup for robustness
                 if (orderData) {
-                    orderData.address = getSafeAddress(orderData.address || orderData.shippingAddress || (orderData.user ? { name: orderData.user.name, phone: orderData.user.phone } : null));
+                    const rawAddress = orderData.address ||
+                        orderData.shippingAddress ||
+                        orderData.shippingInfo ||
+                        (orderData.user ? { name: orderData.user.name, phone: orderData.user.phone } : null);
+                    orderData.address = getSafeAddress(rawAddress);
                 }
 
                 setOrder(orderData);

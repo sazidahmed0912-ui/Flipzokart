@@ -17,17 +17,47 @@ export const TrackOrderPage: React.FC = () => {
   const fetchTrackingInfo = async () => {
     try {
       const { data } = await API.get(`/api/tracking/${trackingId}`);
-      setTrackingData(data.data);
-      setLoading(false);
+      if (data && data.data) {
+        setTrackingData(data.data);
+        setLoading(false);
+        return;
+      }
+      throw new Error("No data in tracking response");
     } catch (err) {
-      console.warn("Tracking API unavailable, using fallback:", err);
+      console.warn("Tracking API unavailable, attempting Order API fallback...");
 
-      // FALLBACK for missing API / 404
-      // Use the trackingId from URL to simulate a valid state
+      try {
+        // SMART RETRY: Try fetching as Order ID
+        const { data: orderResponse } = await API.get(`/api/orders/${trackingId}`);
+        const order = orderResponse.data?.order || orderResponse.order || orderResponse.data;
+
+        if (order) {
+          // Construct Tracking Data from Order
+          const address = order.address || order.shippingAddress || order.shippingInfo || {};
+          const mockTracking = {
+            trackingId: order._id || trackingId,
+            status: order.orderStatus || order.status || 'PENDING',
+            shippingTo: address.fullName || address.name || order.user?.name || 'Valued Customer',
+            shippingFrom: 'Fzokart Pvt. Ltd.',
+            updatedAt: order.updatedAt || new Date().toISOString(),
+            events: [
+              { status: 'Order Placed', date: order.createdAt, completed: true },
+              { status: order.orderStatus || 'Processing', date: order.updatedAt, completed: true }
+            ]
+          };
+          setTrackingData(mockTracking);
+          setLoading(false);
+          return;
+        }
+      } catch (orderErr) {
+        console.error("Smart Retry failed", orderErr);
+      }
+
+      // FINAL FALLBACK
       const fallbackData = {
         trackingId: trackingId || 'Unknown',
-        status: 'PENDING', // Default to Order Confirmed/Processing as requested
-        shippingTo: 'Valued Customer',
+        status: 'PENDING',
+        shippingTo: 'Valued Customer (Data Unavailable)',
         shippingFrom: 'Fzokart Warehouse',
         updatedAt: new Date().toISOString(),
         events: [
@@ -38,7 +68,6 @@ export const TrackOrderPage: React.FC = () => {
 
       setTrackingData(fallbackData);
       setLoading(false);
-      // DO NOT setError here, to prevent "Tracking Failed" screen
     }
   };
 
