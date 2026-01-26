@@ -152,6 +152,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     fetchCart();
   }, [user]); // Run when user changes (Login)
 
+  // Real-Time Location Update (IP-based)
+  useEffect(() => {
+    if (!user) return;
+    const updateLocation = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        // Fire and Forget - we don't need to wait or show result to user
+        await fetch(`${(import.meta as any).env.VITE_API_URL}/api/user/update-location`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      } catch (err) {
+        console.warn("Passive location update failed", err);
+      }
+    };
+    updateLocation();
+  }, [user]);
+
   // Sync Cart: SAVE on Change
   useEffect(() => {
     if (!user || isCartLoading) return; // Don't save if loading or no user

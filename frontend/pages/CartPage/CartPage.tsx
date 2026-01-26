@@ -136,11 +136,9 @@ const CartPage = () => {
     return (
       <div className="empty-cart-container">
         <div className="empty-cart-content">
-          <img
-            src="/user-shopping-bags.jpg"
-            alt="Empty Cart"
-            className="empty-cart-image"
-          />
+          <div className="flex justify-center mb-6">
+            <ShoppingBag size={120} className="text-[#f9f9f9] fill-blue-100 stroke-blue-300" strokeWidth={1.5} />
+          </div>
           <h2>Your cart is empty!</h2>
           <p>Explore our wide selection and find something you like</p>
           <Link to="/shop" className="shop-now-btn">Shop Now</Link>

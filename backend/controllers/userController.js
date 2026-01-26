@@ -248,35 +248,89 @@ const deleteAddress = async (req, res) => {
 
 const { getCoordinates } = require('../utils/cityCoordinates');
 
-// @desc    Get user locations for map
+const { getLocationFromIp } = require('../utils/geoIp');
+
+// @desc    Update user location from IP
+// @route   POST /api/user/update-location
+// @access  Private
+const updateListLocation = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Get IP from request
+        let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
+        if (ip && ip.includes(',')) ip = ip.split(',')[0].trim();
+
+        // If local, try mock or client provided IP? For now handled in utils
+
+        const geo = await getLocationFromIp(ip);
+
+        if (geo) {
+            user.lastIp = ip;
+            user.latitude = geo.lat;
+            user.longitude = geo.lon;
+            user.locationCity = geo.city;
+            user.locationCountry = geo.country;
+            user.locationUpdatedAt = new Date();
+            await user.save();
+        }
+
+        res.json({ success: true, location: geo });
+    } catch (error) {
+        // Non-blocking error
+        console.error("GeoIP Error:", error.message);
+        res.json({ success: false, message: "Location update failed but continued" });
+    }
+};
+
+// @desc    Get user locations for map (Smart Logic: IP > Address > Fallback)
 // @route   GET /api/user/locations
 // @access  Private (Admin)
 const getUserLocations = async (req, res) => {
     try {
-        // Only fetch users who have at least one address
-        const users = await User.find({ "addresses.0": { $exists: true } })
-            .select('name email addresses role createdAt');
-
-
+        // Fetch users who have Either Address OR Live Location
+        const users = await User.find({
+            $or: [
+                { "addresses.0": { $exists: true } },
+                { "latitude": { $exists: true } }
+            ]
+        }).select('name email addresses role createdAt latitude longitude locationCity locationCountry locationUpdatedAt');
 
         const mapData = users.map(user => {
-            // Use optimal address (preferably Home or first one)
+            // Priority 1: Recent Real-Time Location (IP based) - within last 24h? Or just if exists.
+            if (user.latitude && user.longitude) {
+                return {
+                    id: user._id,
+                    name: user.name,
+                    role: user.role,
+                    city: user.locationCity || 'Unknown',
+                    state: user.locationCountry || 'Unknown',
+                    lat: user.latitude,
+                    lng: user.longitude,
+                    joined: user.createdAt,
+                    type: 'realtime'
+                };
+            }
+
+            // Priority 2: Saved Address
             const address = user.addresses.find(a => a.type === 'Home') || user.addresses[0];
+            if (address) {
+                const coords = getCoordinates(address.state, address.city);
+                return {
+                    id: user._id,
+                    name: user.name,
+                    role: user.role,
+                    city: address.city,
+                    state: address.state,
+                    lat: coords.lat,
+                    lng: coords.lng,
+                    joined: user.createdAt,
+                    type: 'address'
+                };
+            }
 
-            if (!address) return null;
-
-            const coords = getCoordinates(address.state, address.city);
-
-            return {
-                id: user._id,
-                name: user.name,
-                role: user.role,
-                city: address.city,
-                state: address.state,
-                lat: coords.lat,
-                lng: coords.lng,
-                joined: user.createdAt
-            };
+            return null;
         }).filter(item => item !== null);
 
         res.json({ success: true, count: mapData.length, users: mapData });
@@ -295,5 +349,6 @@ module.exports = {
     saveAddress,
     updateAddress,
     deleteAddress,
-    getUserLocations
+    getUserLocations,
+    updateListLocation
 };

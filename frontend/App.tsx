@@ -52,10 +52,10 @@ const BannedPageWrapper = () => (
 /* ---------- ADMIN (LAZY LOADED) ---------- */
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then(module => ({ default: module.AdminDashboard })));
 const AdminProducts = lazy(() => import("./pages/AdminProducts").then(module => ({ default: module.AdminProducts })));
-const AdminProductEditor = lazy(() => import("./pages/AdminProducts").then(module => ({ default: module.AdminProductEditor })));
-const AdminInventory = lazy(() => import("./pages/AdminProducts").then(module => ({ default: module.AdminInventory })));
+const AdminProductEditor = lazy(() => import("./pages/AdminProducts/AdminProductEditor").then(module => ({ default: module.AdminProductEditor })));
+const AdminInventory = lazy(() => import("./pages/AdminProducts/AdminInventory").then(module => ({ default: module.AdminInventory })));
 const AdminOrders = lazy(() => import("./pages/AdminOrders").then(module => ({ default: module.AdminOrders })));
-const AdminOrderDetails = lazy(() => import("./pages/AdminOrders").then(module => ({ default: module.AdminOrderDetails })));
+const AdminOrderDetails = lazy(() => import("./pages/AdminOrders/AdminOrderDetails").then(module => ({ default: module.AdminOrderDetails })));
 const AdminSellers = lazy(() => import("./pages/AdminSellers").then(module => ({ default: module.AdminSellers })));
 const AdminUsers = lazy(() => import("./pages/AdminUsers").then(module => ({ default: module.AdminUsers })));
 const AdminMonitor = lazy(() => import("./pages/AdminMonitor").then(module => ({ default: module.AdminMonitor })));

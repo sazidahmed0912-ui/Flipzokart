@@ -12,6 +12,7 @@ router.get('/devices', getDeviceHistory);
 router.post('/appeal', appealUser);
 
 router.get('/locations', getUserLocations);
+router.post('/update-location', require('../controllers/userController').updateListLocation);
 
 router.route('/address')
     .get(getAddresses)

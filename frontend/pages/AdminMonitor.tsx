@@ -25,7 +25,7 @@ export const AdminMonitor: React.FC = () => {
     // Auto-scroll logs smart handling
     const logsEndRef = useRef<HTMLDivElement>(null);
     const logsContainerRef = useRef<HTMLDivElement>(null);
-    const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+    const [shouldAutoScroll, setShouldAutoScroll] = useState(false);
 
     const scrollToBottom = () => {
         // Only scroll if the user was already at the bottom or just loaded the page

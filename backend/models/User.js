@@ -67,6 +67,13 @@ const userSchema = new mongoose.Schema(
         type: { type: String, enum: ["Home", "Work", "Other"], default: "Home" },
       }
     ],
+    // Real-Time Location Fields
+    lastIp: String,
+    latitude: Number,
+    longitude: Number,
+    locationCity: String,
+    locationCountry: String,
+    locationUpdatedAt: Date
   },
   { timestamps: true }
 );
