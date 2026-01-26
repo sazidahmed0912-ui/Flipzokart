@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
-const { format } = require('date-fns'); // If date-fns is available, otherwise native Date
+// const { format } = require('date-fns'); // Removed to avoid dependency error, using native Date.toISOString()
 
 // Helper to escape XML special characters
 const escapeXml = (unsafe) => {
