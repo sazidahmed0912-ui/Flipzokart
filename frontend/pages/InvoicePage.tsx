@@ -64,9 +64,39 @@ export const InvoicePage: React.FC = () => {
     }
     // Explicit guard: Do not render "Invoice not found" if we are just starting up or data is partial
     // Only show error if loading is done AND order is null
-    if (!loading && !order) return <div className="p-8 text-center text-red-500">Invoice not found</div>;
+    if (!loading && !order) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+                <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl text-red-600">!</span>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">Invoice Not Found</h2>
+                    <p className="text-gray-600 mb-6">
+                        We couldn't retrieve the invoice details. This might be because the order ID is invalid or the data isn't available yet.
+                    </p>
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="w-full bg-[#2874F0] text-white py-2 rounded font-medium hover:bg-blue-600 transition-colors"
+                        >
+                            Retry
+                        </button>
+                        <button
+                            onClick={() => window.history.back()}
+                            className="w-full border border-gray-300 text-gray-700 py-2 rounded font-medium hover:bg-gray-50 transition-colors"
+                        >
+                            Go Back
+                        </button>
+                    </div>
+                    <div className="mt-6 pt-4 border-t border-gray-100 text-xs text-gray-400 font-mono">
+                        Error ID: {orderId}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-    // Extra safety: If order is still null here (shouldn't happen due to loading check), return null
     if (!order) return null;
 
     return (

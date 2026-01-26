@@ -168,14 +168,18 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
                         </span>
                     </div>
                     <div className="flex justify-between py-2 px-4 bg-[#FCECD8] mt-2 rounded-[2px] items-center">
-                        <span className="text-sm font-bold text-gray-800">GRAND Total (in words):</span>
+                        <span className="text-sm font-bold text-gray-800">Grand Total:</span>
                         <span className="text-lg font-bold text-gray-900">₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="text-right px-4">
+                        <span className="text-sm font-medium text-gray-600">Amount in Words:</span>
+                        <span className="block text-sm font-bold text-gray-800 italic capitalize">{amountInWords} Only</span>
                     </div>
                 </div>
             </div>
 
-            <div className="mt-8 border-t border-gray-300 pt-4 text-center space-y-4">
-                <p className="font-bold text-gray-800 text-sm">Thank you for shopping with us! <span className="italic font-medium text-gray-600 bg-gray-50 px-2 py-0.5 rounded">{amountInWords} Only</span></p>
+            <div className="mt-12 border-t border-gray-300 pt-6 text-center space-y-4">
+                <p className="font-bold text-gray-800 text-base text-center w-full">Thank you for shopping with us!</p>
                 <p className="text-xs text-gray-400 italic mt-8">* This is a computer-generated invoice and does not require a signature.</p>
             </div>
 
