@@ -28,7 +28,7 @@ export const TrackOrderPage: React.FC = () => {
 
       try {
         // SMART RETRY: Try fetching as Order ID
-        const { data: orderResponse } = await API.get(`/api/orders/${trackingId}`);
+        const { data: orderResponse } = await API.get(`/api/order/${trackingId}`);
         const order = orderResponse.data?.order || orderResponse.order || orderResponse.data;
 
         if (order) {

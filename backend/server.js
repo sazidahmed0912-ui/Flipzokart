@@ -222,6 +222,9 @@ app.use("/api/products", require("./routes/productRoutes"));
 // 🛒 Orders
 app.use("/api/order", require("./routes/orderRoutes"));
 
+// 📦 Tracking
+app.use("/api/tracking", require("./routes/trackingRoutes"));
+
 // 🔔 Notifications
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 
