@@ -8,26 +8,34 @@ export const useSocket = (token: string | null) => {
 
   useEffect(() => {
     if (token) {
-      // Connect to Socket.IO server
-      const socket = io(BACKEND_URL, {
-        auth: {
-          token: token,
-        },
-      });
+      let socket: Socket | null = null;
+      try {
+        // Connect to Socket.IO server within try-catch
+        socket = io(BACKEND_URL, {
+          auth: {
+            token: token,
+          },
+        });
+      } catch (err) {
+        console.error("Socket initialization failed", err);
+      }
 
-      socket.on('connect', () => {
-        console.log('Connected to Socket.IO server');
-      });
+      if (socket) {
 
-      socket.on('disconnect', () => {
-        console.log('Disconnected from Socket.IO server');
-      });
+        socket.on('connect', () => {
+          console.log('Connected to Socket.IO server');
+        });
 
-      socket.on('connect_error', (err) => {
-        console.error('Socket.IO connection error:', err.message);
-      });
+        socket.on('disconnect', () => {
+          console.log('Disconnected from Socket.IO server');
+        });
 
-      socketRef.current = socket;
+        socket.on('connect_error', (err) => {
+          console.error('Socket.IO connection error:', err.message);
+        });
+
+        socketRef.current = socket;
+      }
     } else if (socketRef.current) {
       // Disconnect if token is removed
       socketRef.current.disconnect();

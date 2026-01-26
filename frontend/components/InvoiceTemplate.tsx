@@ -10,8 +10,37 @@ interface InvoiceProps {
 export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order }, ref) => {
     if (!order) return null;
 
-    // Use centralized robust address normalizer
-    const address = getSafeAddress(order.address || order.shippingAddress || (order.user ? { name: order.user.name, phone: order.user.phone } : null));
+    let address = order.address || {};
+    // Handle legacy address string or fallback to user
+    if (typeof address === 'string') {
+        try {
+            address = JSON.parse(address);
+        } catch (e) {
+            address = { street: address, fullName: order.userName || 'Customer' };
+        }
+    }
+    // Fallback if empty object but user exists
+    if (!address.fullName && order.user) {
+        address = {
+            fullName: order.user.name,
+            phone: order.user.phone,
+            street: 'Address not available',
+            city: order.user.city || '',
+            state: '',
+            pincode: ''
+        };
+    }
+    // Final Fallback if everything fails
+    if (!address.fullName && !address.name) {
+        address = {
+            fullName: order.userName || 'Valued Customer',
+            phone: order.phone || 'N/A',
+            street: 'Address details not found',
+            city: '',
+            state: '',
+            pincode: ''
+        };
+    }
     const items = order.items || [];
 
     // Calculations

@@ -13,6 +13,7 @@ import {
 /* ---------- LAYOUT & UI ---------- */
 import { Layout } from "./components/Layout";
 import { ToastProvider, useToast } from "./components/toast";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 
 /* ---------- PAGES (LAZY LOADED) ---------- */
@@ -436,11 +437,12 @@ const App: React.FC = () => {
     <AppProvider>
       <NotificationProvider>
         <ToastProvider>
-          <Router>
-            <AuthWrapper />
-          </Router>
+          <ErrorBoundary>
+            <Router>
+              <AuthWrapper />
+            </Router>
+          </ErrorBoundary>
         </ToastProvider>
-        {/* <ToastContainer /> */}
       </NotificationProvider>
     </AppProvider>
   );

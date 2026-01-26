@@ -1,9 +1,15 @@
 import React from "react";
 
-const Modal = ({ show, onClose, children }) => {
-  if (!show) {
-    return null;
-  }
+interface ModalProps {
+  show?: boolean;
+  isOpen?: boolean; // Support both for compatibility
+  onClose: () => void;
+  children: React.ReactNode;
+}
+
+const Modal: React.FC<ModalProps> = ({ show, isOpen, onClose, children }) => {
+  const isVisible = show || isOpen; // Handle both prop names
+  if (!isVisible) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">

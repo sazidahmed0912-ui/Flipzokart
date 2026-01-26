@@ -55,12 +55,19 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
 
         const finalAddress: Address = {
             id: addressToEdit?.id ?? Date.now(),
-            fullName: formData.name, // Ensure consistency
+            fullName: formData.name,
+            name: formData.name, // Legacy support
+            phone: formData.phone,
+            mobile: formData.phone, // Legacy support
             street: formData.street,
+            address: formData.street, // Legacy support
+            addressLine1: formData.street, // Legacy support
             addressLine2: formData.addressLine2,
+            locality: formData.addressLine2, // Legacy support
             city: formData.city,
             state: formData.state,
             pincode: formData.zip,
+            zip: formData.zip, // Legacy support
             type: formData.type,
             country: 'India',
             isDefault: false
