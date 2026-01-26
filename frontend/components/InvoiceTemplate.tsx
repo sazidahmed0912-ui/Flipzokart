@@ -1,6 +1,6 @@
 import React from 'react';
 import { numberToWords } from '../utils/numberToWords';
-import { getSafeAddress } from '../utils/addressHelper';
+
 
 interface InvoiceProps {
     order: any;

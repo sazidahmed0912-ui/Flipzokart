@@ -8,10 +8,9 @@ export const useSocket = (token: string | null) => {
 
   useEffect(() => {
     if (token) {
-      let socket: Socket | null = null;
+      let newSocket: Socket | null = null;
       try {
-        // Connect to Socket.IO server within try-catch
-        socket = io(BACKEND_URL, {
+        newSocket = io(BACKEND_URL, {
           auth: {
             token: token,
           },
@@ -20,7 +19,8 @@ export const useSocket = (token: string | null) => {
         console.error("Socket initialization failed", err);
       }
 
-      if (socket) {
+      if (newSocket) {
+        const socket = newSocket; // Stable reference for closures
 
         socket.on('connect', () => {
           console.log('Connected to Socket.IO server');
