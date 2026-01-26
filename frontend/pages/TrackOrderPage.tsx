@@ -27,6 +27,9 @@ export const TrackOrderPage: React.FC = () => {
   useEffect(() => {
     if (trackingId) {
       fetchTrackingInfo();
+    } else {
+      setLoading(false);
+      setError('No Tracking ID provided. Please check your link or go to your orders.');
     }
   }, [trackingId]);
 

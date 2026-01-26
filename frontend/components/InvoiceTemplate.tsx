@@ -9,7 +9,26 @@ interface InvoiceProps {
 export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order }, ref) => {
     if (!order) return null;
 
-    const address = order.address || {};
+    let address = order.address || {};
+    // Handle legacy address string or fallback to user
+    if (typeof address === 'string') {
+        try {
+            address = JSON.parse(address);
+        } catch (e) {
+            address = { street: address, fullName: order.userName || 'Customer' };
+        }
+    }
+    // Fallback if empty object but user exists
+    if (!address.fullName && order.user) {
+        address = {
+            fullName: order.user.name,
+            phone: order.user.phone,
+            street: 'Address not available',
+            city: order.user.city || '',
+            state: '',
+            pincode: ''
+        };
+    }
     const items = order.items || [];
 
     // Calculations
@@ -80,10 +99,10 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
                     {items.map((item: any, index: number) => (
                         <tr key={index} className="border-b border-gray-100">
                             <td className="py-3 px-4 text-gray-500">{index + 1}</td>
-                            <td className="py-3 px-4 font-medium text-gray-800">{item.product?.title || 'Product'}</td>
+                            <td className="py-3 px-4 font-medium text-gray-800">{item.product?.title || item.name || 'Product'}</td>
                             <td className="py-3 px-4 text-center text-gray-800">{item.quantity}</td>
-                            <td className="py-3 px-4 text-right text-gray-800">₹{item.price.toLocaleString()}</td>
-                            <td className="py-3 px-4 text-right font-bold text-gray-800">₹{(item.price * item.quantity).toLocaleString()}</td>
+                            <td className="py-3 px-4 text-right text-gray-800">₹{(item.price || 0).toLocaleString()}</td>
+                            <td className="py-3 px-4 text-right font-bold text-gray-800">₹{((item.price || 0) * item.quantity).toLocaleString()}</td>
                         </tr>
                     ))}
                 </tbody>

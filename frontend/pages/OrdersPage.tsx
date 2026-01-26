@@ -308,7 +308,7 @@ const OrdersPage = () => {
                                                     {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
                                                         <div className="relative group">
                                                             <button
-                                                                onClick={() => navigate('/track-order', { state: { order } })}
+                                                                onClick={() => navigate(`/track/${order.trackingId}`)}
                                                                 className="bg-[#2874F0] hover:bg-blue-600 text-white font-semibold py-1.5 px-6 rounded-[2px] text-sm shadow-sm transition-colors whitespace-nowrap"
                                                             >
                                                                 Track Order
@@ -317,8 +317,16 @@ const OrdersPage = () => {
                                                     )}
 
                                                     <button
-                                                        onClick={() => navigate('/track-order', { state: { order } })}
-                                                        className="border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-1.5 px-4 rounded-[2px] text-sm transition-colors whitespace-nowrap"
+                                                        onClick={() => {
+                                                            if (order.trackingId) {
+                                                                navigate(`/track/${order.trackingId}`);
+                                                            } else {
+                                                                // Fallback or show toast
+                                                                alert("Tracking not available for this order");
+                                                            }
+                                                        }}
+                                                        disabled={!order.trackingId}
+                                                        className={`border border-gray-300 font-medium py-1.5 px-4 rounded-[2px] text-sm transition-colors whitespace-nowrap ${order.trackingId ? 'hover:bg-gray-50 text-gray-800' : 'opacity-50 cursor-not-allowed text-gray-400'}`}
                                                     >
                                                         View Details
                                                     </button>
