@@ -20,7 +20,8 @@ export const InvoicePage: React.FC = () => {
                 if (data) {
                     console.log("INVOICE DEBUG: Data received", data);
                     // The backend now returns exactly what we need, including 'items'
-                    setOrder(data);
+                    // Handle potential nested structure (like in TrackOrderPage)
+                    setOrder(data.trackingData || data);
                 } else {
                     throw new Error("Empty data recieved");
                 }

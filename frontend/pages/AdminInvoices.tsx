@@ -263,7 +263,7 @@ export const AdminInvoices: React.FC = () => {
             {/* Hidden Printable Invoice Template (Exact Match to User Image) */}
             <div id="invoice-template" className="hidden">
                 {selectedInvoice && (
-                    <InvoiceTemplate invoice={selectedInvoice} />
+                    <InvoiceTemplate order={selectedInvoice.originalOrder} />
                 )}
             </div>
         </div>
