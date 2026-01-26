@@ -134,12 +134,18 @@ export const AdminMap: React.FC = () => {
     }, [socket]);
 
     // Filter Users
-    const filteredUsers = activeUsers.filter(u =>
-        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.state?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const [liveOnly, setLiveOnly] = useState(true); // Default to True per user request
+
+    const filteredUsers = activeUsers.filter(u => {
+        const matchesSearch = u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.state?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesLive = liveOnly ? u.status === 'Online' : true;
+
+        return matchesSearch && matchesLive;
+    });
 
     // Map to Leaflet Format without random jitter
     const mapLocations: MapLocation[] = filteredUsers.map(u => {
@@ -224,6 +230,13 @@ export const AdminMap: React.FC = () => {
                                 <div className={`w-2 h-2 rounded-full ${activeUsers.length > 0 ? 'bg-blue-500' : 'bg-gray-400'}`}></div>
                                 <span className="text-xs font-semibold text-gray-600">{activeUsers.length} Mapped Users</span>
                             </div>
+
+                            <button
+                                onClick={() => setLiveOnly(!liveOnly)}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors border ${liveOnly ? 'bg-green-100 text-green-700 border-green-200' : 'bg-white text-gray-600 border-gray-200'}`}
+                            >
+                                {liveOnly ? 'Showing Live' : 'Show All'}
+                            </button>
 
                             {/* Full Screen Button */}
                             <button

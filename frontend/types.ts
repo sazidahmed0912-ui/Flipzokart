@@ -76,8 +76,11 @@ export interface Order {
   email?: string; // Populated from User
   items: CartItem[];
   total: number;
-  status: 'Pending' | 'Paid' | 'Shipped' | 'Delivered' | 'Cancelled';
-  paymentMethod: 'COD' | 'Razorpay';
+  status: string;
+  shippingSnapshot?: any;
+  trackingId?: string;
+  orderNumber?: string;
+  paymentMethod: string;
   paymentStatus: 'PENDING' | 'PAID' | 'FAILED';
   createdAt: string;
   address: string | { // Allow string (legacy/backend) or object

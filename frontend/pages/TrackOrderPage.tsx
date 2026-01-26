@@ -1,463 +1,187 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-  Search, CheckCircle2, Circle, FileText, HelpCircle,
-  MapPin, Phone, User, CreditCard, ChevronDown, Download,
-  XCircle, Truck, Package, Clock, ShieldCheck, AlertCircle,
-  MoreHorizontal
-} from 'lucide-react';
-import { useApp } from '../store/Context';
-import { Order } from '../types';
-import { fetchOrderById } from '../services/api';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import API from '../services/api';
+import { Layout } from '../components/Layout';
 import { useSocket } from '../hooks/useSocket';
-import { InvoiceTemplate } from '../components/InvoiceTemplate';
-
-// Helper to convert number to words (Indian Currency format approximation)
-const numberToWords = (num: number): string => {
-  const single = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
-  const double = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
-  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-  const formatTens = (n: number) => {
-    if (n < 10) return single[n];
-    if (n < 20) return double[n % 10];
-    return tens[Math.floor(n / 10)] + (n % 10 ? " " + single[n % 10] : "");
-  };
-  if (num === 0) return "Zero";
-  let str = "";
-  if (num >= 10000000) { str += formatTens(Math.floor(num / 10000000)) + " Crore "; num %= 10000000; }
-  if (num >= 100000) { str += formatTens(Math.floor(num / 100000)) + " Lakh "; num %= 100000; }
-  if (num >= 1000) { str += formatTens(Math.floor(num / 1000)) + " Thousand "; num %= 1000; }
-  if (num >= 100) { str += formatTens(Math.floor(num / 100)) + " Hundred "; num %= 100; }
-  if (num > 0) { str += "and " + formatTens(num); }
-  return str + " Only";
-};
+import { CheckCircle, Package, Truck, MapPin, Clock } from 'lucide-react';
 
 export const TrackOrderPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user } = useApp();
-  const socket = useSocket(localStorage.getItem('token'));
-  const queryId = searchParams.get('id') || '';
-  const initialOrder = location.state?.order;
-
-  const [orderId, setOrderId] = useState(queryId || initialOrder?._id || initialOrder?.id || '');
-  const [foundOrder, setFoundOrder] = useState<any | null>(initialOrder || null);
-  const [loading, setLoading] = useState(!initialOrder);
+  const { trackingId } = useParams<{ trackingId: string }>();
+  const [trackingData, setTrackingData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (queryId && !initialOrder) {
-      handleTrack(queryId);
-    } else if (initialOrder) {
-      setOrderId(initialOrder._id || initialOrder.id);
-    }
-  }, [queryId, initialOrder]);
+  const socket = useSocket(null);
 
-  const handleTrack = async (id: string) => {
-    setLoading(true);
-    setError('');
+  const fetchTrackingInfo = async () => {
     try {
-      const { data } = await fetchOrderById(id);
-      setFoundOrder(data);
-    } catch (err: any) {
-      setError('Order not found');
-    } finally {
+      const { data } = await API.get(`/api/tracking/${trackingId}`);
+      setTrackingData(data.data);
+      setLoading(false);
+    } catch (err) {
+      setError('Tracking information not found. Please check your Tracking ID.');
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!foundOrder) return;
+    if (trackingId) {
+      fetchTrackingInfo();
+    }
+  }, [trackingId]);
 
-    // Real-time listener
-    if (socket) {
+  // Real-time updates
+  useEffect(() => {
+    if (socket && trackingData) {
       socket.on('notification', (data: any) => {
-        if (data.type === 'orderStatusUpdate' && (data.orderId === foundOrder._id || data.orderId === foundOrder.id)) {
-          console.log("⚡ Live update for this order");
-          handleTrack(foundOrder._id || foundOrder.id);
+        if (data.type === 'orderStatusUpdate') {
+          // In a real app we'd check if this update belongs to THIS order
+          // For now, simple refresh
+          fetchTrackingInfo();
         }
       });
+      return () => {
+        socket.off('notification');
+      };
     }
+  }, [socket, trackingData]);
 
-    const interval = setInterval(async () => {
-      try {
-        const { data } = await fetchOrderById(foundOrder._id || foundOrder.id);
-        setFoundOrder(data);
-      } catch (e) { }
-    }, 10000); // Relax polling
-    return () => {
-      clearInterval(interval);
-      if (socket) socket.off('notification');
-    };
-  }, [foundOrder?._id, socket]);
-
-  if (loading) return <div className="flex h-screen items-center justify-center">Loading...</div>;
-
-  if (!foundOrder && !loading) {
+  if (loading) {
     return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-xl shadow-sm text-center max-w-md w-full">
-          <h2 className="text-2xl font-bold mb-4">Track Order</h2>
-          <input
-            value={orderId}
-            onChange={(e) => setOrderId(e.target.value)}
-            placeholder="Enter Order ID"
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4"
-          />
-          <button
-            onClick={() => handleTrack(orderId)}
-            className="w-full bg-[#F9C74F] hover:bg-yellow-400 text-black font-bold py-3 rounded-lg"
-          >
-            Track
-          </button>
-          {error && <p className="text-red-500 mt-2">{error}</p>}
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#2874F0] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center max-w-md w-full">
+          <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <MapPin size={32} />
+          </div>
+          <h1 className="text-xl font-bold text-gray-800 mb-2">Tracking Failed</h1>
+          <p className="text-gray-500 mb-6">{error}</p>
+          <a href="/" className="inline-block bg-[#2874F0] text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-600 transition-colors">
+            Go Home
+          </a>
         </div>
       </div>
     );
   }
 
-  const statuses = ['Pending', 'Shipped', 'Out for Delivery', 'Delivered'];
-  const currentStatusIndex = statuses.indexOf(foundOrder.status) === -1 ? 0 : statuses.indexOf(foundOrder.status);
-  const isCancelled = foundOrder.status === 'Cancelled';
+  const steps = [
+    { label: 'Order Confirmed', status: 'PENDING', icon: CheckCircle, date: trackingData.events.find((e: any) => e.status === 'Order Placed')?.date },
+    { label: 'Packed', status: 'PACKED', icon: Package, date: trackingData.events.find((e: any) => e.status === 'Packed')?.date },
+    { label: 'Shipped', status: 'SHIPPED', icon: Truck, date: trackingData.events.find((e: any) => e.status === 'Shipped')?.date },
+    { label: 'Out for Delivery', status: 'OUT_FOR_DELIVERY', icon: Truck, date: trackingData.events.find((e: any) => e.status === 'Out for Delivery')?.date },
+    { label: 'Delivered', status: 'DELIVERED', icon: CheckCircle, date: trackingData.events.find((e: any) => e.status === 'Delivered')?.date },
+  ];
+
+  const getCurrentStepIndex = () => {
+    const status = trackingData.status;
+    const statusMap: Record<string, number> = {
+      'PENDING': 0, 'PAID': 0,
+      'PACKED': 1, 'PROCESSING': 1,
+      'SHIPPED': 2,
+      'OUT_FOR_DELIVERY': 3,
+      'DELIVERED': 4
+    };
+    return statusMap[status] ?? 0;
+  };
+
+  const currentStep = getCurrentStepIndex();
 
   return (
-    <div className="bg-[#F1F3F6] min-h-screen py-8 font-sans text-gray-800">
-      <div className="max-w-[1200px] mx-auto px-4">
-
-        {/* Top Breadcrumb / Navigation */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-4 cursor-pointer" onClick={() => navigate('/orders')}>
-          <span className="hover:text-[#2874F0]">My Orders</span>
-          <span>{'>'}</span>
-          <span className="text-gray-700 font-medium">{foundOrder._id || foundOrder.id}</span>
-        </div>
-
-        {/* Top Header: ID & PLACED ON */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-2">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-gray-900">Order ID: {foundOrder._id || foundOrder.id}</h1>
-          </div>
-          <div className="text-sm font-bold text-gray-600 uppercase tracking-wide">
-            Placed on {new Date(foundOrder.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' })}
-          </div>
-        </div>
-
-
-        {/* Print Styles */}
-        <style>{`
-            @media print {
-                @page { margin: 0; size: auto; }
-                body { visibility: hidden; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                #invoice-template { 
-                    display: block !important;
-                    visibility: visible; 
-                    position: fixed; 
-                    left: 0; 
-                    top: 0; 
-                    width: 100%; 
-                    height: 100%; 
-                    z-index: 9999; 
-                    background: white; 
-                    padding: 20px;
-                    margin: 0;
-                }
-                #invoice-template * { visibility: visible; }
-                .no-print { display: none !important; }
-                ::-webkit-scrollbar { display: none; }
-            }
-        `}</style>
-
-        <div className="bg-white rounded-[4px] shadow-sm p-6 md:p-8 space-y-8 relative no-print">
-          {/* Download Invoice Top Right */}
-          <button
-            onClick={() => window.print()}
-            className="absolute top-6 right-6 flex items-center gap-2 text-[#2874F0] border border-gray-200 px-3 py-1.5 rounded-[2px] text-xs font-bold hover:shadow-sm transition-shadow"
-          >
-            <Download size={14} /> Download Invoice
-          </button>
-
-          {/* 1. Header & Stepper */}
-          <div className="flex flex-col gap-8 border-b border-gray-100 pb-8">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-              {/* Stepper */}
-              {/* Stepper */}
-              {!isCancelled && (
-                <div className="relative flex w-full max-w-4xl items-start">
-                  {/* Connector Line Wrapper */}
-                  <div className="absolute top-[12px] left-[12.5%] right-[12.5%] h-1 -z-10">
-                    <div className="absolute top-0 left-0 w-full h-full bg-gray-200 rounded-full"></div>
-                    <div
-                      className="absolute top-0 left-0 h-full bg-green-600 rounded-full transition-all duration-500"
-                      style={{ width: `${(currentStatusIndex / (statuses.length - 1)) * 100}%` }}
-                    ></div>
-                  </div>
-
-                  {statuses.map((status, idx) => {
-                    const completed = idx <= currentStatusIndex;
-                    return (
-                      <div key={status} className="flex-1 flex flex-col items-center gap-2 relative z-10 bg-white/0">
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 ${completed ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-300 text-transparent'}`}>
-                          <CheckCircle2 size={16} className={`${completed ? 'opacity-100' : 'opacity-0'}`} />
-                        </div>
-                        <span className={`text-sm font-semibold text-center ${completed ? 'text-gray-900' : 'text-gray-400'}`}>{status}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Track Order Button with Dropdown */}
-              <div className="relative group self-end lg:self-auto ml-auto lg:ml-0">
-                <button className="bg-[#F9C74F] hover:bg-yellow-400 text-gray-900 font-bold py-2.5 px-6 rounded-[4px] text-sm shadow-sm transition-colors flex items-center gap-2">
-                  Track Order
-                </button>
-                {/* Dropdown Menu */}
-                <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-100 rounded-[8px] shadow-xl z-20 hidden group-hover:block overflow-hidden">
-                  <div className="py-2">
-                    <button className="w-full text-left px-4 py-3 text-sm text-[#2874F0] font-semibold hover:bg-gray-50 flex items-center gap-3">
-                      <HelpCircle size={16} /> Need Help?
-                    </button>
-                    <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3">
-                      <FileText size={16} /> Get Invoice
-                    </button>
-                    <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3">
-                      <XCircle size={16} /> Cancel & Return
-                    </button>
-                    <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3">
-                      <ShieldCheck size={16} /> Need Assistance
-                    </button>
-                    <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3">
-                      <MapPin size={16} /> Change Address
-                    </button>
-                  </div>
-                  {/* Pointy Tip */}
-                  <div className="absolute -top-1.5 right-8 w-3 h-3 bg-white border-t border-l border-gray-100 transform rotate-45"></div>
-                </div>
+    <div className="min-h-screen bg-gray-50 pt-20 pb-12 px-4">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
+          <div className="bg-[#2874F0] p-6 text-white flex justify-between items-center">
+            <div>
+              <p className="text-xs font-bold opacity-80 uppercase tracking-widest mb-1">Tracking ID</p>
+              <h1 className="text-2xl font-bold font-mono">{trackingData.trackingId}</h1>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-bold opacity-80 uppercase tracking-widest mb-1">Order Status</p>
+              <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm">
+                <Clock size={14} />
+                <span className="font-bold text-sm capitalize">{trackingData.status.replace(/_/g, ' ')}</span>
               </div>
             </div>
-
-            {isCancelled && <div className="p-4 bg-red-50 text-red-600 font-bold border border-red-200 rounded-[2px] text-center">This order has been cancelled</div>}
-
-            {/* Green Arrival Banner */}
-            {!isCancelled && foundOrder.status !== 'Delivered' && (
-              <div className="bg-[#EBFFEF] px-6 py-4 rounded-[4px] flex flex-col md:flex-row justify-between items-center gap-2 border border-green-100 mt-2">
-                <div className="text-base text-gray-800">
-                  Arriving by <span className="font-bold text-gray-900">Tomorrow, 9 PM</span>
-                  <span className="text-xs text-gray-500 ml-2">(Estimated)</span>
-                </div>
-                {foundOrder.total && <div className="font-bold text-lg text-gray-900">₹{foundOrder.total.toLocaleString()}</div>}
-              </div>
-            )}
-            {foundOrder.status === 'Delivered' && (
-              <div className="bg-[#EBFFEF] px-6 py-4 rounded-[4px] flex items-center gap-2 border border-green-100 mt-2">
-                <CheckCircle2 size={20} className="text-green-600" />
-                <span className="font-bold text-gray-900">Delivered on {new Date(foundOrder.updatedAt).toLocaleDateString()}</span>
-              </div>
-            )}
           </div>
 
-          {/* 2. Product Information & Grid */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <h3 className="text-lg font-bold text-gray-800">Product Information</h3>
-              <span className="text-[#2874F0] text-sm font-semibold cursor-pointer hover:underline flex items-center gap-1">
-                <HelpCircle size={16} /> Need Help?
-              </span>
-            </div>
+          <div className="p-8">
+            <div className="flex flex-col gap-8">
+              {/* Visual Stepper */}
+              <div className="relative flex flex-col md:flex-row justify-between w-full">
+                {/* Connecting Line */}
+                <div className="absolute top-4 left-4 md:left-0 md:top-1/2 md:-translate-y-1/2 w-0.5 md:w-full h-full md:h-1 bg-gray-200 -z-10"></div>
+                <div
+                  className="absolute top-4 left-4 md:left-0 md:top-1/2 md:-translate-y-1/2 w-0.5 md:w-full h-full md:h-1 bg-[#4CBB76] -z-10 transition-all duration-1000 origin-left"
+                  style={{
+                    height: window.innerWidth < 768 ? `${currentStep * 25}%` : '4px',
+                    width: window.innerWidth >= 768 ? `${currentStep * 25}%` : '2px'
+                  }}
+                ></div>
 
-            {/* Product Card Styled */}
-            {(foundOrder.items || []).map((item: any, idx: number) => (
-              <div key={idx} className="flex flex-col md:flex-row gap-6 p-6 border border-gray-200 rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-32 h-32 flex-shrink-0 p-2 border border-gray-100 rounded-[4px] flex items-center justify-center">
-                  <img src={item.image} alt={item.name} className="max-w-full max-h-full object-contain" />
-                </div>
+                {steps.map((step, index) => {
+                  const isCompleted = index <= currentStep;
+                  const isCurrent = index === currentStep;
 
-                <div className="flex-1 flex flex-col justify-between">
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-lg hover:text-[#2874F0] cursor-pointer line-clamp-2 md:line-clamp-1">{item.name}</h4>
-                    <div className="mt-4 flex flex-col md:flex-row md:items-center gap-4 text-sm text-gray-500">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500">Seller:</span>
-                        <span className="font-medium text-gray-900 bg-gray-50 px-2 py-0.5 rounded border border-gray-100">Alpha Mobiles</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl font-bold text-gray-900">₹{(item.price || 0).toLocaleString()}</span>
-                        <span className="text-green-600 text-xs font-bold bg-green-50 px-2 py-0.5 rounded border border-green-100">2 Offers Applied</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex flex-wrap items-center gap-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900 border border-gray-200 px-3 py-1.5 rounded-[2px] bg-gray-50">
-                      Qty: {item.quantity}
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <button className="flex items-center gap-2 text-[#2874F0] font-semibold text-sm border border-gray-200 hover:border-[#2874F0] px-4 py-1.5 rounded-[2px] transition-colors shadow-sm">
-                        <HelpCircle size={15} /> Need help?
-                      </button>
-
-                      {!isCancelled && foundOrder.status === 'Pending' && (
-                        <button className="flex items-center gap-2 text-red-600 font-semibold text-sm border border-gray-200 hover:border-red-600 hover:bg-red-50 px-4 py-1.5 rounded-[2px] transition-colors shadow-sm">
-                          <XCircle size={15} /> Cancel Order
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* 3. Info Footer Grid (Address | Payment | Progress) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6 border-t border-gray-100 items-start">
-
-            {/* Delivery Address */}
-            <div className="space-y-4">
-              <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80 flex items-center justify-between h-5">
-                Delivery Address
-              </h3>
-              <div className="text-sm text-gray-800 leading-relaxed border border-gray-200 rounded-[4px] p-4 bg-gray-50/50">
-                <div className="text-sm text-gray-800 leading-relaxed border border-gray-200 rounded-[4px] p-4 bg-gray-50/50">
-                  {(() => {
-                    const addr = foundOrder.shippingAddress || foundOrder.address;
-                    if (!addr) return 'Address not available';
-                    // Normalize address object
-                    const addressObj = typeof addr === 'string' ? { street: addr } : addr;
-
-                    return (
-                      <div className="flex flex-col gap-3">
-                        {/* Name */}
-                        <div className="font-bold text-base text-gray-900">
-                          {addressObj.fullName || addressObj.name || foundOrder.user?.name || 'Customer'}
-                        </div>
-
-                        {/* Address Body */}
-                        <div className="text-gray-600 leading-snug">
-                          {typeof addr === 'string' ? addr : (
-                            <>
-                              <p>{addressObj.street || ''}</p>
-                              {addressObj.locality && <p>{addressObj.locality}</p>}
-                              <p>
-                                {addressObj.city || ''}{addressObj.state ? `, ${addressObj.state}` : ''}
-                                {addressObj.zip || addressObj.pincode ? ` - ${addressObj.zip || addressObj.pincode}` : ''}
-                              </p>
-                              {addressObj.country && <p>{addressObj.country}</p>}
-                            </>
-                          )}
-                        </div>
-
-                        {/* Contact Details (Email & Phone) */}
-                        <div className="pt-2 border-t border-dashed border-gray-200 mt-1 flex flex-col gap-1.5">
-
-                          {/* Email */}
-                          <div className="flex flex-col">
-                            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Email</span>
-                            <span className="text-sm font-semibold text-gray-900">
-                              {addressObj.email || foundOrder.user?.email || 'N/A'}
-                            </span>
-                          </div>
-
-                          {/* Phone */}
-                          <div className="flex flex-col">
-                            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Phone Number</span>
-                            <span className="text-sm font-semibold text-gray-900">
-                              {addressObj.phone || foundOrder.user?.phone || 'N/A'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/address-book')}
-                className="w-full bg-[#F9C74F] text-black py-2.5 rounded-[2px] font-bold text-sm hover:shadow-md transition-shadow"
-              >
-                Update Address
-              </button>
-            </div>
-
-            {/* Payment */}
-            <div className="space-y-4">
-              <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80 flex items-center justify-between h-5">
-                Payment
-              </h3>
-              <div className="text-sm space-y-2">
-                <div className="flex justify-between items-center text-gray-600">
-                  <span>Total Amount</span>
-                  <span className="font-bold text-gray-900">₹{foundOrder.total?.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center text-gray-600">
-                  <span>Payment Mode</span>
-                  <span className="font-medium text-gray-900">{foundOrder.paymentMethod || 'Credit/Debit Card'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-500 text-xs mt-1">
-                  <CreditCard size={14} /> <span>XXXX 7643</span>
-                </div>
-              </div>
-              {/* Track Button (Blue style) - Refreshes Status */}
-              <button
-                onClick={() => handleTrack(foundOrder._id || foundOrder.id)}
-                className="w-full bg-[#2874F0] text-white py-2.5 rounded-[2px] font-bold text-sm hover:shadow-md transition-shadow mt-2"
-              >
-                Refresh Status
-              </button>
-            </div>
-
-            {/* Shipping Progress */}
-            <div className="space-y-4">
-              <h3 className="font-bold text-gray-800 text-sm tracking-wide uppercase text-opacity-80 flex items-center justify-between h-5 whitespace-nowrap">
-                Shipping Progress
-                <span className="text-[#2874F0] normal-case text-xs cursor-pointer hover:underline">More v</span>
-              </h3>
-              <div className="relative border-l-2 border-gray-100 ml-1.5 space-y-6">
-                {/* Events */}
-                {['Out for Delivery', 'Shipped', 'Ordered'].map((s, i) => {
-                  const isDone = statuses.indexOf(s) <= currentStatusIndex;
-                  // In a real app, map actual events from foundOrder.history or similar
                   return (
-                    <div key={s} className="relative pl-6">
-                      <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full ring-4 ring-white ${isDone ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                      <p className="text-sm font-bold text-gray-900">{s} {s === 'Out for Delivery' ? '/ Arriving by Tomorrow' : ''}</p>
-                      <p className="text-xs text-gray-500">{new Date().toLocaleDateString()}</p>
+                    <div key={index} className="flex md:flex-col items-center gap-4 md:gap-2 relative z-10 bg-white md:bg-transparent p-2 md:p-0 rounded-lg">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isCompleted ? 'bg-[#4CBB76] border-[#4CBB76] text-white' : 'bg-white border-gray-300 text-gray-300'
+                        } ${isCurrent ? 'ring-4 ring-[#4CBB76]/20 scale-110' : ''}`}>
+                        <step.icon size={14} />
+                      </div>
+                      <div className="md:text-center">
+                        <p className={`text-sm font-bold ${isCompleted ? 'text-gray-800' : 'text-gray-400'}`}>{step.label}</p>
+                        {step.date && <p className="text-xs text-gray-500">{new Date(step.date).toLocaleDateString()}</p>}
+                      </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
 
-              <button
-                onClick={() => navigate('/help-center')}
-                className="w-full bg-[#F9C74F] text-black py-2.5 rounded-[2px] font-bold text-sm hover:shadow-md transition-shadow"
-              >
-                Need Help?
-              </button>
+              <hr className="border-gray-100" />
+
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Shipping From</h3>
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
+                      <Package size={20} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800">Fzokart Pvt. Ltd.</p>
+                      <p className="text-sm text-gray-500">{trackingData.shippingFrom}</p>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Shipping To</h3>
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-green-50 text-green-600 rounded-lg flex items-center justify-center shrink-0">
+                      <MapPin size={20} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800">Destination</p>
+                      <p className="text-sm text-gray-500">{trackingData.shippingTo}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-
           </div>
-
         </div>
-      </div>
 
-      {/* Printable Invoice Template using Shared Component */}
-      <div id="invoice-template" className="hidden">
-        {foundOrder && (
-          <div className="h-full">
-            <InvoiceTemplate
-              invoice={{
-                id: `INV-${(foundOrder._id || foundOrder.id || '').slice(-6).toUpperCase()}`,
-                date: new Date(foundOrder.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }),
-                customer: foundOrder.user?.name || user?.name || 'Customer',
-                originalOrder: foundOrder,
-                items: foundOrder.items || []
-              }}
-            />
-          </div>
-        )}
+        <div className="text-center">
+          <a href="/" className="text-sm font-bold text-gray-400 hover:text-[#2874F0] transition-colors">
+            Back to Shop
+          </a>
+        </div>
       </div>
     </div>
   );
 };
-
-export default TrackOrderPage;

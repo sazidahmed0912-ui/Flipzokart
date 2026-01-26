@@ -204,10 +204,8 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/payment" element={<PaymentPage />} />
             <Route path="/order-success" element={<OrderSuccessPage />} />
+            <Route path="/track/:trackingId" element={<TrackOrderPage />} />
             <Route path="/track-order" element={<TrackOrderPage />} />
-            <Route path="/add-address" element={<AddNewAddress />} />
-            <Route path="/banned" element={<BannedPageWrapper />} />
-
             <Route path="/add-address" element={<AddNewAddress />} />
             <Route path="/banned" element={<BannedPageWrapper />} />
 

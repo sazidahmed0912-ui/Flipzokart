@@ -136,7 +136,7 @@ setInterval(async () => {
     uptime: Math.floor(uptime),
     systemStatus: memPercentage > 90 ? 'Critical' : 'Operational'
   });
-}, 2000);
+}, 5000);
 
 // 🛡️ Real Request Logger Middleware
 app.use((req, res, next) => {

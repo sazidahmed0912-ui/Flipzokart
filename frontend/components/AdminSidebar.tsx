@@ -20,7 +20,7 @@ const navItems = [
   { name: 'Monitor', path: '/admin/monitor', icon: Activity },
   { name: 'Invoices', path: '/admin/invoices', icon: FileText },
   { name: 'Reports', path: '/admin/reports', icon: BarChart },
-  { name: 'Shipping', path: '/admin/shipping', icon: Truck },
+  { name: 'Shipping & Labels', path: '/admin/shipping', icon: Truck },
   { name: 'Live Map', path: '/admin/map', icon: Globe },
   { name: 'Settings', path: '/admin/settings', icon: Settings },
 ];

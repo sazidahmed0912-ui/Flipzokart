@@ -3,9 +3,11 @@ import { AppError } from '../utils/AppError';
 import { CartService } from './cart.service';
 
 const prisma = new PrismaClient();
+// Refreshed client
 const cartService = new CartService();
 
 export class OrderService {
+
     async createOrder(userId: string, addressId: string) {
         const cart = await cartService.getCart(userId);
 
@@ -20,10 +22,45 @@ export class OrderService {
             return acc + Number(item.product.price) * item.quantity;
         }, 0);
 
+        // Generate dynamic IDs
+        const timestamp = Date.now().toString().slice(-6);
+        const random = Math.floor(1000 + Math.random() * 9000);
+        const orderNumber = `FZK${timestamp}${random}`;
+        const trackingId = `TRK${Math.floor(100000000 + Math.random() * 900000000)}`;
+
+        const shippingSnapshot = {
+            orderNumber,
+            trackingId,
+            shippingTo: {
+                name: (req: any) => 'User Name Placeholder', // We need user name here. fetch user?
+                ...address
+            },
+            shippingFrom: {
+                company: 'Fzokart Pvt. Ltd.',
+                address: 'Morigaon, Assam, India',
+                phone: '6033394539'
+            }
+        };
+
+        // We need user details for the snapshot name.
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (user) {
+            // @ts-ignore
+            shippingSnapshot.shippingTo.name = user.name;
+            // @ts-ignore
+            shippingSnapshot.shippingTo.phone = user.phone || address.phone || 'N/A'; // address usually has phone?
+        }
+
+
         const order = await prisma.order.create({
             data: {
                 userId,
                 totalAmount,
+                // @ts-ignore
+                orderNumber,
+                // @ts-ignore
+                trackingId,
+                shippingSnapshot,
                 address: address as any, // Storing address snapshot
                 items: {
                     create: cart.items.map((item) => ({
