@@ -42,7 +42,8 @@ export const normalizeOrder = (order: any) => {
             subtotal,
             tax,
             shipping,
-            grandTotal: totalAmount
+            grandTotal: totalAmount,
+            total: totalAmount // Alias for compatibility
         },
         payment: {
             method: order.paymentMethod || order.paymentInfo?.method || 'N/A',

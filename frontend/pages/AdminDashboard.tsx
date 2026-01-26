@@ -206,7 +206,7 @@ export const AdminDashboard: React.FC = () => {
                   </select>
                 </div>
                 <div className="h-64 w-full min-h-[250px]">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minHeight={250}>
                     <AreaChart data={chartData}>
                       <defs>
                         <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
