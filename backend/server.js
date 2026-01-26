@@ -103,7 +103,20 @@ setInterval(async () => {
   const sockets = await io.fetchSockets();
   for (const socket of sockets) {
     if (socket.user && socket.user.name) {
-      activeUserList.push({ id: socket.user.id, name: socket.user.name, email: socket.user.email });
+      activeUserList.push({
+        id: socket.user.id,
+        name: socket.user.name,
+        email: socket.user.email,
+        // Include Location Data for Map
+        lat: socket.user.latitude,
+        lng: socket.user.longitude,
+        city: socket.user.locationCity,
+        country: socket.user.locationCountry,
+        role: socket.user.role,
+        status: socket.user.status,
+        // Include addresses for fallback
+        addresses: socket.user.addresses
+      });
     }
   }
   // Remove duplicates

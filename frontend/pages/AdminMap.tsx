@@ -5,6 +5,7 @@ import {
     Search, Bell, LogOut, ChevronDown,
     Globe, Users, Share2
 } from 'lucide-react';
+import { useSocket } from '../hooks/useSocket';
 import { useApp } from '../store/Context';
 import LeafletMap, { MapLocation } from '../components/LeafletMap';
 
@@ -28,11 +29,14 @@ export const AdminMap: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeUsers, setActiveUsers] = useState<UserLocation[]>([]);
 
-    // Fetch Real User Locations
+    // Connect to socket using the hook
+    const token = localStorage.getItem("token");
+    const socket = useSocket(token);
+
+    // Fetch Real User Locations (Initial Load)
     useEffect(() => {
         const fetchLocations = async () => {
             try {
-                const token = localStorage.getItem("token");
                 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
                 const response = await fetch(`${API_URL}/api/user/locations`, {
                     headers: {
@@ -51,7 +55,7 @@ export const AdminMap: React.FC = () => {
                         city: u.city,
                         state: u.state,
                         role: u.role,
-                        status: u.status || 'Active', // Use real status
+                        status: u.status || 'Active',
                         lastActive: u.joined,
                         country: u.country || 'India'
                     }));
@@ -63,9 +67,71 @@ export const AdminMap: React.FC = () => {
         };
 
         fetchLocations();
-        const interval = setInterval(fetchLocations, 30000);
-        return () => clearInterval(interval);
     }, []);
+
+    // Listen for Real-Time Monitor Updates
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.emit('join_monitor');
+
+        const handleStats = (data: any) => {
+            if (data.activeUserList && Array.isArray(data.activeUserList)) {
+                // Update map with real-time active users who have location data
+                // We merge with existing to keep historical data if needed, or replace to show ONLY live.
+                // Request was "sync to monitor section", implying SHOW LIVE USERS.
+
+                const liveUsers = data.activeUserList.map((u: any) => {
+                    // Try to use live socket data first
+                    if (u.lat && u.lng) {
+                        return {
+                            id: u.id,
+                            name: u.name,
+                            email: u.email,
+                            lat: u.lat,
+                            lng: u.lng,
+                            city: u.city || 'Unknown',
+                            state: u.country || 'Unknown',
+                            role: u.role || 'User',
+                            status: 'Online', // Explicitly mark as Online
+                            country: u.country || 'India'
+                        };
+                    }
+                    // Fallback to address if available in payload
+                    else if (u.addresses && u.addresses.length > 0) {
+                        const addr = u.addresses.find((a: any) => a.type === 'Home') || u.addresses[0];
+                        // Coordinates would need to be in address or geocoded. 
+                        // For now, if no lat/lng, we might skip or show basic. in this context, server sends lat/lng from user object.
+                        return null;
+                    }
+                    return null;
+                }).filter((u: any) => u !== null);
+
+                // If we have live users, we can overlay them or replace.
+                // To keep the map populated, we'll overlay 'Online' status on existing users 
+                // AND add new ones if they weren't in the DB fetch.
+
+                setActiveUsers(prev => {
+                    const newMap = [...prev];
+                    liveUsers.forEach((liveUser: any) => {
+                        const idx = newMap.findIndex(existing => existing.id === liveUser.id);
+                        if (idx !== -1) {
+                            newMap[idx] = { ...newMap[idx], status: 'Online' }; // Update status
+                        } else {
+                            newMap.push(liveUser); // Add new live user
+                        }
+                    });
+                    return newMap;
+                });
+            }
+        };
+
+        socket.on('monitor:stats', handleStats);
+
+        return () => {
+            socket.off('monitor:stats', handleStats);
+        };
+    }, [socket]);
 
     // Filter Users
     const filteredUsers = activeUsers.filter(u =>

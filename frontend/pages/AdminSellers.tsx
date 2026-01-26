@@ -107,15 +107,16 @@ export const AdminSellers: React.FC = () => {
         // If showRequests is TRUE, show only 'pending_seller' or 'Pending' status
         // If showRequests is FALSE, show 'seller' role or everyone else (for now showing all non-pending if flexible)
         // User asked for "Seller Requests" button to show requests.
+        // Filter Logic:
+        // If showRequests is TRUE, show only 'pending_seller' or 'Pending' status
         if (showRequests) {
-            return matchesSearch && (s.role === 'pending_seller' || s.status === 'Pending');
+            return matchesSearch && (s.role === 'pending_seller' || s.role === 'seller-request' || s.status === 'Pending');
         }
 
-        // Default View: Show Active Sellers (role 'seller' or 'admin' or just everything except pending)
-        // For demo, if role system isn't strict, we might show all. But let's approximate:
-        // If backend roles are working: return s.role === 'seller';
-        // If not: return matchesSearch && matchesStatus && s.role !== 'pending_seller';
-        return matchesSearch && matchesStatus && s.role !== 'pending_seller';
+        // Default View: STRICTLY show 'seller' role.
+        // Identify "fake" credentials by excluding 'user' and 'admin' roles unless they are explicitly marked as sellers.
+        // We assume valid sellers have role 'seller'.
+        return matchesSearch && matchesStatus && s.role === 'seller';
     });
 
     const totalPages = Math.ceil(filteredSellers.length / sellersPerPage);
