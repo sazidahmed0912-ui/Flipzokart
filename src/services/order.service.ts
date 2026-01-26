@@ -81,7 +81,10 @@ export class OrderService {
     async getOrder(orderId: string) {
         const order = await prisma.order.findUnique({
             where: { id: orderId },
-            include: { items: { include: { product: true } } },
+            include: {
+                user: true,
+                items: { include: { product: true } }
+            },
         });
         if (!order) throw new AppError('Order not found', 404);
         return order;
@@ -90,7 +93,7 @@ export class OrderService {
     async getUserOrders(userId: string) {
         return await prisma.order.findMany({
             where: { userId },
-            include: { items: true },
+            include: { items: true, user: true },
             orderBy: { createdAt: 'desc' },
         });
     }
