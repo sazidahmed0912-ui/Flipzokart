@@ -2,6 +2,8 @@ import { getSafeAddress } from './addressHelper';
 
 export const normalizeOrder = (order: any) => {
     if (!order) return null;
+    // Reject HTML strings or non-objects
+    if (typeof order !== 'object') return null;
 
     // 1. Normalize Items
     // Mapping rules: items -> orderItems -> products -> cartItems -> []
