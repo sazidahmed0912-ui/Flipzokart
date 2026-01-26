@@ -1,0 +1,311 @@
+[
+  {
+    "id": "TC001",
+    "title": "Track Order Page Loads with Valid Tracking ID",
+    "description": "Verify that the Track Order page loads order details correctly when a valid tracking ID is provided.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the Track Order page."
+      },
+      {
+        "type": "action",
+        "description": "Enter a valid tracking ID into the tracking ID input field."
+      },
+      {
+        "type": "action",
+        "description": "Submit the tracking ID."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the order status, items list, shipping details, and payment status are displayed correctly."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Track Order Page Handles Invalid Tracking ID Gracefully",
+    "description": "Verify that the Track Order page shows an appropriate error message when an invalid or non-existent tracking ID is entered.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the Track Order page."
+      },
+      {
+        "type": "action",
+        "description": "Enter an invalid or non-existent tracking ID."
+      },
+      {
+        "type": "action",
+        "description": "Submit the tracking ID."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that a clear and user-friendly error message is displayed indicating the tracking ID is invalid or no order found."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Real-Time Updates on Order Status",
+    "description": "Verify that the order status updates in real-time on the Track Order page when the order status changes on the backend.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the Track Order page with a valid tracking ID."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify initial order status and details are displayed."
+      },
+      {
+        "type": "action",
+        "description": "Simulate an order status update from the backend using Socket.IO."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the order status on the page updates automatically without page refresh."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Invoice Page Loads Correct Invoice Data",
+    "description": "Verify that the Invoice page loads correct billing and order details for a valid order ID.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the Invoice page."
+      },
+      {
+        "type": "action",
+        "description": "Enter a valid order ID."
+      },
+      {
+        "type": "action",
+        "description": "Submit the order ID."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that invoice details including product items, prices, totals, billing address, and payment info are displayed accurately."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Invoice Page Handles Invalid Order ID",
+    "description": "Verify that the Invoice page displays an appropriate error message when an invalid or non-existent order ID is entered.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the Invoice page."
+      },
+      {
+        "type": "action",
+        "description": "Enter an invalid or non-existent order ID."
+      },
+      {
+        "type": "action",
+        "description": "Submit the order ID."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an error message is shown indicating invoice data could not be found or order ID is invalid."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Invoice Download and Print Options Available",
+    "description": "Verify that the user can download or print the invoice correctly from the Invoice page.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the Invoice page with a valid order ID."
+      },
+      {
+        "type": "action",
+        "description": "Click on the download invoice button."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the invoice downloads correctly in a standard format (e.g., PDF) with all invoice details intact."
+      },
+      {
+        "type": "action",
+        "description": "Click on the print invoice button."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the print dialog opens with a properly formatted invoice ready for printing."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "API /api/tracking/{trackingId} Returns Order Tracking Details",
+    "description": "Verify the API endpoint returns accurate order tracking details for a valid trackingId.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send a GET request to /api/tracking/{trackingId} with a valid trackingId."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the response HTTP status code is 200."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the response body contains order items, grand total, and current status."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "API /api/tracking/{trackingId} Handles Invalid TrackingId",
+    "description": "Verify the API returns appropriate error responses for invalid or missing trackingId parameter.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send a GET request to /api/tracking/{trackingId} with an invalid trackingId or empty parameter."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the API returns an error status code such as 404 or 400."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the error message clearly indicates the issue (e.g., 'Tracking ID not found')."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "API /api/tracking/{orderId} Returns Invoice Details",
+    "description": "Verify the API endpoint returns correct invoice details for a valid orderId.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send a GET request to /api/tracking/{orderId} with a valid orderId."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the response status code is 200."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response contains the comprehensive invoice details matching the order."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "API /api/tracking/{orderId} Handles Invalid OrderId",
+    "description": "Verify the API responds with proper error for invalid or not found orderId.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send a GET request to /api/tracking/{orderId} with an invalid or non-existent orderId."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the API returns an error code such as 404."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the error response provides clear information about the invalid orderId."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Frontend Responsive UI Checks Across Devices",
+    "description": "Verify that the Track Order and Invoice pages render correctly and remain usable on different screen sizes and devices.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Load both pages on desktop browser with various resolutions."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI elements are properly laid out and accessible."
+      },
+      {
+        "type": "action",
+        "description": "Load pages on tablet and mobile devices or emulators."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that all content fits screen, text is readable, and user controls are usable."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "API Response Time Performance Under Load",
+    "description": "Ensure API endpoints /api/tracking/{trackingId} and /api/tracking/{orderId} respond within acceptable time limits even under simulated load.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Simulate multiple concurrent GET requests to /api/tracking/{trackingId} with valid tracking IDs."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the average API response time is within predefined acceptable thresholds (e.g. under 1 second)."
+      },
+      {
+        "type": "action",
+        "description": "Simulate multiple concurrent GET requests to /api/tracking/{orderId} with valid order IDs."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response times remain within acceptable limits."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Secure API Access with Path Parameters",
+    "description": "Verify that the API endpoints properly validate and sanitize path parameters to prevent injection or unauthorized data access.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send requests to /api/tracking/{trackingId} and /api/tracking/{orderId} with maliciously crafted path parameter values."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify API does not execute injection attacks or expose unauthorized data."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the API returns error codes for bad parameters."
+      }
+    ]
+  }
+]

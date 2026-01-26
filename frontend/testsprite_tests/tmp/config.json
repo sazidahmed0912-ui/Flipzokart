@@ -1,0 +1,16 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:5173",
+  "backendAuthType": "public",
+  "executionArgs": {
+    "projectName": "frontend",
+    "projectPath": "d:\\Websites\\Flipzokart\\frontend",
+    "testIds": [],
+    "additionalInstruction": "Focus on verifying that the Track Order page displays the product list, shipping address, and totals correctly. If data is missing (empty list or 0 price), fail the test. Check for 'Product Information' header and exact items.",
+    "envs": {
+      "API_KEY": "sk-user-9bpwDiADBgTT_9Nmx7neRzSXSUT3vzD8lx_cY3b2QJMVOz86DK4ULALUqXEPvtxvdsQYIIzczgPSqjKb3xPqyiXf33yc_e8usGIJ5E3MNQyAHy5IzTt-VvC6NT2JcNV138s"
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+    "tech_stack": [
+        "TypeScript",
+        "React",
+        "Vite",
+        "Tailwind CSS",
+        "Socket.IO"
+    ],
+    "features": [
+        {
+            "name": "Track Order",
+            "description": "View real-time order status, products, and shipping details.",
+            "files": [
+                "d:\\Websites\\Flipzokart\\frontend\\pages\\TrackOrderPage.tsx"
+            ],
+            "api_doc": {
+                "openapi": "3.0.0",
+                "paths": {
+                    "/api/tracking/{trackingId}": {
+                        "get": {
+                            "summary": "Get order tracking details",
+                            "parameters": [
+                                {
+                                    "name": "trackingId",
+                                    "in": "path",
+                                    "required": true,
+                                    "schema": {
+                                        "type": "string"
+                                    }
+                                }
+                            ],
+                            "responses": {
+                                "200": {
+                                    "description": "Order data including items, address, payment",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "trackingData": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "items": {
+                                                                "type": "array"
+                                                            },
+                                                            "grandTotal": {
+                                                                "type": "number"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "User Invoice",
+            "description": "View and download order invoice.",
+            "files": [
+                "d:\\Websites\\Flipzokart\\frontend\\pages\\InvoicePage.tsx"
+            ],
+            "api_doc": {
+                "openapi": "3.0.0",
+                "paths": {
+                    "/api/tracking/{orderId}": {
+                        "get": {
+                            "summary": "Get invoice details"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
