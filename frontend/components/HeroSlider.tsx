@@ -34,6 +34,22 @@ const slides = [
             buttonBg: "bg-yellow-400",
             buttonText: "text-purple-900"
         }
+    },
+    {
+        id: 3,
+        title: "Mega Savings Deal",
+        subtext: "Flat 50% OFF on Kids Collection & More",
+        cta: "Shop Now",
+        link: "/shop?category=Kids",
+        gradient: "from-purple-500 to-indigo-600",
+        image: "/assets/banner_kids.jpg",
+        position: "center center",
+        textParams: {
+            titleColor: "text-white",
+            textColor: "text-purple-100",
+            buttonBg: "bg-yellow-400",
+            buttonText: "text-purple-900"
+        }
     }
 ];
 

@@ -39,7 +39,7 @@ export const ContactUsPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Email Us</p>
-                    <a href="mailto:fzokartshop@gmail.com" className="text-lg font-bold text-dark hover:text-primary transition-colors">fzokartshop@gmail.com</a>
+                    <a href="mailto:fzokart@gmail.com" className="text-lg font-bold text-dark hover:text-primary transition-colors">fzokartshop@gmail.com</a>
                   </div>
                 </div>
 
