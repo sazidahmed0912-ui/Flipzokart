@@ -13,6 +13,11 @@ export const InvoicePage: React.FC = () => {
 
     useEffect(() => {
         const fetchOrder = async () => {
+            if (!orderId || orderId === 'undefined') {
+                console.error("InvoicePage: Invalid orderId", orderId);
+                setLoading(false);
+                return;
+            }
             try {
                 // FIXED: Use the single source of truth API
                 const { data } = await API.get(`/api/tracking/${orderId}`);
