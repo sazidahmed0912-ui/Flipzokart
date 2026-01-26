@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { useSocket } from '../hooks/useSocket';
+import { normalizeOrder } from '../utils/orderHelper';
 import {
     Check, MapPin, CreditCard, FileText,
     ChevronRight, HelpCircle, Package, Truck, AlertCircle,
@@ -28,36 +29,34 @@ export const TrackOrderPage: React.FC = () => {
 
             const { data } = await API.get(`/api/tracking/${trackingId}`);
             if (data) {
-                // DATA NORMALIZATION
+                // DATA NORMALIZATION: Use shared utility (Single Source of Truth)
                 const rawOrder = data.trackingData || data;
+                const normalizedOrder = normalizeOrder(rawOrder);
 
-                // Calculate totals manually if missing from backend to prevent ₹0
-                const rawItems = rawOrder.items || rawOrder.products || [];
-                const calculatedTotal = rawItems.reduce((acc: number, item: any) => acc + ((item.price || 0) * (item.quantity || 1)), 0);
-                const finalTotal = (rawOrder.grandTotal || rawOrder.total || 0) > 0 ? (rawOrder.grandTotal || rawOrder.total) : calculatedTotal;
+                // Ensure specific fields required by this page are present if normalizeOrder puts them elsewhere
+                // normalizeOrder puts totals in 'totals' object, but UI uses 'grandTotal'.
+                // Let's ensure compatibility or update UI. 
+                // Updating UI is better, but to be safe and strictly fix data binding without breaking existing UI access patterns too much:
+                // We'll flatten potentially needed fields if UI expects them at root.
+                // Actually, let's update the UI to use the robust structure or map it here.
+                // Mapping here is safer for "Minimal changes" rule.
 
-                const normalizedOrder = {
-                    ...rawOrder,
-                    orderId: rawOrder.orderId || rawOrder._id || rawOrder.id || trackingId,
-                    shippingAddress: rawOrder.shippingAddress || rawOrder.address || {},
-                    grandTotal: finalTotal,
-                    items: rawItems,
-                    createdAt: rawOrder.createdAt || rawOrder.orderDate,
-                    status: rawOrder.status || rawOrder.orderStatus
+                // Re-enforce page-specific needs if normalizeOrder missed them (it shouldn't, but let's be safe)
+                // normalizeOrder returns 'items', 'address', 'payment', 'totals'.
+
+                // Map back to flat structure for existing UI components in this file if they access strict paths
+                const orderForUI = {
+                    ...normalizedOrder,
+                    // Aliases for UI compatibility
+                    grandTotal: normalizedOrder.totals?.grandTotal || normalizedOrder.totalAmount,
+                    total: normalizedOrder.totals?.grandTotal, // some UI might check .total
+                    shippingFee: normalizedOrder.totals?.shipping,
+                    shippingAddress: normalizedOrder.address, // UI uses shippingAddress
+                    paymentMethod: normalizedOrder.payment?.method,
+                    orderId: normalizedOrder.id // UI uses order.orderId
                 };
 
-                // Legacy address string handling
-                if (typeof normalizedOrder.shippingAddress === 'string') {
-                    try {
-                        normalizedOrder.shippingAddress = JSON.parse(normalizedOrder.shippingAddress);
-                    } catch (e) {
-                        // If parse fails, keep as string or make placeholder object
-                        normalizedOrder.shippingAddress = { address: normalizedOrder.shippingAddress, name: rawOrder.userName || 'Customer' };
-                        normalizedOrder.shippingAddressIsString = true;
-                    }
-                }
-
-                setOrder(normalizedOrder);
+                setOrder(orderForUI);
                 setError('');
             } else {
                 if (!order) setError("Order not found");
