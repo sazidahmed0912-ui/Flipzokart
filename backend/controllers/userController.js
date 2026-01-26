@@ -295,7 +295,7 @@ const getUserLocations = async (req, res) => {
                 { "addresses.0": { $exists: true } },
                 { "latitude": { $exists: true } }
             ]
-        }).select('name email addresses role createdAt latitude longitude locationCity locationCountry locationUpdatedAt');
+        }).select('name email addresses role status createdAt latitude longitude locationCity locationCountry locationUpdatedAt');
 
         const mapData = users.map(user => {
             // Priority 1: Recent Real-Time Location (IP based) - within last 24h? Or just if exists.
@@ -304,6 +304,7 @@ const getUserLocations = async (req, res) => {
                     id: user._id,
                     name: user.name,
                     role: user.role,
+                    status: user.status,
                     city: user.locationCity || 'Unknown',
                     state: user.locationCountry || 'Unknown',
                     lat: user.latitude,
@@ -321,6 +322,7 @@ const getUserLocations = async (req, res) => {
                     id: user._id,
                     name: user.name,
                     role: user.role,
+                    status: user.status,
                     city: address.city,
                     state: address.state,
                     lat: coords.lat,

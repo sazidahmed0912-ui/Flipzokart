@@ -51,9 +51,9 @@ export const AdminMap: React.FC = () => {
                         city: u.city,
                         state: u.state,
                         role: u.role,
-                        status: 'online',
+                        status: u.status || 'Active', // Use real status
                         lastActive: u.joined,
-                        country: 'India'
+                        country: u.country || 'India'
                     }));
                     setActiveUsers(mappedUsers);
                 }
@@ -84,7 +84,7 @@ export const AdminMap: React.FC = () => {
             lat: u.lat + jitter(),
             lng: u.lng + jitter(),
             title: u.name,
-            description: `User Location - ${u.city}, ${u.state}`
+            description: `[${u.status}] • ${u.city}, ${u.state}`
         };
     });
 

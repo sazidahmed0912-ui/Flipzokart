@@ -25,35 +25,21 @@ export const AdminMonitor: React.FC = () => {
     // Auto-scroll logs smart handling
     const logsEndRef = useRef<HTMLDivElement>(null);
     const logsContainerRef = useRef<HTMLDivElement>(null);
-    const [shouldAutoScroll, setShouldAutoScroll] = useState(false);
+    const [isAtBottom, setIsAtBottom] = useState(true); // Track if at bottom for "New Logs" button only
 
     const scrollToBottom = () => {
-        // Only scroll if the user was already at the bottom or just loaded the page
-        if (shouldAutoScroll) {
-            logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }
+        logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
     const handleScroll = () => {
         if (logsContainerRef.current) {
             const { scrollTop, scrollHeight, clientHeight } = logsContainerRef.current;
-            // Tolerance of 100px to consider "at bottom" (Smoother)
-            const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
-
-            // Update state: If user scrolls up, stop auto-scrolling
-            if (shouldAutoScroll && !isAtBottom) {
-                setShouldAutoScroll(false);
-            }
-            // If user manually scrolls back to bottom, resume auto-scrolling
-            else if (!shouldAutoScroll && isAtBottom) {
-                setShouldAutoScroll(true);
-            }
+            const atBottom = scrollHeight - scrollTop - clientHeight < 100;
+            setIsAtBottom(atBottom);
         }
     };
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [logs]); // Dependency on logs updating
+    // Removed auto-scroll useEffect
 
     useEffect(() => {
         if (!socket) return;
@@ -166,15 +152,9 @@ export const AdminMonitor: React.FC = () => {
                         <h2 className="font-bold text-gray-200 flex items-center gap-2">
                             <Terminal size={18} className="text-green-500" /> System Logs Stream
                         </h2>
-                        <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
-                            <input
-                                type="checkbox"
-                                checked={shouldAutoScroll}
-                                onChange={(e) => setShouldAutoScroll(e.target.checked)}
-                                className="rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-offset-gray-900"
-                            />
-                            Auto-scroll
-                        </label>
+                        <span className="text-xs text-gray-500 italic">
+                            Auto-scroll Disabled
+                        </span>
                     </div>
                     <div
                         ref={logsContainerRef}
@@ -201,9 +181,9 @@ export const AdminMonitor: React.FC = () => {
                         ))}
                         <div ref={logsEndRef} />
                     </div>
-                    {!shouldAutoScroll && (
+                    {!isAtBottom && (
                         <button
-                            onClick={() => { setShouldAutoScroll(true); logsEndRef.current?.scrollIntoView({ behavior: "smooth" }); }}
+                            onClick={scrollToBottom}
                             className="absolute bottom-8 right-8 bg-blue-600 text-white px-3 py-1 text-xs rounded-full shadow-lg animate-bounce"
                         >
                             ⬇ New Logs

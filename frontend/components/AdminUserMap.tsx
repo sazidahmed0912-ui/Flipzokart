@@ -36,7 +36,12 @@ const AdminUserMap: React.FC = () => {
             try {
                 const { data } = await API.get('/api/user/locations');
                 if (data.success) {
-                    setUsers(data.users);
+                    // Map backend data to UI
+                    const mapped = data.users.map((u: any) => ({
+                        ...u,
+                        status: u.status || 'Active'
+                    }));
+                    setUsers(mapped);
                 }
             } catch (error) {
                 console.error("Failed to load map data", error);
