@@ -19,7 +19,12 @@ export const TrackOrderPage: React.FC = () => {
       setTrackingData(data.data);
       setLoading(false);
     } catch (err) {
-      setError('Tracking information not found. Please check your Tracking ID.');
+      console.error("Tracking fetch error:", err);
+      // Only show error if explicitly 404 or critical
+      // Maintain previous data if re-fetching
+      if (!trackingData) {
+        setError('Tracking information not found. Please check your Tracking ID.');
+      }
       setLoading(false);
     }
   };
@@ -51,8 +56,26 @@ export const TrackOrderPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#2874F0] border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gray-50 pt-20 pb-12 px-4">
+        <div className="max-w-3xl mx-auto">
+          {/* Skeleton Header */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8 animate-pulse">
+            <div className="bg-gray-200 p-6 h-28"></div>
+            <div className="p-8 space-y-8">
+              <div className="h-1 bg-gray-200 w-full rounded"></div>
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 w-24 rounded"></div>
+                  <div className="h-12 bg-gray-200 w-full rounded"></div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 w-24 rounded"></div>
+                  <div className="h-12 bg-gray-200 w-full rounded"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

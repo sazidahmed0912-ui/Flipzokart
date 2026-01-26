@@ -27,15 +27,16 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
 
     useEffect(() => {
         if (addressToEdit) {
+            console.log("Editing Address:", addressToEdit); // Debug
             setFormData({
-                name: addressToEdit.fullName || '',
+                name: addressToEdit.fullName || (addressToEdit as any).name || '', /* fallback to name if fullName missing */
                 phone: addressToEdit.phone || '',
                 street: addressToEdit.street || '',
                 addressLine2: addressToEdit.addressLine2 || '',
                 locality: addressToEdit.addressLine2 || '',
-                city: addressToEdit.city || '', // Ensure city persists
+                city: addressToEdit.city || '',
                 state: addressToEdit.state || '',
-                zip: addressToEdit.pincode || '',
+                zip: addressToEdit.pincode || (addressToEdit as any).zip || '',
                 type: (addressToEdit.type as any) || 'Home'
             });
         }

@@ -8,19 +8,23 @@ const prisma = new PrismaClient();
 
 export class TrackingController {
     getTrackingDetails = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-        const { trackingId } = req.params;
+        const { trackingId } = req.params as { trackingId: string };
+
+        const isObjectId = /^[0-9a-fA-F]{24}$/.test(trackingId);
+
+        const whereConditions: any[] = [
+            { trackingId: trackingId },
+            { orderNumber: trackingId }
+        ];
+
+        if (isObjectId) {
+            whereConditions.push({ id: trackingId });
+        }
 
         // Try to find by trackingId first, then by orderNumber (as fallback if entered manually)
         const order = await prisma.order.findFirst({
             where: {
-                OR: [
-                    // @ts-ignore
-                    { trackingId: trackingId },
-                    // @ts-ignore
-                    { orderNumber: trackingId },
-                    // @ts-ignore
-                    { id: trackingId } // Support lookup by DB ID
-                ]
+                OR: whereConditions
             },
             include: {
                 // Include limited details for public tracking

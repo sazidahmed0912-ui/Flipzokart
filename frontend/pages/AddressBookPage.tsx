@@ -63,7 +63,16 @@ const AddressBookPage: React.FC = () => {
             const { data } = await API.get('/api/user/address');
             const list = data.addresses || [];
             // Ensure ID compatibility
-            setAddresses(list.map((a: any) => ({ ...a, id: a._id, name: a.fullName || a.name })));
+            // Backend uses _id, Frontend uses id. Map _id to id.
+            const formatted = list.map((a: any) => ({
+                ...a,
+                id: a._id,
+                name: a.fullName || a.name,
+                // Ensure critical fields are present
+                fullName: a.fullName || a.name,
+                pincode: a.pincode || a.zip
+            }));
+            setAddresses(formatted);
         } catch (error) {
             console.error("Failed to fetch addresses", error);
         } finally {

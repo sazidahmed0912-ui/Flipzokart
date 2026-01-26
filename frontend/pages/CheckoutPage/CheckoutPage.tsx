@@ -136,12 +136,16 @@ const CheckoutPage = () => {
 
     const handleSaveAddress = async (address: Partial<Address>) => {
         try {
-            // AddressForm sends data. We post to backend.
-            const { data } = await API.post('/api/user/address', address);
+            if (addressToEdit) {
+                // UPDATE existing address
+                await API.put(`/api/user/address/${addressToEdit.id}`, address);
+            } else {
+                // CREATE new address
+                await API.post('/api/user/address', address);
+            }
 
-            // Backend returns updated addresses list or the new address? 
-            // userController saveAddress returns { success: true, addresses: [...] }
-
+            // Refresh list
+            const { data } = await API.get('/api/user/address');
             const updatedRaw = data.addresses || [];
             const updatedAddresses: Address[] = updatedRaw.map((a: any) => ({
                 ...a,
@@ -150,16 +154,20 @@ const CheckoutPage = () => {
             }));
 
             setAddresses(updatedAddresses);
-            addToast('success', "Address saved successfully");
+            addToast('success', addressToEdit ? "Address updated" : "Address added");
             setIsAddressFormOpen(false);
             setAddressToEdit(null);
 
-            // Select the new one (last in array)
-            const newAddr = updatedAddresses[updatedAddresses.length - 1];
-            if (newAddr) {
-                setSelectedAddressId(newAddr.id);
-                setContextAddress(newAddr);
-                if (newAddr.pincode) calculateShippingCost(newAddr.pincode);
+            // If we just added/edited, verify selection persistence or select the edited one
+            // Ideally select the one we just worked on
+            const targetId = address.id || (updatedAddresses[updatedAddresses.length - 1]?.id);
+            if (targetId) {
+                const newAddr = updatedAddresses.find(a => a.id === targetId) || updatedAddresses[updatedAddresses.length - 1];
+                if (newAddr) {
+                    setSelectedAddressId(newAddr.id);
+                    setContextAddress(newAddr);
+                    if (newAddr.pincode) calculateShippingCost(newAddr.pincode);
+                }
             }
 
         } catch (e) {
