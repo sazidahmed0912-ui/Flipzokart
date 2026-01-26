@@ -212,17 +212,17 @@ export const AdminShipping: React.FC = () => {
                             {/* Render Label Component */}
                             <div className="print:w-full print:flex print:justify-center">
                                 <ShippingLabel
-                                    orderNumber={selectedLabelOrder.orderNumber || selectedLabelOrder.id}
-                                    trackingId={selectedLabelOrder.trackingId || 'N/A'}
-                                    shippingTo={selectedLabelOrder.shippingSnapshot?.shippingTo || {
+                                    orderNumber={selectedLabelOrder.orderNumber || selectedLabelOrder.id || 'N/A'}
+                                    trackingId={selectedLabelOrder.trackingId || selectedLabelOrder.id || 'N/A'}
+                                    shippingTo={{
                                         name: selectedLabelOrder.userName,
-                                        address: (selectedLabelOrder.address as any).street || 'N/A',
-                                        city: (selectedLabelOrder.address as any).city || 'N/A',
-                                        state: (selectedLabelOrder.address as any).state || 'N/A',
-                                        zip: (selectedLabelOrder.address as any).zip || 'N/A',
-                                        phone: (selectedLabelOrder.address as any).phone || 'N/A'
+                                        address: (selectedLabelOrder.address && typeof selectedLabelOrder.address === 'object' ? (selectedLabelOrder.address as any).street || (selectedLabelOrder.address as any).address : selectedLabelOrder.address as string) || 'N/A',
+                                        city: (selectedLabelOrder.address && typeof selectedLabelOrder.address === 'object' ? (selectedLabelOrder.address as any).city : '') || '',
+                                        state: (selectedLabelOrder.address && typeof selectedLabelOrder.address === 'object' ? (selectedLabelOrder.address as any).state : '') || '',
+                                        zip: (selectedLabelOrder.address && typeof selectedLabelOrder.address === 'object' ? ((selectedLabelOrder.address as any).zip || (selectedLabelOrder.address as any).pincode) : '') || '',
+                                        phone: (selectedLabelOrder.address && typeof selectedLabelOrder.address === 'object' ? (selectedLabelOrder.address as any).phone : '') || selectedLabelOrder.user?.phone || 'N/A'
                                     }}
-                                    shippingFrom={selectedLabelOrder.shippingSnapshot?.shippingFrom || {
+                                    shippingFrom={{
                                         company: 'Fzokart Pvt. Ltd.',
                                         address: 'Morigaon, Assam, India',
                                         phone: '6033394539'

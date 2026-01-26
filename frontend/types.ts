@@ -83,6 +83,7 @@ export interface Order {
   paymentMethod: string;
   paymentStatus: 'PENDING' | 'PAID' | 'FAILED';
   createdAt: string;
+  user?: User; // Populated field
   address: string | { // Allow string (legacy/backend) or object
     fullName: string;
     street: string;
