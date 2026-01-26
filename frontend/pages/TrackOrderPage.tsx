@@ -23,21 +23,20 @@ export const TrackOrderPage: React.FC = () => {
         try {
             const { data } = await API.get(`/api/tracking/${trackingId}`);
             if (data) {
-                // Support both structures & Normalize
+                // DATA NORMALIZATION
                 const rawOrder = data.trackingData || data;
 
-                // DATA NORMALIZATION
+                // Calculate totals manually if missing from backend to prevent ₹0
+                const calculatedTotal = (rawOrder.items || []).reduce((acc: number, item: any) => acc + ((item.price || 0) * (item.quantity || 1)), 0);
+                const finalTotal = (rawOrder.grandTotal || rawOrder.total || 0) > 0 ? (rawOrder.grandTotal || rawOrder.total) : calculatedTotal;
+
                 const normalizedOrder = {
                     ...rawOrder,
-                    // Ensure ID is accessible
-                    orderId: rawOrder.orderId || rawOrder._id || rawOrder.id,
-                    // Address Fallback
+                    orderId: rawOrder.orderId || rawOrder._id || rawOrder.id || trackingId,
                     shippingAddress: rawOrder.shippingAddress || rawOrder.address || {},
-                    // Price Fallback
-                    grandTotal: rawOrder.grandTotal !== undefined ? rawOrder.grandTotal : (rawOrder.total || 0),
-                    // Date Fallback
+                    grandTotal: finalTotal,
+                    items: rawOrder.items || [],
                     createdAt: rawOrder.createdAt || rawOrder.orderDate,
-                    // Status Fallback
                     status: rawOrder.status || rawOrder.orderStatus
                 };
 
@@ -282,41 +281,59 @@ export const TrackOrderPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Payment */}
+                    {/* Price Details Column */}
                     <div className="bg-white p-6 rounded-sm shadow-sm h-full flex flex-col">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold text-base text-gray-900">Payment</h3>
+                        <h3 className="font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4">Price Details</h3>
+                        <div className="space-y-4 flex-1">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-gray-900">Price ({order.items?.length || 0} items)</span>
+                                <span className="font-medium text-gray-900">₹{(order.grandTotal).toLocaleString()}</span>
+                            </div>
+                            {/* Placeholder for potential discount if available in future */}
+                            {/* <div className="flex justify-between items-center text-sm">
+                                 <span className="text-gray-900">Discount</span>
+                                 <span className="font-medium text-green-600">- ₹0</span>
+                             </div> */}
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-gray-900">Delivery Charges</span>
+                                <span className="font-medium text-green-600">Free</span>
+                            </div>
+
+                            <div className="border-t border-dashed border-gray-200 my-2 pt-3 flex justify-between items-center">
+                                <span className="font-bold text-lg text-gray-900">Total Amount</span>
+                                <span className="font-bold text-lg text-gray-900">₹{(order.grandTotal).toLocaleString()}</span>
+                            </div>
+
+                            <div className="text-xs text-green-700 font-medium bg-green-50 p-2 rounded">
+                                You will save ₹500 on this order
+                            </div>
+                        </div>
+
+                        {/* Invoice & Actions */}
+                        <div className="mt-6 space-y-3">
+                            <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                                <CreditCard size={14} />
+                                <span>Payment Mode: <span className="font-bold text-gray-700">{order.paymentMethod || 'Online'}</span></span>
+                            </div>
+
                             <button
+
                                 onClick={() => {
-                                    if (order.orderId) navigate(`/invoice/${order.orderId}`);
+                                    const targetId = order.orderId || trackingId;
+                                    if (targetId) navigate(`/invoice/${targetId}`);
                                 }}
-                                disabled={!order.orderId}
-                                className={`flex items-center gap-1 text-[#2874F0] text-sm font-bold border border-gray-200 px-2 py-1 rounded transition-colors ${!order.orderId ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-50'}`}
+                                disabled={!order.orderId && !trackingId}
+                                className={`w-full flex items-center justify-center gap-2 border border-gray-300 rounded-[2px] py-2 text-sm font-bold text-gray-700 transition-colors ${(!order.orderId && !trackingId) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}`}
                             >
-                                <Download size={14} /> Download Invoice
+                                <Download size={16} className="text-[#2874F0]" /> Download Invoice
+                            </button>
+                            <button
+                                onClick={handleTrackRefresh}
+                                className="w-full bg-[#FB641B] text-white font-bold py-3 rounded-[2px] text-sm hover:bg-[#e65a17] transition-colors shadow-sm uppercase"
+                            >
+                                Track Order
                             </button>
                         </div>
-                        <div className="space-y-3 mb-6 flex-1">
-                            <div className="flex justify-between">
-                                <span className="text-gray-600 text-sm">Total Amount :</span>
-                                <span className="font-bold text-gray-900 text-lg">₹{(order.grandTotal !== undefined ? order.grandTotal : (order.total || 0)).toLocaleString('en-IN')}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600 text-sm">Payment :</span>
-                                <span className="font-medium text-gray-900">{order.paymentMethod || 'Credit/Debit Card'}</span>
-                            </div>
-                            {order.paymentId && (
-                                <div className="flex items-center gap-2 text-gray-600 text-sm">
-                                    <CreditCard size={16} /> XXXX {order.paymentId.slice(-4)}
-                                </div>
-                            )}
-                        </div>
-                        <button
-                            onClick={handleTrackRefresh}
-                            className="w-full bg-[#2874F0] text-white font-bold py-3 rounded text-sm hover:bg-blue-600 transition-colors shadow-sm"
-                        >
-                            Track Order
-                        </button>
                     </div>
 
                     {/* Shipping Progress Detail */}
