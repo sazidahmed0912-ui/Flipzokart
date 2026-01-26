@@ -58,17 +58,19 @@ const AddNewAddress: React.FC = () => {
         setLoading(true);
         try {
             // Map to backend expected format
-            // Backend expects: fullName, phone, email, address, city, state, pincode, type, locality
+            // Backend logic: fullName, phone, street, addressLine2, city, state, pincode, type
+            // Note: Schema expects 'street', 'addressLine2', 'pincode'
             const payload = {
                 fullName: formData.name,
                 phone: formData.phone,
                 email: formData.email,
-                address: formData.street,
-                locality: formData.locality,
+                street: formData.street,
+                addressLine2: formData.addressLine2,
                 city: formData.city,
                 state: formData.state,
                 pincode: formData.zip,
-                type: formData.type
+                type: formData.type,
+                isDefault: false
             };
 
             if (isEditMode) {

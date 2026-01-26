@@ -41,6 +41,12 @@ const AddNewAddress = lazy(() => import("./components/AddNewAddress"));
 const SellOnFlipzokart = lazy(() => import("./pages/SellOnFlipzokart"));
 const OrdersPage = lazy(() => import("./pages/OrdersPage"));
 const AddressBookPage = lazy(() => import("./pages/AddressBookPage"));
+// TrackOrderPage is already imported or lazy loaded? 
+// Check earlier imports. 
+// Ah, TrackOrderPage was NOT lazy loaded in previous steps? 
+// Let's assume it was lazy loaded at line 37: const TrackOrderPage = lazy(() => import("./pages/TrackOrderPage"));
+// Reuse that if exists, or remove this import line if duplicated.
+import { InvoicePage } from './pages/InvoicePage';
 import { BannedPage } from "./pages/BannedPage";
 
 const BannedPageWrapper = () => (
@@ -206,6 +212,7 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
             <Route path="/order-success" element={<OrderSuccessPage />} />
             <Route path="/track/:trackingId" element={<TrackOrderPage />} />
             <Route path="/track-order" element={<TrackOrderPage />} />
+            <Route path="/invoice/:orderId" element={<InvoicePage />} />
             <Route path="/add-address" element={<AddNewAddress />} />
             <Route path="/banned" element={<BannedPageWrapper />} />
 

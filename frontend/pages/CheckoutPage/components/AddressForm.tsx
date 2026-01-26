@@ -12,11 +12,11 @@ interface AddressFormProps {
 
 const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCancel }) => {
     const [formData, setFormData] = useState<AddressFormData>({
-        name: addressToEdit?.name || addressToEdit?.fullName || '',
+        name: addressToEdit?.fullName || '',
         phone: addressToEdit?.phone || '',
-        email: addressToEdit?.email || '',
-        street: addressToEdit?.address || '',
-        locality: addressToEdit?.locality || '',
+        street: addressToEdit?.street || '',
+        addressLine2: addressToEdit?.addressLine2 || '',
+        locality: addressToEdit?.addressLine2 || '', // mapping back for form compat
         city: addressToEdit?.city || '',
         state: addressToEdit?.state || '',
         zip: addressToEdit?.pincode || '',
@@ -28,11 +28,11 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
     useEffect(() => {
         if (addressToEdit) {
             setFormData({
-                name: addressToEdit.name || addressToEdit.fullName || '',
+                name: addressToEdit.fullName || '',
                 phone: addressToEdit.phone || '',
-                email: addressToEdit.email || '',
-                street: addressToEdit.address || '',
-                locality: addressToEdit.locality || '',
+                street: addressToEdit.street || '',
+                addressLine2: addressToEdit.addressLine2 || '',
+                locality: addressToEdit.addressLine2 || '',
                 city: addressToEdit.city || '', // Ensure city persists
                 state: addressToEdit.state || '',
                 zip: addressToEdit.pincode || '',
@@ -54,16 +54,15 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
 
         const finalAddress: Address = {
             id: addressToEdit?.id ?? Date.now(),
-            name: formData.name,
             fullName: formData.name, // Ensure consistency
-            phone: formData.phone,
-            address: formData.street, // Keep strict schema
+            street: formData.street,
+            addressLine2: formData.addressLine2,
             city: formData.city,
             state: formData.state,
             pincode: formData.zip,
             type: formData.type,
-            locality: formData.locality,
-            email: formData.email
+            country: 'India',
+            isDefault: false
         } as Address;
 
         onSave(finalAddress);

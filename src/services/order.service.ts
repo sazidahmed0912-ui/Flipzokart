@@ -28,28 +28,28 @@ export class OrderService {
         const orderNumber = `FZK${timestamp}${random}`;
         const trackingId = `TRK${Math.floor(100000000 + Math.random() * 900000000)}`;
 
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+
         const shippingSnapshot = {
             orderNumber,
             trackingId,
             shippingTo: {
-                name: (req: any) => 'User Name Placeholder', // We need user name here. fetch user?
+                // @ts-ignore
+                name: address.fullName || address.name || user?.name || 'Customer',
+                // @ts-ignore
+                phone: address.phone || user?.phone || 'N/A',
+                // @ts-ignore
+                email: address.email || user?.email || 'N/A',
                 ...address
             },
             shippingFrom: {
                 company: 'Fzokart Pvt. Ltd.',
                 address: 'Morigaon, Assam, India',
-                phone: '6033394539'
+                phone: '6033394539',
+                email: 'fzokart@gmail.com',
+                gstin: '18ABCDE1234F1Z5' // Dynamic or env var in real app
             }
         };
-
-        // We need user details for the snapshot name.
-        const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (user) {
-            // @ts-ignore
-            shippingSnapshot.shippingTo.name = user.name;
-            // @ts-ignore
-            shippingSnapshot.shippingTo.phone = user.phone || address.phone || 'N/A'; // address usually has phone?
-        }
 
 
         const order = await prisma.order.create({

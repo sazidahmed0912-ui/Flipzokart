@@ -45,5 +45,8 @@ export const validateAddressForm = (formData: AddressFormData): Record<string, s
         errors.zip = "Enter a valid 6-digit Pincode";
     }
 
+    // Optional Address Line 2 Validation
+    // No strict validation needed, but explicit key ensures coverage
+
     return errors;
 };

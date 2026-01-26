@@ -7,7 +7,8 @@ export interface AddressFormData {
     phone: string;
     email?: string;
     street: string;     // Flat/House/Building
-    locality?: string;  // Colony/Street/Area
+    addressLine2?: string; // Area/Landmark
+    locality?: string;  // Deprecated generally, but keeping for compatibility if needed. mapped to addressLine2 usually.
     city: string;
     state: string;
     zip: string;
@@ -123,10 +124,10 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
                 </div>
             </div>
 
-            {/* Address (Street) */}
+            {/* Address Line 1 */}
             <div>
                 <div className={`${mobileRowContainer} ${errors.street ? 'border-red-300 bg-red-50' : ''}`}>
-                    <label className={mobileRowLabel}>Address</label>
+                    <label className={mobileRowLabel}>Addr Line 1</label>
                     <input
                         type="text"
                         name="street"
@@ -137,6 +138,21 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
                     />
                 </div>
                 {errors.street && <p className="text-red-500 text-xs mt-1 ml-1">{errors.street}</p>}
+            </div>
+
+            {/* Address Line 2 */}
+            <div>
+                <div className={mobileRowContainer}>
+                    <label className={mobileRowLabel}>Addr Line 2</label>
+                    <input
+                        type="text"
+                        name="addressLine2"
+                        value={formData.addressLine2 || ''}
+                        onChange={handleChange}
+                        placeholder="Area, Colony, Landmark (Optional)"
+                        className={inputClasses}
+                    />
+                </div>
             </div>
 
             {/* Locality */}

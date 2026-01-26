@@ -7,6 +7,7 @@ import chatRoutes from './chat.routes';
 import adminRoutes from './admin.routes';
 import reviewRoutes from './review.routes';
 import trackingRoutes from './tracking.routes';
+import addressRoutes from './address.routes';
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use('/chat', chatRoutes);
 router.use('/admin', adminRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/tracking', trackingRoutes); // Public tracking
+router.use('/user/address', addressRoutes);
 
 export default router;

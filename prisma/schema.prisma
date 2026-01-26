@@ -71,15 +71,18 @@ model Activity {
 }
 
 model Address {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String  @db.ObjectId
-  user      User    @relation(fields: [userId], references: [id])
-  street    String
-  city      String
-  state     String
-  zip       String
-  country   String
-  isDefault Boolean @default(false)
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String  @db.ObjectId
+  user         User    @relation(fields: [userId], references: [id])
+  fullName     String
+  phone        String
+  street       String
+  addressLine2 String?
+  city         String
+  state        String
+  pincode      String
+  country      String
+  isDefault    Boolean @default(false)
 }
 
 model Product {

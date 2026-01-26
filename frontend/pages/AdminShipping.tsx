@@ -160,12 +160,20 @@ export const AdminShipping: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     {order.shippingSnapshot ? (
-                                                        <button
-                                                            onClick={() => setSelectedLabelOrder(order)}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
-                                                        >
-                                                            <Printer size={14} /> Label
-                                                        </button>
+                                                        <div className="flex gap-2 justify-end">
+                                                            <button
+                                                                onClick={() => window.open(`/invoice/${order.id}`, '_blank')}
+                                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-600 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors"
+                                                            >
+                                                                <Printer size={14} /> Invoice
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setSelectedLabelOrder(order)}
+                                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                                                            >
+                                                                <Barcode size={14} /> Label
+                                                            </button>
+                                                        </div>
                                                     ) : (
                                                         <span className="text-xs text-gray-400">No Data</span>
                                                     )}

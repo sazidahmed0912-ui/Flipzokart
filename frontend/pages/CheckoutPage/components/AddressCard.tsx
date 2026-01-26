@@ -4,8 +4,8 @@ import { Address } from '../../../types';
 interface AddressCardProps {
     address: Address;
     isSelected: boolean;
-    onSelect: (id: number) => void;
-    onDelete: (id: number) => void;
+    onSelect: (id: string | number) => void;
+    onDelete: (id: string | number) => void;
     onEdit: (address: Address) => void;
     onDeliverHere: () => void;
     isLoading: boolean;
@@ -31,11 +31,11 @@ const AddressCard: React.FC<AddressCardProps> = ({
             )}
             <div className="address-card-details">
                 <div className="address-card-header">
-                    <h3>{address.name}</h3>
+                    <h3>{address.fullName}</h3>
                     <span className="address-type">{address.type}</span>
                     <span className="address-phone">{address.phone}</span>
                 </div>
-                <p>{`${address.address}, ${address.city}, ${address.state} - ${address.pincode}`}</p>
+                <p>{`${address.street}${address.addressLine2 ? ', ' + address.addressLine2 : ''}, ${address.city}, ${address.state} - ${address.pincode}`}</p>
                 {isSelected && (
                     <div className="address-card-actions">
 

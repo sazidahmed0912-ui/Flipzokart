@@ -52,16 +52,16 @@ export interface User {
 export interface Address {
   id: string | number;
   _id?: string;
-  name?: string; // made optional as some components might use fullName
-  fullName?: string; // Backend uses fullName
+  fullName: string;
   phone: string;
-  email?: string;
-  address: string;
+  street: string;
+  addressLine2?: string;
   city: string;
   state: string;
   pincode: string;
+  country: string;
   type: 'Home' | 'Work' | 'Other';
-  locality?: string;
+  isDefault?: boolean;
 }
 
 export interface CartItem extends Product {
