@@ -13,8 +13,10 @@ export const InvoicePage: React.FC = () => {
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                const { data } = await API.get(`/api/orders/${orderId}`);
-                setOrder(data.order);
+                const response = await API.get(`/api/orders/${orderId}`);
+                // Handle different response structures (standard vs some admin endpoints)
+                const orderData = response.data.data?.order || response.data.order || response.data;
+                setOrder(orderData);
             } catch (error) {
                 console.error("Failed to fetch order", error);
             } finally {
