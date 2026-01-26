@@ -17,7 +17,8 @@ export const TrackOrderPage: React.FC = () => {
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const socket = useSocket(null);
+    const token = localStorage.getItem('token');
+    const socket = useSocket(token);
 
     const fetchTrackingInfo = async () => {
         try {

@@ -4,6 +4,7 @@ import API from '../services/api';
 import { InvoiceTemplate } from '../components/InvoiceTemplate';
 import { normalizeOrder } from '../utils/orderHelper';
 import { Printer } from 'lucide-react';
+import { useSocket } from '../hooks/useSocket';
 
 export const InvoicePage: React.FC = () => {
     const { orderId } = useParams<{ orderId: string }>();
@@ -11,34 +12,56 @@ export const InvoicePage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const componentRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const fetchOrder = async () => {
-            if (!orderId || orderId === 'undefined') {
-                console.error("InvoicePage: Invalid orderId", orderId);
-                setLoading(false);
-                return;
-            }
-            try {
-                // FIXED: Use the single source of truth API
-                const { data } = await API.get(`/api/tracking/${orderId}`);
+    const token = localStorage.getItem('token');
+    // Import useSocket if not already imported (it wasn't in the previous view, need to add import)
+    // Actually I need to add the import first. I'll do it in this block assuming I can see imports? 
+    // Wait, let's look at imports. line 1-6. 
+    // I need to add `import { useSocket } from '../hooks/useSocket';`
 
-                if (data) {
-                    console.log("INVOICE DEBUG: Data received", data);
-                    // The backend now returns exactly what we need, including 'items'
-                    // Handle potential nested structure (like in TrackOrderPage)
-                    setOrder(data.trackingData || data);
-                } else {
-                    throw new Error("Empty data recieved");
-                }
-            } catch (error) {
-                console.error("Failed to fetch order for invoice", error);
-                setOrder(null);
-            } finally {
-                setLoading(false);
+    // Let's rely on the user to have the hook.
+
+    const socket = useSocket(token);
+
+    const fetchOrder = async () => {
+        if (!orderId || orderId === 'undefined') {
+            console.error("InvoicePage: Invalid orderId", orderId);
+            setLoading(false);
+            return;
+        }
+        try {
+            // FIXED: Use the single source of truth API
+            const { data } = await API.get(`/api/tracking/${orderId}`);
+
+            if (data) {
+                console.log("INVOICE DEBUG: Data received", data);
+                // The backend now returns exactly what we need, including 'items'
+                // Handle potential nested structure (like in TrackOrderPage)
+                setOrder(data.trackingData || data);
+            } else {
+                throw new Error("Empty data recieved");
             }
-        };
+        } catch (error) {
+            console.error("Failed to fetch order for invoice", error);
+            setOrder(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchOrder();
     }, [orderId]);
+
+    // Real-time updates
+    useEffect(() => {
+        if (socket && orderId) {
+            socket.on('notification', (data: any) => {
+                // If the notification relates to this order (conceptually), or just refresh on any status update for simplicity
+                if (data.type === 'orderStatusUpdate') fetchOrder();
+            });
+            return () => { socket.off('notification'); };
+        }
+    }, [socket, orderId]);
 
     const handlePrint = () => {
         window.print();
