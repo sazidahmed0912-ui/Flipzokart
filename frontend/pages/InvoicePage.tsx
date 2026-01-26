@@ -54,7 +54,12 @@ export const InvoicePage: React.FC = () => {
             </div>
         );
     }
-    if (!order) return <div className="p-8 text-center text-red-500">Invoice not found</div>;
+    // Explicit guard: Do not render "Invoice not found" if we are just starting up or data is partial
+    // Only show error if loading is done AND order is null
+    if (!loading && !order) return <div className="p-8 text-center text-red-500">Invoice not found</div>;
+
+    // Extra safety: If order is still null here (shouldn't happen due to loading check), return null
+    if (!order) return null;
 
     return (
         <div className="min-h-screen bg-gray-100 p-8 print:p-0 print:bg-white">

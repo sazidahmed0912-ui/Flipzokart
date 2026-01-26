@@ -110,7 +110,8 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
                         className={`flex-1 px-6 py-3.5 rounded-xl font-bold shadow-sm transition-all duration-200 ${Object.keys(errors).length > 0
                             ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                             : "bg-yellow-400 hover:bg-yellow-500 text-black hover:shadow-md active:transform active:scale-[0.98]"
-                            }`}
+                            } ${(Object.keys(errors).length > 0 || !formData.name || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.zip) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                        disabled={Object.keys(errors).length > 0 || !formData.name || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.zip}
                     >
                         Save Address
                     </button>
