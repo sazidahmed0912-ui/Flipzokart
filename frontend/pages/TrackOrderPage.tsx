@@ -8,9 +8,12 @@ import {
     Download, MoreHorizontal
 } from 'lucide-react';
 
+import { useToast } from '../components/toast';
+
 export const TrackOrderPage: React.FC = () => {
     const { trackingId } = useParams<{ trackingId: string }>();
     const navigate = useNavigate();
+    const { addToast } = useToast();
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -20,8 +23,35 @@ export const TrackOrderPage: React.FC = () => {
         try {
             const { data } = await API.get(`/api/tracking/${trackingId}`);
             if (data) {
-                // Support both structures
-                setOrder(data.trackingData || data);
+                // Support both structures & Normalize
+                const rawOrder = data.trackingData || data;
+
+                // DATA NORMALIZATION
+                const normalizedOrder = {
+                    ...rawOrder,
+                    // Ensure ID is accessible
+                    orderId: rawOrder.orderId || rawOrder._id || rawOrder.id,
+                    // Address Fallback
+                    shippingAddress: rawOrder.shippingAddress || rawOrder.address || {},
+                    // Price Fallback
+                    grandTotal: rawOrder.grandTotal !== undefined ? rawOrder.grandTotal : (rawOrder.total || 0),
+                    // Date Fallback
+                    createdAt: rawOrder.createdAt || rawOrder.orderDate,
+                    // Status Fallback
+                    status: rawOrder.status || rawOrder.orderStatus
+                };
+
+                // Legacy address string handling
+                if (typeof normalizedOrder.shippingAddress === 'string') {
+                    try {
+                        normalizedOrder.shippingAddress = JSON.parse(normalizedOrder.shippingAddress);
+                    } catch (e) {
+                        // If parse fails, keep as string or make placeholder object
+                        normalizedOrder.shippingAddress = { address: normalizedOrder.shippingAddress, name: rawOrder.userName || 'Customer' };
+                    }
+                }
+
+                setOrder(normalizedOrder);
             } else {
                 setError("Order not found");
             }
@@ -31,6 +61,30 @@ export const TrackOrderPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCancelOrder = async () => {
+        if (!window.confirm("Are you sure you want to cancel this order?")) return;
+
+        try {
+            const id = order.orderId || order._id || order.id;
+            await API.put(`/api/order/${id}/status`, { status: 'Cancelled' });
+            fetchTrackingInfo(); // Refresh data
+        } catch (err) {
+            console.error("Failed to cancel order", err);
+            alert("Failed to cancel order. Please try again or contact support.");
+        }
+    };
+
+    const handleNeedHelp = () => {
+        // Link to help center
+        navigate('/help-center');
+    };
+
+    const handleTrackRefresh = async () => {
+        setLoading(true);
+        await fetchTrackingInfo();
+        addToast('info', 'Order status updated');
     };
 
     useEffect(() => {
@@ -89,7 +143,10 @@ export const TrackOrderPage: React.FC = () => {
 
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold text-gray-900">Order Details</h1>
-                    <button className="bg-[#FFD814] text-black px-6 py-2 rounded-md font-medium shadow-sm hover:opacity-90 transition-opacity flex items-center gap-2">
+                    <button
+                        onClick={handleTrackRefresh}
+                        className="bg-[#FFD814] text-black px-6 py-2 rounded-md font-medium shadow-sm hover:opacity-90 transition-opacity flex items-center gap-2"
+                    >
                         Track Order
                     </button>
                 </div>
@@ -184,11 +241,17 @@ export const TrackOrderPage: React.FC = () => {
 
                             {/* Actions */}
                             <div className="flex md:flex-col gap-3 justify-center md:justify-start min-w-[150px]">
-                                <button className="flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-800 font-medium py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full">
+                                <button
+                                    onClick={handleNeedHelp}
+                                    className="flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-800 font-medium py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full"
+                                >
                                     <HelpCircle size={16} className="text-[#2874F0]" /> Need help?
                                 </button>
                                 {order.status === 'Pending' && (
-                                    <button className="bg-white border border-gray-300 text-gray-800 font-medium py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full">
+                                    <button
+                                        onClick={handleCancelOrder}
+                                        className="bg-white border border-gray-300 text-gray-800 font-medium py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full"
+                                    >
                                         Cancel Order
                                     </button>
                                 )}
@@ -225,11 +288,10 @@ export const TrackOrderPage: React.FC = () => {
                             <h3 className="font-bold text-base text-gray-900">Payment</h3>
                             <button
                                 onClick={() => {
-                                    const id = order.orderId || order._id || order.id;
-                                    if (id) navigate(`/invoice/${id}`);
+                                    if (order.orderId) navigate(`/invoice/${order.orderId}`);
                                 }}
-                                disabled={!order.orderId && !order._id && !order.id}
-                                className={`flex items-center gap-1 text-[#2874F0] text-sm font-bold border border-gray-200 px-2 py-1 rounded transition-colors ${(!order.orderId && !order._id && !order.id) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-50'}`}
+                                disabled={!order.orderId}
+                                className={`flex items-center gap-1 text-[#2874F0] text-sm font-bold border border-gray-200 px-2 py-1 rounded transition-colors ${!order.orderId ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-50'}`}
                             >
                                 <Download size={14} /> Download Invoice
                             </button>
@@ -249,7 +311,10 @@ export const TrackOrderPage: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                        <button className="w-full bg-[#2874F0] text-white font-bold py-3 rounded text-sm hover:bg-blue-600 transition-colors shadow-sm">
+                        <button
+                            onClick={handleTrackRefresh}
+                            className="w-full bg-[#2874F0] text-white font-bold py-3 rounded text-sm hover:bg-blue-600 transition-colors shadow-sm"
+                        >
                             Track Order
                         </button>
                     </div>
@@ -289,7 +354,10 @@ export const TrackOrderPage: React.FC = () => {
 
                 {/* Footer Help */}
                 <div className="mt-8 flex justify-start">
-                    <button className="bg-[#FFD814] text-black font-medium py-2 px-8 rounded shadow-sm hover:opacity-90">
+                    <button
+                        onClick={handleNeedHelp}
+                        className="bg-[#FFD814] text-black font-medium py-2 px-8 rounded shadow-sm hover:opacity-90"
+                    >
                         Need Help?
                     </button>
                 </div>
