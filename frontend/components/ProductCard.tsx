@@ -6,6 +6,7 @@ import { Product } from '../types';
 import { useApp } from '../store/Context';
 import LazyImage from './LazyImage';
 import { useToast } from './toast';
+import { getProductImageUrl } from '../utils/imageHelper';
 
 interface ProductCardProps {
   product: Product;
@@ -28,7 +29,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="relative w-full h-48 overflow-hidden bg-gray-50">
         <Link to={`/product/${product.id}`}>
           <LazyImage
-            src={product.image}
+            src={getProductImageUrl(product.image)}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
