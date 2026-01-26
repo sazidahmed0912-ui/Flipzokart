@@ -73,8 +73,8 @@
         @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
     }
 
-    /* Responsive Font Sizes */
-    @media (max-width: 768px) {
+    /* Responsive Font Sizes (Strict) */
+    @media (max-width: 640px) {
         body {
             font-size: 13px;
         }
@@ -82,15 +82,33 @@
         h1 {
             font-size: 20px;
         }
+
+        h2 {
+            font-size: 18px;
+        }
+
+        h3 {
+            font-size: 16px;
+        }
     }
 
-    @media (min-width: 1024px) {
+    @media (min-width: 641px) and (max-width: 1024px) {
+        body {
+            font-size: 13.5px;
+        }
+
+        h1 {
+            font-size: 22px;
+        }
+    }
+
+    @media (min-width: 1025px) {
         body {
             font-size: 14px;
         }
 
         h1 {
-            font-size: 26px;
+            font-size: 24px;
         }
     }
 }

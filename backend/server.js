@@ -206,8 +206,11 @@ app.use(cors({
 /* ===============================
    ✅ ROUTES
    =============================== */
+// 🌐 SEO & XML Feeds (Sitemap, Product Feed)
+app.use("/", require("./routes/seoRoutes"));
+
 app.get("/", (req, res) => {
-  res.send("Flipzokart backend running 🚀 v2.0 (Legacy Fixes Applied)");
+  res.send("Flipzokart backend running 🚀 v2.1 (SEO Enabled)");
 });
 
 // 🔐 Auth
