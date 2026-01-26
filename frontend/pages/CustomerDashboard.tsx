@@ -256,7 +256,7 @@ export const CustomerDashboard: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Ship To</p>
-                          <p className="text-sm font-bold">{order.address.fullName}</p>
+                          <p className="text-sm font-bold">{typeof order.address === 'string' ? order.address : order.address.fullName}</p>
                         </div>
                       </div>
                       <div className="text-right">
