@@ -13,8 +13,9 @@ export const getProductImageUrl = (imagePath?: string): string => {
     // We try to get it from environment, or fallback to localhost
     const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
 
-    // Handle case where path might already have a leading slash
-    const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+    // Handle case where path might already have a leading slash or backslashes
+    let cleanPath = imagePath.replace(/\\/g, '/');
+    if (cleanPath.startsWith('/')) cleanPath = cleanPath.substring(1);
 
     return `${API_URL}/${cleanPath}`;
 };

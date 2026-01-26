@@ -11,6 +11,7 @@ import AddressForm from './components/AddressForm';
 import Modal from './components/Modal';
 import './components/Modal.css';
 import './CheckoutPage.css';
+import { calculateCartTotals } from '../../utils/priceHelper';
 
 const CheckoutPage = () => {
     const { cart, selectedAddress: contextAddress, setSelectedAddress: setContextAddress, user } = useApp();
@@ -25,7 +26,7 @@ const CheckoutPage = () => {
     const [isPlaceOrderLoading, setIsPlaceOrderLoading] = useState(false);
     const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
     const [addressToEdit, setAddressToEdit] = useState<Address | null>(null);
-    const [deliveryCharges, setDeliveryCharges] = useState(0);
+
 
     // Fetch addresses from backend on mount
     React.useEffect(() => {
@@ -83,9 +84,13 @@ const CheckoutPage = () => {
         }
     }
 
-    const subtotal = cart.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 1)), 0);
-    const discount = 0;
-    const totalPayable = subtotal + deliveryCharges - discount;
+    const { subtotal, deliveryCharges: standardDelivery, platformFee, totalAmount } = calculateCartTotals(cart);
+
+    // Use standard delivery as initial state
+    const [deliveryCharges, setDeliveryCharges] = useState(standardDelivery);
+
+    // Recalculate total if delivery charges change dynamically
+    const totalPayable = subtotal + deliveryCharges + platformFee;
 
     const handleSelectAddress = async (id: string | number) => {
         setSelectedAddressId(id);
@@ -269,6 +274,10 @@ const CheckoutPage = () => {
                         <div className="price-summary-item">
                             <span>Delivery charges</span>
                             <span className={deliveryCharges === 0 ? "free" : ""}>{deliveryCharges === 0 ? 'FREE' : `₹${deliveryCharges.toLocaleString('en-IN')}`}</span>
+                        </div>
+                        <div className="price-summary-item">
+                            <span>Platform Fee</span>
+                            <span>₹{platformFee}</span>
                         </div>
                         <div className="price-summary-total">
                             <span>Total payable</span>

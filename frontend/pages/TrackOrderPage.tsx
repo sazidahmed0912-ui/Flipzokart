@@ -47,6 +47,7 @@ export const TrackOrderPage: React.FC = () => {
                     } catch (e) {
                         // If parse fails, keep as string or make placeholder object
                         normalizedOrder.shippingAddress = { address: normalizedOrder.shippingAddress, name: rawOrder.userName || 'Customer' };
+                        normalizedOrder.shippingAddressIsString = true;
                     }
                 }
 
@@ -115,8 +116,13 @@ export const TrackOrderPage: React.FC = () => {
     };
 
     // Status Logic
-    const steps = ['Pending', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
-    const currentStepIndex = steps.indexOf(order.status) === -1 ? 0 : steps.indexOf(order.status);
+    // Backend uses: Pending, Processing, Shipped, Out for Delivery, Delivered
+    // We Map 'Packed' to 'Processing' if needed, or just use Processing.
+    const steps = ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered'];
+
+    // Normalize status for UI: If backend says "Packed", map to "Processing"
+    const displayStatus = order.status === 'Packed' ? 'Processing' : order.status;
+    const currentStepIndex = steps.indexOf(displayStatus) === -1 ? 0 : steps.indexOf(displayStatus);
 
     // Determine progress width for the horizontal stepper
     const getProgressWidth = () => {
@@ -126,6 +132,30 @@ export const TrackOrderPage: React.FC = () => {
     };
 
     const isCancelled = order.status === 'Cancelled';
+
+    const renderAddress = () => {
+        const addr = order.shippingAddress;
+        if (!addr) return <p className="text-sm text-gray-500">Address not available</p>;
+
+        // If it's a simple string (legacy or fallback)
+        if (order.shippingAddressIsString || (typeof addr === 'string')) {
+            return <p className="text-sm text-gray-600">{typeof addr === 'string' ? addr : addr.address}</p>;
+        }
+
+        return (
+            <div className="space-y-1">
+                <p className="font-bold text-sm text-gray-900">{addr.name || order.user?.name || order.userName}</p>
+                <p className="text-sm text-gray-600">{addr.address || addr.street}</p>
+                <p className="text-sm text-gray-600">
+                    {addr.city ? `${addr.city}, ` : ''}{addr.state} {addr.pincode ? `- ${addr.pincode}` : ''}
+                </p>
+                <div className="mt-2 flex items-center gap-2">
+                    <span className="font-bold text-sm text-gray-900">Phone:</span>
+                    <span className="text-sm text-gray-600">{addr.phone || order.user?.phone}</span>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className="min-h-screen bg-[#F1F3F6] p-4 md:p-8 font-sans text-sm">
@@ -162,7 +192,7 @@ export const TrackOrderPage: React.FC = () => {
                         ></div>
 
                         <div className="flex flex-col md:flex-row justify-between relative z-10 gap-6 md:gap-0">
-                            {!isCancelled && steps.filter(s => s !== 'Packed').map((step, idx) => {
+                            {!isCancelled && steps.map((step, idx) => {
                                 const stepIdx = steps.indexOf(step);
                                 const isCompleted = stepIdx <= currentStepIndex;
 
@@ -268,17 +298,7 @@ export const TrackOrderPage: React.FC = () => {
                     {/* Delivery Address */}
                     <div className="bg-white p-6 rounded-sm shadow-sm h-full">
                         <h3 className="font-bold text-base text-gray-900 mb-4">Delivery Address</h3>
-                        <div className="space-y-1">
-                            <p className="font-bold text-sm text-gray-900">{order.shippingAddress?.name || order.user?.name}</p>
-                            <p className="text-sm text-gray-600">{order.shippingAddress?.address}</p>
-                            <p className="text-sm text-gray-600">
-                                {order.shippingAddress?.city}{order.shippingAddress?.city && ', '}{order.shippingAddress?.state} - {order.shippingAddress?.pincode}
-                            </p>
-                            <div className="mt-2 flex items-center gap-2">
-                                <span className="font-bold text-sm text-gray-900">Phone:</span>
-                                <span className="text-sm text-gray-600">{order.shippingAddress?.phone || order.user?.phone}</span>
-                            </div>
-                        </div>
+                        {renderAddress()}
                     </div>
 
                     {/* Price Details Column */}
@@ -313,7 +333,7 @@ export const TrackOrderPage: React.FC = () => {
                         <div className="mt-6 space-y-3">
                             <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
                                 <CreditCard size={14} />
-                                <span>Payment Mode: <span className="font-bold text-gray-700">{order.paymentMethod || 'Online'}</span></span>
+                                <span>Payment Mode: <span className="font-bold text-gray-700">{order.paymentMethod || order.paymentMode || 'COD'}</span></span>
                             </div>
 
                             <button
@@ -348,14 +368,14 @@ export const TrackOrderPage: React.FC = () => {
                             <div className="relative">
                                 <div className="absolute -left-[19px] top-0 w-4 h-4 rounded-full bg-green-500 border-[3px] border-white ring-1 ring-green-500"></div>
                                 <div>
-                                    <p className="font-bold text-sm text-gray-900">{order.status}</p>
+                                    <p className="font-bold text-sm text-gray-900">{displayStatus}</p>
                                     <p className="text-xs text-gray-500 mt-0.5">Arriving by {order.expectedDelivery ? formatDate(order.expectedDelivery) : 'Tomorrow'}</p>
                                     <p className="text-[10px] text-gray-400 mt-1">{new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
                                 </div>
                             </div>
 
                             {/* Previous (Shipped) */}
-                            {['Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) && (
+                            {['Shipped', 'Out for Delivery', 'Delivered'].includes(displayStatus) && (
                                 <div className="relative opacity-60">
                                     <div className="absolute -left-[19px] top-0 w-4 h-4 rounded-full bg-gray-400 border-[3px] border-white ring-1 ring-gray-400"></div>
                                     <div>

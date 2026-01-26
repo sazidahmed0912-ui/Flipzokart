@@ -4,6 +4,7 @@ import { Minus, Plus, Star, Trash2, Heart, ShieldCheck, ShoppingBag, AlertTriang
 import { useApp } from '../../store/Context';
 import { CartItem } from '../../types';
 import './CartPage.css';
+import { calculateCartTotals } from '../../utils/priceHelper';
 
 const getCartItemKey = (productId: string, variants?: Record<string, string>) => {
   if (!variants) return productId;
@@ -46,26 +47,11 @@ const CartPage = () => {
     }
   }, [products, cartItems, removeProductFromCart]);
 
-  const calculatePriceDetails = () => {
-    const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-    const originalPrice = cartItems.reduce((acc, item) => acc + ((item.originalPrice || 0) * item.quantity), 0);
-    const sellingPrice = cartItems.reduce((acc, item) => acc + ((item.price || 0) * item.quantity), 0);
-    const discount = originalPrice - sellingPrice;
-    const deliveryCharges = sellingPrice > 500 ? 0 : 40;
-    const platformFee = 3;
-    const totalAmount = sellingPrice + deliveryCharges + platformFee;
 
-    return {
-      totalItems,
-      originalPrice,
-      discount,
-      deliveryCharges,
-      platformFee,
-      totalAmount
-    };
-  };
 
-  const priceDetails = calculatePriceDetails();
+  // ... existing code ...
+
+  const priceDetails = calculateCartTotals(cartItems);
   const loading = false; // Set to false as we're using Context which loads from localStorage
 
   // Loading skeleton component

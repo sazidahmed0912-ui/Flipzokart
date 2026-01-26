@@ -15,6 +15,7 @@ import {
 } from "../../services/api";
 import { useApp } from "../../store/Context";
 import { useToast } from "../../components/toast";
+import { calculateCartTotals } from "../../utils/priceHelper";
 import "./PaymentPage.css";
 
 /* =========================
@@ -67,15 +68,14 @@ const PaymentPage: React.FC = () => {
   /* =========================
      Price Calculation
   ========================= */
-  const subtotal = cart.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
-  const deliveryCharges = subtotal > 500 ? 0 : 50;
-  const discount = 0;
-  const platformFee = 2;
-  const totalPayable =
-    subtotal + deliveryCharges - discount + platformFee;
+
+
+  // ... inside component ...
+
+  /* =========================
+     Price Calculation
+  ========================= */
+  const { subtotal, deliveryCharges, discount, platformFee, totalAmount: totalPayable } = calculateCartTotals(cart);
 
   /* =========================
      ERROR HANDLING HELPER
