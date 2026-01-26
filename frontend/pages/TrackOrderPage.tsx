@@ -28,7 +28,8 @@ export const TrackOrderPage: React.FC = () => {
                 const rawOrder = data.trackingData || data;
 
                 // Calculate totals manually if missing from backend to prevent ₹0
-                const calculatedTotal = (rawOrder.items || []).reduce((acc: number, item: any) => acc + ((item.price || 0) * (item.quantity || 1)), 0);
+                const rawItems = rawOrder.items || rawOrder.products || [];
+                const calculatedTotal = rawItems.reduce((acc: number, item: any) => acc + ((item.price || 0) * (item.quantity || 1)), 0);
                 const finalTotal = (rawOrder.grandTotal || rawOrder.total || 0) > 0 ? (rawOrder.grandTotal || rawOrder.total) : calculatedTotal;
 
                 const normalizedOrder = {
@@ -36,7 +37,7 @@ export const TrackOrderPage: React.FC = () => {
                     orderId: rawOrder.orderId || rawOrder._id || rawOrder.id || trackingId,
                     shippingAddress: rawOrder.shippingAddress || rawOrder.address || {},
                     grandTotal: finalTotal,
-                    items: rawOrder.items || [],
+                    items: rawItems,
                     createdAt: rawOrder.createdAt || rawOrder.orderDate,
                     status: rawOrder.status || rawOrder.orderStatus
                 };
