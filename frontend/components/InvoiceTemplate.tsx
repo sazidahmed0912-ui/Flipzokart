@@ -80,20 +80,23 @@ export const InvoiceTemplate: React.FC<InvoiceProps> = ({ invoice }) => {
 
                 <div className="space-y-1">
                     <h3 className="font-bold text-gray-900 text-sm border-b border-gray-200 pb-1 mb-3">Billing Address</h3>
-                    <p className="font-bold text-gray-900 text-base">{invoice.customer}</p>
+                    {/* Prioritize Shipping Name, fall back to Account Name */}
+                    <p className="font-bold text-gray-900 text-base">
+                        {order.shippingAddress?.fullName || order.shippingAddress?.name || invoice.customer}
+                    </p>
                     <div className="text-sm text-gray-600 leading-snug mt-1">
                         {typeof order.shippingAddress === 'string' ? (
                             <p>{order.shippingAddress}</p>
                         ) : (
                             <>
-                                <p>{order.shippingAddress?.street || order.address?.street || order.address?.address || ''}</p>
+                                <p>{order.shippingAddress?.street || order.shippingAddress?.address || order.address?.street || ''}</p>
                                 <p>
                                     {order.shippingAddress?.locality || order.address?.locality || ''}
                                 </p>
                                 <p>
                                     {order.shippingAddress?.city || order.address?.city || ''}, {' '}
                                     {order.shippingAddress?.state || order.address?.state || ''} - {' '}
-                                    {order.shippingAddress?.zip || order.shippingAddress?.zipCode || order.address?.pincode || order.address?.zip || ''}
+                                    {order.shippingAddress?.pincode || order.shippingAddress?.zip || order.shippingAddress?.zipCode || order.address?.zip || ''}
                                 </p>
                             </>
                         )}

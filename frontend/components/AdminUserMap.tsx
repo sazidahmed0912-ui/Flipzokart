@@ -25,6 +25,7 @@ interface UserLocation {
     lat: number;
     lng: number;
     joined: string;
+    status?: string;
 }
 
 const AdminUserMap: React.FC = () => {
@@ -90,7 +91,7 @@ const AdminUserMap: React.FC = () => {
                                         {user.city}, {user.state}
                                     </div>
                                     <div className="text-xs text-blue-600 font-medium">
-                                        Role: {user.role.toUpperCase()}
+                                        Role: {user.role.toUpperCase()} • Status: {user.status || 'Active'}
                                     </div>
                                     <div className="text-xs text-gray-400 mt-1">
                                         Joined: {new Date(user.joined).toLocaleDateString()}

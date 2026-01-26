@@ -75,14 +75,12 @@ export const AdminMap: React.FC = () => {
         u.state?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Map to Leaflet Format with Jitter to prevent exact stacking
+    // Map to Leaflet Format without random jitter
     const mapLocations: MapLocation[] = filteredUsers.map(u => {
-        // Add random jitter (~5km) for visual separation of collisions
-        const jitter = () => (Math.random() - 0.5) * 0.05;
         return {
             id: u.id,
-            lat: u.lat + jitter(),
-            lng: u.lng + jitter(),
+            lat: u.lat,
+            lng: u.lng,
             title: u.name,
             description: `[${u.status}] • ${u.city}, ${u.state}`
         };
