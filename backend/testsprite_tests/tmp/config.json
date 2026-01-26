@@ -1,0 +1,19 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:5000",
+  "backendAuthType": "public",
+  "executionArgs": {
+    "projectName": "backend",
+    "projectPath": "d:\\Websites\\Flipzokart\\backend",
+    "testIds": [
+      "TC001"
+    ],
+    "additionalInstruction": "Ensure the test uses process.env.RAZORPAY_KEY_SECRET for signature verification simulation.",
+    "envs": {
+      "API_KEY": "sk-user-9bpwDiADBgTT_9Nmx7neRzSXSUT3vzD8lx_cY3b2QJMVOz86DK4ULALUqXEPvtxvdsQYIIzczgPSqjKb3xPqyiXf33yc_e8usGIJ5E3MNQyAHy5IzTt-VvC6NT2JcNV138s"
+    }
+  },
+  "proxy": "http://ba3f0bbd-1ab4-4c42-8f7e-db18adb6768d:ufaRYsCboMJcP4qfwDP307566ernagWK@tun.testsprite.com:8080"
+}

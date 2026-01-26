@@ -189,6 +189,11 @@ const createRazorpayOrder = async (req, res) => {
 // Verify Razorpay payment and create order
 const verifyPayment = async (req, res) => {
   try {
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      console.error("CRITICAL ERROR: RAZORPAY_KEY_SECRET is not defined in environment variables");
+      return res.status(500).json({ message: "Server misconfiguration: Missing payment secret" });
+    }
+
     const {
       razorpay_order_id,
       razorpay_payment_id,

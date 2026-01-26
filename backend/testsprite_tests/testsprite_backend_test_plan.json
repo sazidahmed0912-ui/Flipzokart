@@ -1,0 +1,7 @@
+[
+  {
+    "id": "TC001",
+    "title": "verify razorpay payment signature",
+    "description": "Test the /api/order/verify-payment POST endpoint to ensure it correctly validates the Razorpay payment signature. Verify that valid signatures return a 200 status with a success message, invalid signatures return a 400 status with an error message, and server errors return a 500 status."
+  }
+]
