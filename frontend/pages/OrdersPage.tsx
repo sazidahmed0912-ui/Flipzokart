@@ -10,6 +10,7 @@ import { SmoothReveal } from "../components/SmoothReveal";
 import { useApp } from "../store/Context";
 import API from "../services/api";
 import { useSocket } from "../hooks/useSocket";
+import { normalizeOrder } from "../utils/orderHelper";
 
 const OrdersPage = () => {
     const navigate = useNavigate();
@@ -42,7 +43,9 @@ const OrdersPage = () => {
         if (!user) return;
         try {
             const { data } = await API.get(`/api/order/user/${user.id}`);
-            const orderList = Array.isArray(data.data) ? data.data : (data.orders || []);
+            const rawList = Array.isArray(data.data) ? data.data : (data.orders || []);
+            // Normalize ALL orders before setting state
+            const orderList = rawList.map((o: any) => normalizeOrder(o)).filter((o: any) => o !== null);
             setOrders(orderList);
         } catch (error) {
             console.error("Failed to fetch orders", error);

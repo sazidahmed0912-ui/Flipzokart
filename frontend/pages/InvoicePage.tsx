@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import API from '../services/api';
 import { InvoiceTemplate } from '../components/InvoiceTemplate';
-import { getSafeAddress } from '../utils/addressHelper';
+import { normalizeOrder } from '../utils/orderHelper';
 import { Printer } from 'lucide-react';
 
 export const InvoicePage: React.FC = () => {
@@ -16,20 +16,16 @@ export const InvoicePage: React.FC = () => {
             try {
                 const response = await API.get(`/api/orders/${orderId}`);
                 // Handle different response structures (standard vs some admin endpoints)
-                const orderData = response.data.data?.order || response.data.order || response.data;
-                console.log("INVOICE DEBUG: Received Order Data", orderData);
+                // Handle different response structures (standard vs some admin endpoints)
+                const rawOrderData = response.data.data?.order || response.data.order || response.data;
+                console.log("INVOICE DEBUG: Raw Order Data", rawOrderData);
 
                 // Data Normalization Layer (Phase 3)
-                // Expanded lookup for robustness
-                if (orderData) {
-                    const rawAddress = orderData.address ||
-                        orderData.shippingAddress ||
-                        orderData.shippingInfo ||
-                        (orderData.user ? { name: orderData.user.name, phone: orderData.user.phone } : null);
-                    orderData.address = getSafeAddress(rawAddress);
-                }
+                // Use centralized normalizer for guaranteed structure
+                const safeOrder = normalizeOrder(rawOrderData);
+                console.log("INVOICE DEBUG: Normalized Order Data", safeOrder);
 
-                setOrder(orderData);
+                setOrder(safeOrder);
             } catch (error) {
                 console.error("Failed to fetch order", error);
             } finally {
