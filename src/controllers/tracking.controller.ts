@@ -17,7 +17,9 @@ export class TrackingController {
                     // @ts-ignore
                     { trackingId: trackingId },
                     // @ts-ignore
-                    { orderNumber: trackingId }
+                    { orderNumber: trackingId },
+                    // @ts-ignore
+                    { id: trackingId } // Support lookup by DB ID
                 ]
             },
             include: {

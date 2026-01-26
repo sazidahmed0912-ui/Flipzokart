@@ -29,6 +29,17 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
             pincode: ''
         };
     }
+    // Final Fallback if everything fails
+    if (!address.fullName) {
+        address = {
+            fullName: order.userName || 'Valued Customer',
+            phone: order.phone || 'N/A',
+            street: 'Address details not found',
+            city: '',
+            state: '',
+            pincode: ''
+        };
+    }
     const items = order.items || [];
 
     // Calculations
