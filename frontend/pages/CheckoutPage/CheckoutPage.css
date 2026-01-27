@@ -373,9 +373,12 @@ body {
 
     .summary-section {
         order: -1;
-        position: static;
+        position: relative;
+        /* Changed from static to relative for z-index safety */
         width: 100%;
         margin-bottom: 1.5rem;
+        flex: initial;
+        /* Reset flex basis */
     }
 }
 
@@ -406,8 +409,21 @@ body {
         background-color: var(--background-color-white);
     }
 
+    .checkout-container {
+        padding-bottom: 140px;
+        /* Safe space for BottomNav + Sticky Button */
+        min-height: 100vh;
+        overflow-y: auto;
+        height: auto;
+        /* Override any potential fixed height */
+    }
+
     .checkout-main {
         gap: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: visible;
+        /* Ensure content is not clipped */
     }
 
     .address-section {
@@ -415,6 +431,11 @@ body {
         padding: 1rem 0;
         /* Reduced padding for address section */
         border-radius: 0;
+        flex: initial;
+        /* Reset flex basis */
+        width: 100%;
+        display: block;
+        /* Ensure it's not hidden */
     }
 
     .address-section h2 {
