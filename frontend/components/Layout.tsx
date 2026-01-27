@@ -12,15 +12,42 @@ const Header: React.FC = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const navigate = useNavigate();
   const profileRef = useRef<HTMLDivElement>(null);
+
+  // Load history on mount
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('search_history');
+    if (savedHistory) {
+      try {
+        setSearchHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error("Failed to parse search history", e);
+      }
+    }
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/shop?q=${searchQuery}`);
+      const term = searchQuery.trim();
+
+      // Update History: Add new term to start, remove duplicates, limit to 5
+      const updateHistory = (prev: string[]) => {
+        const filtered = prev.filter(item => item.toLowerCase() !== term.toLowerCase());
+        const newHistory = [term, ...filtered].slice(0, 5);
+        localStorage.setItem('search_history', JSON.stringify(newHistory));
+        return newHistory;
+      };
+
+      setSearchHistory(updateHistory);
+
+      navigate(`/shop?q=${term}`);
       setIsMenuOpen(false);
       setIsSearchOpen(false);
+      setIsSearchFocused(false);
     }
   };
 
@@ -56,19 +83,49 @@ const Header: React.FC = () => {
             </Link>
           </div>
 
-          <form onSubmit={handleSearch} className="flex-1 max-w-2xl mx-8">
+          <form onSubmit={handleSearch} className="flex-1 max-w-2xl mx-8 relative">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search for products, brands and more"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f28c28]"
                 value={searchQuery}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} // Delay to allow click
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <button type="submit" className="absolute right-3 top-1/2 transform -translate-y-1/2">
                 <Search className="w-5 h-5 text-gray-500" />
               </button>
             </div>
+
+            {/* Recent Searches Dropdown */}
+            {isSearchFocused && searchHistory.length > 0 && (
+              <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 mt-1 max-h-60 overflow-y-auto">
+                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase flex justify-between items-center">
+                  <span>Recent Searches</span>
+                  {/* Option to clear history could go here */}
+                </div>
+                <ul>
+                  {searchHistory.map((historyItem, index) => (
+                    <li key={index}>
+                      <button
+                        type="button"
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        onClick={() => {
+                          setSearchQuery(historyItem);
+                          navigate(`/shop?q=${historyItem}`);
+                          setIsSearchFocused(false);
+                        }}
+                      >
+                        <Search size={14} className="text-gray-400" />
+                        {historyItem}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </form>
 
           <div className="flex items-center space-x-6">
