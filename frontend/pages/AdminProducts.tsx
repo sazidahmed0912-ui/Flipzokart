@@ -36,6 +36,7 @@ export const AdminProducts: React.FC = () => {
     name: '',
     sku: '',
     description: '',
+    specifications: '',
     price: '',
     originalPrice: '',
     category: CATEGORIES[0],
@@ -81,6 +82,7 @@ export const AdminProducts: React.FC = () => {
       name: '',
       sku: '',
       description: '',
+      specifications: '',
       price: '',
       originalPrice: '',
       category: CATEGORIES[0],
@@ -97,11 +99,11 @@ export const AdminProducts: React.FC = () => {
   const openEditModal = async (product: Product) => {
     setEditingProduct(product);
     setNeedsSync(false);
-    // Initialize with current data
     setFormData({
       name: product.name,
       sku: product.sku || '',
       description: product.description,
+      specifications: product.specifications || '',
       price: product.price?.toString() || '',
       originalPrice: product.originalPrice?.toString() || '',
       category: product.category,
@@ -410,6 +412,7 @@ export const AdminProducts: React.FC = () => {
       sku: formData.sku || `FZK-${Math.floor(Math.random() * 10000)}`,
       name: formData.name,
       description: formData.description || "No description provided.",
+      specifications: formData.specifications,
       price: numericPrice,
       originalPrice: parseFloat(formData.originalPrice) || numericPrice,
       category: formData.category,
@@ -730,6 +733,16 @@ export const AdminProducts: React.FC = () => {
                             className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800 resize-none"
                             value={formData.description}
                             onChange={e => setFormData({ ...formData, description: e.target.value })}
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Specifications</label>
+                          <textarea
+                            rows={4}
+                            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800 resize-none"
+                            value={formData.specifications}
+                            onChange={e => setFormData({ ...formData, specifications: e.target.value })}
+                            placeholder="Enter detailed specifications..."
                           />
                         </div>
                       </div>

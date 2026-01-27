@@ -29,6 +29,47 @@ export const ProductDetails: React.FC = () => {
   const token = localStorage.getItem("token");
   const socket = useSocket(token);
 
+  // Swipe Gesture Refs
+  const touchStartX = React.useRef<number | null>(null);
+  const touchEndX = React.useRef<number | null>(null);
+
+  // Handle Swipe Gesture
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+
+    const distance = touchStartX.current - touchEndX.current;
+    const isSwipeLeft = distance > 50;
+    const isSwipeRight = distance < -50;
+
+    if (isSwipeLeft || isSwipeRight) {
+      // Find current index
+      const currentIndex = allImages.findIndex(img => img === activeImage);
+      if (currentIndex === -1) return;
+
+      if (isSwipeLeft) {
+        // Next Image (Swipe Left)
+        const nextIndex = (currentIndex + 1) % allImages.length;
+        setActiveImage(allImages[nextIndex]);
+      } else {
+        // Prev Image (Swipe Right)
+        const prevIndex = (currentIndex - 1 + allImages.length) % allImages.length;
+        setActiveImage(allImages[prevIndex]);
+      }
+    }
+
+    // Reset
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
   const handleReviewUpdate = (newReview: Review) => {
     setReviews((prevReviews) => {
       const existingIndex = prevReviews.findIndex((r) => r._id === newReview._id);
@@ -270,7 +311,12 @@ export const ProductDetails: React.FC = () => {
       <div className="max-w-6xl mx-auto p-2 sm:p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <div className="relative bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 sm:p-8 mb-4 min-h-[300px] sm:min-h-[400px] flex items-center justify-center">
+            <div
+              className="relative bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 sm:p-8 mb-4 min-h-[300px] sm:min-h-[400px] flex items-center justify-center touch-pan-y"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               <button className="absolute top-2 sm:top-4 left-2 sm:left-4 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow">
                 <Check size={16} className="sm:w-[18px] sm:h-[18px] text-gray-600" />
               </button>
@@ -280,7 +326,7 @@ export const ProductDetails: React.FC = () => {
               <LazyImage
                 src={activeImage}
                 alt={product.name}
-                className="max-w-full max-h-[250px] sm:max-h-[350px] object-contain"
+                className="max-w-full max-h-[250px] sm:max-h-[350px] object-contain pointer-events-none select-none"
               />
             </div>
 
@@ -496,17 +542,46 @@ export const ProductDetails: React.FC = () => {
           <div className="p-4 sm:p-6">
             {activeTab === 'details' && (
               <div>
-                <div className="space-y-2">
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-500">Category</span>
-                    <span className="font-medium text-gray-900">{product.category}</span>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-500">Stock Status</span>
-                    <span className={`font-medium ${product.countInStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
-                    </span>
-                  </div>
+                <div className="space-y-4">
+                  {product.specifications ? (
+                    <div className="whitespace-pre-line text-sm sm:text-base text-gray-700 leading-relaxed">
+                      {product.specifications}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {/* Fallback / Basic Info if no custom specs */}
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-500">Category</span>
+                        <span className="font-medium text-gray-900">{product.category}</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-500">Stock Status</span>
+                        <span className={`font-medium ${product.countInStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {/* Always show extra details if there are custom specs, maybe below? 
+                      User asked for "Specifications Box" specifically. 
+                      I will append the Category/Stock info BELOW the text if specifications text exists, 
+                      or just combine them. 
+                      Let's stick to: Text takes precedence or shows above.
+                   */}
+                  {product.specifications && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-500">Category</span>
+                        <span className="font-medium text-gray-900">{product.category}</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-500">Stock Status</span>
+                        <span className={`font-medium ${product.countInStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
