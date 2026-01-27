@@ -4,6 +4,7 @@ import PageTransition from "./components/ui/PageTransition";
 
 /* ---------- CONTEXT ---------- */
 import { AppProvider, useApp } from "./store/Context";
+import { LanguageProvider } from "./store/LanguageContext";
 import authService from "./services/authService";
 import {
   NotificationProvider,
@@ -30,6 +31,7 @@ const SignupPage = lazy(() => import("./pages/SignupPage").then(module => ({ def
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPassword").then(module => ({ default: module.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage").then(module => ({ default: module.ResetPasswordPage })));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const SecurityPage = lazy(() => import("./pages/SecurityPage"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage").then(module => ({ default: module.WishlistPage })));
 const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard").then(module => ({ default: module.CustomerDashboard })));
 const AboutUsPage = lazy(() => import("./pages/AboutUsPage").then(module => ({ default: module.AboutUsPage })));
@@ -42,11 +44,7 @@ const AddNewAddress = lazy(() => import("./components/AddNewAddress"));
 const SellOnFlipzokart = lazy(() => import("./pages/SellOnFlipzokart"));
 const OrdersPage = lazy(() => import("./pages/OrdersPage"));
 const AddressBookPage = lazy(() => import("./pages/AddressBookPage"));
-// TrackOrderPage is already imported or lazy loaded? 
-// Check earlier imports. 
-// Ah, TrackOrderPage was NOT lazy loaded in previous steps? 
-// Let's assume it was lazy loaded at line 37: const TrackOrderPage = lazy(() => import("./pages/TrackOrderPage"));
-// Reuse that if exists, or remove this import line if duplicated.
+
 import { InvoicePage } from './pages/InvoicePage';
 import { BannedPage } from "./pages/BannedPage";
 
@@ -252,6 +250,14 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
               }
             />
             <Route
+              path="/account-security"
+              element={
+                <ProtectedRoute>
+                  <SecurityPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/wishlist"
               element={
                 <ProtectedRoute>
@@ -435,15 +441,17 @@ const AuthWrapper: React.FC<{ location?: any }> = ({ location }) => {
 const App: React.FC = () => {
   return (
     <AppProvider>
-      <NotificationProvider>
-        <ToastProvider>
-          <ErrorBoundary>
-            <Router>
-              <AuthWrapper />
-            </Router>
-          </ErrorBoundary>
-        </ToastProvider>
-      </NotificationProvider>
+      <LanguageProvider>
+        <NotificationProvider>
+          <ToastProvider>
+            <ErrorBoundary>
+              <Router>
+                <AuthWrapper />
+              </Router>
+            </ErrorBoundary>
+          </ToastProvider>
+        </NotificationProvider>
+      </LanguageProvider>
     </AppProvider>
   );
 };

@@ -46,7 +46,7 @@ const Step2Business: React.FC<Step2Props> = ({ onSuccess, onBack, API, token }) 
                 headers: { Authorization: `Bearer ${token}` }
             };
 
-            await API.post('/auth/seller/business', formData, config);
+            await API.post('/api/auth/seller/business', formData, config);
             onSuccess();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Verification failed');

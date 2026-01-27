@@ -43,7 +43,7 @@ const Step1Register: React.FC<Step1Props> = ({ onSuccess, API }) => {
         setError('');
 
         try {
-            const res = await API.post('/auth/seller/register', {
+            const res = await API.post('/api/auth/seller/register', {
                 name: formData.name,
                 email: formData.email,
                 phone: formData.phone,

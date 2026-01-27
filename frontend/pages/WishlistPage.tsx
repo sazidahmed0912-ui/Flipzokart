@@ -1,22 +1,15 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Heart,
   ShoppingBag,
   ArrowRight,
-  Trash2,
-  User,
-  Package,
-  ShieldCheck,
-  MapPin,
-  LogOut,
-  ChevronRight
+  Trash2
 } from 'lucide-react';
 import { useApp } from '../store/Context';
 import { ProductCard } from '../components/ProductCard';
-import authService from "../services/authService";
 import { SmoothReveal } from "../components/SmoothReveal";
+import ProfileSidebar from '../components/Profile/ProfileSidebar';
 
 export const WishlistPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,82 +18,13 @@ export const WishlistPage: React.FC = () => {
   // Filter the main product list to only show items in the wishlist
   const wishlistedItems = products.filter(p => wishlist.includes(p.id));
 
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
-
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
-
-  const sidebarItems = [
-    { name: "My Profile", path: "/profile", icon: User },
-    { name: "Orders", path: "/orders", icon: Package },
-    { name: "Wishlist", path: "/wishlist", icon: Heart },
-    { name: "Account Security", path: "/account-security", icon: ShieldCheck },
-    { name: "Address Book", path: "/address-book", icon: MapPin },
-  ];
-
   return (
     <div className="bg-[#F5F7FA] min-h-screen font-sans text-[#1F2937]">
       {/* Container */}
       <div className="max-w-[1200px] mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
 
         {/* ──────── LEFT SIDEBAR ──────── */}
-        <div className="w-full lg:w-[280px] flex-shrink-0 space-y-4">
-
-          {/* User Hello Card */}
-          <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#f0f5ff] flex items-center justify-center border border-[#e0e0e0]">
-              <img
-                src="https://static-assets-web.flixcart.com/fk-p-linchpin-web/fk-cp-zion/img/profile-pic-male_4811a1.svg"
-                alt="User"
-                className="w-8 h-8 opacity-80"
-              />
-            </div>
-            <div>
-              <div className="text-xs text-gray-500 font-medium">Hello,</div>
-              <div className="text-base font-bold text-[#1F2937]">{user?.name || "User"}</div>
-            </div>
-          </div>
-
-          {/* Navigation Menu */}
-          <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] overflow-hidden">
-            <div className="flex lg:flex-col overflow-x-auto lg:overflow-visible scrollbar-hide py-2 lg:py-0">
-              {sidebarItems.map((item, i) => {
-                const isActive = item.name === "Wishlist";
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={i}
-                    onClick={() => handleNavigation(item.path)}
-                    className={`flex items-center gap-2 lg:gap-4 px-4 lg:px-6 py-3 lg:py-4 cursor-pointer transition-colors border-r lg:border-r-0 lg:border-b last:border-0 border-gray-50 flex-shrink-0 whitespace-nowrap
-                        ${isActive ? "bg-[#F5FAFF] text-[#2874F0]" : "text-gray-600 hover:bg-gray-50"}
-                      `}
-                  >
-                    <Icon size={18} className={`lg:w-5 lg:h-5 ${isActive ? "text-[#2874F0]" : "text-gray-400"}`} />
-                    <span className={`text-sm lg:text-base font-medium ${isActive ? "font-bold" : ""}`}>{item.name}</span>
-                    {isActive && <ChevronRight size={16} className="ml-auto text-[#2874F0] hidden lg:block" />}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Logout Button */}
-            <div
-              onClick={handleLogout}
-              className="hidden lg:flex items-center gap-4 px-6 py-4 cursor-pointer text-gray-600 hover:bg-red-50 hover:text-red-600 border-t border-gray-100 transition-colors"
-            >
-              <LogOut size={20} />
-              <span className="font-medium">Logout</span>
-            </div>
-          </div>
-        </div>
+        <ProfileSidebar />
 
         {/* ──────── MAIN CONTENT ──────── */}
         <div className="flex-1 space-y-6">

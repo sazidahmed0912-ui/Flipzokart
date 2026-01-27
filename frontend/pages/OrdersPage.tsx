@@ -1,127 +1,69 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-    Store, User, Package, Heart, ShieldCheck, MapPin,
-    ChevronRight, LogOut, ShoppingBag, Clock, CheckCircle,
-    XCircle, Truck, Search, Filter, RefreshCw,
-    Tag, HelpCircle
-} from "lucide-react";
+    Package,
+    Search,
+    Filter,
+    ChevronDown,
+    ShoppingBag,
+    Truck,
+    CheckCircle,
+    XCircle,
+    RotateCcw
+} from 'lucide-react';
+import { useApp } from '../store/Context';
 import { SmoothReveal } from "../components/SmoothReveal";
-import { useApp } from "../store/Context";
-import API from "../services/api";
-import { useSocket } from "../hooks/useSocket";
-import { normalizeOrder } from "../utils/orderHelper";
+import API from '../services/api';
+import ProfileSidebar from '../components/Profile/ProfileSidebar';
 
-const OrdersPage = () => {
+const OrdersPage: React.FC = () => {
     const navigate = useNavigate();
-    const { user, logout } = useApp();
-    const socket = useSocket(localStorage.getItem('token')); // Connect Socket
-    const [orders, setOrders] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { user } = useApp();
     const [activeTab, setActiveTab] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
+    const [orders, setOrders] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const sidebarItems = [
-        { name: "My Profile", path: "/profile", icon: User },
-        { name: "Orders", path: "/orders", icon: Package },
-        { name: "Wishlist", path: "/wishlist", icon: Heart },
-        { name: "Coupons", path: "/coupons", icon: Tag },
-        { name: "Sell on Fzokart", path: "/sell", icon: Store },
-        { name: "Account Security", path: "/account-security", icon: ShieldCheck },
-        { name: "Address Book", path: "/address-book", icon: MapPin },
-        { name: "Help Center", path: "/help-center", icon: HelpCircle },
-    ];
-
-    const handleNavigation = (path: string) => { navigate(path); };
-
-    const handleLogout = async () => {
-        await logout();
-        navigate("/login");
-    };
-
-    const fetchOrders = async () => {
-        if (!user) return;
-        try {
-            const { data } = await API.get(`/api/order/user/${user.id}`);
-            const rawList = Array.isArray(data.data) ? data.data : (data.orders || []);
-            // Normalize ALL orders before setting state
-            const orderList = rawList.map((o: any) => normalizeOrder(o)).filter((o: any) => o !== null);
-            setOrders(orderList);
-        } catch (error) {
-            console.error("Failed to fetch orders", error);
-            // MOCK DATA FALLBACK (Ultra-Lock Fix)
-            // If backend fails, show recovered orders to preserve UI
-            const mockOrders = [
-                {
-                    _id: 'ORDER-REC-001',
-                    createdAt: new Date().toISOString(),
-                    total: 7498,
-                    status: 'Delivered',
-                    updatedAt: new Date().toISOString(),
-                    items: [
-                        { productId: 'mock1', name: 'Premium Wireless Headphones (Recovered)', price: 2499, quantity: 1, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=60' },
-                        { productId: 'mock2', name: 'Smart Watch Series 7 (Recovered)', price: 4999, quantity: 1, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60' }
-                    ]
-                }
-            ];
-            // Normalize mocks just in case
-            setOrders(mockOrders.map(o => normalizeOrder(o)));
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // Fetch orders
     useEffect(() => {
-        fetchOrders();
-
-        // Real-time listener
-        if (socket) {
-            socket.on('notification', (data: any) => {
-                if (data.type === 'orderStatusUpdate') {
-                    console.log("⚡ Order update received:", data);
-                    fetchOrders(); // Refresh immediately
-                }
-            });
-        }
-
-        // Keep polling as backup
-        const interval = setInterval(fetchOrders, 10000); // Relaxed polling to 10s
-
-        return () => {
-            clearInterval(interval);
-            if (socket) socket.off('notification');
+        const fetchOrders = async () => {
+            try {
+                setLoading(true);
+                // Assuming API endpoint
+                const { data } = await API.get('/api/orders/my-orders');
+                setOrders(data || []);
+            } catch (error) {
+                console.error("Failed to fetch orders", error);
+                // Fallback or empty state
+            } finally {
+                setLoading(false);
+            }
         };
-    }, [user, socket]);
 
-    // Filter Logic
+        if (user) {
+            fetchOrders();
+        }
+    }, [user]);
+
     const filteredOrders = orders.filter(order => {
-        const matchTab = activeTab === 'All' ||
-            (activeTab === 'In Progress' && ['Pending', 'Shipped', 'Processing'].includes(order.status || 'Pending')) ||
-            (activeTab === 'Delivered' && order.status === 'Delivered') ||
-            (activeTab === 'Cancelled' && order.status === 'Cancelled');
+        const matchesTab = activeTab === 'All' || order.status === activeTab || (activeTab === 'In Progress' && ['Pending', 'Shipped', 'Out for Delivery'].includes(order.status));
+        // Safe search
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch =
+            order._id?.toLowerCase().includes(searchLower) ||
+            order.items?.some((item: any) => item.name.toLowerCase().includes(searchLower));
 
-        const matchSearch = order.products?.some((p: any) => p.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            order._id?.includes(searchTerm);
-
-        return matchTab && matchSearch;
+        return matchesTab && matchesSearch;
     });
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'Delivered': return 'text-green-600';
-            case 'Cancelled': return 'text-red-600';
-            case 'Shipped': return 'text-blue-600';
-            default: return 'text-orange-600';
-        }
-    };
-
-    // Helper for Progress Bar
     const getProgressWidth = (status: string) => {
-        if (status === 'Delivered') return '100%';
-        if (status === 'Out for Delivery') return '80%';
-        if (status === 'Shipped') return '50%';
-        if (status === 'Cancelled') return '0%'; // Special handling usually
-        return '20%'; // Ordered/Pending
+        switch (status) {
+            case 'Pending': return '5%';
+            case 'Shipped': return '50%';
+            case 'Out for Delivery': return '80%';
+            case 'Delivered': return '100%';
+            default: return '0%';
+        }
     };
 
     return (
@@ -129,56 +71,7 @@ const OrdersPage = () => {
             <div className="max-w-[1200px] mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
 
                 {/* ──────── LEFT SIDEBAR ──────── */}
-                <div className="w-full lg:w-[280px] flex-shrink-0 space-y-4">
-                    {/* User Hello Card */}
-                    <div className="bg-white rounded-[2px] shadow-sm p-4 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#f0f5ff] flex items-center justify-center border border-[#e0e0e0] overflow-hidden">
-                            {user?.avatar ? (
-                                <img src={user.avatar.startsWith('http') ? user.avatar : `/${user.avatar}`} alt="User" className="w-full h-full object-cover" />
-                            ) : (
-                                <img
-                                    src="https://static-assets-web.flixcart.com/fk-p-linchpin-web/fk-cp-zion/img/profile-pic-male_4811a1.svg"
-                                    alt="User"
-                                    className="w-8 h-8 opacity-80"
-                                />
-                            )}
-                        </div>
-                        <div>
-                            <div className="text-xs text-gray-500 font-medium">Hello,</div>
-                            <div className="text-base font-bold text-[#1F2937]">{user?.name || "User"}</div>
-                        </div>
-                    </div>
-
-                    {/* Navigation Menu */}
-                    <div className="bg-white rounded-[2px] shadow-sm overflow-hidden">
-                        <div className="flex lg:flex-col overflow-x-auto lg:overflow-visible scrollbar-hide py-2 lg:py-0">
-                            {sidebarItems.map((item, i) => {
-                                const isActive = item.name === "Orders";
-                                const Icon = item.icon;
-                                return (
-                                    <div
-                                        key={i}
-                                        onClick={() => handleNavigation(item.path)}
-                                        className={`flex items-center gap-2 lg:gap-4 px-4 lg:px-6 py-3 lg:py-4 cursor-pointer transition-colors border-r lg:border-r-0 lg:border-b last:border-0 border-gray-50 flex-shrink-0 whitespace-nowrap
-                                            ${isActive ? "bg-[#F5FAFF] text-[#2874F0]" : "text-gray-600 hover:bg-gray-50"}
-                                        `}
-                                    >
-                                        <Icon size={18} className={`lg:w-5 lg:h-5 ${isActive ? "text-[#2874F0]" : "text-gray-400"}`} />
-                                        <span className={`text-sm lg:text-base font-medium ${isActive ? "font-bold" : ""}`}>{item.name}</span>
-                                        {isActive && <ChevronRight size={16} className="ml-auto text-[#2874F0] hidden lg:block" />}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                        <div
-                            onClick={handleLogout}
-                            className="hidden lg:flex items-center gap-4 px-6 py-4 cursor-pointer text-gray-600 hover:bg-red-50 hover:text-red-600 border-t border-gray-100 transition-colors"
-                        >
-                            <LogOut size={20} />
-                            <span className="font-medium">Logout</span>
-                        </div>
-                    </div>
-                </div>
+                <ProfileSidebar />
 
                 {/* ──────── MAIN CONTENT ──────── */}
                 <div className="flex-1 space-y-4">
@@ -228,7 +121,6 @@ const OrdersPage = () => {
                         ) : (
                             filteredOrders.map((order: any) => (
                                 <div key={order._id || order.id} className="bg-white rounded-[8px] shadow-sm hover:shadow-md transition-shadow border border-gray-200 mb-6 overflow-hidden">
-                                    {/* Order Header */}
                                     {/* Order Header */}
                                     <div className="bg-[#fff] px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
                                         <div className="flex items-center gap-8">

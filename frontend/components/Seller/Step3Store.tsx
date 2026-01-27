@@ -29,7 +29,7 @@ const Step3Store: React.FC<Step3Props> = ({ onSuccess, API, token }) => {
                 headers: { Authorization: `Bearer ${token}` }
             };
 
-            const res = await API.post('/auth/seller/store', formData, config);
+            const res = await API.post('/api/auth/seller/store', formData, config);
             if (res.data.success) {
                 onSuccess(res.data.user);
             }
