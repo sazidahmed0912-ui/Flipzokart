@@ -213,7 +213,7 @@ export const TrackOrderPage: React.FC = () => {
                         </div>
                         <button
                             onClick={handleTrackRefresh}
-                            className="text-[#2874F0] font-medium text-sm hover:underline"
+                            className="mt-2 bg-[#FFD814] text-black px-4 py-1.5 rounded text-sm font-medium hover:opacity-90 transition-opacity shadow-sm"
                         >
                             Track Order
                         </button>
@@ -279,8 +279,9 @@ export const TrackOrderPage: React.FC = () => {
 
                 {/* Product Information */}
                 <div className="bg-white rounded-sm shadow-sm mb-4">
-                    {/* Product Information Header removed as per request */}
-                    <div className="pt-2"></div>
+                    <div className="p-4 border-b border-gray-100">
+                        <h3 className="font-bold text-lg text-gray-800">Product Information</h3>
+                    </div>
 
                     {order.items?.map((item: any, idx: number) => (
                         <div key={idx} className={`p-4 md:p-6 flex flex-col md:flex-row gap-6 ${idx !== 0 ? 'border-t border-gray-100' : ''}`}>
