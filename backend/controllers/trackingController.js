@@ -74,6 +74,7 @@ const getTrackingInfo = async (req, res) => {
             createdAt: order.createdAt,
             orderStatus: order.status, // User requested 'orderStatus'
             status: order.status, // Backward compat
+            paymentMethod: order.paymentMethod, // Required for Invoice (COD/Prepaid)
             paymentStatus: order.paymentStatus || 'Paid',
 
             // Items with exact keys requested

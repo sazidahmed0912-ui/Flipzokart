@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 // removed canvas-confetti to avoid dependency issues
 import { fetchOrderById } from '../services/api';
 import { useToast } from '../components/toast';
+import { getSafeAddress } from '../utils/addressHelper';
 
 interface OrderDetails {
   id: string; // Mongo ID
@@ -56,10 +57,20 @@ const OrderSuccessPage = () => {
       return;
     }
 
+
+
     const loadOrder = async () => {
       try {
         const { data } = await fetchOrderById(orderId);
-        setOrder(data);
+
+        // Normalize Address
+        const rawAddress = data.address || data.shippingAddress || {};
+        const safeAddress = getSafeAddress(rawAddress);
+
+        setOrder({
+          ...data,
+          address: safeAddress
+        });
 
         // Confetti effect can be added here if package is installed
       } catch (err: any) {
