@@ -204,10 +204,10 @@ export const TrackOrderPage: React.FC = () => {
             <div className="max-w-[1000px] mx-auto">
 
                 {/* Header Info */}
-                <div className="flex justify-between items-center mb-6">
-                    <div className="text-gray-900 font-semibold">Order ID: {order.orderId || order._id}</div>
+                <div className="flex justify-between items-start mb-6">
+                    <div className="text-gray-900 font-semibold mt-2">Order ID: {order.orderId || order._id}</div>
                     {/* Only show 'Placed on' if available */}
-                    <div className="flex flex-col items-end gap-2">
+                    <div className="flex flex-col items-end gap-2 mt-4">
                         <div className="text-gray-500 font-medium">
                             {order.createdAt ? `Placed on ${formatDate(order.createdAt)}` : ''}
                         </div>
