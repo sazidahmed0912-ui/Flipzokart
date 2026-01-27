@@ -93,6 +93,11 @@ const CheckoutPage = () => {
     // Use standard delivery as initial state
     const [deliveryCharges, setDeliveryCharges] = useState(standardDelivery);
 
+    // Sync delivery charges when cart updates (e.g. loads from context)
+    React.useEffect(() => {
+        setDeliveryCharges(standardDelivery);
+    }, [standardDelivery]);
+
     // Recalculate total if delivery charges change dynamically
     const totalPayable = subtotal + deliveryCharges + platformFee;
 

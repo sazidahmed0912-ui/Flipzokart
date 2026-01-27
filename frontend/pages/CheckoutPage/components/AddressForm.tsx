@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Info } from "lucide-react";
 import { Address } from '../../../types';
 import { AddressFormFields, AddressFormData } from '../../../components/AddressFormFields';
+import API from '../../../services/api';
 import { validateAddressForm } from '../../../utils/addressValidation';
 
 interface AddressFormProps {
@@ -33,38 +34,27 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
 
                 try {
                     // FETCH FULL OBJECT - RULE 3
-                    const response = await fetch(`/api/user/address/${addId}`, {
-                        headers: {
-                            // Assuming auth token is handled by browser cookies or interceptor, 
-                            // if explicit token needed we'd use useApp/context. 
-                            // For now assuming existing API pattern works.
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    // Fallback to props if fetch fails or for initial render speed if needed, 
-                    // but REQUIRE fetch for edit consistency.
+                    const { data } = await API.get(`/api/user/address/${addId}`);
 
-                    if (response.ok) {
-                        const json = await response.json();
-                        const fullAddr = json.data?.address;
-                        if (fullAddr) {
-                            console.log("[AddressForm] Fetched Full Address:", fullAddr);
-                            setFormData({
-                                name: fullAddr.fullName,
-                                phone: fullAddr.phone,
-                                street: fullAddr.street,
-                                addressLine2: fullAddr.addressLine2 || '',
-                                locality: fullAddr.addressLine2 || '',
-                                city: fullAddr.city,
-                                state: fullAddr.state,
-                                zip: fullAddr.pincode,
-                                type: fullAddr.type || 'Home'
-                            });
-                            return;
-                        }
+                    if (data?.status === 'success' && data?.data?.address) {
+                        const fullAddr = data.data.address;
+                        console.log("[AddressForm] Fetched Full Address:", fullAddr);
+                        setFormData({
+                            name: fullAddr.fullName,
+                            phone: fullAddr.phone,
+                            street: fullAddr.street,
+                            addressLine2: fullAddr.addressLine2 || '',
+                            locality: fullAddr.addressLine2 || '',
+                            city: fullAddr.city,
+                            state: fullAddr.state,
+                            zip: fullAddr.pincode,
+                            type: fullAddr.type || 'Home'
+                        });
+                        return;
                     }
                 } catch (err) {
                     console.error("Failed to hydrate address:", err);
+                    // Optional: Add toast here if we had access to addToast
                 }
             }
 
