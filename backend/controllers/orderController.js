@@ -27,12 +27,29 @@ const createOrder = async (req, res) => {
     console.log('Request body:', req.body);
     console.log('req.user object:', req.user); // Added for debugging
 
-    const { products, address, subtotal, deliveryCharges, discount, total } = req.body;
+    const { products, address: bodyAddress, addressId, subtotal, deliveryCharges, discount, total } = req.body;
+
+    let address = bodyAddress;
+
+    // Fix: If addressId is provided but address object is missing, fetch from user profile
+    if (!address && addressId) {
+      console.log(`Fetching address from user profile for ID: ${addressId}`);
+      const user = await require('../models/User').findById(req.user.id);
+      if (user && user.addresses) {
+        const foundAddress = user.addresses.id(addressId);
+        if (foundAddress) {
+          address = foundAddress; // Use the found address
+          console.log('Address found and linked:', address._id);
+        } else {
+          return res.status(400).json({ message: 'Invalid addressId. Address not found in your profile.' });
+        }
+      }
+    }
 
     // Validate required fields
     if (!products || !address || !subtotal || !total) {
       console.log('Missing required fields:', { products, address, subtotal, total });
-      return res.status(400).json({ message: 'Missing required fields' });
+      return res.status(400).json({ message: 'Missing required fields: Address is missing' });
     }
 
     // Validate productIds
