@@ -107,7 +107,7 @@ export const AdminProducts: React.FC = () => {
       price: product.price?.toString() || '',
       originalPrice: product.originalPrice?.toString() || '',
       category: product.category,
-      stock: product.stock?.toString() || '0',
+      stock: (product.countInStock ?? product.stock ?? 0).toString(),
       image: product.image,
       images: product.images || [],
       variants: product.variants || [],
@@ -128,7 +128,8 @@ export const AdminProducts: React.FC = () => {
           variants: fullProduct.variants || [],
           inventory: fullProduct.inventory || [],
           images: fullProduct.images || prev.images,
-          defaultColor: fullProduct.defaultColor || prev.defaultColor
+          defaultColor: fullProduct.defaultColor || prev.defaultColor,
+          stock: (fullProduct.countInStock ?? fullProduct.stock ?? prev.stock).toString()
         }));
       }
     } catch (error) {
