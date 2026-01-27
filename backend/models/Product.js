@@ -23,6 +23,9 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 100,
     },
+    specifications: {
+      type: String,
+    },
     // New Fields for Enhanced Product Details
     variants: [
       {

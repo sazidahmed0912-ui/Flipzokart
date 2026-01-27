@@ -22,7 +22,7 @@ export const ProductDetails: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isReviewsLoading, setIsReviewsLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState('details');
+  const [activeTab, setActiveTab] = useState('description');
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const [activeImage, setActiveImage] = useState<string>('');
 
@@ -511,13 +511,13 @@ export const ProductDetails: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="flex border-b border-gray-200 overflow-x-auto">
             <button
-              onClick={() => setActiveTab('details')}
-              className={`px-4 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'details'
+              onClick={() => setActiveTab('description')}
+              className={`px-4 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'description'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-900'
                 }`}
             >
-              Specifications
+              Description
             </button>
             <button
               onClick={() => setActiveTab('specifications')}
@@ -526,7 +526,7 @@ export const ProductDetails: React.FC = () => {
                 : 'text-gray-600 hover:text-gray-900'
                 }`}
             >
-              Description
+              Specifications
             </button>
             <button
               onClick={() => setActiveTab('reviews')}
@@ -540,53 +540,7 @@ export const ProductDetails: React.FC = () => {
           </div>
 
           <div className="p-4 sm:p-6">
-            {activeTab === 'details' && (
-              <div>
-                <div className="space-y-4">
-                  {product.specifications ? (
-                    <div className="whitespace-pre-line text-sm sm:text-base text-gray-700 leading-relaxed">
-                      {product.specifications}
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {/* Fallback / Basic Info if no custom specs */}
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-500">Category</span>
-                        <span className="font-medium text-gray-900">{product.category}</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-500">Stock Status</span>
-                        <span className={`font-medium ${product.countInStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  {/* Always show extra details if there are custom specs, maybe below? 
-                      User asked for "Specifications Box" specifically. 
-                      I will append the Category/Stock info BELOW the text if specifications text exists, 
-                      or just combine them. 
-                      Let's stick to: Text takes precedence or shows above.
-                   */}
-                  {product.specifications && (
-                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-500">Category</span>
-                        <span className="font-medium text-gray-900">{product.category}</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-500">Stock Status</span>
-                        <span className={`font-medium ${product.countInStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'specifications' && (
+            {activeTab === 'description' && (
               <div className="text-sm sm:text-base text-gray-700">
                 <p className="mb-3 sm:mb-4">
                   {product.description || "Very good quality product with comfortable sole and durable build. Perfect for casual daily wear."}
@@ -596,6 +550,34 @@ export const ProductDetails: React.FC = () => {
                   <span>Seller</span>
                   <span className="text-gray-400">|</span>
                   <span>UPI</span>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'specifications' && (
+              <div>
+                <div className="space-y-4">
+                  {product.specifications ? (
+                    <div className="whitespace-pre-line text-sm sm:text-base text-gray-700 leading-relaxed border p-4 rounded-lg bg-gray-50">
+                      {product.specifications}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 italic text-sm">No specific specifications available for this product.</div>
+                  )}
+
+                  {/* Basic Info Always Shown in Specs Tab */}
+                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-500">Category</span>
+                      <span className="font-medium text-gray-900">{product.category}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-500">Stock Status</span>
+                      <span className={`font-medium ${product.countInStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
