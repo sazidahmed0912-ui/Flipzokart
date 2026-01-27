@@ -30,7 +30,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
             // Robust mapping to handle potentially malformed or legacy backend data
             // We strip any "undefined" strings or nulls to empty string for form inputs
             setFormData({
-                name: addressToEdit.fullName || addressToEdit.name || '',
+                name: addressToEdit.fullName || (addressToEdit as any).name || '',
                 phone: addressToEdit.phone || (addressToEdit as any).mobile || '',
                 street: addressToEdit.street || (addressToEdit as any).address || (addressToEdit as any).addressLine1 || '',
                 addressLine2: addressToEdit.addressLine2 || (addressToEdit as any).locality || '',
