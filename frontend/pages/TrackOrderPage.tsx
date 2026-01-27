@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import API from '../services/api';
 import { useSocket } from '../hooks/useSocket';
 import { normalizeOrder } from '../utils/orderHelper';
@@ -277,61 +277,63 @@ export const TrackOrderPage: React.FC = () => {
                 )}
 
 
-                {/* Product Information */}
-                <div className="bg-white rounded-sm shadow-sm mb-4">
-                    <div className="p-4 border-b border-gray-100">
-                        <h3 className="font-bold text-lg text-gray-800">Product Information</h3>
-                    </div>
+                {/* Product Information - Hidden if view=shipping_label */}
+                {!new URLSearchParams(useLocation().search).get('view')?.includes('shipping_label') && (
+                    <div className="bg-white rounded-sm shadow-sm mb-4">
+                        <div className="p-4 border-b border-gray-100">
+                            <h3 className="font-bold text-lg text-gray-800">Product Information</h3>
+                        </div>
 
-                    {order.items?.map((item: any, idx: number) => (
-                        <div key={idx} className={`p-4 md:p-6 flex flex-col md:flex-row gap-6 ${idx !== 0 ? 'border-t border-gray-100' : ''}`}>
-                            <div className="w-32 h-32 flex-shrink-0 border border-gray-200 p-2 flex items-center justify-center">
-                                <img
-                                    src={item.image || "https://via.placeholder.com/150"}
-                                    alt={item.name}
-                                    className="max-w-full max-h-full object-contain"
-                                />
-                            </div>
+                        {order.items?.map((item: any, idx: number) => (
+                            <div key={idx} className={`p-4 md:p-6 flex flex-col md:flex-row gap-6 ${idx !== 0 ? 'border-t border-gray-100' : ''}`}>
+                                <div className="w-32 h-32 flex-shrink-0 border border-gray-200 p-2 flex items-center justify-center">
+                                    <img
+                                        src={item.image || "https://via.placeholder.com/150"}
+                                        alt={item.name}
+                                        className="max-w-full max-h-full object-contain"
+                                    />
+                                </div>
 
-                            <div className="flex-1">
-                                <div className="flex flex-col md:flex-row justify-between mb-4">
-                                    <div className="space-y-1">
-                                        <h4 className="font-medium text-gray-900 text-lg hover:text-[#2874F0] cursor-pointer line-clamp-1">{item.name}</h4>
-                                        <p className="text-gray-500 text-xs">Ordered on {formatDate(order.createdAt)}</p>
-                                        <div className="flex items-center gap-4 mt-2">
-                                            <div className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium text-gray-700">
-                                                Qty: {item.quantity}
+                                <div className="flex-1">
+                                    <div className="flex flex-col md:flex-row justify-between mb-4">
+                                        <div className="space-y-1">
+                                            <h4 className="font-medium text-gray-900 text-lg hover:text-[#2874F0] cursor-pointer line-clamp-1">{item.name}</h4>
+                                            <p className="text-gray-500 text-xs">Ordered on {formatDate(order.createdAt)}</p>
+                                            <div className="flex items-center gap-4 mt-2">
+                                                <div className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium text-gray-700">
+                                                    Qty: {item.quantity}
+                                                </div>
+                                                <div className="text-xl font-bold text-gray-900">₹{(item.price || 0).toLocaleString('en-IN')}</div>
                                             </div>
-                                            <div className="text-xl font-bold text-gray-900">₹{(item.price || 0).toLocaleString('en-IN')}</div>
+                                            <p className="text-xs text-gray-500 mt-1">Seller: <span className="font-medium text-gray-700">{item.sellerName || 'Alpha Mobiles'}</span></p>
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-1">Seller: <span className="font-medium text-gray-700">{item.sellerName || 'Alpha Mobiles'}</span></p>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Actions */}
-                            <div className="flex md:flex-col gap-3 justify-center md:justify-start min-w-[150px]">
-                                {order.status === 'Pending' && (
+                                {/* Actions */}
+                                <div className="flex md:flex-col gap-3 justify-center md:justify-start min-w-[150px]">
+                                    {order.status === 'Pending' && (
+                                        <button
+                                            onClick={handleCancelOrder}
+                                            className="bg-white border border-gray-300 text-gray-800 font-medium py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full"
+                                        >
+                                            Cancel Order
+                                        </button>
+                                    )}
                                     <button
-                                        onClick={handleCancelOrder}
-                                        className="bg-white border border-gray-300 text-gray-800 font-medium py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full"
+                                        onClick={handleNeedHelp}
+                                        className="flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-800 font-medium py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full"
                                     >
-                                        Cancel Order
+                                        <HelpCircle size={16} className="text-[#2874F0]" /> Need help?
                                     </button>
-                                )}
-                                <button
-                                    onClick={handleNeedHelp}
-                                    className="flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-800 font-medium py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full"
-                                >
-                                    <HelpCircle size={16} className="text-[#2874F0]" /> Need help?
-                                </button>
-                                <button className="bg-white border border-gray-300 text-gray-800 py-2 px-4 rounded hover:shadow-sm transition-all w-full flex justify-center">
-                                    <MoreHorizontal size={20} />
-                                </button>
+                                    <button className="bg-white border border-gray-300 text-gray-800 py-2 px-4 rounded hover:shadow-sm transition-all w-full flex justify-center">
+                                        <MoreHorizontal size={20} />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* Bottom Grid: Address, Payment, Shipping */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -427,7 +429,7 @@ export const TrackOrderPage: React.FC = () => {
 
                 {/* Footer Help */}
                 <div className="mt-8 flex justify-start">
-                    
+
                 </div>
 
             </div>

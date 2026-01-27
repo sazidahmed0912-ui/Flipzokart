@@ -29,7 +29,8 @@ export const ShippingLabel: React.FC<ShippingLabelProps> = ({
     shippingFrom
 }) => {
     // Construct Tracking URL for QR Code
-    const trackingUrl = `${window.location.protocol}//${window.location.host}/track/${trackingId}`;
+    // Construct Tracking URL for QR Code
+    const trackingUrl = `${window.location.protocol}//${window.location.host}/track/${trackingId}?view=shipping_label`;
 
     return (
         <div className="w-[100mm] h-[150mm] bg-white border border-gray-300 p-6 font-sans text-gray-900 mx-auto flex flex-col justify-between" id="shipping-label">
