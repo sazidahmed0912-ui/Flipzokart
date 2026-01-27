@@ -496,7 +496,6 @@ export const ProductDetails: React.FC = () => {
           <div className="p-4 sm:p-6">
             {activeTab === 'details' && (
               <div>
-                <h3 className="font-bold text-base sm:text-lg mb-3">Full Description</h3>
                 <div className="text-sm sm:text-base text-gray-700 leading-relaxed">
                   <p>
                     {product.description || "No description available for this product."}
