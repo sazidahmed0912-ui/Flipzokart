@@ -341,7 +341,52 @@ const calculateShipping = async (req, res) => {
   }
 };
 
-// @desc    Get all orders for a user
+// @desc    Get logged in user orders
+// @route   GET /api/orders/my-orders
+// @access  Private
+const getMyOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user._id })
+      .populate({
+        path: 'products.productId',
+        model: 'Product',
+        select: 'name image'
+      })
+      .sort({ createdAt: -1 });
+
+    // Format order items to match frontend CartItem structure
+    const formattedOrders = orders.map(order => {
+      const formattedProducts = order.products.map(item => {
+        const productRef = item.productId || {};
+        return {
+          id: productRef._id || 'deleted',
+          name: item.name || productRef.name || 'Unknown Product',
+          image: item.image || productRef.image || '',
+          price: item.price !== undefined ? item.price : (productRef.price || 0),
+          quantity: item.quantity,
+          selectedVariants: item.selectedVariants || {},
+          productId: productRef._id
+        };
+      });
+
+      return {
+        ...order.toObject(),
+        id: order._id,
+        items: formattedProducts,
+        userId: order.user,
+        address: order.shippingAddress,
+        total: order.total
+      };
+    });
+
+    res.status(200).json({ success: true, orders: formattedOrders });
+  } catch (error) {
+    console.error('Error fetching my orders:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Get all orders for a user (Admin/Specific)
 // @route   GET /api/orders/user/:userId
 // @access  Private
 const getUserOrders = async (req, res) => {
@@ -350,7 +395,7 @@ const getUserOrders = async (req, res) => {
       .populate({
         path: 'products.productId',
         model: 'Product',
-        select: 'name image' // Populate only name and image of the product
+        select: 'name image'
       })
       .sort({ createdAt: -1 });
 
@@ -358,12 +403,10 @@ const getUserOrders = async (req, res) => {
       return res.status(404).json({ message: "No orders found for this user" });
     }
 
-    // Format order items to match frontend CartItem structure
+    // Format order items
     const formattedOrders = orders.map(order => {
       const formattedProducts = order.products.map(item => {
-        // Use snapshot data if available, otherwise fallback to populated product data
         const productRef = item.productId || {};
-
         return {
           id: productRef._id || 'deleted',
           name: item.name || productRef.name || 'Unknown Product',
@@ -371,7 +414,7 @@ const getUserOrders = async (req, res) => {
           price: item.price !== undefined ? item.price : (productRef.price || 0),
           quantity: item.quantity,
           selectedVariants: item.selectedVariants || {},
-          productId: productRef._id // Keep reference
+          productId: productRef._id
         };
       });
 
@@ -380,7 +423,7 @@ const getUserOrders = async (req, res) => {
         id: order._id, // Add id field
         items: formattedProducts,
         userId: order.user,
-        userName: order.user.name || 'User', // Assuming user might be populated or fetched separately
+        userName: order.user.name || 'User',
         address: order.shippingAddress,
         total: order.total
       };
@@ -588,6 +631,7 @@ module.exports = {
   createRazorpayOrder,
   verifyPayment,
   calculateShipping,
+  getMyOrders,
   getUserOrders,
   getAllOrders,
   getOrderById,

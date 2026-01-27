@@ -7,6 +7,7 @@ const {
   createRazorpayOrder,
   verifyPayment,
   calculateShipping,
+  getMyOrders,
   getUserOrders,
   getAllOrders,
   getOrderById,
@@ -18,7 +19,8 @@ router.post('/create', protect, createOrder);
 router.post('/razorpay', protect, createRazorpayOrder);
 router.post('/verify-payment', protect, verifyPayment);
 router.post('/calculate-shipping', calculateShipping);
-router.get('/user/:userId', protect, getUserOrders); // New route to get orders by user ID
+router.get('/my-orders', protect, getMyOrders); // Get logged in user orders
+router.get('/user/:userId', protect, getUserOrders); // Get orders by user ID (Admin)
 router.get('/admin/all', protect, getAllOrders); // Admin route to get all orders
 router.get('/:id', protect, getOrderById); // Get single order
 router.put('/:id/status', protect, updateOrderStatus); // Update order status

@@ -21,56 +21,55 @@ export const TrackOrderPage: React.FC = () => {
     const token = localStorage.getItem('token');
     const socket = useSocket(token);
 
+    const processOrderData = (data: any) => {
+        if (data) {
+            // The backend returns { items, address, ... trackingData: { events } }
+            // We want the ROOT object (or data.data/data.order wrapper), NOT trackingData
+            const rawOrder = data.data || data.order || data;
+            const normalizedOrder = normalizeOrder(rawOrder);
+
+            // Ensure specific fields required by this page are present if normalizeOrder puts them elsewhere
+            // normalizeOrder puts totals in 'totals' object, but UI uses 'grandTotal'.
+            const orderForUI = {
+                ...normalizedOrder,
+                // Aliases for UI compatibility
+                grandTotal: normalizedOrder.totals?.grandTotal || normalizedOrder.totalAmount || 0,
+                total: normalizedOrder.totals?.grandTotal || 0, // some UI might check .total
+                shippingFee: normalizedOrder.totals?.shipping || 0,
+                shippingAddress: normalizedOrder.address, // UI uses shippingAddress
+                paymentMethod: normalizedOrder.payment?.method,
+                orderId: normalizedOrder.id // UI uses order.orderId
+            };
+
+            setOrder(orderForUI);
+            setError('');
+        }
+    };
+
     const fetchTrackingInfo = useCallback(async (isPolling = false) => {
         if (!trackingId) return;
+
+        // Background polling shouldn't set loading to true
+        if (!isPolling && !order) setLoading(true);
+
         try {
-            // Background polling shouldn't set loading to true
-            if (!isPolling && !order) setLoading(true);
-
+            // Try Tracking API first
             const { data } = await API.get(`/api/tracking/${trackingId}`);
-            if (data) {
-                // DATA NORMALIZATION: Use shared utility (Single Source of Truth)
-                // FIXED: Prioritize full data object over partial 'trackingData' subset
-                // The backend returns { items, address, ... trackingData: { events } }
-                // We want the ROOT object (or data.data/data.order wrapper), NOT trackingData
-                const rawOrder = data.data || data.order || data;
-                const normalizedOrder = normalizeOrder(rawOrder);
-
-                // Ensure specific fields required by this page are present if normalizeOrder puts them elsewhere
-                // normalizeOrder puts totals in 'totals' object, but UI uses 'grandTotal'.
-                // Let's ensure compatibility or update UI. 
-                // Updating UI is better, but to be safe and strictly fix data binding without breaking existing UI access patterns too much:
-                // We'll flatten potentially needed fields if UI expects them at root.
-                // Actually, let's update the UI to use the robust structure or map it here.
-                // Mapping here is safer for "Minimal changes" rule.
-
-                // Re-enforce page-specific needs if normalizeOrder missed them (it shouldn't, but let's be safe)
-                // normalizeOrder returns 'items', 'address', 'payment', 'totals'.
-
-                // Map back to flat structure for existing UI components in this file if they access strict paths
-                const orderForUI = {
-                    ...normalizedOrder,
-                    // Aliases for UI compatibility
-                    grandTotal: normalizedOrder.totals?.grandTotal || normalizedOrder.totalAmount || 0,
-                    total: normalizedOrder.totals?.grandTotal || 0, // some UI might check .total
-                    shippingFee: normalizedOrder.totals?.shipping || 0,
-                    shippingAddress: normalizedOrder.address, // UI uses shippingAddress
-                    paymentMethod: normalizedOrder.payment?.method,
-                    orderId: normalizedOrder.id // UI uses order.orderId
-                };
-
-                setOrder(orderForUI);
-                setError('');
-            } else {
-                if (!order) setError("Order not found");
+            processOrderData(data);
+        } catch (trackingError) {
+            console.warn("Tracking API failed, falling back to Order API...", trackingError);
+            try {
+                // Fallback to Order API
+                const { data } = await API.get(`/api/order/${trackingId}`);
+                processOrderData(data);
+            } catch (orderError) {
+                console.error("Both Tracking and Order APIs failed:", orderError);
+                if (!order) setError('Order not found or access denied.');
             }
-        } catch (err) {
-            console.error("Tracking API failed:", err);
-            if (!order) setError('Order details not available.');
         } finally {
             if (!isPolling) setLoading(false);
         }
-    }, [trackingId]); // Removed 'order' dependency to allow stable reference, handle 'order' check inside if needed for loading logic
+    }, [trackingId]);
 
     const handleCancelOrder = async () => {
         if (!window.confirm("Are you sure you want to cancel this order?")) return;

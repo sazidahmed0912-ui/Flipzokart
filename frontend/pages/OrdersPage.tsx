@@ -30,8 +30,8 @@ const OrdersPage: React.FC = () => {
             try {
                 setLoading(true);
                 // Assuming API endpoint
-                const { data } = await API.get('/api/orders/my-orders');
-                setOrders(data || []);
+                const { data } = await API.get('/api/order/my-orders');
+                setOrders(data.orders || []);
             } catch (error) {
                 console.error("Failed to fetch orders", error);
                 // Fallback or empty state
