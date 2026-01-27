@@ -97,27 +97,31 @@ export const SearchProductCard: React.FC<SearchProductCardProps> = ({ product })
                         </div>
                         <div className="text-xs text-gray-500 mt-1">Free delivery</div>
 
-                        {/* Stock Badge */}
+                        {/* Stock Badge - Moved to Action Column */}
+                    </div>
+
+                    {/* Action Buttons & Stock Signal */}
+                    <div className="flex flex-col items-start sm:items-end gap-2 w-full sm:w-auto">
+                        {/* Stock Badge (Moved here) */}
                         {product.countInStock > 0 && product.countInStock < 10 && (
-                            <div className="text-xs text-orange-600 font-bold mt-1">
+                            <div className="text-xs text-orange-600 font-bold">
                                 Only {product.countInStock} left
                             </div>
                         )}
-                    </div>
 
-                    {/* Action Buttons */}
-                    {product.countInStock > 0 ? (
-                        <button
-                            onClick={handleAddToCart}
-                            className="w-full sm:w-auto bg-[#ff9f00] hover:bg-[#f39700] text-white font-bold py-2.5 px-8 rounded-[2px] shadow-sm text-sm uppercase transition-colors"
-                        >
-                            Add to Cart
-                        </button>
-                    ) : (
-                        <div className="w-full sm:w-auto text-center px-4 py-2 bg-gray-100 text-gray-500 text-sm font-medium rounded-[2px]">
-                            Out of Stock
-                        </div>
-                    )}
+                        {product.countInStock > 0 ? (
+                            <button
+                                onClick={handleAddToCart}
+                                className="w-full sm:w-auto bg-[#ff9f00] hover:bg-[#f39700] text-white font-bold py-2.5 px-8 rounded-[2px] shadow-sm text-sm uppercase transition-colors"
+                            >
+                                Add to Cart
+                            </button>
+                        ) : (
+                            <div className="w-full sm:w-auto text-center px-4 py-2 bg-gray-100 text-gray-500 text-sm font-medium rounded-[2px]">
+                                Out of Stock
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
