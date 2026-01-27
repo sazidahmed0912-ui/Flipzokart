@@ -74,9 +74,9 @@
 .item-title {
   font-size: 16px;
   font-weight: 500;
-  color: #212121;
+  color: #333;
   margin: 0 0 6px 0;
-  line-height: 1.2;
+  line-height: 1.4;
 }
 
 .item-category {
@@ -199,7 +199,7 @@
   .cart-action-btn {
     font-size: 16px;
     font-weight: 600;
-    color: #212121;
+    color: #4a4a4a;
     background: transparent;
     border: none;
     cursor: pointer;

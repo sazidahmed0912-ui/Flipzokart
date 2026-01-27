@@ -209,9 +209,9 @@ const CartPage = () => {
                   </div>
 
                   <div className="action-buttons desktop-layout-actions gap-4">
-                    <button className="cart-action-btn border border-gray-300 rounded px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors">SAVE FOR LATER</button>
+                    <button className="cart-action-btn border border-gray-200 rounded px-6 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors uppercase">SAVE FOR LATER</button>
                     <button
-                      className="cart-action-btn border border-gray-300 rounded px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors"
+                      className="cart-action-btn border border-gray-200 rounded px-6 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors uppercase"
                       onClick={() => removeItem(item)}
                     >
                       REMOVE
