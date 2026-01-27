@@ -33,9 +33,8 @@ export const SearchProductCard: React.FC<SearchProductCardProps> = ({ product })
     };
 
     // Extract specs or use highlights
-    const highlights = product.description
-        ? product.description.split('\n').filter(s => s.trim().length > 5).slice(0, 4)
-        : ['High Quality Material', 'Durable Build', '1 Year Warranty', 'Best Seller'];
+    // Extract specs or use highlights - REMOVED rendering but keeping variable commented out if needed later or just delete.
+    // const highlights = ...
 
     return (
         <div
@@ -80,15 +79,8 @@ export const SearchProductCard: React.FC<SearchProductCardProps> = ({ product })
                         <span className="text-gray-500 text-sm font-medium">({product.reviewsCount?.toLocaleString() || '124'})</span>
                     </div>
 
-                    {/* Highlights (Desktop Only) */}
-                    <ul className="hidden md:block space-y-1 mb-4">
-                        {highlights.map((item, idx) => (
-                            <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
-                                <span className="text-gray-400 mt-1.5">•</span>
-                                <span className="line-clamp-1">{item.replace(/^[-•]/, '').trim()}</span>
-                            </li>
-                        ))}
-                    </ul>
+                    {/* Highlights (Desktop Only) - REMOVED as per user request */}
+                    {/* <ul className="hidden md:block space-y-1 mb-4"> ... </ul> */}
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 md:gap-4 mt-auto">
