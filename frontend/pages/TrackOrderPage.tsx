@@ -75,12 +75,25 @@ export const TrackOrderPage: React.FC = () => {
         if (!window.confirm("Are you sure you want to cancel this order?")) return;
 
         try {
-            const id = order.orderId || order._id || order.id;
+            // Prioritize _id (MongoDB ID) over orderId (which could be a string like 'ORD-123')
+            // Using || chain to be safe
+            const id = order._id || order.id || order.orderId;
+
+            if (!id) {
+                alert("Order ID missing. Please refresh the page.");
+                return;
+            }
+
+            console.log("Cancelling order with ID:", id); // Debug log
+
             await API.put(`/api/order/${id}/status`, { status: 'Cancelled' });
+
+            addToast('success', 'Order cancelled successfully');
             fetchTrackingInfo(); // Refresh data
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to cancel order", err);
-            alert("Failed to cancel order. Please try again or contact support.");
+            const errorMessage = err.response?.data?.message || "Failed to cancel order. Please connect with support.";
+            alert(errorMessage);
         }
     };
 

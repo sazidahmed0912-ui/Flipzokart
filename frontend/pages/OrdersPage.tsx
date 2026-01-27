@@ -66,6 +66,23 @@ const OrdersPage: React.FC = () => {
         }
     };
 
+    const handleCancelOrder = async (orderId: string) => {
+        if (!window.confirm("Are you sure you want to cancel this order?")) return;
+
+        try {
+            await API.put(`/api/order/${orderId}/status`, { status: 'Cancelled' });
+
+            // Optimistically update UI or refetch
+            setOrders(prev => prev.map(o => o._id === orderId || o.id === orderId ? { ...o, status: 'Cancelled' } : o));
+            // addToast('success', 'Order cancelled'); // If toast is available, checking imports.. no useToast here.
+            alert("Order cancelled successfully");
+        } catch (err: any) {
+            console.error("Failed to cancel order", err);
+            const msg = err.response?.data?.message || "Failed to cancel order";
+            alert(msg);
+        }
+    };
+
     return (
         <div className="bg-[#F5F7FA] min-h-screen font-sans text-[#1F2937]">
             <div className="max-w-[1200px] mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
@@ -240,6 +257,7 @@ const OrdersPage: React.FC = () => {
 
                                                         {order.status === 'Pending' && (
                                                             <button
+                                                                onClick={() => handleCancelOrder(order._id || order.id)}
                                                                 className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1.5 px-6 rounded-[2px] text-sm shadow-sm transition-colors whitespace-nowrap"
                                                             >
                                                                 Cancel

@@ -551,6 +551,20 @@ const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
+    // Allow Admin to update to any status
+    // Allow User to update status to 'Cancelled' ONLY if they own the order and it's Pending
+    if (req.user.role !== 'admin') {
+      if (order.user.toString() !== req.user.id) {
+        return res.status(403).json({ message: 'Not authorized to update this order' });
+      }
+      if (status !== 'Cancelled') {
+        return res.status(403).json({ message: 'Users can only cancel their own orders' });
+      }
+      if (order.status !== 'Pending') {
+        return res.status(400).json({ message: 'Only Pending orders can be cancelled' });
+      }
+    }
+
     // Capture old status for logging
     const oldStatus = order.status;
 

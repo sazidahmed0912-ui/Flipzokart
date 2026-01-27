@@ -24,6 +24,7 @@ export interface Product {
   category: string;
   rating: number;
   reviewsCount: number;
+  createdAt?: string;
   stock: number;
   countInStock: number; // Added to match backend response
   isFeatured?: boolean;
