@@ -133,6 +133,14 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
                 </p>
             </div>
 
+            {/* PRICE FREEZE WARNING - Critical UX Requirement */}
+            <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-lg p-4 text-sm text-amber-800">
+                <Info className="flex-shrink-0 mt-0.5" size={18} />
+                <p className="font-medium">
+                    Price will update only after address is saved.
+                </p>
+            </div>
+
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
 

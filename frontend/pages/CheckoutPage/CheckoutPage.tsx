@@ -221,10 +221,11 @@ const CheckoutPage = () => {
     };
 
     const handlePlaceOrder = () => {
-        if (!selectedAddressId) {
-            addToast('warning', 'Please select or add a delivery address first!');
-            return;
-        }
+        // Address is OPTIONAL as per new requirements
+        // if (!selectedAddressId) {
+        //     addToast('warning', 'Please select or add a delivery address first!');
+        //     return;
+        // }
         setIsPlaceOrderLoading(true);
         setTimeout(() => {
             setIsPlaceOrderLoading(false);
@@ -246,7 +247,7 @@ const CheckoutPage = () => {
             </header>
             <main className="checkout-main">
                 <div className="address-section">
-                    <h2>Select Delivery Address</h2>
+                    <h2>Select Delivery Address <span className="text-gray-500 font-normal text-base">(Optional)</span></h2>
                     <div className="address-list">
                         {isLoading && <div className="p-4">Loading addresses...</div>}
                         {!isLoading && addresses.map((addr) => (
