@@ -24,86 +24,492 @@ export const SearchProductCard: React.FC<SearchProductCardProps> = ({ product })
         addToast('success', '✅ Product added to bag!');
     };
 
-    // Extract specs from variants or description if available, else placeholder
-    // The image shows specs like "12GB RAM, 256GB Storage", "Quad Camera Setup"
-    // We'll simulate this from description or just show category/rating
-    const specs = [
-        "12GB RAM, 256GB Storage", // Placeholder simulation based on image
-        "Quad Camera Setup",
-        "Snapdragon 888 Processor"
-    ];
+    const handleToggleWishlist = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleWishlist(product.id);
+    };
+
+    // Extract specs from product description or variants
+    const specs = product.description
+        ? product.description.split('\n').filter(s => s.trim()).slice(0, 3)
+        : ['Premium Quality', 'Best in Class', 'Top Rated'];
 
     return (
-        <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-lg transition-all duration-300 flex flex-col md:flex-row gap-6 relative group">
-            {/* Wishlist Button - Top Right Absolute */}
+        <div className="search-product-card">
+            <style>{`
+                .search-product-card {
+                    background-color: white;
+                    border-radius: 20px;
+                    padding: 32px;
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+                    border: 1px solid rgba(0,0,0,0.05);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 24px;
+                    animation: fadeInUp 0.5s ease-out;
+                }
+
+                .search-product-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+                }
+
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                .product-badge {
+                    position: absolute;
+                    top: 20px;
+                    left: 20px;
+                    background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
+                    color: white;
+                    padding: 6px 14px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+                    z-index: 1;
+                    animation: pulse 2s ease-in-out infinite;
+                }
+
+                @keyframes pulse {
+                    0%, 100% {
+                        transform: scale(1);
+                    }
+                    50% {
+                        transform: scale(1.05);
+                    }
+                }
+
+                .wishlist-btn {
+                    position: absolute;
+                    top: 20px;
+                    right: 20px;
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 12px;
+                    border: 2px solid #e0e0e0;
+                    background-color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    z-index: 2;
+                }
+
+                .wishlist-btn:hover {
+                    transform: scale(1.1);
+                    border-color: #ff4444;
+                }
+
+                .wishlist-btn:active {
+                    transform: scale(0.95);
+                }
+
+                .wishlist-btn.active {
+                    border-color: #ff4444;
+                    background-color: #fff5f5;
+                }
+
+                .product-content {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 24px;
+                }
+
+                .product-image-wrapper {
+                    width: 100%;
+                    max-width: 140px;
+                    height: 180px;
+                    margin: 0 auto;
+                    background-color: #f8f9fa;
+                    border-radius: 16px;
+                    padding: 15px;
+                    overflow: hidden;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .product-image {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;
+                    transition: transform 0.3s ease;
+                }
+
+                .search-product-card:hover .product-image {
+                    transform: scale(1.05);
+                }
+
+                .product-info-section {
+                    flex: 1;
+                }
+
+                .product-title {
+                    font-size: 22px;
+                    font-weight: 700;
+                    color: #1a1a1a;
+                    margin-bottom: 12px;
+                    line-height: 1.3;
+                    letter-spacing: -0.3px;
+                    transition: color 0.2s ease;
+                }
+
+                .product-title:hover {
+                    color: #ff8c00;
+                }
+
+                .rating-section {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 16px;
+                    flex-wrap: wrap;
+                }
+
+                .rating-stars {
+                    display: flex;
+                    gap: 3px;
+                }
+
+                .rating-text {
+                    font-size: 14px;
+                    color: #666;
+                    font-weight: 500;
+                }
+
+                .specs-list {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0 0 16px 0;
+                }
+
+                .spec-item {
+                    font-size: 15px;
+                    color: #555;
+                    margin-bottom: 6px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                .spec-bullet {
+                    width: 4px;
+                    height: 4px;
+                    background-color: #ff8c00;
+                    border-radius: 50%;
+                    flex-shrink: 0;
+                }
+
+                .price-action-section {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 18px;
+                }
+
+                .price-info {
+                    text-align: left;
+                }
+
+                .original-price {
+                    font-size: 15px;
+                    color: #999;
+                    text-decoration: line-through;
+                    margin-bottom: 6px;
+                    font-weight: 500;
+                }
+
+                .current-price-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    flex-wrap: wrap;
+                    margin-bottom: 8px;
+                }
+
+                .current-price {
+                    font-size: 28px;
+                    font-weight: 700;
+                    color: #1a1a1a;
+                    letter-spacing: -0.5px;
+                }
+
+                .discount-badge {
+                    background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+                    color: #856404;
+                    padding: 6px 12px;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    border: 1px solid #ffeaa7;
+                }
+
+                .stock-status {
+                    font-size: 13px;
+                    color: #28a745;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    margin-bottom: 8px;
+                }
+
+                .stock-dot {
+                    width: 8px;
+                    height: 8px;
+                    background-color: #28a745;
+                    border-radius: 50%;
+                    animation: pulse 2s ease-in-out infinite;
+                }
+
+                .add-to-cart-button {
+                    width: 100%;
+                    background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 12px;
+                    padding: 14px 28px;
+                    font-size: 15px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                }
+
+                .add-to-cart-button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(255, 140, 0, 0.4);
+                }
+
+                .add-to-cart-button:active {
+                    transform: translateY(0);
+                }
+
+                /* Tablet: 768px - 1023px */
+                @media (min-width: 768px) {
+                    .product-content {
+                        flex-direction: row;
+                        align-items: center;
+                    }
+
+                    .product-image-wrapper {
+                        max-width: 130px;
+                    }
+
+                    .price-action-section {
+                        align-items: flex-end;
+                        min-width: 220px;
+                    }
+
+                    .price-info {
+                        text-align: right;
+                    }
+
+                    .current-price-row {
+                        justify-content: flex-end;
+                    }
+
+                    .stock-status {
+                        justify-content: flex-end;
+                    }
+                }
+
+                /* Laptop & Desktop: 1024px+ */
+                @media (min-width: 1024px) {
+                    .product-content {
+                        gap: 35px;
+                    }
+
+                    .product-image-wrapper {
+                        max-width: 140px;
+                        flex-shrink: 0;
+                    }
+
+                    .price-action-section {
+                        min-width: 240px;
+                    }
+
+                    .product-title {
+                        font-size: 22px;
+                    }
+
+                    .current-price {
+                        font-size: 28px;
+                    }
+                }
+
+                /* Mobile: < 768px */
+                @media (max-width: 767px) {
+                    .search-product-card {
+                        padding: 20px;
+                        gap: 16px;
+                    }
+
+                    .product-badge {
+                        top: 12px;
+                        left: 12px;
+                        font-size: 11px;
+                        padding: 5px 10px;
+                    }
+
+                    .wishlist-btn {
+                        top: 12px;
+                        right: 12px;
+                        width: 40px;
+                        height: 40px;
+                    }
+
+                    .product-image-wrapper {
+                        max-width: 120px;
+                        height: 150px;
+                    }
+
+                    .product-title {
+                        font-size: 18px;
+                    }
+
+                    .spec-item {
+                        font-size: 14px;
+                    }
+
+                    .current-price {
+                        font-size: 24px;
+                    }
+
+                    .discount-badge {
+                        font-size: 12px;
+                        padding: 5px 10px;
+                    }
+
+                    .add-to-cart-button {
+                        font-size: 14px;
+                        padding: 12px 20px;
+                    }
+                }
+            `}</style>
+
+            {/* Discount Badge */}
+            {discount > 0 && (
+                <div className="product-badge">
+                    {discount}% OFF
+                </div>
+            )}
+
+            {/* Wishlist Button */}
             <button
-                onClick={() => toggleWishlist(product.id)}
-                className={`absolute top-4 right-4 p-2 rounded-full z-10 transition-colors ${isWishlisted ? 'text-red-500' : 'text-gray-300 hover:text-red-500'
-                    }`}
+                onClick={handleToggleWishlist}
+                className={`wishlist-btn ${isWishlisted ? 'active' : ''}`}
             >
-                <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
+                <Heart
+                    size={22}
+                    fill={isWishlisted ? '#ff4444' : 'none'}
+                    stroke={isWishlisted ? '#ff4444' : '#999'}
+                    strokeWidth={2}
+                />
             </button>
 
-            {/* Left: Image */}
-            <div className="w-full md:w-48 h-48 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden relative">
-                <Link to={`/product/${product.id}`} className="block w-full h-full">
-                    <LazyImage
-                        src={getProductImageUrl(product.image)}
-                        alt={product.name}
-                        className="w-full h-full object-contain mix-blend-multiply p-2 group-hover:scale-105 transition-transform duration-500"
-                    />
-                </Link>
-            </div>
+            {/* Product Content */}
+            <div className="product-content">
+                {/* Product Image */}
+                <div className="product-image-wrapper">
+                    <Link to={`/product/${product.id}`}>
+                        <LazyImage
+                            src={getProductImageUrl(product.image)}
+                            alt={product.name}
+                            className="product-image"
+                        />
+                    </Link>
+                </div>
 
-            {/* Center: Details */}
-            <div className="flex-1 flex flex-col justify-center">
-                <Link to={`/product/${product.id}`} className="hover:text-primary transition-colors">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{product.name}</h3>
-                </Link>
+                {/* Product Info */}
+                <div className="product-info-section">
+                    <Link to={`/product/${product.id}`}>
+                        <h3 className="product-title">{product.name}</h3>
+                    </Link>
 
-                {/* Rating */}
-                <div className="flex items-center gap-4 mb-4">
-                    <div className="flex items-center bg-yellow-400 text-white px-2 py-0.5 rounded text-xs inter font-bold gap-1">
-                        <span>{product.rating}</span> <Star size={10} fill="currentColor" />
+                    {/* Rating */}
+                    <div className="rating-section">
+                        <div className="rating-stars">
+                            {[...Array(5)].map((_, i) => (
+                                <Star
+                                    key={i}
+                                    size={18}
+                                    fill={i < Math.floor(product.rating) ? '#ffa500' : '#e0e0e0'}
+                                    stroke="none"
+                                />
+                            ))}
+                        </div>
+                        <span className="rating-text">
+                            {product.reviewsCount.toLocaleString()} reviews
+                        </span>
                     </div>
-                    <span className="text-sm text-gray-400 font-medium">{product.reviewsCount.toLocaleString()} ratings</span>
-                </div>
 
-                {/* Specs List (Simulated or from Description) */}
-                <ul className="text-sm text-gray-500 space-y-1 mb-4">
-                    {specs.map((spec, i) => (
-                        <li key={i} className="flex items-center gap-2 before:content-['•'] before:text-gray-300">
-                            {spec}
+                    {/* Specs */}
+                    <ul className="specs-list">
+                        {specs.slice(0, 3).map((spec, i) => (
+                            <li key={i} className="spec-item">
+                                <span className="spec-bullet"></span>
+                                {spec}
+                            </li>
+                        ))}
+                        <li className="spec-item">
+                            <span className="spec-bullet"></span>
+                            1 Year Warranty
                         </li>
-                    ))}
-                    <li className="flex items-center gap-2 before:content-['•'] before:text-gray-300">
-                        1 Year Warranty
-                    </li>
-                </ul>
-            </div>
-
-            {/* Right: Price & Action */}
-            <div className="w-full md:w-64 flex flex-col justify-center items-start md:items-end gap-2 border-l border-gray-100 pl-0 md:pl-6 md:border-l-0 lg:border-l">
-                <div className="flex items-baseline gap-3 mb-1">
-                    {product.originalPrice > product.price && (
-                        <span className="text-sm text-gray-400 line-through">₹{product.originalPrice.toLocaleString('en-IN')}</span>
-                    )}
-                    <span className="text-2xl font-bold text-gray-900">₹{product.price.toLocaleString('en-IN')}</span>
+                    </ul>
                 </div>
-                {discount > 0 && (
-                    <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded mb-4">
-                        {discount}% OFF
-                    </span>
-                )}
 
-                <div className="w-full space-y-2 mt-auto">
-                    <span className="text-xs text-green-600 font-bold flex items-center gap-1 justify-end w-full mb-2">
-                        <span className="w-2 h-2 bg-green-500 rounded-full"></span> In Stock
-                    </span>
+                {/* Price & Action */}
+                <div className="price-action-section">
+                    <div className="price-info">
+                        {product.originalPrice > product.price && (
+                            <div className="original-price">
+                                ₹{product.originalPrice.toLocaleString('en-IN')}
+                            </div>
+                        )}
+
+                        <div className="current-price-row">
+                            <span className="current-price">
+                                ₹{product.price.toLocaleString('en-IN')}
+                            </span>
+
+                            {discount > 0 && (
+                                <span className="discount-badge">
+                                    {discount}% OFF
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="stock-status">
+                            <span className="stock-dot"></span>
+                            In Stock
+                        </div>
+                    </div>
+
                     <button
                         onClick={handleAddToCart}
-                        className="w-full bg-[#ff9f00] text-white font-bold py-2.5 rounded shadow-sm hover:shadow-md hover:bg-[#f39700] transition-all flex items-center justify-center gap-2"
+                        className="add-to-cart-button"
                     >
+                        <ShoppingCart size={18} />
                         Add to Cart
                     </button>
                 </div>
