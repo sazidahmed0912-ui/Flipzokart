@@ -74,7 +74,7 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
             {/* Name */}
             <div>
                 <div className={`${mobileRowContainer} ${errors.name ? 'border-red-300 bg-red-50' : ''}`}>
-                    <label className={mobileRowLabel}>Name (Optional)</label>
+                    <label className={mobileRowLabel}>Name</label>
                     <input
                         type="text"
                         name="name"
@@ -90,7 +90,7 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
             {/* Phone */}
             <div>
                 <div className={`${mobileRowContainer} ${errors.phone ? 'border-red-300 bg-red-50' : ''}`}>
-                    <label className={mobileRowLabel}>Phone (Optional)</label>
+                    <label className={mobileRowLabel}>Phone</label>
                     <div className="flex items-center w-full">
                         <span className="text-gray-500 mr-2">+91</span>
                         <input
@@ -127,7 +127,7 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
             {/* Address Line 1 */}
             <div>
                 <div className={`${mobileRowContainer} ${errors.street ? 'border-red-300 bg-red-50' : ''}`}>
-                    <label className={mobileRowLabel}>Line 1 (Optional)</label>
+                    <label className={mobileRowLabel}>Addr Line 1</label>
                     <input
                         type="text"
                         name="street"
@@ -143,7 +143,7 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
             {/* Address Line 2 */}
             <div>
                 <div className={mobileRowContainer}>
-                    <label className={mobileRowLabel}>Line 2 (Optional)</label>
+                    <label className={mobileRowLabel}>Addr Line 2</label>
                     <input
                         type="text"
                         name="addressLine2"
@@ -158,7 +158,7 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
             {/* Locality */}
             <div>
                 <div className={mobileRowContainer}>
-                    <label className={mobileRowLabel}>Locality (Optional)</label>
+                    <label className={mobileRowLabel}>Locality</label>
                     <input
                         type="text"
                         name="locality"
@@ -174,7 +174,7 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
                 {/* State */}
                 <div>
                     <div className={`${mobileRowContainer} ${errors.state ? 'border-red-300 bg-red-50' : ''}`}>
-                        <label className={mobileRowLabel}>State (Optional)</label>
+                        <label className={mobileRowLabel}>State</label>
                         <div className="flex-1 relative">
                             <select
                                 name="state"
@@ -202,7 +202,7 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
                 {/* City */}
                 <div>
                     <div className={`${mobileRowContainer} ${errors.city ? 'border-red-300 bg-red-50' : ''}`}>
-                        <label className={mobileRowLabel}>City (Optional)</label>
+                        <label className={mobileRowLabel}>City</label>
                         <div className="flex-1 relative">
                             <select
                                 name="city"

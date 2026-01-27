@@ -109,10 +109,9 @@ const CheckoutPage = () => {
         if (selected) {
             console.log(`[Checkout] Address Found, Pincode: ${selected.pincode}`);
             setContextAddress(selected);
-            // STOP AUTO CALCULATION
-            // if (selected.pincode) {
-            //     calculateShippingCost(selected.pincode);
-            // }
+            if (selected.pincode) {
+                calculateShippingCost(selected.pincode);
+            }
         } else {
             console.warn(`[Checkout] Address ${id} NOT found in local state`);
         }
@@ -127,11 +126,7 @@ const CheckoutPage = () => {
         const addressToSave = addresses.find(addr => addr.id === selectedAddressId);
         if (addressToSave) {
             setContextAddress(addressToSave);
-            // EXPLICIT CALCULATION ON CONFIRM
-            if (addressToSave.pincode) {
-                calculateShippingCost(addressToSave.pincode);
-            }
-            addToast('success', 'Delivery address confirmed!'); // Changed message slightly
+            addToast('success', 'Address selected!');
         }
     };
 
@@ -308,9 +303,6 @@ const CheckoutPage = () => {
                             <span>Delivery charges</span>
                             <span className={deliveryCharges === 0 ? "free" : ""}>{deliveryCharges === 0 ? 'FREE' : `₹${deliveryCharges.toLocaleString('en-IN')}`}</span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1 mb-2 italic">
-                            Delivery charges will update after address is saved/confirmed.
-                        </p>
                         <div className="price-summary-item">
                             <span>Platform Fee</span>
                             <span>₹{platformFee}</span>

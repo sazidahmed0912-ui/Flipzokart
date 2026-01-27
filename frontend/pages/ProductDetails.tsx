@@ -471,7 +471,7 @@ export const ProductDetails: React.FC = () => {
                 : 'text-gray-600 hover:text-gray-900'
                 }`}
             >
-              Product Details
+              Specifications
             </button>
             <button
               onClick={() => setActiveTab('specifications')}
@@ -480,7 +480,7 @@ export const ProductDetails: React.FC = () => {
                 : 'text-gray-600 hover:text-gray-900'
                 }`}
             >
-              Specifications
+              Description
             </button>
             <button
               onClick={() => setActiveTab('reviews')}
