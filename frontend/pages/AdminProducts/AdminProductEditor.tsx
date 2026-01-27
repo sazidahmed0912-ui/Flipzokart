@@ -24,7 +24,8 @@ export const AdminProductEditor: React.FC = () => {
         image: '',
         category: 'Electronics', // Default
         countInStock: '',
-        description: ''
+        description: '',
+        isFeatured: false
     });
 
     useEffect(() => {
@@ -42,7 +43,8 @@ export const AdminProductEditor: React.FC = () => {
                 image: data.image,
                 category: data.category,
                 countInStock: data.countInStock,
-                description: data.description || ''
+                description: data.description || '',
+                isFeatured: data.isFeatured || false
             });
         } catch (error) {
             console.error("Failed to load product", error);
@@ -54,8 +56,11 @@ export const AdminProductEditor: React.FC = () => {
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+        }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -226,21 +231,50 @@ export const AdminProductEditor: React.FC = () => {
                                     <Tag size={18} className="text-[#2874F0]" /> Organization
                                 </h2>
 
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Category</label>
-                                    <select
-                                        name="category"
-                                        value={formData.category}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all cursor-pointer"
-                                    >
-                                        <option>Electronics</option>
-                                        <option>Fashion</option>
-                                        <option>Home</option>
-                                        <option>Beauty</option>
-                                        <option>Sports</option>
-                                        <option>Groceries</option>
-                                    </select>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Category</label>
+                                        <select
+                                            name="category"
+                                            value={formData.category}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all cursor-pointer"
+                                        >
+                                            <option>Electronics</option>
+                                            <option>Fashion</option>
+                                            <option>Home</option>
+                                            <option>Beauty</option>
+                                            <option>Sports</option>
+                                            <option>Groceries</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                        <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                            <input
+                                                type="checkbox"
+                                                name="isFeatured"
+                                                id="isFeatured"
+                                                checked={formData.isFeatured}
+                                                onChange={handleChange}
+                                                className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                                                style={{
+                                                    right: formData.isFeatured ? '0' : '50%',
+                                                    borderColor: formData.isFeatured ? '#2874F0' : '#E5E7EB'
+                                                }}
+                                            />
+                                            <label
+                                                htmlFor="isFeatured"
+                                                className={`toggle-label block overflow-hidden h-5 rounded-full cursor-pointer ${formData.isFeatured ? 'bg-[#2874F0]' : 'bg-gray-300'}`}
+                                            ></label>
+                                        </div>
+                                        <div>
+                                            <label htmlFor="isFeatured" className="text-sm font-bold text-gray-700 cursor-pointer block">
+                                                Featured Product
+                                            </label>
+                                            <p className="text-xs text-gray-500">Show in "Featured on Fzokart"</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

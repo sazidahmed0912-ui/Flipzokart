@@ -43,7 +43,6 @@ const ProfilePage = () => {
 
   // STRICT 5s SYNC ENGINE
   useEffect(() => {
-    // Initial Fetch
     const syncData = async () => {
       try {
         // 1. Silent Profile Sync
@@ -60,15 +59,34 @@ const ProfilePage = () => {
         const fetchedActivities = await authService.getActivities();
         setActivities(fetchedActivities);
 
-        // 3. Order Count Sync (if user id available)
-        const uid = updatedUser?.id || user?.id;
+        // 3. Order Count Sync (Robust ID check)
+        const currentUser = updatedUser || user;
+        // Fix: Cast to any to access _id if it exists but isn't in type
+        const uid = currentUser?.id || (currentUser as any)?._id;
+
         if (uid) {
-          const customRes = await API.get(`/api/order/user/${uid}`);
-          const orders = Array.isArray(customRes.data) ? customRes.data : (customRes.data.orders || []);
-          setOrderCount(orders.length);
+          try {
+            const customRes = await API.get(`/api/order/user/${uid}`);
+            // Handle different response structures
+            let orders = [];
+            if (Array.isArray(customRes.data)) {
+              orders = customRes.data;
+            } else if (customRes.data?.orders && Array.isArray(customRes.data.orders)) {
+              orders = customRes.data.orders;
+            } else if (customRes.data?.data && Array.isArray(customRes.data.data)) {
+              orders = customRes.data.data;
+            }
+
+            console.log(`[Profile Sync] User: ${uid}, Orders Found: ${orders.length}`);
+            setOrderCount(orders.length);
+          } catch (orderErr) {
+            console.error("[Profile Sync] Order fetch failed:", orderErr);
+          }
+        } else {
+          console.warn("[Profile Sync] No UID found for sync");
         }
       } catch (e) {
-        // Silent Fail
+        console.error("[Profile Sync] General Sync Error:", e);
       }
     };
 

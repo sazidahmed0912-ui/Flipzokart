@@ -117,10 +117,11 @@ const PaymentPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      await createOrder({
+      const { data } = await createOrder({
         products: cart.map((i) => ({
           productId: i.id,
           quantity: i.quantity,
+          selectedVariants: i.selectedVariants
         })),
         subtotal,
         deliveryCharges,
@@ -130,7 +131,8 @@ const PaymentPage: React.FC = () => {
       });
 
       clearCart();
-      navigate("/order-success");
+      // Use the returned order ID for the success page
+      navigate(`/order-success?orderId=${data.order.id}`);
     } catch (err: any) {
       handlePaymentError(err);
     } finally {
@@ -164,13 +166,14 @@ const PaymentPage: React.FC = () => {
         order_id: order.id,
         handler: async (response: any) => {
           try {
-            await verifyPayment({
+            const { data } = await verifyPayment({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               products: cart.map((i) => ({
                 productId: i.id,
                 quantity: i.quantity,
+                selectedVariants: i.selectedVariants
               })),
               subtotal,
               deliveryCharges,
@@ -180,7 +183,7 @@ const PaymentPage: React.FC = () => {
             });
 
             clearCart();
-            navigate("/order-success");
+            navigate(`/order-success?orderId=${data.order.id}`);
           } catch (err) {
             handlePaymentError(err);
           }
