@@ -496,10 +496,17 @@ export const ProductDetails: React.FC = () => {
           <div className="p-4 sm:p-6">
             {activeTab === 'details' && (
               <div>
-                <div className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                  <p>
-                    {product.description || "No description available for this product."}
-                  </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-500">Category</span>
+                    <span className="font-medium text-gray-900">{product.category}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-500">Stock Status</span>
+                    <span className={`font-medium ${product.countInStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
