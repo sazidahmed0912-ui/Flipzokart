@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { sendPasswordResetEmail } = require("../services/emailService");
+const SellerBusiness = require("../models/SellerBusiness");
+const SellerStore = require("../models/SellerStore");
 
 // REGISTER
 const register = async (req, res) => {
@@ -240,4 +242,148 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { register, login, forgotPassword, resetPassword };
+// --- SELLER ONBOARDING STEPS ---
+
+// STEP 1: REGISTER SELLER ACCOUNT
+const registerSeller = async (req, res) => {
+  try {
+    let { name, email, phone, password, address } = req.body;
+
+    email = email.trim().toLowerCase();
+    password = password.trim();
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create user with draft status
+    const newUser = await User.create({
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      role: 'pending_seller',
+      status: 'draft',
+      addresses: [{
+        address: address,
+        type: 'Work'
+      }]
+    });
+
+    const token = jwt.sign(
+      { id: newUser._id },
+      process.env.JWT_SECRET || "secret_key_123",
+      { expiresIn: "30d" }
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Seller account created",
+      token,
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        phone: newUser.phone,
+        role: newUser.role,
+        status: newUser.status
+      },
+      nextStep: 2
+    });
+  } catch (error) {
+    console.error("Seller Registration error:", error);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// STEP 2: BUSINESS VERIFICATION
+const registerBusiness = async (req, res) => {
+  try {
+    const { gstin, pan } = req.body;
+    const sellerId = req.user._id;
+
+    if (!gstin || !pan) {
+      return res.status(400).json({ message: "GSTIN and PAN are required" });
+    }
+
+    const business = await SellerBusiness.findOneAndUpdate(
+      { sellerId },
+      { gstin, pan, verificationStatus: 'pending' },
+      { new: true, upsert: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Business details saved",
+      business,
+      nextStep: 3
+    });
+  } catch (error) {
+    console.error("Business Registration error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// STEP 3: STORE SETUP
+const registerStore = async (req, res) => {
+  try {
+    const { storeName, category } = req.body;
+    const sellerId = req.user._id;
+
+    if (!storeName || !category) {
+      return res.status(400).json({ message: "Store Name and Category are required" });
+    }
+
+    const storeExists = await SellerStore.findOne({ storeName });
+    if (storeExists && storeExists.sellerId.toString() !== sellerId.toString()) {
+      return res.status(400).json({ message: "Store Name is already taken" });
+    }
+
+    const store = await SellerStore.findOneAndUpdate(
+      { sellerId },
+      { storeName, category, isActive: true },
+      { new: true, upsert: true }
+    );
+
+    const user = await User.findByIdAndUpdate(sellerId, {
+      role: 'seller',
+      status: 'Active'
+    }, { new: true });
+
+    res.status(200).json({
+      success: true,
+      message: "Store setup complete",
+      store,
+      user: {
+        id: user._id,
+        name: user.name,
+        role: user.role,
+        status: user.status
+      }
+    });
+  } catch (error) {
+    console.error("Store Setup error:", error);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "Store Name already exists" });
+    }
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  forgotPassword,
+  resetPassword,
+  registerSeller,
+  registerBusiness,
+  registerStore
+};

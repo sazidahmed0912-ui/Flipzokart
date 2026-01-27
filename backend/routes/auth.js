@@ -2,12 +2,25 @@ const express = require("express");
 const router = express.Router();
 const protect = require("../middleware/protect");
 
-const { register, login, forgotPassword, resetPassword } = require("../controllers/authController");
+const {
+  register,
+  login,
+  forgotPassword,
+  resetPassword,
+  registerSeller,
+  registerBusiness,
+  registerStore
+} = require("../controllers/authController");
 
 router.post("/register", register);
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
+
+// Seller Routes
+router.post("/seller/register", registerSeller);
+router.post("/seller/business", protect, registerBusiness); // Protect ensures we have a logged-in user (created in step 1)
+router.post("/seller/store", protect, registerStore);
 router.get("/me", protect, async (req, res) => {
   res.status(200).json({
     success: true,
