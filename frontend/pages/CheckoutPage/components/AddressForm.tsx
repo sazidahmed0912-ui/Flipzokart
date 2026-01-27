@@ -27,6 +27,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
 
     useEffect(() => {
         if (addressToEdit) {
+            console.log("[AddressForm] Rehydrating Form with:", addressToEdit);
             // Robust mapping to handle potentially malformed or legacy backend data
             // We strip any "undefined" strings or nulls to empty string for form inputs
             setFormData({
@@ -75,6 +76,9 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
             postalCode: formData.zip
         } as Address;
 
+
+
+        console.log("[AddressForm] Submitting:", finalAddress);
         onSave(finalAddress);
     };
 

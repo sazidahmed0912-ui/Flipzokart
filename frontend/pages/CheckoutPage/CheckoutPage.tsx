@@ -97,14 +97,18 @@ const CheckoutPage = () => {
     const totalPayable = subtotal + deliveryCharges + platformFee;
 
     const handleSelectAddress = async (id: string | number) => {
+        console.log(`[Checkout] Selecting Address: ${id}`);
         setSelectedAddressId(id);
         const selected = addresses.find(addr => addr.id === id);
 
         if (selected) {
+            console.log(`[Checkout] Address Found, Pincode: ${selected.pincode}`);
             setContextAddress(selected);
             if (selected.pincode) {
                 calculateShippingCost(selected.pincode);
             }
+        } else {
+            console.warn(`[Checkout] Address ${id} NOT found in local state`);
         }
     };
 
@@ -127,6 +131,7 @@ const CheckoutPage = () => {
     };
 
     const handleEditAddress = (address: Address) => {
+        console.log("[Checkout] Edit Clicked for:", address);
         setAddressToEdit(address);
         setIsAddressFormOpen(true);
     };
@@ -158,6 +163,7 @@ const CheckoutPage = () => {
     };
 
     const handleSaveAddress = async (address: Partial<Address>) => {
+        console.log("[Checkout] Saving Address (Payload):", address);
         try {
             if (addressToEdit) {
                 // UPDATE existing address
@@ -172,16 +178,22 @@ const CheckoutPage = () => {
             const { data } = await API.get('/api/user/address');
 
             // 🛑 CRITICAL: Normalize data immediately using getSafeAddress
+            console.log("[Checkout] Raw Address Data from Backend:", data.addresses);
+
             // This ensures 'pincode', 'street' etc are always present and not undefined
             const updatedAddresses: Address[] = (data.addresses || []).map((a: any) => {
                 const safe = getSafeAddress(a);
-                return {
+                const final = {
                     ...safe,
                     id: a._id || a.id || Date.now(),
                     _id: a._id, // Keep _id for backend ops
                     country: 'India'
                 } as Address;
+                // Log if safe mapping missed something
+                if (!final.pincode) console.warn("[Checkout] Address Normalized but Pincode MISSING:", final);
+                return final;
             });
+            console.log("[Checkout] Final Normalized Addresses:", updatedAddresses);
 
             setAddresses(updatedAddresses);
             addToast('success', addressToEdit ? "Address updated" : "Address added");

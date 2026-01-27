@@ -39,8 +39,8 @@ const AddressCard: React.FC<AddressCardProps> = ({
                 {isSelected && (
                     <div className="address-card-actions">
 
-                        <button className="address-btn address-btn-edit" onClick={() => onEdit(address)}>Edit</button>
-                        <button className="address-btn address-btn-delete" onClick={() => onDelete(address.id)}>Delete</button>
+                        <button className="address-btn address-btn-edit" onClick={(e) => { e.stopPropagation(); onEdit(address); }}>Edit</button>
+                        <button className="address-btn address-btn-delete" onClick={(e) => { e.stopPropagation(); onDelete(address.id); }}>Delete</button>
                     </div>
                 )}
             </div>
