@@ -1,8 +1,9 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Filter, ChevronDown, Grid, List, Search } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
+import { SearchProductCard } from '../components/SearchProductCard';
 import { useApp } from '../store/Context';
 import { CATEGORIES } from '../constants';
 
@@ -16,6 +17,14 @@ export const ShopPage: React.FC = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]);
   const [sortBy, setSortBy] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Default to list view if searching
+  useEffect(() => {
+    if (initialQuery) {
+      setViewMode('list');
+    }
+  }, [initialQuery]);
 
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
@@ -85,22 +94,40 @@ export const ShopPage: React.FC = () => {
 
         {/* Product Grid */}
         <div className="flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 shadow-sm">
             <div>
-              <h2 className="text-2xl font-bold">Shop {selectedCategory !== 'All' ? `- ${selectedCategory}` : ''}</h2>
-              <p className="text-gray-500 text-sm">Showing {filteredProducts.length} products</p>
+              <h2 className="text-xl font-bold">
+                {initialQuery ? `Search Results "${initialQuery}"` : (selectedCategory !== 'All' ? selectedCategory : 'All Products')}
+              </h2>
+              <p className="text-gray-500 text-sm">Showing {filteredProducts.length} results</p>
             </div>
-            
-            <div className="flex items-center gap-3">
-              <button 
+
+            <div className="flex items-center gap-4">
+              <button
                 onClick={() => setShowFilters(!showFilters)}
                 className="lg:hidden flex items-center gap-2 px-4 py-2 bg-lightGray rounded-lg text-sm font-bold"
               >
                 <Filter size={16} /> Filters
               </button>
+
+              <div className="hidden sm:flex items-center bg-gray-50 rounded-lg p-1 border border-gray-100">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow text-primary' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  <Grid size={18} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow text-primary' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  <List size={18} />
+                </button>
+              </div>
+
               <div className="relative">
-                <select 
-                  className="appearance-none bg-lightGray border-none rounded-lg px-4 py-2 pr-10 text-sm font-bold focus:ring-0 cursor-pointer"
+                <select
+                  className="appearance-none bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 pr-10 text-sm font-medium focus:ring-0 cursor-pointer outline-none hover:bg-gray-100 transition-colors"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                 >
@@ -109,15 +136,19 @@ export const ShopPage: React.FC = () => {
                   <option value="price-high">Price: High to Low</option>
                   <option value="rating">Top Rated</option>
                 </select>
-                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" />
               </div>
             </div>
           </div>
 
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
               {filteredProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
+                viewMode === 'list' ? (
+                  <SearchProductCard key={product.id} product={product} />
+                ) : (
+                  <ProductCard key={product.id} product={product} />
+                )
               ))}
             </div>
           ) : (
@@ -127,8 +158,8 @@ export const ShopPage: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold">No products found</h3>
               <p className="text-gray-500">Try adjusting your filters or search query.</p>
-              <button 
-                onClick={() => {setSelectedCategory('All'); setPriceRange([0, 200000]);}}
+              <button
+                onClick={() => { setSelectedCategory('All'); setPriceRange([0, 200000]); }}
                 className="text-primary font-bold hover:underline"
               >
                 Reset all filters
