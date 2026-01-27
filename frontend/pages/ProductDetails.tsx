@@ -375,8 +375,8 @@ export const ProductDetails: React.FC = () => {
               );
             })}
 
-            {/* Desktop/Tablet Action Buttons */}
-            <div className="hidden md:flex mt-6 sm:mt-8 flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Action Buttons (Visible on Mobile & Desktop) */}
+            <div className="flex mt-6 sm:mt-8 flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
@@ -581,7 +581,7 @@ export const ProductDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Sticky Bottom Action Bar */}
+      {/* Mobile Sticky Bottom Action Bar - HIDDEN as per request to move buttons inline
       <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-3 z-50 md:hidden flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <button
           onClick={handleAddToCart}
@@ -604,7 +604,8 @@ export const ProductDetails: React.FC = () => {
         >
           {isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW'}
         </button>
-      </div>
+      </div> 
+      */}
 
     </div>
   );

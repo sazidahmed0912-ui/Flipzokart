@@ -140,10 +140,6 @@ const CartPage = () => {
         <div className="cart-items-section">
           <div className="cart-header">
             <h2>My Cart ({cartItems.length})</h2>
-            <div className="cart-branding">
-              <span className="brand-fzo">Fzo</span>
-              <span className="brand-kart">kart</span>
-            </div>
           </div>
 
           <div className="cart-items-list">
