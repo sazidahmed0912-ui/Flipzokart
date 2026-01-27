@@ -54,9 +54,10 @@ const ProfileSidebar: React.FC = () => {
     ];
 
     return (
+    return (
         <div className="w-full lg:w-[280px] flex-shrink-0 space-y-4">
-            {/* User Hello Card */}
-            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 flex items-center gap-4">
+            {/* User Hello Card - Desktop Only (Mobile has header in main content) */}
+            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 hidden lg:flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[#f0f5ff] flex items-center justify-center border border-[#e0e0e0] overflow-hidden">
                     {user?.avatar ? (
                         <img src={user.avatar.startsWith('http') ? user.avatar : `/${user.avatar}`} alt="User" className="w-full h-full object-cover" />
@@ -74,9 +75,9 @@ const ProfileSidebar: React.FC = () => {
                 </div>
             </div>
 
-            {/* Navigation Menu */}
-            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] overflow-hidden">
-                <div className="flex lg:flex-col overflow-x-auto lg:overflow-visible scrollbar-hide py-2 lg:py-0">
+            {/* Navigation Menu (Scrollable Tabs on Mobile) */}
+            <div className="bg-white rounded-xl shadow-none lg:shadow-[0_4px_12px_rgba(0,0,0,0.06)] overflow-hidden">
+                <div className="flex lg:flex-col overflow-x-auto lg:overflow-visible scrollbar-hide py-2 lg:py-0 px-2 lg:px-0 gap-2 lg:gap-0">
                     {menuItems.map((item, i) => {
                         // Inject Language Option before Help Center
                         if (item.key === 'help_center') {
@@ -84,7 +85,7 @@ const ProfileSidebar: React.FC = () => {
                                 <React.Fragment key="lang-fragment">
                                     <div
                                         onClick={() => setLangModalOpen(true)}
-                                        className="flex items-center gap-2 lg:gap-4 px-4 lg:px-6 py-3 lg:py-4 cursor-pointer transition-colors border-r lg:border-r-0 lg:border-b border-gray-50 flex-shrink-0 whitespace-nowrap text-gray-600 hover:bg-gray-50"
+                                        className="flex items-center gap-2 lg:gap-4 px-4 lg:px-6 py-2.5 lg:py-4 cursor-pointer transition-all border border-gray-100 lg:border-0 lg:border-b lg:border-gray-50 flex-shrink-0 whitespace-nowrap text-gray-600 bg-white hover:bg-gray-50 rounded-full lg:rounded-none"
                                     >
                                         <Globe size={18} className="lg:w-5 lg:h-5 text-gray-400" />
                                         <div className="flex-1 flex items-center justify-between">
@@ -161,11 +162,14 @@ const MenuItem = ({ item, isActive, onClick, t }: any) => {
     return (
         <div
             onClick={() => onClick(item.path)}
-            className={`flex items-center gap-2 lg:gap-4 px-4 lg:px-6 py-3 lg:py-4 cursor-pointer transition-colors border-r lg:border-r-0 lg:border-b last:border-0 border-gray-50 flex-shrink-0 whitespace-nowrap
-                ${isActive ? "bg-[#F5FAFF] text-[#2874F0]" : "text-gray-600 hover:bg-gray-50"}
+            className={`flex items-center gap-2 lg:gap-4 px-4 lg:px-6 py-2.5 lg:py-4 cursor-pointer transition-all border lg:border-0 lg:border-b last:border-0 flex-shrink-0 whitespace-nowrap rounded-full lg:rounded-none
+                ${isActive
+                    ? "bg-[#2874F0] text-white border-[#2874F0] lg:bg-[#F5FAFF] lg:text-[#2874F0] lg:border-gray-50"
+                    : "bg-white text-gray-600 border-gray-100 hover:bg-gray-50"
+                }
             `}
         >
-            <Icon size={18} className={`lg:w-5 lg:h-5 ${isActive ? "text-[#2874F0]" : "text-gray-400"}`} />
+            <Icon size={18} className={`lg:w-5 lg:h-5 ${isActive ? "text-white lg:text-[#2874F0]" : "text-gray-400"}`} />
             <span className={`text-sm lg:text-base font-medium ${isActive ? 'font-bold' : ''}`}>{t(item.key)}</span>
             {isActive && <ChevronRight size={16} className="ml-auto text-[#2874F0] hidden lg:block" />}
         </div>

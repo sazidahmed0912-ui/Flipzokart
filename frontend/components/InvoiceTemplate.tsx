@@ -94,7 +94,7 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
                     </div>
                     <div className="flex">
                         <span className="w-32 font-bold text-gray-800 text-sm">Payment Method:</span>
-                        <span className="text-sm font-medium text-gray-900 uppercase">{order.paymentMethod || 'Prepaid'}</span>
+                        <span className="text-sm font-medium text-gray-900 uppercase">{order.paymentMethod || order.payment?.method || 'Prepaid'}</span>
                     </div>
                 </div>
 

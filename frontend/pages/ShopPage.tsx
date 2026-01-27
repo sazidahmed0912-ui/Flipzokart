@@ -151,22 +151,45 @@ export const ShopPage: React.FC = () => {
           {/* ──────── RIGHT GRID ──────── */}
           <main className="flex-1">
 
-            {/* Top Bar */}
+            {/* Top Bar - Mobile Optimized */}
             <div className="bg-white p-4 rounded-sm shadow-sm mb-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  {initialQuery && <h1 className="text-lg font-medium text-gray-900">Search results for <span className="font-bold italic">"{initialQuery}"</span></h1>}
-                  {!initialQuery && <h1 className="text-lg font-bold text-gray-900">{selectedCategory} Products</h1>}
-                  <p className="text-xs text-gray-500 mt-1">Check each product page for other buying options</p>
+              <div className="flex flex-col gap-4">
+
+                {/* Header & Result Count */}
+                <div className="flex justify-between items-center">
+                  <div>
+                    {initialQuery && <h1 className="text-base sm:text-lg font-medium text-gray-900 line-clamp-1">Search results for <span className="font-bold italic">"{initialQuery}"</span></h1>}
+                    {!initialQuery && <h1 className="text-base sm:text-lg font-bold text-gray-900">{selectedCategory} Products</h1>}
+                    <p className="text-xs text-gray-500 mt-0.5">Check each product page for options</p>
+                  </div>
+                  {/* Mobile Filter Button (if not already handled by parent layout, but sticking to desktop structure for now inside main) */}
                 </div>
 
-                <div className="flex items-center gap-4 self-end sm:self-auto">
-                  <span className="text-sm font-bold text-gray-900">Sort By</span>
-                  <div className="flex gap-4 text-sm text-gray-600">
-                    <button onClick={() => setSortBy('relevance')} className={`hover:text-[#2874F0] ${sortBy === 'relevance' ? 'text-[#2874F0] font-bold border-b-2 border-[#2874F0] pb-0.5' : ''}`}>Relevance</button>
-                    <button onClick={() => setSortBy('price-low')} className={`hover:text-[#2874F0] ${sortBy === 'price-low' ? 'text-[#2874F0] font-bold border-b-2 border-[#2874F0] pb-0.5' : ''}`}>Price -- Low to High</button>
-                    <button onClick={() => setSortBy('price-high')} className={`hover:text-[#2874F0] ${sortBy === 'price-high' ? 'text-[#2874F0] font-bold border-b-2 border-[#2874F0] pb-0.5' : ''}`}>Price -- High to Low</button>
-                    <button onClick={() => setSortBy('newest')} className={`hover:text-[#2874F0] ${sortBy === 'newest' ? 'text-[#2874F0] font-bold border-b-2 border-[#2874F0] pb-0.5' : ''}`}>Newest First</button>
+                {/* Sort Options - Scrollable on Mobile */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+                  <span className="text-sm font-bold text-gray-900 hidden sm:block">Sort By</span>
+
+                  <div className="flex gap-2 sm:gap-4 text-sm text-gray-600 overflow-x-auto pb-1 sm:pb-0 whitespace-nowrap scrollbar-hide">
+                    {[
+                      { label: 'Relevance', value: 'relevance' },
+                      { label: 'Price -- Low to High', value: 'price-low' },
+                      { label: 'Price -- High to Low', value: 'price-high' },
+                      { label: 'Newest First', value: 'newest' }
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setSortBy(option.value)}
+                        className={`
+                          px-3 py-1.5 sm:px-0 sm:py-0 rounded-full sm:rounded-none border sm:border-0 transition-colors
+                          ${sortBy === option.value
+                            ? 'bg-[#2874F0] text-white border-[#2874F0] sm:bg-transparent sm:text-[#2874F0] sm:font-bold sm:border-b-2 sm:border-[#2874F0] sm:pb-0.5'
+                            : 'border-gray-300 text-gray-600 hover:text-[#2874F0] hover:border-[#2874F0]'
+                          }
+                        `}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
