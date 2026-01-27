@@ -27,16 +27,17 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
 
     useEffect(() => {
         if (addressToEdit) {
-            console.log("Editing Address:", addressToEdit); // Debug
+            // Robust mapping to handle potentially malformed or legacy backend data
+            // We strip any "undefined" strings or nulls to empty string for form inputs
             setFormData({
-                name: addressToEdit.fullName || (addressToEdit as any).name || '', /* fallback to name if fullName missing */
-                phone: addressToEdit.phone || '',
-                street: addressToEdit.street || '',
-                addressLine2: addressToEdit.addressLine2 || '',
-                locality: addressToEdit.addressLine2 || '',
-                city: addressToEdit.city || '',
+                name: addressToEdit.fullName || addressToEdit.name || '',
+                phone: addressToEdit.phone || (addressToEdit as any).mobile || '',
+                street: addressToEdit.street || (addressToEdit as any).address || (addressToEdit as any).addressLine1 || '',
+                addressLine2: addressToEdit.addressLine2 || (addressToEdit as any).locality || '',
+                locality: addressToEdit.addressLine2 || (addressToEdit as any).locality || '', // duplicate for comp
+                city: addressToEdit.city || (addressToEdit as any).district || '',
                 state: addressToEdit.state || '',
-                zip: addressToEdit.pincode || (addressToEdit as any).zip || '',
+                zip: addressToEdit.pincode || (addressToEdit as any).zip || (addressToEdit as any).postalCode || '',
                 type: (addressToEdit.type as any) || 'Home'
             });
         }
@@ -55,22 +56,23 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
 
         const finalAddress: Address = {
             id: addressToEdit?.id ?? Date.now(),
+            _id: addressToEdit?._id, // Preserve Mongo ID if exists
             fullName: formData.name,
-            name: formData.name, // Legacy support
             phone: formData.phone,
-            mobile: formData.phone, // Legacy support
             street: formData.street,
-            address: formData.street, // Legacy support
-            addressLine1: formData.street, // Legacy support
             addressLine2: formData.addressLine2,
-            locality: formData.addressLine2, // Legacy support
             city: formData.city,
             state: formData.state,
             pincode: formData.zip,
-            zip: formData.zip, // Legacy support
             type: formData.type,
             country: 'India',
-            isDefault: false
+            isDefault: addressToEdit?.isDefault || false,
+            // Legacy/Backend Compatibility Fields (to ensure persistence works even if backend expects these)
+            name: formData.name,
+            mobile: formData.phone,
+            address: formData.street,
+            zip: formData.zip,
+            postalCode: formData.zip
         } as Address;
 
         onSave(finalAddress);

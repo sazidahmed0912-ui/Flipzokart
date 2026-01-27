@@ -75,12 +75,16 @@ const CheckoutPage = () => {
     }, [user]);
 
     const calculateShippingCost = async (pincode: string) => {
+        if (!pincode || pincode.length < 6) return; // Guard against bad pincodes
+
         try {
             const { data } = await calculateShipping(pincode);
             setDeliveryCharges(data.shippingCost);
         } catch (error) {
             console.error("Failed to calculate shipping:", error);
-            setDeliveryCharges(50);
+            // Do NOT overwrite with default 50 if previous value exists, unless it's a hard error
+            // keeping it 50 as safe fallback is okay, but prevents 'random' jumps 
+            // setDeliveryCharges(50); 
         }
     }
 
@@ -139,8 +143,16 @@ const CheckoutPage = () => {
                     setSelectedAddressId(null);
                     setContextAddress(null);
                 }
-            } catch (e) {
-                addToast('error', "Failed to delete address");
+            } catch (e: any) {
+                // If backend delete fails but we have a local ID, try to remove it anyway if it's not a mongo ID
+                if (typeof id === 'number') {
+                    setAddresses(prev => prev.filter(addr => addr.id !== id));
+                    addToast('success', "Address removed");
+                    if (selectedAddressId === id) setSelectedAddressId(null);
+                } else {
+                    console.error("Delete failed", e);
+                    addToast('error', "Failed to delete address");
+                }
             }
         }
     };
@@ -156,31 +168,57 @@ const CheckoutPage = () => {
             }
 
             // Refresh list
+            // Refresh list & Normalize
             const { data } = await API.get('/api/user/address');
-            const updatedRaw = data.addresses || [];
-            const updatedAddresses: Address[] = updatedRaw.map((a: any) => ({
-                ...a,
-                id: a._id,
-                name: a.fullName || a.name
-            }));
+
+            // 🛑 CRITICAL: Normalize data immediately using getSafeAddress
+            // This ensures 'pincode', 'street' etc are always present and not undefined
+            const updatedAddresses: Address[] = (data.addresses || []).map((a: any) => {
+                const safe = getSafeAddress(a);
+                return {
+                    ...safe,
+                    id: a._id || a.id || Date.now(),
+                    _id: a._id, // Keep _id for backend ops
+                    country: 'India'
+                } as Address;
+            });
 
             setAddresses(updatedAddresses);
             addToast('success', addressToEdit ? "Address updated" : "Address added");
             setIsAddressFormOpen(false);
             setAddressToEdit(null);
 
-            // If we just added/edited, verify selection persistence or select the edited one
-            // Ideally select the one we just worked on
-            const targetId = address.id || (updatedAddresses[updatedAddresses.length - 1]?.id);
-            if (targetId) {
-                const newAddr = updatedAddresses.find(a => a.id === targetId) || updatedAddresses[updatedAddresses.length - 1];
-                if (newAddr) {
-                    setSelectedAddressId(newAddr.id);
-                    setContextAddress(newAddr);
-                    if (newAddr.pincode) calculateShippingCost(newAddr.pincode);
-                }
+            // Smart Selection Logic
+            // 1. Identify which address we just touched
+            let targetId = addressToEdit?.id; // If editing
+
+            // If adding new, try to find the one we just added (usually last one, or match by fields)
+            if (!targetId && updatedAddresses.length > 0) {
+                targetId = updatedAddresses[updatedAddresses.length - 1].id;
             }
 
+            if (targetId) {
+                const newAddr = updatedAddresses.find(a => a.id === targetId) || updatedAddresses[0];
+
+                if (newAddr) {
+                    // 🛡️ Delivery Charge Guard
+                    // Only calculate if pincode CHANGED or we are selecting for first time
+                    // We check against the *currently selected* address pincode
+                    const oldPincode = contextAddress?.pincode;
+                    const newPincode = newAddr.pincode;
+
+                    setSelectedAddressId(newAddr.id);
+                    setContextAddress(newAddr);
+
+                    // Only recalculate if meaningful change
+                    if (newPincode && newPincode !== oldPincode) {
+                        console.log(`Pincode changed (${oldPincode} -> ${newPincode}), recalculating shipping...`);
+                        calculateShippingCost(newPincode);
+                    } else {
+                        console.log("Pincode unchanged, skipping shipping recalculation.");
+                    }
+                }
+            }
         } catch (e) {
             console.error(e);
             addToast('error', "Failed to save address");

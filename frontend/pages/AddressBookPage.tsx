@@ -36,9 +36,10 @@ const AddressBookPage: React.FC = () => {
                     const safe = getSafeAddress(a);
                     return {
                         ...safe,
-                        id: a._id || a.id || Date.now(), // Preserve ID
-                        name: safe.fullName, // Legacy compatibility
-                        country: 'India' // Required by Address type
+                        id: a._id || a.id || Date.now(),
+                        _id: a._id, // Critical for backend operations
+                        name: safe.fullName,
+                        country: 'India'
                     } as Address;
                 });
                 setAddresses(formatted);
@@ -93,9 +94,10 @@ const AddressBookPage: React.FC = () => {
                 const safe = getSafeAddress(a);
                 return {
                     ...safe,
-                    id: a._id || a.id || Date.now(), // Preserve ID
-                    name: safe.fullName, // Legacy compatibility
-                    country: 'India' // Required by Address type
+                    id: a._id || a.id || Date.now(),
+                    _id: a._id, // Critical for backend operations
+                    name: safe.fullName,
+                    country: 'India'
                 } as Address;
             });
 
