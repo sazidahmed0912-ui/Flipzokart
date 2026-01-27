@@ -26,22 +26,66 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        if (addressToEdit) {
-            console.log("[AddressForm] Rehydrating Form with:", addressToEdit);
-            // Robust mapping to handle potentially malformed or legacy backend data
-            // We strip any "undefined" strings or nulls to empty string for form inputs
-            setFormData({
-                name: addressToEdit.fullName || (addressToEdit as any).name || '',
-                phone: addressToEdit.phone || (addressToEdit as any).mobile || '',
-                street: addressToEdit.street || (addressToEdit as any).address || (addressToEdit as any).addressLine1 || '',
-                addressLine2: addressToEdit.addressLine2 || (addressToEdit as any).locality || '',
-                locality: addressToEdit.addressLine2 || (addressToEdit as any).locality || '', // duplicate for comp
-                city: addressToEdit.city || (addressToEdit as any).district || '',
-                state: addressToEdit.state || '',
-                zip: addressToEdit.pincode || (addressToEdit as any).zip || (addressToEdit as any).postalCode || '',
-                type: (addressToEdit.type as any) || 'Home'
-            });
-        }
+        const hydrateForm = async () => {
+            if (addressToEdit?.id || addressToEdit?._id) {
+                const addId = addressToEdit._id || addressToEdit.id;
+                console.log("[AddressForm] Hydrating ID:", addId);
+
+                try {
+                    // FETCH FULL OBJECT - RULE 3
+                    const response = await fetch(`/api/user/address/${addId}`, {
+                        headers: {
+                            // Assuming auth token is handled by browser cookies or interceptor, 
+                            // if explicit token needed we'd use useApp/context. 
+                            // For now assuming existing API pattern works.
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    // Fallback to props if fetch fails or for initial render speed if needed, 
+                    // but REQUIRE fetch for edit consistency.
+
+                    if (response.ok) {
+                        const json = await response.json();
+                        const fullAddr = json.data?.address;
+                        if (fullAddr) {
+                            console.log("[AddressForm] Fetched Full Address:", fullAddr);
+                            setFormData({
+                                name: fullAddr.fullName,
+                                phone: fullAddr.phone,
+                                street: fullAddr.street,
+                                addressLine2: fullAddr.addressLine2 || '',
+                                locality: fullAddr.addressLine2 || '',
+                                city: fullAddr.city,
+                                state: fullAddr.state,
+                                zip: fullAddr.pincode,
+                                type: fullAddr.type || 'Home'
+                            });
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Failed to hydrate address:", err);
+                }
+            }
+
+            // Fallback (only if new or fetch failed, though fetch failure should ideally block edit)
+            if (addressToEdit) {
+                console.warn("[AddressForm] Using partial props for hydration - warning: might be incomplete");
+                setFormData({
+                    name: addressToEdit.fullName || (addressToEdit as any).name || '',
+                    phone: addressToEdit.phone || (addressToEdit as any).mobile || '',
+                    street: addressToEdit.street || (addressToEdit as any).address || (addressToEdit as any).addressLine1 || '',
+                    addressLine2: addressToEdit.addressLine2 || (addressToEdit as any).locality || '',
+                    locality: addressToEdit.addressLine2 || (addressToEdit as any).locality || '',
+                    city: addressToEdit.city || (addressToEdit as any).district || '',
+                    state: addressToEdit.state || '',
+                    zip: addressToEdit.pincode || (addressToEdit as any).zip || (addressToEdit as any).postalCode || '',
+                    type: (addressToEdit.type as any) || 'Home'
+                });
+            }
+        };
+
+        hydrateForm();
     }, [addressToEdit]);
 
     const handleSubmit = (e: React.FormEvent) => {

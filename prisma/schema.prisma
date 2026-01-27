@@ -161,6 +161,7 @@ model Order {
   shippingSnapshot Json? // Snapshot of label details
   trackingId    String?       @unique
   orderNumber   String?       @unique // e.g. FZK123456
+  addressId     String        @db.ObjectId
   address       Json // Snapshot of address
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt

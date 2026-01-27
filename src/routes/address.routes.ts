@@ -9,6 +9,7 @@ router.use(protect);
 
 router.post('/', addressController.addAddress);
 router.get('/', addressController.getAddresses);
+router.get('/:id', addressController.getAddress);
 router.put('/:id', addressController.updateAddress);
 router.delete('/:id', addressController.deleteAddress);
 

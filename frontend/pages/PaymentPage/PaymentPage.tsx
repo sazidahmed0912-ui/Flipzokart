@@ -117,6 +117,11 @@ const PaymentPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
+      if (!selectedAddress || (!selectedAddress.id && !selectedAddress._id)) {
+        addToast('error', "Delivery address missing. Please select one.");
+        return;
+      }
+
       const { data } = await createOrder({
         products: cart.map((i) => ({
           productId: i.id,
@@ -127,7 +132,7 @@ const PaymentPage: React.FC = () => {
         deliveryCharges,
         discount,
         total: totalPayable,
-        address: selectedAddress,
+        addressId: selectedAddress.id || selectedAddress._id,
       });
 
       clearCart();
@@ -146,6 +151,11 @@ const PaymentPage: React.FC = () => {
   const payWithRazorpay = async () => {
     if (!razorpayLoaded) {
       setError("Razorpay SDK not loaded");
+      return;
+    }
+
+    if (!selectedAddress || (!selectedAddress.id && !selectedAddress._id)) {
+      addToast('error', "Delivery address missing. Please select one.");
       return;
     }
 
@@ -179,7 +189,7 @@ const PaymentPage: React.FC = () => {
               deliveryCharges,
               discount,
               total: totalPayable,
-              address: selectedAddress,
+              addressId: selectedAddress?.id || selectedAddress?._id,
             });
 
             clearCart();
@@ -300,7 +310,7 @@ const PaymentPage: React.FC = () => {
 
             <button
               className="action-button"
-              disabled={(!paymentMethod && !!user) || loading} // Allow clicking if no user (to show toast), but disable if user present & no method
+              disabled={(!paymentMethod && !!user) || loading || !selectedAddress} // strict disable
               onClick={handleSubmit}
             >
               {loading ? (
@@ -322,7 +332,7 @@ const PaymentPage: React.FC = () => {
         </div>
         <button
           className="action-button mobile-pay-btn"
-          disabled={(!paymentMethod && !!user) || loading}
+          disabled={(!paymentMethod && !!user) || loading || !selectedAddress}
           onClick={handleSubmit}
         >
           {loading ? (

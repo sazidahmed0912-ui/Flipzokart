@@ -375,7 +375,8 @@ export const ProductDetails: React.FC = () => {
               );
             })}
 
-            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Desktop/Tablet Action Buttons */}
+            <div className="hidden md:flex mt-6 sm:mt-8 flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
@@ -579,6 +580,32 @@ export const ProductDetails: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Sticky Bottom Action Bar */}
+      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-3 z-50 md:hidden flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <button
+          onClick={handleAddToCart}
+          disabled={isOutOfStock}
+          className={`flex-1 py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 ${isOutOfStock
+            ? 'bg-gray-100 text-gray-400'
+            : 'bg-white border-2 border-orange-500 text-orange-500'
+            }`}
+        >
+          <ShoppingCart size={18} />
+          Add
+        </button>
+        <button
+          onClick={handleBuyNow}
+          disabled={isOutOfStock}
+          className={`flex-1 py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 ${isOutOfStock
+            ? 'bg-gray-200 text-gray-500'
+            : 'bg-orange-500 text-white'
+            }`}
+        >
+          {isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW'}
+        </button>
+      </div>
+
     </div>
   );
 };

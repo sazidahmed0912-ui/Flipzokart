@@ -200,37 +200,10 @@ const CheckoutPage = () => {
             setIsAddressFormOpen(false);
             setAddressToEdit(null);
 
-            // Smart Selection Logic
-            // 1. Identify which address we just touched
-            let targetId = addressToEdit?.id; // If editing
-
-            // If adding new, try to find the one we just added (usually last one, or match by fields)
-            if (!targetId && updatedAddresses.length > 0) {
-                targetId = updatedAddresses[updatedAddresses.length - 1].id;
-            }
-
-            if (targetId) {
-                const newAddr = updatedAddresses.find(a => a.id === targetId) || updatedAddresses[0];
-
-                if (newAddr) {
-                    // 🛡️ Delivery Charge Guard
-                    // Only calculate if pincode CHANGED or we are selecting for first time
-                    // We check against the *currently selected* address pincode
-                    const oldPincode = contextAddress?.pincode;
-                    const newPincode = newAddr.pincode;
-
-                    setSelectedAddressId(newAddr.id);
-                    setContextAddress(newAddr);
-
-                    // Only recalculate if meaningful change
-                    if (newPincode && newPincode !== oldPincode) {
-                        console.log(`Pincode changed (${oldPincode} -> ${newPincode}), recalculating shipping...`);
-                        calculateShippingCost(newPincode);
-                    } else {
-                        console.log("Pincode unchanged, skipping shipping recalculation.");
-                    }
-                }
-            }
+            // STRICT RULE: DO NOT AUTO-SELECT or AUTO-CALC SIPPING
+            // User must explicitly select "Deliver Here" or click the radio button
+            // This satisfies "Delivery MUST NOT RUN ON: New address creation"
+            console.log("[Checkout] Address Saved. Waiting for user selection.");
         } catch (e) {
             console.error(e);
             addToast('error', "Failed to save address");

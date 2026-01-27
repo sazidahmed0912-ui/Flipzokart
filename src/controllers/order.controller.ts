@@ -1,12 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import { OrderService } from '../services/order.service';
 import { catchAsync } from '../utils/catchAsync';
+import { AppError } from '../utils/AppError';
 
 const orderService = new OrderService();
 
 export class OrderController {
     createOrder = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { addressId } = req.body;
+
+        if (!addressId) {
+            return next(new AppError('Delivery address is required', 400));
+        }
+
         const order = await orderService.createOrder((req as any).user.id, addressId);
         res.status(201).json({
             status: 'success',

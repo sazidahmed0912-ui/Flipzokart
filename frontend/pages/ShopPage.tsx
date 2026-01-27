@@ -174,7 +174,7 @@ export const ShopPage: React.FC = () => {
 
             {/* Products List/Grid */}
             {filteredProducts.length > 0 ? (
-              <div className={viewMode === 'list' ? "flex flex-col gap-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"}>
+              <div className={viewMode === 'list' ? "flex flex-col gap-4" : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4"}>
                 {filteredProducts.map(product => (
                   viewMode === 'list' ? (
                     <SearchProductCard key={product.id} product={product} />

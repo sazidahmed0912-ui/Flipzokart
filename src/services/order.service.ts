@@ -15,6 +15,10 @@ export class OrderService {
             throw new AppError('Cart is empty', 400);
         }
 
+        if (!addressId) {
+            throw new AppError('Address ID is mandatory', 400);
+        }
+
         const address = await prisma.address.findUnique({ where: { id: addressId } });
         if (!address) throw new AppError('Address not found', 404);
 
@@ -61,6 +65,8 @@ export class OrderService {
                 // @ts-ignore
                 trackingId,
                 shippingSnapshot,
+                // @ts-ignore
+                addressId: address.id, // Canonical reference
                 address: address as any, // Storing address snapshot
                 items: {
                     create: cart.items.map((item) => ({
