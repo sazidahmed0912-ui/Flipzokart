@@ -497,45 +497,10 @@ export const ProductDetails: React.FC = () => {
             {activeTab === 'details' && (
               <div>
                 <h3 className="font-bold text-base sm:text-lg mb-3">Full Description</h3>
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <div className="flex items-center gap-2">
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <Star
-                            key={i}
-                            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${i <= Math.floor(product.rating || 4.4) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-sm sm:text-base font-semibold">{product.rating?.toFixed(1) || '4.4'}</span>
-                    </div>
-                    <span className="text-sm sm:text-base text-gray-600">{reviews.length.toLocaleString() || '8,562'}</span>
-                  </div>
-                  <div className="space-y-2">
-                    {ratingCounts.map((count, idx) => {
-                      const stars = 5 - idx;
-                      return (
-                        <div key={stars} className="flex items-center gap-2 sm:gap-3">
-                          <span className="text-xs sm:text-sm text-gray-600 w-3 sm:w-4">{stars}</span>
-                          <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
-                          <div className="flex-1 bg-gray-200 rounded-full h-1.5 sm:h-2">
-                            <div
-                              className="bg-yellow-400 h-1.5 sm:h-2 rounded-full"
-                              style={{ width: `${(count / totalRatings) * 100}%` }}
-                            />
-                          </div>
-                          <span className="text-xs sm:text-sm text-gray-600 w-12 sm:w-16 text-right">
-                            {count.toLocaleString()}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 pt-2 sm:pt-4">
-                    <Lock size={12} className="sm:w-[14px] sm:h-[14px]" />
-                    <span>Surniri© 24/7</span>
-                  </div>
+                <div className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                  <p>
+                    {product.description || "No description available for this product."}
+                  </p>
                 </div>
               </div>
             )}
