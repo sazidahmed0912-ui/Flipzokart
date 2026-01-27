@@ -138,86 +138,74 @@ const CartPage = () => {
       <div className="cart-layout">
         {/* Left Column: Cart Items */}
         <div className="cart-items-section">
-          <div className="cart-header">
-            <h2>My Cart ({cartItems.length})</h2>
-          </div>
+          <div className="bg-white rounded-[4px] shadow-sm border border-[#f0f0f0] overflow-hidden">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-[#f0f0f0] flex justify-between items-center">
+              <h2 className="text-[18px] font-medium text-[#212121]">My Cart ({cartItems.length})</h2>
+            </div>
 
-          <div className="cart-items-list">
+            {/* Items List */}
             {cartItems.map((item) => (
-              <div key={item.id} className="cart-item-card">
-                <div className="cart-item-content">
+              <div key={item.id} className="p-6 border-b border-[#f0f0f0] last:border-b-0 flex flex-col gap-4">
+                <div className="flex gap-6">
                   {/* Product Image */}
-                  <div className="item-image-container">
-                    <img src={item.image} alt={item.name} className="item-image" />
+                  <div className="w-[112px] h-[112px] flex-shrink-0 flex items-center justify-center">
+                    <img src={item.image} alt={item.name} className="max-w-full max-h-full object-contain" />
                   </div>
 
                   {/* Product Details */}
-                  <div className="item-details">
-                    <div className="item-info-top">
-                      <h3 className="item-title">{item.name}</h3>
-                      <p className="item-category">{item.category}</p>
+                  <div className="flex-1">
+                    <div className="mb-2">
+                      <h3 className="text-[16px] font-medium text-[#212121] leading-snug line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer" onClick={() => navigate(`/product/${item.id}`)}>{item.name}</h3>
+                      <p className="text-[14px] text-[#878787] mt-1">{item.category}</p>
                       {item.seller && (
-                        <p className="item-seller">Seller: {item.seller}</p>
+                        <p className="text-[12px] text-[#878787] mt-1">Seller: {item.seller}</p>
                       )}
-                      <div className="item-rating">
-                        <span>{item.rating}</span>
-                        <Star size={12} fill="white" />
-                      </div>
                     </div>
 
-                    <div className="item-price-block">
-                      <span className="current-price">₹{(item.price || 0).toLocaleString()}</span>
-                      <span className="original-price">₹{(item.originalPrice || 0).toLocaleString()}</span>
-                      <span className="discount-tag">
-                        {item.originalPrice ? Math.round(((item.originalPrice - (item.price || 0)) / item.originalPrice) * 100) : 0}% Off
-                      </span>
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-[14px] text-[#878787] line-through">₹{(item.originalPrice || 0).toLocaleString()}</span>
+                      <span className="text-[18px] font-semibold text-[#212121]">₹{(item.price || 0).toLocaleString()}</span>
+                      <span className="text-[14px] font-medium text-[#388e3c]">{item.originalPrice ? Math.round(((item.originalPrice - (item.price || 0)) / item.originalPrice) * 100) : 0}% Off</span>
                     </div>
 
-                    {item.deliveryDate && (
-                      <div className="delivery-info">
-                        {item.deliveryDate} | <span className="free-delivery">Free</span>
-                      </div>
-                    )}
 
-                    {item.stock === 0 && (
-                      <div className="stock-error">
-                        <AlertTriangle size={14} />
-                        <span>Out of stock</span>
-                      </div>
-                    )}
                   </div>
                 </div>
 
-                {/* Actions & Quantity */}
-                <div className="item-actions-row">
-                  <div className="quantity-control">
+                {/* Actions Row: Quantity & Buttons */}
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
                     <button
-                      className="qty-btn"
+                      className="w-[28px] h-[28px] rounded-full border border-[#c2c2c2] bg-white flex items-center justify-center disabled:opacity-50 hover:bg-gray-50 transition"
                       disabled={item.quantity <= 1}
                       onClick={() => updateQuantity(item, -1)}
                     >
-                      <Minus size={16} />
+                      <Minus size={14} className="text-[#212121]" />
                     </button>
-                    <span className="qty-value">{item.quantity}</span>
+                    <div className="min-w-[46px] h-[28px] border border-[#c2c2c2] bg-white flex items-center justify-center text-[14px] font-medium text-[#212121]">
+                      {item.quantity}
+                    </div>
                     <button
-                      className="qty-btn"
+                      className="w-[28px] h-[28px] rounded-full border border-[#c2c2c2] bg-white flex items-center justify-center disabled:opacity-50 hover:bg-gray-50 transition"
                       disabled={item.quantity >= item.stock}
                       onClick={() => updateQuantity(item, 1)}
                     >
-                      <Plus size={16} />
+                      <Plus size={14} className="text-[#212121]" />
                     </button>
                   </div>
 
-                  <div className="action-buttons desktop-layout-actions gap-4">
-                    <button className="cart-action-btn border border-gray-200 rounded px-6 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors uppercase">SAVE FOR LATER</button>
+                  <div className="flex items-center gap-6">
+                    <button className="text-[16px] font-semibold text-[#212121] hover:text-[#2874f0] uppercase transition-colors">SAVE FOR LATER</button>
                     <button
-                      className="cart-action-btn border border-gray-200 rounded px-6 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors uppercase"
+                      className="text-[16px] font-semibold text-[#212121] hover:text-[#2874f0] uppercase transition-colors"
                       onClick={() => removeItem(item)}
                     >
                       REMOVE
                     </button>
                   </div>
                 </div>
+
               </div>
             ))}
           </div>
