@@ -207,8 +207,16 @@ export const TrackOrderPage: React.FC = () => {
                 <div className="flex justify-between items-center mb-6">
                     <div className="text-gray-900 font-semibold">Order ID: {order.orderId || order._id}</div>
                     {/* Only show 'Placed on' if available */}
-                    <div className="text-gray-500 font-medium">
-                        {order.createdAt ? `Placed on ${formatDate(order.createdAt)}` : ''}
+                    <div className="flex flex-col items-end gap-2">
+                        <div className="text-gray-500 font-medium">
+                            {order.createdAt ? `Placed on ${formatDate(order.createdAt)}` : ''}
+                        </div>
+                        <button
+                            onClick={handleTrackRefresh}
+                            className="text-[#2874F0] font-medium text-sm hover:underline"
+                        >
+                            Track Order
+                        </button>
                     </div>
                 </div>
 
@@ -271,10 +279,8 @@ export const TrackOrderPage: React.FC = () => {
 
                 {/* Product Information */}
                 <div className="bg-white rounded-sm shadow-sm mb-4">
-                    <div className="p-4 border-b border-gray-100 flex justify-between items-center">
-                        <h3 className="font-bold text-lg text-gray-800">Product Information</h3>
-                        <h3 className="font-bold text-lg text-gray-800">Product Information</h3>
-                    </div>
+                    {/* Product Information Header removed as per request */}
+                    <div className="pt-2"></div>
 
                     {order.items?.map((item: any, idx: number) => (
                         <div key={idx} className={`p-4 md:p-6 flex flex-col md:flex-row gap-6 ${idx !== 0 ? 'border-t border-gray-100' : ''}`}>
@@ -312,6 +318,12 @@ export const TrackOrderPage: React.FC = () => {
                                         Cancel Order
                                     </button>
                                 )}
+                                <button
+                                    onClick={handleNeedHelp}
+                                    className="flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-800 font-medium py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full"
+                                >
+                                    <HelpCircle size={16} className="text-[#2874F0]" /> Need help?
+                                </button>
                                 <button className="bg-white border border-gray-300 text-gray-800 py-2 px-4 rounded hover:shadow-sm transition-all w-full flex justify-center">
                                     <MoreHorizontal size={20} />
                                 </button>
