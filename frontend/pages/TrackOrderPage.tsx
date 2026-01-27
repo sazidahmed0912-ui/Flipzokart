@@ -427,12 +427,7 @@ export const TrackOrderPage: React.FC = () => {
 
                 {/* Footer Help */}
                 <div className="mt-8 flex justify-start">
-                    <button
-                        onClick={handleNeedHelp}
-                        className="bg-[#FFD814] text-black font-medium py-2 px-8 rounded shadow-sm hover:opacity-90"
-                    >
-                        Need Help?
-                    </button>
+                    
                 </div>
 
             </div>
