@@ -379,17 +379,19 @@ export const TrackOrderPage: React.FC = () => {
                                 <span>Payment Mode: <span className="font-bold text-gray-700">{order.paymentMethod || order.paymentMode || 'COD'}</span></span>
                             </div>
 
-                            <button
+                            {!new URLSearchParams(useLocation().search).get('view')?.includes('shipping_label') && (
+                                <button
 
-                                onClick={() => {
-                                    const targetId = order.orderId || trackingId;
-                                    if (targetId) navigate(`/invoice/${targetId}`);
-                                }}
-                                disabled={!order.orderId && !trackingId}
-                                className={`w-full flex items-center justify-center gap-2 border border-gray-300 rounded-[2px] py-2 text-sm font-bold text-gray-700 transition-colors ${(!order.orderId && !trackingId) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}`}
-                            >
-                                <Download size={16} className="text-[#2874F0]" /> Download Invoice
-                            </button>
+                                    onClick={() => {
+                                        const targetId = order.orderId || trackingId;
+                                        if (targetId) navigate(`/invoice/${targetId}`);
+                                    }}
+                                    disabled={!order.orderId && !trackingId}
+                                    className={`w-full flex items-center justify-center gap-2 border border-gray-300 rounded-[2px] py-2 text-sm font-bold text-gray-700 transition-colors ${(!order.orderId && !trackingId) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}`}
+                                >
+                                    <Download size={16} className="text-[#2874F0]" /> Download Invoice
+                                </button>
+                            )}
 
                         </div>
                     </div>
