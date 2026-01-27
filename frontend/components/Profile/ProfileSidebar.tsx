@@ -54,7 +54,7 @@ const ProfileSidebar: React.FC = () => {
     ];
 
     return (
-    return (
+
         <div className="w-full lg:w-[280px] flex-shrink-0 space-y-4">
             {/* User Hello Card - Desktop Only (Mobile has header in main content) */}
             <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 hidden lg:flex items-center gap-4">
