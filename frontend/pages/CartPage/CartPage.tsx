@@ -208,10 +208,10 @@ const CartPage = () => {
                     </button>
                   </div>
 
-                  <div className="action-buttons desktop-layout-actions">
-                    <button className="cart-action-btn border-r">SAVE FOR LATER</button>
+                  <div className="action-buttons desktop-layout-actions gap-4">
+                    <button className="cart-action-btn border border-gray-300 rounded px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors">SAVE FOR LATER</button>
                     <button
-                      className="cart-action-btn"
+                      className="cart-action-btn border border-gray-300 rounded px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors"
                       onClick={() => removeItem(item)}
                     >
                       REMOVE
@@ -264,12 +264,14 @@ const CartPage = () => {
             </div>
           </div>
 
-          <div className="security-badge">
-            <ShieldCheck size={20} className="shield-icon" />
-            <span>Safe and Secure Payments. 100% Authentic products.</span>
-          </div>
+          <div className="flex flex-col gap-4">
+            <button className="place-order-btn desktop-only w-full" onClick={handlePlaceOrder}>CONTINUE</button>
 
-          <button className="place-order-btn desktop-only" onClick={handlePlaceOrder}>CONTINUE</button>
+            <div className="security-badge flex items-center justify-center gap-2 text-gray-500 text-xs py-2">
+              <ShieldCheck size={18} className="shield-icon text-gray-400" />
+              <span>Safe and Secure Payments. 100% Authentic products.</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

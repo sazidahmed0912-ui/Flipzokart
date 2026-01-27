@@ -208,18 +208,12 @@ export const TrackOrderPage: React.FC = () => {
                     <div className="text-gray-900 font-semibold">Order ID: {order.orderId || order._id}</div>
                     {/* Only show 'Placed on' if available */}
                     <div className="text-gray-500 font-medium">
-                        {order.createdAt && `Placed on ${formatDate(order.createdAt)}`}
+                        {order.createdAt ? `Placed on ${formatDate(order.createdAt)}` : ''}
                     </div>
                 </div>
 
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold text-gray-900">Order Details</h1>
-                    <button
-                        onClick={handleTrackRefresh}
-                        className="bg-[#FFD814] text-black px-6 py-2 rounded-md font-medium shadow-sm hover:opacity-90 transition-opacity flex items-center gap-2"
-                    >
-                        Track Order
-                    </button>
                 </div>
 
                 {/* Horizontal Stepper (Top) */}
@@ -279,9 +273,7 @@ export const TrackOrderPage: React.FC = () => {
                 <div className="bg-white rounded-sm shadow-sm mb-4">
                     <div className="p-4 border-b border-gray-100 flex justify-between items-center">
                         <h3 className="font-bold text-lg text-gray-800">Product Information</h3>
-                        <button className="text-[#2874F0] font-medium text-sm flex items-center gap-1 hover:underline">
-                            <HelpCircle size={16} /> Need Help?
-                        </button>
+                        <h3 className="font-bold text-lg text-gray-800">Product Information</h3>
                     </div>
 
                     {order.items?.map((item: any, idx: number) => (
@@ -312,12 +304,6 @@ export const TrackOrderPage: React.FC = () => {
 
                             {/* Actions */}
                             <div className="flex md:flex-col gap-3 justify-center md:justify-start min-w-[150px]">
-                                <button
-                                    onClick={handleNeedHelp}
-                                    className="flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-800 font-medium py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full"
-                                >
-                                    <HelpCircle size={16} className="text-[#2874F0]" /> Need help?
-                                </button>
                                 {order.status === 'Pending' && (
                                     <button
                                         onClick={handleCancelOrder}
@@ -358,16 +344,16 @@ export const TrackOrderPage: React.FC = () => {
                              </div> */}
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-900">Delivery Charges</span>
-                                <span className="font-medium text-green-600">Free</span>
+                                <span className="font-medium text-green-600">{order.shippingFee === 0 ? 'Free' : `₹${order.shippingFee}`}</span>
                             </div>
 
                             <div className="border-t border-dashed border-gray-200 my-2 pt-3 flex justify-between items-center">
                                 <span className="font-bold text-lg text-gray-900">Total Amount</span>
-                                <span className="font-bold text-lg text-gray-900">₹{(order.grandTotal || 0).toLocaleString('en-IN')}</span>
+                                <span className="font-bold text-lg text-gray-900">₹{order.grandTotal?.toLocaleString('en-IN') || order.total?.toLocaleString('en-IN')}</span>
                             </div>
 
                             <div className="text-xs text-green-700 font-medium bg-green-50 p-2 rounded">
-                                You will save ₹500 on this order
+                                You will save ₹{order.items?.reduce((acc: number, item: any) => acc + ((item.originalPrice || item.price) - item.price) * item.quantity, 0).toLocaleString('en-IN') || 0} on this order
                             </div>
                         </div>
 
@@ -389,12 +375,7 @@ export const TrackOrderPage: React.FC = () => {
                             >
                                 <Download size={16} className="text-[#2874F0]" /> Download Invoice
                             </button>
-                            <button
-                                onClick={handleTrackRefresh}
-                                className="w-full bg-[#FB641B] text-white font-bold py-3 rounded-[2px] text-sm hover:bg-[#e65a17] transition-colors shadow-sm uppercase"
-                            >
-                                Track Order
-                            </button>
+
                         </div>
                     </div>
 
