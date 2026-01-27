@@ -1,42 +1,134 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useApp } from '../store/Context';
-import { useLanguage } from '../store/LanguageContext';
+import React, { useState, useEffect } from "react";
+import authService from "../services/authService";
+import { useNavigate } from "react-router-dom";
 import {
+  Store,
   User,
-  Mail,
-  Phone,
   Package,
-  Truck,
-  CheckCircle,
-  Edit2,
-  Camera,
+  Heart,
+  ShieldCheck,
   MapPin,
-  Clock
-} from 'lucide-react';
-import authService from '../services/authService';
+  ChevronRight,
+  LogOut,
+  CheckCircle2,
+  Calendar,
+  Smartphone,
+  Mail,
+  Edit2,
+  Info,
+  Tag,
+  HelpCircle,
+  Lock,
+  Camera,
+  Truck,
+  CheckCircle
+} from "lucide-react";
 import { SmoothReveal } from "../components/SmoothReveal";
+import { useApp } from "../store/Context";
+import { useLanguage } from '../store/LanguageContext';
+import API from "../services/api";
 import ProfileSidebar from '../components/Profile/ProfileSidebar';
+import { useToast } from "../components/toast";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, orders, setUser } = useApp();
+  const { user, setUser } = useApp();
   const { t } = useLanguage();
-  const [isEditing, setIsEditing] = useState(false);
+  const { addToast } = useToast();
 
-  // Stats calculation
-  const pendingOrders = orders.filter(o => ['Pending', 'Processing'].includes(o.status)).length;
-  const shippedOrders = orders.filter(o => ['Shipped', 'Out for Delivery'].includes(o.status)).length;
-  const deliveredOrders = orders.filter(o => o.status === 'Delivered').length;
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [profileData, setProfileData] = useState<any>(user || {});
+  const [activities, setActivities] = useState<any[]>([]);
+  const [orderCount, setOrderCount] = useState(0);
+
+  // STRICT 5s SYNC ENGINE
+  useEffect(() => {
+    // Initial Fetch
+    const syncData = async () => {
+      try {
+        // 1. Silent Profile Sync
+        const updatedUser = await authService.getMe();
+        if (updatedUser) {
+          setProfileData((prev: any) => ({ ...prev, ...updatedUser }));
+          // Also update global context to keep sidebar in sync
+          if (JSON.stringify(updatedUser) !== JSON.stringify(user)) {
+            setUser(updatedUser);
+          }
+        }
+
+        // 2. Silent Activity Sync
+        const fetchedActivities = await authService.getActivities();
+        setActivities(fetchedActivities);
+
+        // 3. Order Count Sync (if user id available)
+        const uid = updatedUser?.id || user?.id;
+        if (uid) {
+          const customRes = await API.get(`/api/order/user/${uid}`);
+          const orders = Array.isArray(customRes.data) ? customRes.data : (customRes.data.orders || []);
+          setOrderCount(orders.length);
+        }
+      } catch (e) {
+        // Silent Fail
+      }
+    };
+
+    if (user) {
+      syncData(); // Run immediately on mount
+      const intervalId = setInterval(syncData, 5000); // 5s Auto Sync
+      return () => clearInterval(intervalId); // Cleanup
+    }
+  }, [user]);
+
+  // Update local state if context user changes
+  useEffect(() => {
+    if (user) setProfileData((prev: any) => ({ ...prev, ...user }));
+  }, [user]);
+
+  const openModal = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
+
+  // Helper for Member Since Format: "17/Jan/2026"
+  const getMemberSince = () => {
+    if (!profileData.createdAt) return "N/A";
+    const date = new Date(profileData.createdAt);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = date.toLocaleDateString("en-US", { month: "short" });
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const handleAvatarClick = () => {
+    document.getElementById('avatar-input')?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    try {
+      const response = await API.post('/api/auth/upload-avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const newAvatar = response.data.data.path;
+      setProfileData((prev: any) => ({ ...prev, avatar: newAvatar }));
+
+      // Update global user context as well
+      if (user) {
+        setUser({ ...user, avatar: newAvatar });
+      }
+      addToast('success', "Profile picture updated");
+    } catch (error) {
+      console.error("Avatar upload failed", error);
+      addToast('error', "Failed to upload image");
+    }
+  };
 
   if (!user) {
     return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
   }
-
-  const handleEditSuccess = (updatedUser: any) => {
-    setUser(updatedUser);
-    setIsEditing(false);
-  };
 
   return (
     <div className="bg-[#F5F7FA] min-h-screen font-sans text-[#1F2937]">
@@ -48,115 +140,143 @@ const ProfilePage = () => {
         {/* ──────── MAIN CONTENT ──────── */}
         <div className="flex-1 space-y-6">
 
-          {/* WELCOME HEADER */}
-          <SmoothReveal direction="down">
-            <div className="bg-gradient-to-r from-[#2874F0] to-[#1a5fc7] rounded-xl p-8 text-white shadow-lg relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
-
-              <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
-                <div className="relative group cursor-pointer">
-                  <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-2 border-white/50 text-2xl font-bold">
-                    {user.name?.charAt(0) || <User size={32} />}
-                  </div>
-                  <div className="absolute bottom-0 right-0 bg-white text-[#2874F0] p-1.5 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera size={14} />
-                  </div>
-                </div>
-                <div className="text-center md:text-left">
-                  <h1 className="text-2xl font-bold">Hello, {user.name}</h1>
-                  <p className="text-blue-100 text-sm mt-1">Founding Member • Joined {user.createdAt ? new Date(user.createdAt).getFullYear() : 'Recently'}</p>
-                </div>
-              </div>
+          {/* PAGE TITLE */}
+          <SmoothReveal direction="down" delay={100}>
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-[#1F2937]">My Profile</h1>
             </div>
           </SmoothReveal>
 
-          {/* ORDER STATS */}
-          <SmoothReveal direction="up" delay={100}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-all cursor-pointer" onClick={() => navigate('/orders')}>
-                <div className="w-12 h-12 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center">
-                  <Package size={24} />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">{pendingOrders}</div>
-                  <div className="text-sm text-gray-500 font-medium">To Pay / Ship</div>
-                </div>
-              </div>
-              <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-all cursor-pointer" onClick={() => navigate('/orders')}>
-                <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center">
-                  <Truck size={24} />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">{shippedOrders}</div>
-                  <div className="text-sm text-gray-500 font-medium">To Receive</div>
-                </div>
-              </div>
-              <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-all cursor-pointer" onClick={() => navigate('/orders')}>
-                <div className="w-12 h-12 bg-green-50 text-green-500 rounded-full flex items-center justify-center">
-                  <CheckCircle size={24} />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">{deliveredOrders}</div>
-                  <div className="text-sm text-gray-500 font-medium">Delivered</div>
-                </div>
-              </div>
-            </div>
-          </SmoothReveal>
-
-          {/* PERSONAL INFORMATION */}
+          {/* PROFILE HEADER CARD */}
           <SmoothReveal direction="up" delay={200}>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <h2 className="font-bold text-gray-800 flex items-center gap-2">
-                  <User size={18} className="text-[#2874F0]" />
-                  Personal Information
-                </h2>
-                {!isEditing && (
+            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="flex items-center gap-6">
+                <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
+                  <div className="w-24 h-24 rounded-full bg-[#FFE11B] flex items-center justify-center text-3xl font-bold text-[#1F2937] border-4 border-white shadow-sm overflow-hidden">
+                    {profileData.avatar ? (
+                      <img src={profileData.avatar.startsWith('http') ? profileData.avatar : `/${profileData.avatar}`} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      profileData.name?.[0]?.toUpperCase() || "U"
+                    )}
+                  </div>
+                  <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Camera size={24} className="text-white" />
+                  </div>
+                  <input type="file" id="avatar-input" className="hidden" accept="image/*" onChange={handleFileChange} />
+                </div>
+
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-bold text-[#1F2937] flex items-center gap-2">
+                    {profileData.name || "User Name"}
+                    <CheckCircle2 size={20} className="text-green-500 fill-current" />
+                  </h2>
+                  <div className="text-base text-gray-500 font-medium">{profileData.email || "email@example.com"}</div>
+                  <div className="text-base text-gray-500 font-medium">{profileData.phone || "+91 XXXXXXXXXX"}</div>
+                </div>
+              </div>
+              <button
+                onClick={openModal}
+                className="bg-[#F9C74F] text-[#1F2937] px-6 py-2.5 rounded-[2px] font-semibold text-sm shadow-sm hover:shadow-md transition-shadow active:scale-95"
+              >
+                Edit Profile
+              </button>
+            </div>
+          </SmoothReveal>
+
+          {/* QUICK INFO CARDS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { label: "Total Orders", value: orderCount.toString(), icon: Package },
+              { label: "Account Status", value: profileData.status || "Active", icon: ShieldCheck, isStatus: true },
+              { label: "Member Since", value: getMemberSince(), icon: Calendar }
+            ].map((stat, i) => (
+              <SmoothReveal key={i} direction="up" delay={300 + (i * 100)} className="h-full">
+                <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-5 flex items-center gap-4 h-full">
+                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#2874F0]">
+                    <stat.icon size={20} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">{stat.label}</div>
+                    <div className={`text-lg font-bold ${stat.isStatus ? "text-green-600" : "text-[#1F2937]"}`}>{stat.value}</div>
+                  </div>
+                </div>
+              </SmoothReveal>
+            ))}
+          </div>
+
+          {/* PERSONAL INFORMATION CARD (TOGGLED) */}
+          <SmoothReveal direction="up" delay={600}>
+            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 md:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-[#1F2937]">Personal Information</h3>
+                {!isModalOpen && (
                   <button
-                    onClick={() => setIsEditing(true)}
-                    className="text-[#2874F0] text-sm font-semibold flex items-center gap-1 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+                    onClick={openModal}
+                    className="bg-[#F9C74F] text-[#1F2937] px-4 py-1.5 rounded-[2px] font-semibold text-sm shadow-sm hover:shadow-md transition-shadow active:scale-95"
                   >
-                    <Edit2 size={14} /> Edit
+                    Edit
                   </button>
                 )}
               </div>
 
-              <div className="p-6">
-                {isEditing ? (
-                  <EditProfileForm
-                    initialData={user}
-                    onCancel={() => setIsEditing(false)}
-                    onSuccess={handleEditSuccess}
-                  />
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Full Name</label>
-                      <div className="font-medium text-gray-900 text-base">{user.name}</div>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Email Address</label>
-                      <div className="font-medium text-gray-900 text-base flex items-center gap-2">
-                        {user.email}
-                        <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Verified</span>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Mobile Number</label>
-                      <div className="font-medium text-gray-900 text-base">
-                        {user.phone ? `+91 ${user.phone}` : <span className="text-gray-400 italic">Not added</span>}
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Member Since</label>
-                      <div className="font-medium text-gray-900 text-base flex items-center gap-2">
-                        <Clock size={14} className="text-gray-400" />
-                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                      </div>
-                    </div>
+              {isModalOpen ? (
+                /* FORM MODE */
+                <EditProfileForm
+                  initialData={profileData}
+                  onCancel={closeModal}
+                  onSuccess={(updatedUser: any) => {
+                    setProfileData(updatedUser);
+                    setUser({ ...user, ...updatedUser });
+                    closeModal();
+                  }}
+                />
+              ) : (
+                /* VIEW MODE */
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Full Name</label>
+                    <div className="font-semibold text-[#1F2937] text-base">{profileData.name || "N/A"}</div>
                   </div>
-                )}
-              </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Email Address</label>
+                    <div className="font-semibold text-[#1F2937] text-base">{profileData.email || "N/A"}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Mobile Number</label>
+                    <div className="font-semibold text-[#1F2937] text-base">{profileData.phone || "N/A"}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </SmoothReveal>
+
+          {/* RECENT ACTIVITY */}
+          <SmoothReveal direction="up" delay={700}>
+            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 md:p-8">
+              <h3 className="text-lg font-bold text-[#1F2937] mb-6">Recent Activity</h3>
+              {activities.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                  No recent activity found.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {activities.map((activity, idx) => (
+                    <div key={idx} className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-xl transition-colors border border-gray-100">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0
+                        ${activity.type === 'order' ? 'bg-blue-100 text-blue-600' :
+                          activity.type === 'login' ? 'bg-green-100 text-green-600' :
+                            'bg-gray-100 text-gray-600'}`}>
+                        {activity.type === 'order' ? <Package size={18} /> :
+                          activity.type === 'login' ? <Lock size={18} /> : <Info size={18} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-800 text-sm md:text-base truncate">{activity.message}</p>
+                        <p className="text-xs text-gray-500">{new Date(activity.date).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </SmoothReveal>
 
@@ -165,8 +285,6 @@ const ProfilePage = () => {
     </div>
   );
 };
-
-import { useToast } from '../components/toast';
 
 const EditProfileForm = ({ initialData, onCancel, onSuccess }: any) => {
   const [name, setName] = useState(initialData.name || "");
@@ -178,13 +296,12 @@ const EditProfileForm = ({ initialData, onCancel, onSuccess }: any) => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Assuming authService.updateProfile aligns with backend API
       const updatedUser = await authService.updateProfile({ name, phone });
       onSuccess(updatedUser);
-      // Optional: Toast success
+      addToast('success', "Profile updated");
     } catch (error) {
       console.error("Update failed:", error);
-      // Optional: Toast error
+      addToast('error', "Failed to update profile");
     } finally {
       setLoading(false);
     }
