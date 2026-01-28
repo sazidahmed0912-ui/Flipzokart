@@ -10,11 +10,12 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
 
-  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
   useEffect(() => {
     let interval: any;
@@ -26,8 +27,7 @@ export const LoginPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [timer]);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendOtp = async () => {
     if (!email.includes('@')) {
       addToast('error', 'Please enter a valid email address');
       return;
@@ -36,9 +36,9 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
     try {
       await authService.sendEmailOtp(email);
-      setStep(2);
+      setOtpSent(true);
       setTimer(300); // 5 minutes
-      addToast('success', 'OTP Sent to your verified email!');
+      addToast('success', 'OTP Sent to your email!');
     } catch (err: any) {
       addToast('error', err.message || 'Failed to send OTP');
     } finally {
@@ -59,35 +59,43 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const otpCode = otp.join('');
-    if (otpCode.length !== 6) {
-      addToast('error', 'Please enter a valid 6-digit OTP');
+    const hasPassword = password.trim().length > 0;
+    const hasOtp = otpCode.length === 6;
+
+    if (!email) {
+      addToast('error', 'Email is required');
+      return;
+    }
+
+    if (!hasPassword && !hasOtp) {
+      addToast('error', 'Please enter Password OR valid OTP');
       return;
     }
 
     setIsLoading(true);
     try {
-      const user = await authService.verifyEmailOtp(email, otpCode);
+      let user;
+
+      if (hasPassword) {
+        // LOGIN WITH PASSWORD
+        console.log('Logging in with Password...');
+        user = await authService.login({ email, password });
+      } else {
+        // LOGIN WITH OTP
+        console.log('Logging in with OTP...');
+        user = await authService.verifyEmailOtp(email, otpCode);
+      }
+
       setUser(user);
       addToast('success', '✅ Login successful!');
       navigate(user.role === 'admin' ? '/admin' : '/profile');
-    } catch (err: any) {
-      addToast('error', err.message || 'Invalid OTP');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const handleResendOtp = async () => {
-    setIsLoading(true);
-    try {
-      await authService.sendEmailOtp(email);
-      setTimer(300);
-      addToast('success', 'OTP Resent!');
     } catch (err: any) {
-      addToast('error', err.message || 'Failed to resend OTP');
+      addToast('error', err.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -144,51 +152,60 @@ export const LoginPage: React.FC = () => {
                   boxShadow: '0 20px 40px rgba(0,0,0,0.12)'
                 }}
               >
-                <h2 className="text-[20px] font-bold mb-[18px] text-[#1F2937]">Welcome Back!</h2>
+                <h2 className="text-[20px] font-bold mb-[5px] text-[#1F2937]">Welcome Back!</h2>
+                <p className="text-[13px] text-[#4B5563] mb-[20px]">Login with Password OR OTP</p>
 
-                {step === 1 ? (
-                  <form onSubmit={handleSendOtp}>
-                    <div className="mb-[18px]">
-                      <input
-                        type="email"
-                        placeholder="Email Address"
-                        required
-                        className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={isLoading}
-                      />
+                <form onSubmit={handleLogin}>
+                  <div className="space-y-5 mb-[20px]">
+
+                    {/* EMAIL INPUT */}
+                    <input
+                      type="email"
+                      placeholder="Email Address"
+                      required
+                      className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={isLoading}
+                    />
+
+                    {/* PASSWORD INPUT */}
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={isLoading}
+                    />
+
+                    <div className="flex items-center gap-3 my-2 text-[#6B7280] text-[12px] font-medium before:h-[1px] before:flex-1 before:bg-[#d1d5db] after:h-[1px] after:flex-1 after:bg-[#d1d5db]">
+                      OR LOGIN WITH OTP
                     </div>
 
-                    <p className="text-[11px] text-[#878787] mb-3 text-center">
-                      By continuing, you agree to Fzokart's <span className="text-[#2874F0] cursor-pointer hover:underline">Terms of Use</span> and <span className="text-[#2874F0] cursor-pointer hover:underline">Privacy Policy</span>.
-                    </p>
+                    {/* OTP SECTION */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-[12px] font-semibold text-[#4B5563]">OTP Code</label>
+                        {timer > 0 ? (
+                          <span className="text-[11px] text-[#2874F0] font-mono">{Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleSendOtp}
+                            disabled={isLoading || !email}
+                            className="text-[11px] text-[#2874F0] font-bold cursor-pointer hover:underline bg-transparent border-none p-0 disabled:opacity-50"
+                          >
+                            {otpSent ? 'RESEND OTP' : 'GET OTP'}
+                          </button>
+                        )}
+                      </div>
 
-                    <button
-                      type="submit"
-                      disabled={isLoading || !email}
-                      className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center"
-                    >
-                      {isLoading ? 'Sending OTP...' : 'Request OTP'}
-                    </button>
-
-                    <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
-                      New to Fzokart? <Link to="/signup" className="font-bold hover:underline" style={{ color: '#FF3333' }}>Sign up</Link>
-                    </div>
-                  </form>
-                ) : (
-                  <form onSubmit={handleVerifyOtp}>
-                    <div className="mb-6">
-                      <p className="text-[13px] text-center mb-4 text-[#4B5563]">
-                        Enter OTP sent to <span className="font-semibold text-[#1F2937]">{email}</span>
-                        <span className="text-[#2874F0] font-medium cursor-pointer ml-2 hover:underline" onClick={() => { setStep(1); setOtp(['', '', '', '', '', '']); }}>Change</span>
-                      </p>
-
-                      <div className="flex justify-center gap-2 mb-6">
+                      <div className="flex justify-between gap-1.5">
                         {otp.map((data, index) => {
                           return (
                             <input
-                              className="w-10 h-10 border border-[#d1d5db] rounded-[8px] text-center text-lg bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] outline-none transition-all"
+                              className="w-9 h-9 border border-[#d1d5db] rounded-[6px] text-center text-sm bg-white focus:border-[#2874F0] focus:ring-[2px] focus:ring-[rgba(40,116,240,0.15)] outline-none transition-all"
                               type="text"
                               name="otp"
                               maxLength={1}
@@ -196,37 +213,32 @@ export const LoginPage: React.FC = () => {
                               value={data}
                               onChange={e => handleOtpChange(e.target, index)}
                               onFocus={e => e.target.select()}
+                              disabled={isLoading}
                             />
                           );
                         })}
                       </div>
                     </div>
 
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 mb-4 flex items-center justify-center"
-                    >
-                      {isLoading ? 'Verifying...' : 'Verify & Login'}
-                    </button>
+                  </div>
 
-                    <div className="text-center mt-4">
-                      {timer > 0 ? (
-                        <p className="text-[13px] text-[#6B7280]">
-                          Resend OTP in <span className="text-[#2874F0] font-mono">{Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</span>
-                        </p>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleResendOtp}
-                          className="text-[13px] text-[#2874F0] font-medium cursor-pointer hover:underline bg-transparent border-none p-0"
-                        >
-                          Resend OTP
-                        </button>
-                      )}
-                    </div>
-                  </form>
-                )}
+                  <p className="text-[11px] text-[#878787] mb-4 text-center">
+                    By continuing, you agree to Fzokart's <span className="text-[#2874F0] cursor-pointer hover:underline">Terms of Use</span> and <span className="text-[#2874F0] cursor-pointer hover:underline">Privacy Policy</span>.
+                  </p>
+
+                  {/* LOGIN BUTTON */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center"
+                  >
+                    {isLoading ? 'Processing...' : 'Login'}
+                  </button>
+
+                  <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
+                    New to Fzokart? <Link to="/signup" className="font-bold hover:underline" style={{ color: '#FF3333' }}>Sign up</Link>
+                  </div>
+                </form>
               </div>
             </SmoothReveal>
           </div>
