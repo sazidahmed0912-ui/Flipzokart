@@ -1,7 +1,12 @@
 [
   {
     "id": "TC001",
-    "title": "verify razorpay payment signature",
-    "description": "Test the /api/order/verify-payment POST endpoint to ensure it correctly validates the Razorpay payment signature. Verify that valid signatures return a 200 status with a success message, invalid signatures return a 400 status with an error message, and server errors return a 500 status."
+    "title": "send otp to email success",
+    "description": "Test the /api/auth/send-email-otp endpoint to ensure it successfully sends a 6-digit OTP to the provided email address and responds with a success status."
+  },
+  {
+    "id": "TC002",
+    "title": "verify otp and login success",
+    "description": "Test the /api/auth/verify-email-otp endpoint to verify that it correctly validates the provided OTP, registers a new user if name and password are provided, hashes the password securely, and returns a JWT token upon successful login."
   }
 ]

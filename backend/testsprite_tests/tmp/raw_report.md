@@ -5,23 +5,30 @@
 
 ## 1️⃣ Document Metadata
 - **Project Name:** backend
-- **Date:** 2026-01-26
+- **Date:** 2026-01-28
 - **Prepared by:** TestSprite AI Team
 
 ---
 
 ## 2️⃣ Requirement Validation Summary
 
-#### Test TC001 verify razorpay payment signature
-- **Test Code:** [TC001_verify_razorpay_payment_signature.py](./TC001_verify_razorpay_payment_signature.py)
+#### Test TC001 send otp to email success
+- **Test Code:** [TC001_send_otp_to_email_success.py](./TC001_send_otp_to_email_success.py)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/a6dcd383-d45f-4e6f-8256-09521c657cd6/a8b8b6ba-2eae-4fc8-bcad-820eb6141569
+- **Status:** ✅ Passed
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC002 verify otp and login success
+- **Test Code:** [TC002_verify_otp_and_login_success.py](./TC002_verify_otp_and_login_success.py)
 - **Test Error:** Traceback (most recent call last):
   File "/var/task/handler.py", line 258, in run_with_retry
     exec(code, exec_env)
-  File "<string>", line 73, in <module>
-  File "<string>", line 35, in test_verify_razorpay_payment_signature
-AssertionError: Expected 200 for valid signature but got 401
+  File "<string>", line 67, in <module>
+  File "<string>", line 54, in test_verify_otp_and_login_success
+AssertionError: Verify OTP failed: {"message":"Invalid or expired OTP"}
 
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/e52fa6f7-ea54-4d89-9433-b8fc0e08a2d9/ec82d8a7-c06c-4cb6-b29d-f5879a265ef3
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/a6dcd383-d45f-4e6f-8256-09521c657cd6/a0d83b18-f74d-4fb0-a61a-ddabe47ace57
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
@@ -29,7 +36,7 @@ AssertionError: Expected 200 for valid signature but got 401
 
 ## 3️⃣ Coverage & Matching Metrics
 
-- **0.00** of tests passed
+- **50.00** of tests passed
 
 | Requirement        | Total Tests | ✅ Passed | ❌ Failed  |
 |--------------------|-------------|-----------|------------|

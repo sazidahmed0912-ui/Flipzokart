@@ -1,40 +1,34 @@
 {
     "tech_stack": [
-        "JavaScript",
-        "Express.js",
-        "MongoDB",
+        "Node.js",
+        "Express",
         "Mongoose",
-        "Socket.io"
+        "Nodemailer",
+        "JWT",
+        "Bcrypt.js"
     ],
     "features": [
         {
-            "name": "Order API",
-            "description": "API for managing orders, including creation, payment verification (Razorpay), and shipping.",
+            "name": "Send Email OTP",
+            "description": "Sends a 6-digit OTP to the provided email address for authentication verification.",
             "files": [
-                "controllers/orderController.js",
-                "routes/orderRoutes.js",
-                "models/Order.js"
+                "controllers/emailAuthController.js",
+                "services/emailService.js",
+                "routes/auth.js"
             ],
             "api_doc": {
                 "openapi": "3.0.0",
                 "paths": {
-                    "/api/order/verify-payment": {
+                    "/api/auth/send-email-otp": {
                         "post": {
-                            "summary": "Verify Razorpay Payment",
-                            "description": "Verifies the payment signature returned by Razorpay.",
+                            "summary": "Send OTP to Email",
                             "requestBody": {
                                 "content": {
                                     "application/json": {
                                         "schema": {
                                             "type": "object",
                                             "properties": {
-                                                "razorpay_order_id": {
-                                                    "type": "string"
-                                                },
-                                                "razorpay_payment_id": {
-                                                    "type": "string"
-                                                },
-                                                "razorpay_signature": {
+                                                "email": {
                                                     "type": "string"
                                                 }
                                             }
@@ -44,13 +38,54 @@
                             },
                             "responses": {
                                 "200": {
-                                    "description": "Payment verified successfully"
-                                },
-                                "400": {
-                                    "description": "Invalid signature"
-                                },
-                                "500": {
-                                    "description": "Server error"
+                                    "description": "OTP sent successfully"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "Verify Email OTP",
+            "description": "Verifies the provided OTP and logs in or registers the user.",
+            "files": [
+                "controllers/emailAuthController.js",
+                "models/User.js",
+                "routes/auth.js"
+            ],
+            "api_doc": {
+                "openapi": "3.0.0",
+                "paths": {
+                    "/api/auth/verify-email-otp": {
+                        "post": {
+                            "summary": "Verify OTP and Login",
+                            "requestBody": {
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "otp": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "password": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "responses": {
+                                "200": {
+                                    "description": "Login successful with token"
                                 }
                             }
                         }

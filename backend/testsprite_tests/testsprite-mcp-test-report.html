@@ -1213,7 +1213,7 @@ body {
         </div>
         <div class="metadata-row">
           <div class="metadata-label text-body-medium">Date</div>
-          <div class="metadata-value text-body">26/1/2026</div>
+          <div class="metadata-value text-body">28/1/2026</div>
         </div>
         <div class="metadata-row">
           <div class="metadata-label text-body-medium">Prepared by</div>
@@ -1238,8 +1238,8 @@ body {
             <li><span class="coverage-highlight">Key gaps / risks:</span>
             
               <ul>
-<li><strong>Authentication in Testing:</strong> The automated test failed to authenticate, which is a common setup issue in automated testing but confirms security is active.</li>
-<li><strong>Production Configuration:</strong> The recurring 500 error in production remains linked to the missing <code>RAZORPAY_KEY_SECRET</code>. The debug code pushed previously will confirm this when the server is hit.</li>
+<li><strong>Automated Verification</strong>: We need to allow a &quot;Test Mode&quot; or &quot;Mock OTP&quot; to automate verification testing without real emails.</li>
+<li><strong>Production Parity</strong>: Local tests pass (IPv4 default), but Production failed (IPv6 default). The explicit <code>family: 4</code> config is the mitigation.</li>
 </ul>
 
             </li>
@@ -1265,7 +1265,7 @@ body {
           <div class="table-rows">
             
             <div class="table-row">
-              <div class="table-cell"><span class="text-body">Test TC001 verify razorpay payment signature</span></div>
+              <div class="table-cell"><span class="text-body">Requirement: Email Authentication</span></div>
               <div class="table-cell"><span class="text-body">0</span></div>
               <div class="table-cell"><span class="text-body">0</span></div>
               <div class="table-cell"><span class="text-body">0</span></div>
@@ -1291,7 +1291,7 @@ body {
           <div class="accordion-header" onclick="toggleAccordion(this)">
             <div class="requirement-content">
                                           <div class="requirement-title-row">
-              <h3 class="title-requirement">Test TC001 verify razorpay payment signature</h3>
+              <h3 class="title-requirement">Requirement: Email Authentication</h3>
                 <div class="requirement-status-tag status-success">
               <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
