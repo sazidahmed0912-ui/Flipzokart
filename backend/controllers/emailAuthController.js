@@ -24,8 +24,25 @@ const sendEmailOtp = async (req, res) => {
             otp,
         });
 
+        // Email Template
+        const emailSubject = 'Your Login OTP for Fzokart';
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2874F0;">Fzokart Login Verification</h2>
+            <p>Hello,</p>
+            <p>Your One-Time Password (OTP) for login is:</p>
+            <div style="background-color: #f4f4f4; padding: 15px; text-align: center; border-radius: 5px; font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #333;">
+              ${otp}
+            </div>
+            <p>This OTP is valid for 5 minutes. Do not share this with anyone.</p>
+            <p>If you didn't request this code, you can ignore this email.</p>
+            <hr style="border: none; border-top: 1px solid #eee;" />
+            <p style="font-size: 12px; color: #888;">&copy; ${new Date().getFullYear()} Fzokart. All rights reserved.</p>
+          </div>
+        `;
+
         // Send Email
-        await sendEmailService.sendEmailOtp(email, otp);
+        await sendEmailService.sendEmail(email, emailSubject, emailHtml);
 
         res.status(200).json({
             success: true,
