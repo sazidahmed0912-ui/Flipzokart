@@ -208,6 +208,35 @@ const authService = {
       return [];
     }
   },
+  // =========================
+  // ✅ SEND EMAIL OTP
+  // =========================
+  async sendEmailOtp(email: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/send-email-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message || "Failed to send OTP");
+  },
+
+  // =========================
+  // ✅ VERIFY EMAIL OTP
+  // =========================
+  async verifyEmailOtp(email: string, otp: string): Promise<User> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/verify-email-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp }),
+    });
+
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message || "Invalid OTP");
+
+    if (result.token) localStorage.setItem("token", result.token);
+    return result.user;
+  },
 };
 
 export default authService;

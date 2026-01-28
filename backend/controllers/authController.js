@@ -1,4 +1,6 @@
 const User = require("../models/User");
+const Otp = require("../models/Otp"); // Ensure Otp model is imported
+const sendEmailService = require("../services/emailService");
 const Activity = require("../models/Activity");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
