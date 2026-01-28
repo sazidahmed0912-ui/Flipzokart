@@ -2,8 +2,8 @@ const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  secure: String(process.env.EMAIL_PORT) === '465',
+  port: 465, // Hardcoded to fix Render timeout
+  secure: true, // Hardcoded to fix Render timeout
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
