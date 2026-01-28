@@ -13,10 +13,12 @@ const transporter = nodemailer.createTransport({
   },
   // Force IPv4 to prevent potential IPv6 timeout issues on Cloud platforms like Render
   family: 4,
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000
+  connectionTimeout: 30000, // Increased to 30s
+  greetingTimeout: 30000, // Increased to 30s
+  socketTimeout: 30000 // Increased to 30s
 });
+
+console.log(`📧 Email Configuration: Host=${process.env.EMAIL_HOST}, Port=${process.env.EMAIL_PORT}, Secure=${parseInt(process.env.EMAIL_PORT) === 465}`);
 
 const sendEmailOtp = async (email, otp) => {
   const mailOptions = {
