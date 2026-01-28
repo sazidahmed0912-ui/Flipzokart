@@ -21,7 +21,7 @@ const sendEmailOtp = async (email, otp) => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'Fzokart <onboarding@resend.dev>',
+      from: 'Fzokart <onboarding@resend.dev>', // Fallback to testing domain until user verifies valid domain
       to: [email],
       subject: 'Your Login OTP for Fzokart',
       html: htmlContent,
