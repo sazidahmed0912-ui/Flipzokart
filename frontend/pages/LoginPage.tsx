@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../store/Context';
 import authService from '../services/authService';
 import { SmoothReveal } from '../components/SmoothReveal';
@@ -37,7 +37,7 @@ export const LoginPage: React.FC = () => {
     try {
       await authService.sendEmailOtp(email);
       setStep(2);
-      setTimer(300); // 5 minutes (same as backend TTL)
+      setTimer(300); // 5 minutes
       addToast('success', 'OTP Sent to your verified email!');
     } catch (err: any) {
       addToast('error', err.message || 'Failed to send OTP');
@@ -97,114 +97,134 @@ export const LoginPage: React.FC = () => {
     <div
       className="min-h-screen flex items-center justify-center p-4 font-sans"
       style={{
-        background: '#f1f3f6',
+        background: 'linear-gradient(135deg, #1e63d6 0%, #6fb6ff 100%)', // Legacy Gradient
         color: '#1F2937'
       }}
     >
       <SmoothReveal duration="500">
-        <div className="flex flex-col md:flex-row w-full max-w-[850px] bg-white rounded-[4px] shadow-lg overflow-hidden min-h-[520px]">
+        <div
+          className="w-full max-w-[1100px] h-auto min-h-[560px] flex flex-col md:flex-row rounded-[18px] overflow-hidden"
+          style={{
+            background: 'rgba(255,255,255,0.25)', // Legacy Glassmorphism
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            border: '1px solid rgba(255,255,255,0.35)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.12)'
+          }}
+        >
+          {/* Left Panel */}
+          <div
+            className="w-full md:w-[45%] lg:w-[40%] p-12 text-white flex flex-col justify-center"
+            style={{ background: 'linear-gradient(180deg, #2874F0 0%, #4f9cff 100%)' }}
+          >
+            <div className="flex items-center gap-2.5 font-bold text-[22px] mb-10">
+              <div className="w-9 h-9 bg-[#F9C74F] text-[#1f3fbf] font-extrabold flex items-center justify-center rounded-lg">F</div>
+              Fzokart
+            </div>
 
-          {/* Left Panel - Branding */}
-          <div className="w-full md:w-[40%] bg-[#2874F0] p-10 flex flex-col justify-between text-white relative">
-            <div>
-              <h2 className="text-[28px] font-semibold mb-4 leading-tight">Login</h2>
-              <p className="text-[18px] text-[#dbdbdb] leading-relaxed">
-                Get access to your Orders, Wishlist and Recommendations
-              </p>
-            </div>
-            <div className="mt-10 flex justify-center">
-              <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center text-4xl font-bold opacity-50">
-                FZ
-              </div>
-            </div>
+            <h1 className="text-[30px] font-bold mb-3 leading-tight">Login</h1>
+            <p className="text-[15px] leading-relaxed opacity-95">
+              Get access to your<br />
+              Orders, Wishlist and<br />
+              Recommendations
+            </p>
           </div>
 
-          {/* Right Panel - Form */}
-          <div className="w-full md:w-[60%] p-10 flex flex-col justify-center relative">
+          {/* Right Panel */}
+          <div className="flex-1 flex items-center justify-center p-8 bg-transparent">
+            {/* Login Card */}
+            <SmoothReveal direction="up" delay={200} className="w-full max-w-[360px]">
+              <div
+                className="p-7 rounded-2xl"
+                style={{
+                  background: 'rgba(255,255,255,0.75)',
+                  backdropFilter: 'blur(18px)',
+                  WebkitBackdropFilter: 'blur(18px)',
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.12)'
+                }}
+              >
+                <h2 className="text-[20px] font-bold mb-[18px] text-[#1F2937]">Welcome Back!</h2>
 
-            {step === 1 ? (
-              <form onSubmit={handleSendOtp} className="w-full">
-                <div className="relative mb-6">
-                  <input
-                    type="email"
-                    className="w-full border-b-[1px] border-[#e0e0e0] py-2 focus:border-[#2874F0] outline-none text-[15px] peer transition-colors bg-transparent z-10 relative"
-                    placeholder=" "
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
-                  />
-                  <label className={`absolute left-0 top-2 text-[#878787] text-[15px] transition-all duration-200 pointer-events-none ${email ? '-top-3 text-[12px] text-[#878787]' : 'peer-placeholder-shown:top-2 peer-focus:-top-3 peer-focus:text-[12px] peer-focus:text-[#878787]'}`}>
-                    Enter Email Address
-                  </label>
-                </div>
+                {step === 1 ? (
+                  <form onSubmit={handleSendOtp}>
+                    <div className="mb-[18px]">
+                      <input
+                        type="email"
+                        placeholder="Email Address"
+                        required
+                        className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={isLoading}
+                      />
+                    </div>
 
-                <p className="text-[12px] text-[#878787] mb-8">
-                  By continuing, you agree to Fzokart's <span className="text-[#2874F0] cursor-pointer hover:underline">Terms of Use</span> and <span className="text-[#2874F0] cursor-pointer hover:underline">Privacy Policy</span>.
-                </p>
-
-                <button
-                  type="submit"
-                  disabled={isLoading || !email}
-                  className="w-full bg-[#FB641B] text-white py-3.5 text-[15px] font-medium rounded-[2px] shadow-sm hover:shadow-md transition-shadow disabled:opacity-70"
-                >
-                  {isLoading ? 'Sending OTP...' : 'Request OTP'}
-                </button>
-
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp} className="w-full">
-                <div className="mb-6">
-                  <p className="text-[14px] text-center mb-6 text-[#212121]">
-                    Please enter the OTP sent to <br />
-                    <span className="font-semibold">{email}</span>
-                    <span className="text-[#2874F0] font-medium cursor-pointer ml-2 hover:underline" onClick={() => { setStep(1); setOtp(['', '', '', '', '', '']); }}>Change</span>
-                  </p>
-
-                  <div className="flex justify-center gap-3 mb-8">
-                    {otp.map((data, index) => {
-                      return (
-                        <input
-                          className="w-10 h-10 border border-[#e0e0e0] rounded text-center text-lg focus:border-[#2874F0] focus:ring-1 focus:ring-[#2874F0] outline-none transition-all"
-                          type="text"
-                          name="otp"
-                          maxLength={1}
-                          key={index}
-                          value={data}
-                          onChange={e => handleOtpChange(e.target, index)}
-                          onFocus={e => e.target.select()}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-[#FB641B] text-white py-3.5 text-[15px] font-medium rounded-[2px] shadow-sm hover:shadow-md transition-shadow disabled:opacity-70 mb-4"
-                >
-                  {isLoading ? 'Verifying...' : 'Verify'}
-                </button>
-
-                <div className="text-center mt-6">
-                  {timer > 0 ? (
-                    <p className="text-[14px] text-[#878787]">
-                      Resend OTP in <span className="text-[#2874F0] font-medium font-mono">{Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</span>
-                    </p>
-                  ) : (
                     <button
-                      type="button"
-                      onClick={handleResendOtp}
-                      className="text-[14px] text-[#2874F0] font-medium cursor-pointer hover:underline bg-transparent border-none p-0"
+                      type="submit"
+                      disabled={isLoading || !email}
+                      className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center"
                     >
-                      Resend OTP
+                      {isLoading ? 'Sending OTP...' : 'Request OTP'}
                     </button>
-                  )}
-                </div>
-              </form>
-            )}
 
+                    <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
+                      New to Fzokart? <Link to="/signup" className="font-bold hover:underline" style={{ color: '#FF3333' }}>Sign up</Link>
+                    </div>
+                  </form>
+                ) : (
+                  <form onSubmit={handleVerifyOtp}>
+                    <div className="mb-6">
+                      <p className="text-[13px] text-center mb-4 text-[#4B5563]">
+                        Enter OTP sent to <span className="font-semibold text-[#1F2937]">{email}</span>
+                        <span className="text-[#2874F0] font-medium cursor-pointer ml-2 hover:underline" onClick={() => { setStep(1); setOtp(['', '', '', '', '', '']); }}>Change</span>
+                      </p>
+
+                      <div className="flex justify-center gap-2 mb-6">
+                        {otp.map((data, index) => {
+                          return (
+                            <input
+                              className="w-10 h-10 border border-[#d1d5db] rounded-[8px] text-center text-lg bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] outline-none transition-all"
+                              type="text"
+                              name="otp"
+                              maxLength={1}
+                              key={index}
+                              value={data}
+                              onChange={e => handleOtpChange(e.target, index)}
+                              onFocus={e => e.target.select()}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 mb-4 flex items-center justify-center"
+                    >
+                      {isLoading ? 'Verifying...' : 'Verify & Login'}
+                    </button>
+
+                    <div className="text-center mt-4">
+                      {timer > 0 ? (
+                        <p className="text-[13px] text-[#6B7280]">
+                          Resend OTP in <span className="text-[#2874F0] font-mono">{Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</span>
+                        </p>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleResendOtp}
+                          className="text-[13px] text-[#2874F0] font-medium cursor-pointer hover:underline bg-transparent border-none p-0"
+                        >
+                          Resend OTP
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                )}
+              </div>
+            </SmoothReveal>
           </div>
         </div>
       </SmoothReveal>

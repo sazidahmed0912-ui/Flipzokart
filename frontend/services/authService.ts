@@ -212,13 +212,24 @@ const authService = {
   // ✅ SEND EMAIL OTP
   // =========================
   async sendEmailOtp(email: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/send-email-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    const result = await response.json();
-    if (!result.success) throw new Error(result.message || "Failed to send OTP");
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/send-email-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message || "Failed to send OTP");
+    } catch (error: any) {
+      if (error.name === 'AbortError') throw new Error("Request timed out. Please try again.");
+      throw error;
+    }
   },
 
   // =========================
