@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
   },
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    pass: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, '') : '', // Remove spaces
   },
   connectionTimeout: 5000, // 5 seconds to connect
   greetingTimeout: 5000, // 5 seconds to wait for greeting
