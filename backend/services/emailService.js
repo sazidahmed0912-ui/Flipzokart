@@ -2,16 +2,12 @@ const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: 465, // Hardcoded to fix Render timeout
-  secure: true, // Hardcoded to fix Render timeout
+  port: process.env.EMAIL_PORT,
+  secure: String(process.env.EMAIL_PORT) === '465',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  },
-  family: 4, // Force IPv4 to avoid IPv6 timeouts
-  connectionTimeout: 20000,
-  greetingTimeout: 20000,
-  socketTimeout: 20000
+  }
 });
 
 const sendEmail = async (to, subject, html) => {
