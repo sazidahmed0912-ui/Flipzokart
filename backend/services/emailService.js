@@ -12,9 +12,10 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, '') : '', // Remove spaces
   },
-  connectionTimeout: 5000, // 5 seconds to connect
-  greetingTimeout: 5000, // 5 seconds to wait for greeting
-  socketTimeout: 10000, // 10 seconds of inactivity
+  family: 4, // ⚠️ Force IPv4 (Fixes Render/Gmail Timeout)
+  connectionTimeout: 10000, // 10 seconds to connect
+  greetingTimeout: 10000, // 10 seconds to wait for greeting
+  socketTimeout: 15000, // 15 seconds of inactivity
 });
 
 const sendEmailOtp = async (email, otp) => {
