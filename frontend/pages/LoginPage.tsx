@@ -187,8 +187,18 @@ export const LoginPage: React.FC = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between items-center mb-1">
                         <label className="text-[12px] font-semibold text-[#4B5563]">OTP Code</label>
-                        {timer > 0 ? (
-                          <span className="text-[11px] text-[#2874F0] font-mono">{Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</span>
+                        {otpSent ? (
+                          timer > 0 ? (
+                            <span className="text-[11px] text-[#2874F0] font-mono">{Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={handleSendOtp}
+                              className="text-[11px] text-[#2874F0] font-bold cursor-pointer hover:underline bg-transparent border-none p-0"
+                            >
+                              RESEND OTP
+                            </button>
+                          )
                         ) : (
                           <button
                             type="button"
@@ -196,28 +206,32 @@ export const LoginPage: React.FC = () => {
                             disabled={isLoading || !email}
                             className="text-[11px] text-[#2874F0] font-bold cursor-pointer hover:underline bg-transparent border-none p-0 disabled:opacity-50"
                           >
-                            {otpSent ? 'RESEND OTP' : 'GET OTP'}
+                            GET OTP
                           </button>
                         )}
                       </div>
 
-                      <div className="flex justify-between gap-1.5">
-                        {otp.map((data, index) => {
-                          return (
-                            <input
-                              className="w-9 h-9 border border-[#d1d5db] rounded-[6px] text-center text-sm bg-white focus:border-[#2874F0] focus:ring-[2px] focus:ring-[rgba(40,116,240,0.15)] outline-none transition-all"
-                              type="text"
-                              name="otp"
-                              maxLength={1}
-                              key={index}
-                              value={data}
-                              onChange={e => handleOtpChange(e.target, index)}
-                              onFocus={e => e.target.select()}
-                              disabled={isLoading}
-                            />
-                          );
-                        })}
-                      </div>
+                      {/* CONDITIONAL OTP INPUTS */}
+                      {otpSent && (
+                        <div className="flex justify-between gap-1.5">
+                          {otp.map((data, index) => {
+                            return (
+                              <input
+                                className="w-9 h-9 border border-[#d1d5db] rounded-[6px] text-center text-sm bg-white focus:border-[#2874F0] focus:ring-[2px] focus:ring-[rgba(40,116,240,0.15)] outline-none transition-all"
+                                type="text"
+                                name="otp"
+                                maxLength={1}
+                                key={index}
+                                value={data}
+                                autoFocus={index === 0}
+                                onChange={e => handleOtpChange(e.target, index)}
+                                onFocus={e => e.target.select()}
+                                disabled={isLoading}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
                   </div>
@@ -226,13 +240,13 @@ export const LoginPage: React.FC = () => {
                     By continuing, you agree to Fzokart's <span className="text-[#2874F0] cursor-pointer hover:underline">Terms of Use</span> and <span className="text-[#2874F0] cursor-pointer hover:underline">Privacy Policy</span>.
                   </p>
 
-                  {/* LOGIN BUTTON */}
+                  {/* LOGIN / VERIFY BUTTON */}
                   <button
                     type="submit"
                     disabled={isLoading}
                     className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center"
                   >
-                    {isLoading ? 'Processing...' : 'Login'}
+                    {isLoading ? 'Processing...' : (otpSent ? 'Verify OTP' : 'Login')}
                   </button>
 
                   <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
