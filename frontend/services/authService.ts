@@ -235,11 +235,15 @@ const authService = {
   // =========================
   // ✅ VERIFY EMAIL OTP
   // =========================
-  async verifyEmailOtp(email: string, otp: string): Promise<User> {
+  async verifyEmailOtp(
+    email: string,
+    otp: string,
+    signupData?: { name: string; phone: string; password: string }
+  ): Promise<User> {
     const response = await fetch(`${API_BASE_URL}/api/auth/verify-email-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp }),
+      body: JSON.stringify({ email, otp, ...signupData }),
     });
 
     const result = await response.json();

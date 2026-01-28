@@ -11,7 +11,10 @@ export const SignupPage: React.FC = () => {
   const { addToast } = useToast();
 
   const [step, setStep] = useState(1);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,8 +31,8 @@ export const SignupPage: React.FC = () => {
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.includes('@')) {
-      addToast('error', 'Please enter a valid email address');
+    if (!name.trim() || !email.includes('@') || !password.trim()) {
+      addToast('error', 'Please fill all required fields correctly');
       return;
     }
 
@@ -69,7 +72,7 @@ export const SignupPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const user = await authService.verifyEmailOtp(email, otpCode);
+      const user = await authService.verifyEmailOtp(email, otpCode, { name, phone, password });
       setUser(user);
       addToast('success', '✅ Registration successful!');
       navigate(user.role === 'admin' ? '/admin' : '/profile');
@@ -122,11 +125,10 @@ export const SignupPage: React.FC = () => {
               Fzokart
             </div>
 
-            <h1 className="text-[30px] font-bold mb-3 leading-tight">Login</h1>
+            <h1 className="text-[30px] font-bold mb-3 leading-tight">Signup</h1>
             <p className="text-[15px] leading-relaxed opacity-95">
-              Get access to your<br />
-              Orders, Wishlist and<br />
-              Recommendations
+              Sign up with your details<br />
+              to get started today!
             </p>
           </div>
 
@@ -149,7 +151,29 @@ export const SignupPage: React.FC = () => {
 
                 {step === 1 ? (
                   <form onSubmit={handleSendOtp}>
-                    <div className="mb-[18px]">
+                    <div className="space-y-4 mb-[18px]">
+                      {/* Name Input */}
+                      <input
+                        type="text"
+                        placeholder="Full Name"
+                        required
+                        className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        disabled={isLoading}
+                      />
+
+                      {/* Mobile Number Input */}
+                      <input
+                        type="tel"
+                        placeholder="Mobile Number (Optional)"
+                        className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        disabled={isLoading}
+                      />
+
+                      {/* Email Input */}
                       <input
                         type="email"
                         placeholder="Email Address"
@@ -159,11 +183,26 @@ export const SignupPage: React.FC = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={isLoading}
                       />
+
+                      {/* Password Input */}
+                      <input
+                        type="password"
+                        placeholder="Set Password"
+                        required
+                        className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={isLoading}
+                      />
                     </div>
+
+                    <p className="text-[11px] text-[#878787] mb-3 text-center">
+                      By continuing, you agree to Fzokart's <span className="text-[#2874F0] cursor-pointer hover:underline">Terms of Use</span> and <span className="text-[#2874F0] cursor-pointer hover:underline">Privacy Policy</span>.
+                    </p>
 
                     <button
                       type="submit"
-                      disabled={isLoading || !email}
+                      disabled={isLoading || !email || !name || !password}
                       className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center"
                     >
                       {isLoading ? 'Sending OTP...' : 'Continue'}

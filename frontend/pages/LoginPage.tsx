@@ -160,6 +160,10 @@ export const LoginPage: React.FC = () => {
                       />
                     </div>
 
+                    <p className="text-[11px] text-[#878787] mb-3 text-center">
+                      By continuing, you agree to Fzokart's <span className="text-[#2874F0] cursor-pointer hover:underline">Terms of Use</span> and <span className="text-[#2874F0] cursor-pointer hover:underline">Privacy Policy</span>.
+                    </p>
+
                     <button
                       type="submit"
                       disabled={isLoading || !email}

@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Otp = require("../models/Otp");
 const sendEmailService = require("../services/emailService");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 // SEND EMAIL OTP
 const sendEmailOtp = async (req, res) => {
@@ -40,7 +41,7 @@ const sendEmailOtp = async (req, res) => {
 // VERIFY EMAIL OTP
 const verifyEmailOtp = async (req, res) => {
     try {
-        const { email, otp } = req.body;
+        const { email, otp, name, phone, password } = req.body;
 
         if (!email || !otp) {
             return res.status(400).json({ message: "Email and OTP are required" });
@@ -59,10 +60,20 @@ const verifyEmailOtp = async (req, res) => {
         let user = await User.findOne({ email });
 
         if (!user) {
-            // Auto-signup
+            // New User Registration
+
+            // Hash password if provided
+            let hashedPassword = undefined;
+            if (password) {
+                const salt = await bcrypt.genSalt(10);
+                hashedPassword = await bcrypt.hash(password, salt);
+            }
+
             user = await User.create({
                 email,
-                name: email.split('@')[0],
+                name: name || email.split('@')[0], // Use provided name or default to email prefix
+                phone: phone || undefined,
+                password: hashedPassword,
                 role: "user",
                 status: "Active"
             });
@@ -80,6 +91,7 @@ const verifyEmailOtp = async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                phone: user.phone,
                 role: user.role,
             },
         });
