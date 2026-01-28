@@ -36,7 +36,13 @@ const sendEmailOtp = async (email, otp) => {
     return data;
   } catch (err) {
     console.error('❌ Failed to send OTP email:', err);
-    throw new Error(err.message); // Throw the actual error message
+
+    // Friendly error for Sandbox Mode
+    if (err.message && err.message.includes('only send testing emails to your own email address')) {
+      throw new Error('Sandbox Mode: Can only send OTP to fzokart@gmail.com. Please verify domain in Resend.');
+    }
+
+    throw new Error(err.message);
   }
 };
 
