@@ -1,19 +1,22 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  secure: String(process.env.EMAIL_PORT) === '465',
+  host: "smtp.zoho.in",
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    type: "OAuth2",
+    user: process.env.ZOHO_MAIL,
+    clientId: process.env.ZOHO_CLIENT_ID,
+    clientSecret: process.env.ZOHO_CLIENT_SECRET,
+    refreshToken: process.env.ZOHO_REFRESH_TOKEN,
   }
 });
 
 const sendEmail = async (to, subject, html) => {
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+      from: process.env.ZOHO_MAIL,
       to,
       subject,
       html
