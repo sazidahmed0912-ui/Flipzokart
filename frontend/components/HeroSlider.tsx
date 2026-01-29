@@ -21,18 +21,18 @@ const slides = [
     },
     {
         id: 2,
-        title: "50% OFF Coupon Code Offer",
-        subtext: "Limited time deals on top products",
-        cta: "Grab Now",
+        title: "The Big Fashion Sale",
+        subtext: "Up to 50% OFF on Top Brands",
+        cta: "Shop Now",
         link: "/shop?tag=offer",
-        gradient: "from-[#8E2DE2] to-[#4A00E0]", // Vivid Purple/Blue
-        image: "/assets/banner_offer.png",
+        gradient: "from-[#fcd34d] to-[#ef4444]", // Warm Yellow to Red
+        image: "/assets/banner_offer_new.png",
         position: "center center",
         textParams: {
             titleColor: "text-white",
-            textColor: "text-purple-100",
-            buttonBg: "bg-yellow-400",
-            buttonText: "text-purple-900"
+            textColor: "text-white", // White text on warm gradient looks good
+            buttonBg: "bg-white",
+            buttonText: "text-red-600"
         }
     },
     {
