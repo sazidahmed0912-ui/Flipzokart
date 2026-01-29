@@ -38,12 +38,12 @@ export const HomePage: React.FC = () => {
             <HeroSlider />
 
 
-            <section className="py-8 px-4 md:px-8">
+            <section className="py-4 md:py-8 px-4 md:px-8">
                 <SmoothReveal direction="up" delay={200}>
                     <div className="max-w-7xl mx-auto">
-                        <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center"><span className="text-gray-800">Shop by Categories</span></h2>
-                        <div className="flex overflow-x-auto pb-4 gap-4 px-2 md:grid md:grid-cols-8 md:gap-6 no-scrollbar snap-x">                        {categories.map(category => (
-                            <Link to={category.href} key={category.name} className="flex flex-col items-center flex-shrink-0 snap-center w-20 md:w-auto text-center group">
+                        <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-center"><span className="text-gray-800">Shop by Categories</span></h2>
+                        <div className="flex overflow-x-auto pb-2 gap-3 px-2 md:grid md:grid-cols-8 md:gap-6 no-scrollbar snap-x">                        {categories.map(category => (
+                            <Link to={category.href} key={category.name} className="flex flex-col items-center flex-shrink-0 snap-center w-[72px] md:w-auto text-center group">
                                 <div className="w-14 h-14 md:w-20 md:h-20 mb-2 bg-gray-100 rounded-full md:rounded-xl p-3 border border-gray-200 group-hover:shadow-md transition-shadow flex items-center justify-center">
                                     <LazyImage src={category.imageUrl} alt={category.name} className="w-full h-full object-contain" />
                                 </div>
@@ -55,10 +55,10 @@ export const HomePage: React.FC = () => {
                 </SmoothReveal>
             </section>
 
-            <section className="py-8 px-4 md:px-8 bg-gray-50">
+            <section className="py-4 md:py-8 px-4 md:px-8 bg-gray-50">
                 <SmoothReveal direction="up" delay={400}>
                     <div className="max-w-7xl mx-auto">
-                        <div className="mb-6">
+                        <div className="mb-4 md:mb-6">
                             <h2 className="text-2xl md:text-3xl font-bold"><span className="text-gray-800">Top Deals</span></h2>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6 auto-rows-fr">
