@@ -11,7 +11,7 @@
   },
   {
     "id": "TC003",
-    "title": "test email service integration with zoho oauth2 smtp",
-    "description": "Verify that the email service sends emails using Zoho OAuth2 SMTP via Nodemailer without authentication errors and handles failures gracefully."
+    "title": "test email service integration with zoho mail rest api",
+    "description": "Verify that the email service sends emails using Zoho Mail REST API via Axios (not Nodemailer) without auth errors and handles API failures gracefully."
   }
 ]
