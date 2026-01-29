@@ -4,6 +4,7 @@ const Product = require('../models/Product'); // Import Product model
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
+const { sendOrderConfirmationEmail } = require('../utils/email');
 
 // Helper function to update stock
 const updateStock = async (products) => {
@@ -157,6 +158,9 @@ const createOrder = async (req, res) => {
     if (broadcastLog) {
       broadcastLog("success", `New Order #${order._id.toString().slice(-6)} placed by ${req.user.name}`, "Orders");
     }
+
+    // Send confirmation email (Non-blocking)
+    sendOrderConfirmationEmail(req.user.email, order).catch(err => console.error("Email send failed:", err));
 
     // Update stock
     await updateStock(validatedProducts);
@@ -336,6 +340,9 @@ const verifyPayment = async (req, res) => {
       broadcastLog("info", `Payment verified for Order #${order._id.toString().slice(-6)}`, "Payments");
       broadcastLog("success", `New Order #${order._id.toString().slice(-6)} placed (Pre-paid)`, "Orders");
     }
+
+    // Send confirmation email (Non-blocking)
+    sendOrderConfirmationEmail(req.user.email, order).catch(err => console.error("Email send failed:", err));
 
     // Update stock
     await updateStock(products);
