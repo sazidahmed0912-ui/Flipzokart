@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { OtpInput } from '../components/OtpInput';
 import { useApp } from '../store/Context';
 import authService from '../services/authService';
 import { SmoothReveal } from '../components/SmoothReveal';
@@ -46,18 +47,7 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleOtpChange = (element: HTMLInputElement, index: number) => {
-    if (isNaN(Number(element.value))) return;
 
-    const newOtp = [...otp];
-    newOtp[index] = element.value;
-    setOtp(newOtp);
-
-    // Focus next input
-    if (element.value && element.nextSibling) {
-      (element.nextSibling as HTMLInputElement).focus();
-    }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,8 +174,8 @@ export const LoginPage: React.FC = () => {
                     </div>
 
                     {/* OTP SECTION */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center mb-1">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center px-1">
                         <label className="text-[12px] font-semibold text-[#4B5563]">OTP Code</label>
                         {otpSent ? (
                           timer > 0 ? (
@@ -213,43 +203,34 @@ export const LoginPage: React.FC = () => {
 
                       {/* CONDITIONAL OTP INPUTS */}
                       {otpSent && (
-                        <div className="flex justify-between gap-1.5">
-                          {otp.map((data, index) => {
-                            return (
-                              <input
-                                className="w-9 h-9 border border-[#d1d5db] rounded-[6px] text-center text-sm bg-white focus:border-[#2874F0] focus:ring-[2px] focus:ring-[rgba(40,116,240,0.15)] outline-none transition-all"
-                                type="text"
-                                name="otp"
-                                maxLength={1}
-                                key={index}
-                                value={data}
-                                autoFocus={index === 0}
-                                onChange={e => handleOtpChange(e.target, index)}
-                                onFocus={e => e.target.select()}
-                                disabled={isLoading}
-                              />
-                            );
-                          })}
+                        <div className="w-full">
+                          <OtpInput
+                            length={6}
+                            value={otp}
+                            onChange={setOtp}
+                            disabled={isLoading}
+                          />
                         </div>
                       )}
                     </div>
 
-                  </div>
 
-                  <p className="text-[11px] text-[#878787] mb-4 text-center">
-                    By continuing, you agree to Fzokart's <span className="text-[#2874F0] cursor-pointer hover:underline">Terms of Use</span> and <span className="text-[#2874F0] cursor-pointer hover:underline">Privacy Policy</span>.
-                  </p>
+                  </div>
 
                   {/* LOGIN / VERIFY BUTTON */}
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center"
+                    className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center mb-4"
                   >
                     {isLoading ? 'Processing...' : (otpSent ? 'Verify OTP' : 'Login')}
                   </button>
 
-                  <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
+                  <p className="text-[11px] text-[#878787] mb-2 text-center">
+                    By continuing, you agree to Fzokart's <Link to="/terms-of-service" className="text-[#2874F0] cursor-pointer hover:underline">Terms of Use</Link> and <Link to="/privacy-policy" className="text-[#2874F0] cursor-pointer hover:underline">Privacy Policy</Link>.
+                  </p>
+
+                  <div className="text-[13px] text-[#2874F0] text-center">
                     New to Fzokart? <Link to="/signup" className="font-bold hover:underline" style={{ color: '#FF3333' }}>Sign up</Link>
                   </div>
                 </form>

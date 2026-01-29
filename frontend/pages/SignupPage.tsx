@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { OtpInput } from '../components/OtpInput';
 import { useApp } from '../store/Context';
 import authService from '../services/authService';
 import { SmoothReveal } from '../components/SmoothReveal';
@@ -18,6 +19,7 @@ export const SignupPage: React.FC = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     let interval: any;
@@ -35,6 +37,10 @@ export const SignupPage: React.FC = () => {
       addToast('error', 'Please fill all required fields correctly');
       return;
     }
+    if (!acceptedTerms) {
+      addToast('error', 'Please agree to the Terms & Conditions');
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -49,18 +55,7 @@ export const SignupPage: React.FC = () => {
     }
   };
 
-  const handleOtpChange = (element: HTMLInputElement, index: number) => {
-    if (isNaN(Number(element.value))) return;
 
-    const newOtp = [...otp];
-    newOtp[index] = element.value;
-    setOtp(newOtp);
-
-    // Focus next input
-    if (element.value && element.nextSibling) {
-      (element.nextSibling as HTMLInputElement).focus();
-    }
-  };
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -196,14 +191,23 @@ export const SignupPage: React.FC = () => {
                       />
                     </div>
 
-                    <p className="text-[11px] text-[#878787] mb-3 text-center">
-                      By continuing, you agree to Fzokart's <span className="text-[#2874F0] cursor-pointer hover:underline">Terms of Use</span> and <span className="text-[#2874F0] cursor-pointer hover:underline">Privacy Policy</span>.
-                    </p>
+                    <div className="flex items-start gap-2 mb-4 px-1">
+                      <input
+                        type="checkbox"
+                        id="terms-checkbox"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                        className="mt-1 w-4 h-4 text-[#2874F0] border-gray-300 rounded focus:ring-[#2874F0] cursor-pointer"
+                      />
+                      <label htmlFor="terms-checkbox" className="text-[12px] text-[#4B5563] leading-tight cursor-pointer">
+                        I agree to Fzokart's <Link to="/terms-of-service" className="text-[#2874F0] hover:underline font-medium">Terms of Use</Link> and <Link to="/privacy-policy" className="text-[#2874F0] hover:underline font-medium">Privacy Policy</Link>.
+                      </label>
+                    </div>
 
                     <button
                       type="submit"
-                      disabled={isLoading || !email || !name || !password}
-                      className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center"
+                      disabled={isLoading || !email || !name || !password || !acceptedTerms}
+                      className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center disabled:cursor-not-allowed"
                     >
                       {isLoading ? 'Sending OTP...' : 'Continue'}
                     </button>
@@ -220,21 +224,13 @@ export const SignupPage: React.FC = () => {
                         <span className="text-[#2874F0] font-medium cursor-pointer ml-2 hover:underline" onClick={() => { setStep(1); setOtp(['', '', '', '', '', '']); }}>Change</span>
                       </p>
 
-                      <div className="flex justify-center gap-2 mb-6">
-                        {otp.map((data, index) => {
-                          return (
-                            <input
-                              className="w-10 h-10 border border-[#d1d5db] rounded-[8px] text-center text-lg bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] outline-none transition-all"
-                              type="text"
-                              name="otp"
-                              maxLength={1}
-                              key={index}
-                              value={data}
-                              onChange={e => handleOtpChange(e.target, index)}
-                              onFocus={e => e.target.select()}
-                            />
-                          );
-                        })}
+                      <div className="w-full mb-6">
+                        <OtpInput
+                          length={6}
+                          value={otp}
+                          onChange={setOtp}
+                          disabled={isLoading}
+                        />
                       </div>
                     </div>
 

@@ -167,10 +167,10 @@ const ProfilePage = () => {
 
           {/* PROFILE HEADER CARD */}
           <SmoothReveal direction="up" delay={200}>
-            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="flex items-center gap-6">
-                <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
-                  <div className="w-24 h-24 rounded-full bg-[#FFE11B] flex items-center justify-center text-3xl font-bold text-[#1F2937] border-4 border-white shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6 relative">
+              <div className="flex items-center gap-4 md:gap-6 w-full">
+                <div className="relative group cursor-pointer flex-shrink-0" onClick={handleAvatarClick}>
+                  <div className="w-[60px] h-[60px] md:w-24 md:h-24 rounded-full bg-[#FFE11B] flex items-center justify-center text-xl md:text-3xl font-bold text-[#1F2937] border-2 md:border-4 border-white shadow-sm overflow-hidden">
                     {profileData.avatar ? (
                       <img src={profileData.avatar.startsWith('http') ? profileData.avatar : `/${profileData.avatar}`} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
@@ -178,23 +178,24 @@ const ProfilePage = () => {
                     )}
                   </div>
                   <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera size={24} className="text-white" />
+                    <Camera size={20} className="text-white md:w-6 md:h-6" />
                   </div>
                   <input type="file" id="avatar-input" className="hidden" accept="image/*" onChange={handleFileChange} />
                 </div>
 
-                <div className="space-y-1">
-                  <h2 className="text-2xl font-bold text-[#1F2937] flex items-center gap-2">
+                <div className="space-y-0.5 md:space-y-1 overflow-hidden">
+                  <h2 className="text-lg md:text-2xl font-bold text-[#1F2937] flex items-center gap-1.5 md:gap-2 truncate">
                     {profileData.name || "User Name"}
-                    <CheckCircle2 size={20} className="text-green-500 fill-current" />
+                    <CheckCircle2 size={16} className="text-green-500 fill-current md:w-5 md:h-5" />
                   </h2>
-                  <div className="text-base text-gray-500 font-medium">{profileData.email || "email@example.com"}</div>
-                  <div className="text-base text-gray-500 font-medium">{profileData.phone || "+91 XXXXXXXXXX"}</div>
+                  <div className="text-sm text-gray-500 font-medium truncate">{profileData.email || "email@example.com"}</div>
+                  <div className="text-sm text-gray-500 font-medium truncate">{profileData.phone || "+91 XXXXXXXXXX"}</div>
                 </div>
               </div>
+
               <button
                 onClick={openModal}
-                className="bg-[#F9C74F] text-[#1F2937] px-6 py-2.5 rounded-[2px] font-semibold text-sm shadow-sm hover:shadow-md transition-shadow active:scale-95"
+                className="bg-[#F9C74F] text-[#1F2937] px-4 md:px-6 py-2 md:py-2.5 rounded-[6px] font-semibold text-xs md:text-sm shadow-sm hover:shadow-md transition-shadow active:scale-95 whitespace-nowrap h-[36px] md:h-auto self-start md:self-auto ml-auto md:ml-0"
               >
                 Edit Profile
               </button>
@@ -202,20 +203,20 @@ const ProfilePage = () => {
           </SmoothReveal>
 
           {/* QUICK INFO CARDS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {[
               { label: "Total Orders", value: orderCount.toString(), icon: Package },
               { label: "Account Status", value: profileData.status || "Active", icon: ShieldCheck, isStatus: true },
               { label: "Member Since", value: getMemberSince(), icon: Calendar }
             ].map((stat, i) => (
               <SmoothReveal key={i} direction="up" delay={300 + (i * 100)} className="h-full">
-                <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-5 flex items-center gap-4 h-full">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#2874F0]">
-                    <stat.icon size={20} />
+                <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-3 md:p-5 flex items-center gap-3 md:gap-4 h-full">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#2874F0] flex-shrink-0">
+                    <stat.icon size={16} className="md:w-5 md:h-5" />
                   </div>
-                  <div>
-                    <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">{stat.label}</div>
-                    <div className={`text-lg font-bold ${stat.isStatus ? "text-green-600" : "text-[#1F2937]"}`}>{stat.value}</div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] md:text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{stat.label}</div>
+                    <div className={`text-sm md:text-lg font-bold truncate ${stat.isStatus ? "text-green-600" : "text-[#1F2937]"}`}>{stat.value}</div>
                   </div>
                 </div>
               </SmoothReveal>
