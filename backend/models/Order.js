@@ -68,7 +68,15 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  mrp: {
+    type: Number,
+    default: 0
+  },
   total: {
+    type: Number,
+    required: true,
+  },
+  finalAmount: {
     type: Number,
     required: true,
   },

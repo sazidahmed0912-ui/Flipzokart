@@ -27,7 +27,7 @@ const createOrder = async (req, res) => {
     console.log('Request body:', req.body);
     console.log('req.user object:', req.user); // Added for debugging
 
-    const { products, address: bodyAddress, addressId, subtotal, itemsPrice, deliveryCharges, discount, platformFee, tax, total } = req.body;
+    const { products, address: bodyAddress, addressId, subtotal, itemsPrice, deliveryCharges, discount, platformFee, tax, total, mrp, finalAmount } = req.body;
 
     let address = bodyAddress;
 
@@ -111,7 +111,9 @@ const createOrder = async (req, res) => {
       discount: discount || 0,
       platformFee: platformFee || 0,
       tax: tax || 0,
-      total
+      mrp: mrp || 0,
+      total,
+      finalAmount: finalAmount || total
     });
 
     await order.save();
@@ -226,7 +228,9 @@ const verifyPayment = async (req, res) => {
       discount,
       platformFee,
       tax,
-      total
+      total,
+      mrp,
+      finalAmount
     } = req.body;
 
     // Verify payment signature
@@ -274,7 +278,9 @@ const verifyPayment = async (req, res) => {
       discount: discount || 0,
       platformFee: platformFee || 0,
       tax: tax || 0,
+      mrp: mrp || 0,
       total,
+      finalAmount: finalAmount || total,
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id
     });

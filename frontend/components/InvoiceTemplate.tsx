@@ -16,9 +16,24 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
     const items = order.items || [];
 
     // Calculations: Prefer Stored Values
-    const grandTotal = order.total || 0;
+    console.log("INVOICE CALC DEBUG:", {
+        id: order._id || order.id,
+        mrp: order.mrp,
+        itemsPrice: order.itemsPrice,
+        subtotal: order.subtotal,
+        tax: order.tax,
+        deliveryCharges: order.deliveryCharges,
+        discount: order.discount,
+        platformFee: order.platformFee,
+        finalAmount: order.finalAmount,
+        total: order.total
+    });
+
+    // Use finalAmount if available (it acts as the locked Grand Total)
+    const grandTotal = order.finalAmount !== undefined ? order.finalAmount : (order.total || 0);
+
     // Use itemsPrice if available, else subtotal. 
-    // Note: In new logic, subtotal IS itemsPrice.
+    // Note: In new logic, subtotal IS itemsPrice (Selling Price).
     const subtotal = order.itemsPrice !== undefined ? order.itemsPrice : (order.subtotal || 0);
     const taxAmount = order.tax !== undefined ? order.tax : 0;
     const shipping = order.deliveryCharges !== undefined ? order.deliveryCharges : (order.shippingFee || 0);

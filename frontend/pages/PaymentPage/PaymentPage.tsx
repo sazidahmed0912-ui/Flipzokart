@@ -74,6 +74,7 @@ const PaymentPage: React.FC = () => {
 
   const {
     subtotal: itemsPrice, // Alias subtotal to itemsPrice from helper
+    originalPrice: mrp,
     deliveryCharges,
     discount,
     platformFee,
@@ -138,7 +139,9 @@ const PaymentPage: React.FC = () => {
         discount,
         platformFee,
         tax,
+        mrp,
         total: totalPayable,
+        finalAmount: totalPayable,
         addressId: selectedAddress.id || selectedAddress._id,
       });
 
@@ -198,7 +201,9 @@ const PaymentPage: React.FC = () => {
               discount,
               platformFee,
               tax,
+              mrp,
               total: totalPayable,
+              finalAmount: totalPayable,
               addressId: selectedAddress?.id || selectedAddress?._id,
             });
 
