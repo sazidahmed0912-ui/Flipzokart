@@ -4,6 +4,8 @@ const transporter = nodemailer.createTransport({
   host: "smtp.zoho.in",
   port: 465,
   secure: true,
+  socketTimeout: 15000,
+  connectionTimeout: 15000,
   auth: {
     type: "OAuth2",
     user: process.env.ZOHO_MAIL,

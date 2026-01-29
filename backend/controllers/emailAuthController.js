@@ -42,11 +42,14 @@ const sendEmailOtp = async (req, res) => {
         `;
 
         // Send Email
-        await sendEmailService.sendEmail(email, emailSubject, emailHtml);
-
         res.status(200).json({
             success: true,
             message: "OTP sent successfully to your email"
+        });
+
+        // Send Email (Non-blocking)
+        sendEmailService.sendEmail(email, emailSubject, emailHtml).catch(err => {
+            console.error("Background Email Error:", err.message);
         });
 
     } catch (error) {

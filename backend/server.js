@@ -214,6 +214,11 @@ app.get("/", (req, res) => {
   res.send("Flipzokart backend running 🚀 v2.1 (SEO Enabled)");
 });
 
+// 🏥 Health Check
+app.get("/health", (req, res) => {
+  res.send("OK");
+});
+
 // 🔐 Auth
 app.get("/oauth/zoho/callback", async (req, res) => {
   const code = req.query.code;
@@ -223,6 +228,7 @@ app.get("/oauth/zoho/callback", async (req, res) => {
       "https://accounts.zoho.in/oauth/v2/token",
       null,
       {
+        timeout: 15000, // 15s timeout
         params: {
           grant_type: "authorization_code",
           client_id: process.env.ZOHO_CLIENT_ID,

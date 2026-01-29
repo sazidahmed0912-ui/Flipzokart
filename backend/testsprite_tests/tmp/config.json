@@ -8,12 +8,14 @@
     "projectName": "backend",
     "projectPath": "d:\\Websites\\Flipzokart\\backend",
     "testIds": [
+      "TC001",
+      "TC002",
       "TC003"
     ],
-    "additionalInstruction": "Ensure the test specifically verifies the connection to smtp.zoho.in on port 465 using the provided environment variables. The goal is to verify the fix for ETIMEDOUT errors.",
+    "additionalInstruction": "Run all tests. Ensure TC001 verifies that the OTP API responds quickly (indicating non-blocking email). Verify /health endpoint if possible or add a new test case for it.",
     "envs": {
       "API_KEY": "sk-user-9bpwDiADBgTT_9Nmx7neRzSXSUT3vzD8lx_cY3b2QJMVOz86DK4ULALUqXEPvtxvdsQYIIzczgPSqjKb3xPqyiXf33yc_e8usGIJ5E3MNQyAHy5IzTt-VvC6NT2JcNV138s"
     }
   },
-  "proxy": "http://bf991cf4-2f67-4daa-bf70-5961c0e45809:O0p0IvELgLrdqzDPOGt5lUvl5xG8y5o2@tun.testsprite.com:8080"
+  "proxy": "http://4308d7d2-94d5-488d-95bf-466307e336e2:tly2dsRUv80jNvdRVoJEAVuEMrodQJZe@tun.testsprite.com:8080"
 }

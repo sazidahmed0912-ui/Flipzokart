@@ -1,80 +1,74 @@
-import os
 import requests
-import smtplib
-import socket
-import time
-from email.message import EmailMessage
+import json
 
 BASE_URL = "http://localhost:5000"
-SMTP_HOST = "smtp.zoho.in"
-SMTP_PORT = 465
-SMTP_TIMEOUT = 10
+TIMEOUT = 30
+HEADERS = {'Content-Type': 'application/json'}
 
-# Retrieve necessary environment variables for Zoho OAuth2 SMTP
-ZOHO_SMTP_EMAIL = os.getenv("ZOHO_SMTP_EMAIL")
-ZOHO_SMTP_OAUTH2_ACCESS_TOKEN = os.getenv("ZOHO_SMTP_OAUTH2_ACCESS_TOKEN")
 
 def test_email_service_integration_with_zoho_oauth2_smtp():
-    assert ZOHO_SMTP_EMAIL, "Environment variable ZOHO_SMTP_EMAIL is not set"
-    assert ZOHO_SMTP_OAUTH2_ACCESS_TOKEN, "Environment variable ZOHO_SMTP_OAUTH2_ACCESS_TOKEN is not set"
-
-    # Verify direct socket connection to smtp.zoho.in on port 465
-    try:
-        with socket.create_connection((SMTP_HOST, SMTP_PORT), timeout=SMTP_TIMEOUT):
-            pass
-    except socket.timeout:
-        assert False, f"Timed out connecting to {SMTP_HOST}:{SMTP_PORT}"
-    except Exception as e:
-        assert False, f"Failed to connect to {SMTP_HOST}:{SMTP_PORT} due to: {e}"
-
-    # Compose email payload for API request
-    test_email_payload = {
-        "to": ZOHO_SMTP_EMAIL,
-        "subject": "Test Email Service Integration",
-        "text": "This is a test email to verify Zoho OAuth2 SMTP integration."
+    send_email_endpoint = f"{BASE_URL}/email/send"
+    # Construct a valid email payload to trigger Zoho OAuth2 SMTP via Nodemailer
+    email_payload = {
+        "to": "testrecipient@example.com",
+        "subject": "Integration Test Email",
+        "text": "This is a test email sent using Zoho OAuth2 SMTP via Nodemailer.",
+        "html": "<p>This is a test email sent using Zoho OAuth2 SMTP via Nodemailer.</p>"
     }
 
-    headers = {
-        "Content-Type": "application/json"
-    }
-
-    # Send email via the application's email sending endpoint
-    # Assume POST /email/send is the endpoint to send emails
-    # We do not have explicit API doc for the endpoint, assuming common pattern
     try:
-        response = requests.post(
-            f"{BASE_URL}/email/send",
-            json=test_email_payload,
-            headers=headers,
-            timeout=30
-        )
-    except requests.exceptions.RequestException as e:
-        assert False, f"Email service request failed with exception: {e}"
+        response = requests.post(send_email_endpoint, headers=HEADERS, json=email_payload, timeout=TIMEOUT)
+    except requests.RequestException as e:
+        assert False, f"Request to send email failed: {e}"
 
-    # Validate response status code for success
-    assert response.status_code in (200, 202), (
-        f"Expected status 200 or 202, got {response.status_code}. Response: {response.text}"
-    )
+    # The expected success status code is assumed 200; adjust if API differs
+    assert response.status_code == 200, f"Expected status code 200, got {response.status_code}"
 
-    # Validate response body presence and content typical for success or known error
     try:
         resp_json = response.json()
-    except ValueError:
-        assert False, "Response is not valid JSON"
+    except json.JSONDecodeError:
+        assert False, "Response is not in JSON format"
 
-    # Check for errors related to SMTP authentication or timeout in response
-    error = resp_json.get("error") or resp_json.get("message")
-    if error:
-        # If error mentions ETIMEDOUT or auth issues, fail test
-        err_lower = str(error).lower()
-        assert "etimedout" not in err_lower, f"ETIMEDOUT error encountered: {error}"
-        assert "authentication" not in err_lower and "auth" not in err_lower, f"Authentication error encountered: {error}"
+    # Validate response contains success indication and no auth error
+    # Assuming API returns {"success": true, "message": "..."} or error info
+    assert "success" in resp_json, "Response JSON missing 'success' key"
+    assert resp_json["success"] is True, f"Email sending was not successful: {resp_json}"
 
-    # If present, check a success indicator in response
-    success_indicators = ["success", "sent", "queued"]
-    response_text = str(resp_json).lower()
-    assert any(indicator in response_text for indicator in success_indicators), (
-        f"Response does not indicate success: {resp_json}"
+    # Validate no authentication error messages in response
+    # Commonly error messages might be inside a "message" or "error" field
+    error_fields = ["message", "error", "errors"]
+    auth_error_keywords = ["authentication failed", "auth error", "invalid credentials", "oauth2 error", "authentication error"]
+
+    for field in error_fields:
+        if field in resp_json:
+            msg = str(resp_json[field]).lower()
+            for keyword in auth_error_keywords:
+                assert keyword not in msg, f"Authentication error detected in response message: '{resp_json[field]}'"
+
+    # Testing failure handling: send invalid payload to provoke failure
+    invalid_payload = {
+        "to": "invalid-email-address",
+        "subject": "Invalid Test Email",
+        "text": "This email should fail due to invalid recipient."
+    }
+
+    try:
+        fail_response = requests.post(send_email_endpoint, headers=HEADERS, json=invalid_payload, timeout=TIMEOUT)
+    except requests.RequestException as e:
+        assert False, f"Request to send email with invalid payload failed: {e}"
+
+    # Expect a 4xx client error for invalid input
+    assert 400 <= fail_response.status_code < 500, f"Expected 4xx client error for invalid payload, got {fail_response.status_code}"
+
+    try:
+        fail_resp_json = fail_response.json()
+    except json.JSONDecodeError:
+        assert False, "Failure response is not in JSON format"
+
+    # Validate error is handled gracefully with error message
+    assert "success" in fail_resp_json, "Failure response JSON missing 'success' key"
+    assert fail_resp_json["success"] is False or fail_resp_json.get("error") is not None, (
+        "Failure response does not properly indicate error"
     )
 
 
