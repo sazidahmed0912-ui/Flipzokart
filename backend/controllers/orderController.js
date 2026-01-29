@@ -113,7 +113,16 @@ const createOrder = async (req, res) => {
       tax: tax || 0,
       mrp: mrp || 0,
       total,
-      finalAmount: finalAmount || total
+      finalAmount: finalAmount || total,
+      orderSummary: {
+        itemsPrice: itemsPrice || subtotal || 0,
+        tax: tax || 0,
+        deliveryCharges: deliveryCharges || 0,
+        discount: discount || 0,
+        platformFee: platformFee || 0,
+        finalAmount: finalAmount || total,
+        mrp: mrp || 0
+      }
     });
 
     await order.save();
@@ -281,6 +290,15 @@ const verifyPayment = async (req, res) => {
       mrp: mrp || 0,
       total,
       finalAmount: finalAmount || total,
+      orderSummary: {
+        itemsPrice: itemsPrice || 0,
+        tax: tax || 0,
+        deliveryCharges: deliveryCharges || 0,
+        discount: discount || 0,
+        platformFee: platformFee || 0,
+        finalAmount: finalAmount || total,
+        mrp: mrp || 0
+      },
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id
     });

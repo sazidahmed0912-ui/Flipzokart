@@ -16,28 +16,25 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
     const items = order.items || [];
 
     // Calculations: Prefer Stored Values
-    console.log("INVOICE CALC DEBUG:", {
-        id: order._id || order.id,
-        mrp: order.mrp,
-        itemsPrice: order.itemsPrice,
-        subtotal: order.subtotal,
-        tax: order.tax,
-        deliveryCharges: order.deliveryCharges,
-        discount: order.discount,
-        platformFee: order.platformFee,
-        finalAmount: order.finalAmount,
-        total: order.total
-    });
+    console.log("INVOICE - Order Summary:", order.orderSummary);
 
-    // Use finalAmount if available (it acts as the locked Grand Total)
-    const grandTotal = order.finalAmount !== undefined ? order.finalAmount : (order.total || 0);
+    const s = order.orderSummary || {};
 
-    // Use itemsPrice if available, else subtotal. 
-    // Note: In new logic, subtotal IS itemsPrice (Selling Price).
-    const subtotal = order.itemsPrice !== undefined ? order.itemsPrice : (order.subtotal || 0);
-    const taxAmount = order.tax !== undefined ? order.tax : 0;
-    const shipping = order.deliveryCharges !== undefined ? order.deliveryCharges : (order.shippingFee || 0);
-    const platformFee = order.platformFee !== undefined ? order.platformFee : 0;
+    // Use nullish coalescing (??) to allow 0 but fallback if undefined
+    const itemsPrice = s.itemsPrice ?? order.itemsPrice ?? (order.subtotal || 0);
+    const taxAmount = s.tax ?? order.tax ?? 0;
+    const shipping = s.deliveryCharges ?? order.deliveryCharges ?? (order.shippingFee || 0);
+    const platformFee = s.platformFee ?? order.platformFee ?? 0;
+    const discount = s.discount ?? order.discount ?? 0;
+
+    // Fallback calculation: Grand Total = itemsPrice + tax + deliveryCharges - discount + platformFee
+    const calculatedTotal = itemsPrice + taxAmount + shipping - discount + platformFee;
+
+    // Use finalAmount from summary, or top-level, or calculated fallback. Prevent silent 0.
+    const grandTotal = s.finalAmount ?? order.finalAmount ?? order.total ?? calculatedTotal;
+
+    // Alias subtotal to itemsPrice for display
+    const subtotal = itemsPrice;
 
     const amountInWords = numberToWords(Math.round(grandTotal));
 

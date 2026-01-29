@@ -80,6 +80,15 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  orderSummary: {
+    itemsPrice: { type: Number, default: 0 },
+    tax: { type: Number, default: 0 },
+    deliveryCharges: { type: Number, default: 0 },
+    discount: { type: Number, default: 0 },
+    platformFee: { type: Number, default: 0 },
+    finalAmount: { type: Number, default: 0 },
+    mrp: { type: Number, default: 0 }
+  },
   razorpayOrderId: {
     type: String,
   },
