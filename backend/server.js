@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 
 const connectDB = require("./config/db");
 const User = require("./models/User");
@@ -216,7 +217,30 @@ app.get("/", (req, res) => {
 // 🔐 Auth
 app.get("/oauth/zoho/callback", async (req, res) => {
   const code = req.query.code;
-  res.send("Zoho callback received: " + code);
+
+  try {
+    const response = await axios.post(
+      "https://accounts.zoho.in/oauth/v2/token",
+      null,
+      {
+        params: {
+          grant_type: "authorization_code",
+          client_id: process.env.ZOHO_CLIENT_ID,
+          client_secret: process.env.ZOHO_CLIENT_SECRET,
+          redirect_uri:
+            "https://flipzokart-backend.onrender.com/oauth/zoho/callback",
+          code: code,
+        },
+      }
+    );
+
+    console.log("Zoho Tokens:", response.data);
+
+    res.send("Token received successfully!");
+  } catch (err) {
+    console.log(err.response?.data || err.message);
+    res.send("Token error");
+  }
 });
 
 app.use("/api/auth", require("./routes/auth"));
