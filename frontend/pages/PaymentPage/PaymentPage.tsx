@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Banknote,
   ChevronRight,
@@ -47,6 +47,7 @@ const useRazorpay = () => {
 
 const PaymentPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, cart, clearCart, selectedAddress, removeProductFromCart } = useApp();
   const { addToast } = useToast();
 
@@ -68,14 +69,17 @@ const PaymentPage: React.FC = () => {
   /* =========================
      Price Calculation
   ========================= */
+  // Use delivery charges passed from checkout if available
+  const passedDeliveryCharges = location.state?.deliveryCharges;
 
-
-  // ... inside component ...
-
-  /* =========================
-     Price Calculation
-  ========================= */
-  const { subtotal, deliveryCharges, discount, platformFee, totalAmount: totalPayable } = calculateCartTotals(cart);
+  const {
+    subtotal: itemsPrice, // Alias subtotal to itemsPrice from helper
+    deliveryCharges,
+    discount,
+    platformFee,
+    tax,
+    totalAmount: totalPayable
+  } = calculateCartTotals(cart, passedDeliveryCharges);
 
   /* =========================
      ERROR HANDLING HELPER
@@ -128,9 +132,12 @@ const PaymentPage: React.FC = () => {
           quantity: i.quantity,
           selectedVariants: i.selectedVariants
         })),
-        subtotal,
+        subtotal: itemsPrice, // Use itemsPrice as subtotal for backend compatibility if needed, or send both
+        itemsPrice,
         deliveryCharges,
         discount,
+        platformFee,
+        tax,
         total: totalPayable,
         addressId: selectedAddress.id || selectedAddress._id,
       });
@@ -185,9 +192,12 @@ const PaymentPage: React.FC = () => {
                 quantity: i.quantity,
                 selectedVariants: i.selectedVariants
               })),
-              subtotal,
+              subtotal: itemsPrice,
+              itemsPrice,
               deliveryCharges,
               discount,
+              platformFee,
+              tax,
               total: totalPayable,
               addressId: selectedAddress?.id || selectedAddress?._id,
             });
@@ -290,20 +300,20 @@ const PaymentPage: React.FC = () => {
 
             <div className="price-item">
               <span>Subtotal</span>
-              <span>₹{subtotal}</span>
+              <span>₹{itemsPrice.toLocaleString('en-IN')}</span>
             </div>
             <div className="price-item">
               <span>Delivery</span>
-              <span>{deliveryCharges === 0 ? "FREE" : `₹${deliveryCharges}`}</span>
+              <span>{deliveryCharges === 0 ? "FREE" : `₹${deliveryCharges.toLocaleString('en-IN')}`}</span>
             </div>
             <div className="price-item">
               <span>Platform Fee</span>
-              <span>₹{platformFee}</span>
+              <span>₹{platformFee.toLocaleString('en-IN')}</span>
             </div>
 
             <div className="price-total">
               <strong>TOTAL</strong>
-              <strong>₹{totalPayable}</strong>
+              <strong>₹{totalPayable.toLocaleString('en-IN')}</strong>
             </div>
 
             {error && <p className="error-toast">{error}</p>}

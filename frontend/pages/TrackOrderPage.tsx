@@ -349,27 +349,44 @@ export const TrackOrderPage: React.FC = () => {
                         <h3 className="font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4">Price Details</h3>
                         <div className="space-y-4 flex-1">
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-gray-900">Price ({order.items?.length || 0} items)</span>
-                                <span className="font-medium text-gray-900">₹{(order.grandTotal || 0).toLocaleString('en-IN')}</span>
+                                <span className="text-gray-900">Items Price</span>
+                                <span className="font-medium text-gray-900">₹{(order.totals?.itemsPrice || 0).toLocaleString('en-IN')}</span>
                             </div>
-                            {/* Placeholder for potential discount if available in future */}
-                            {/* <div className="flex justify-between items-center text-sm">
-                                 <span className="text-gray-900">Discount</span>
-                                 <span className="font-medium text-green-600">- ₹0</span>
-                             </div> */}
+                            {(order.totals?.discount || 0) > 0 && (
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-900">Discount</span>
+                                    <span className="font-medium text-green-600">- ₹{(order.totals?.discount || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                            )}
+                            {(order.totals?.tax || 0) > 0 && (
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-900">Tax / GST</span>
+                                    <span className="font-medium text-gray-900">₹{(order.totals?.tax).toLocaleString('en-IN')}</span>
+                                </div>
+                            )}
+                            {(order.totals?.platformFee || 0) > 0 && (
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-900">Platform Fee</span>
+                                    <span className="font-medium text-gray-900">₹{(order.totals?.platformFee).toLocaleString('en-IN')}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-900">Delivery Charges</span>
-                                <span className="font-medium text-green-600">{order.shippingFee === 0 ? 'Free' : `₹${order.shippingFee}`}</span>
+                                <span className="font-medium text-green-600">
+                                    {(order.totals?.shipping || 0) === 0 ? 'Free' : `₹${(order.totals?.shipping || 0).toLocaleString('en-IN')}`}
+                                </span>
                             </div>
 
                             <div className="border-t border-dashed border-gray-200 my-2 pt-3 flex justify-between items-center">
                                 <span className="font-bold text-lg text-gray-900">Total Amount</span>
-                                <span className="font-bold text-lg text-gray-900">₹{order.grandTotal?.toLocaleString('en-IN') || order.total?.toLocaleString('en-IN')}</span>
+                                <span className="font-bold text-lg text-gray-900">₹{(order.totals?.grandTotal || 0).toLocaleString('en-IN')}</span>
                             </div>
 
-                            <div className="text-xs text-green-700 font-medium bg-green-50 p-2 rounded">
-                                You will save ₹{order.items?.reduce((acc: number, item: any) => acc + ((item.originalPrice || item.price) - item.price) * item.quantity, 0).toLocaleString('en-IN') || 0} on this order
-                            </div>
+                            {(order.totals?.discount || 0) > 0 && (
+                                <div className="text-xs text-green-700 font-medium bg-green-50 p-2 rounded">
+                                    You saved ₹{(order.totals?.discount).toLocaleString('en-IN')} on this order
+                                </div>
+                            )}
                         </div>
 
                         {/* Invoice & Actions */}

@@ -43,6 +43,19 @@ const orderSchema = new mongoose.Schema({
     type: String,
     default: 'PENDING',
   },
+  itemsPrice: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  tax: {
+    type: Number,
+    default: 0,
+  },
+  platformFee: {
+    type: Number,
+    default: 0,
+  },
   subtotal: {
     type: Number,
     required: true,

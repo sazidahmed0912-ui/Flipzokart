@@ -15,13 +15,14 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
     // Use normalized items
     const items = order.items || [];
 
-    // Calculations: Prefer Normalized Totals
-    const totals = order.totals || {};
-
-    const grandTotal = totals.grandTotal !== undefined ? totals.grandTotal : (order.grandTotal !== undefined ? order.grandTotal : (order.total || 0));
-    const subtotal = totals.subtotal !== undefined ? totals.subtotal : (grandTotal / 1.18);
-    const taxAmount = totals.tax !== undefined ? totals.tax : (grandTotal - subtotal);
-    const shipping = totals.shipping !== undefined ? totals.shipping : (order.shippingFee !== undefined ? order.shippingFee : 0);
+    // Calculations: Prefer Stored Values
+    const grandTotal = order.total || 0;
+    // Use itemsPrice if available, else subtotal. 
+    // Note: In new logic, subtotal IS itemsPrice.
+    const subtotal = order.itemsPrice !== undefined ? order.itemsPrice : (order.subtotal || 0);
+    const taxAmount = order.tax !== undefined ? order.tax : 0;
+    const shipping = order.deliveryCharges !== undefined ? order.deliveryCharges : (order.shippingFee || 0);
+    const platformFee = order.platformFee !== undefined ? order.platformFee : 0;
 
     const amountInWords = numberToWords(Math.round(grandTotal));
 
@@ -137,12 +138,22 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
                         <span className="text-sm font-medium text-gray-600">Subtotal:</span>
                         <span className="text-sm font-bold text-gray-900">₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-gray-100">
-                        <span className="text-sm font-medium text-gray-600">GST (18%):</span>
-                        <span className="text-sm font-bold text-gray-900">
-                            ₹{taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                    </div>
+                    {taxAmount > 0 && (
+                        <div className="flex justify-between py-1 border-b border-gray-100">
+                            <span className="text-sm font-medium text-gray-600">GST / Tax:</span>
+                            <span className="text-sm font-bold text-gray-900">
+                                ₹{taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                        </div>
+                    )}
+                    {platformFee > 0 && (
+                        <div className="flex justify-between py-1 border-b border-gray-100">
+                            <span className="text-sm font-medium text-gray-600">Platform Fee:</span>
+                            <span className="text-sm font-bold text-gray-900">
+                                ₹{platformFee.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                        </div>
+                    )}
                     <div className="flex justify-between py-1 border-b border-gray-100">
                         <span className="text-sm font-medium text-gray-600">Shipping Charges:</span>
                         <span className="text-sm font-bold text-gray-900">

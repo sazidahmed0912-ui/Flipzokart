@@ -27,7 +27,7 @@ const createOrder = async (req, res) => {
     console.log('Request body:', req.body);
     console.log('req.user object:', req.user); // Added for debugging
 
-    const { products, address: bodyAddress, addressId, subtotal, deliveryCharges, discount, total } = req.body;
+    const { products, address: bodyAddress, addressId, subtotal, itemsPrice, deliveryCharges, discount, platformFee, tax, total } = req.body;
 
     let address = bodyAddress;
 
@@ -106,8 +106,11 @@ const createOrder = async (req, res) => {
       paymentMethod: 'COD',
       paymentStatus: 'PENDING',
       subtotal,
+      itemsPrice: itemsPrice || subtotal, // Fallback to subtotal if itemsPrice missing
       deliveryCharges: deliveryCharges || 0,
       discount: discount || 0,
+      platformFee: platformFee || 0,
+      tax: tax || 0,
       total
     });
 
@@ -218,8 +221,11 @@ const verifyPayment = async (req, res) => {
       products,
       address,
       subtotal,
+      itemsPrice,
       deliveryCharges,
       discount,
+      platformFee,
+      tax,
       total
     } = req.body;
 
@@ -263,8 +269,11 @@ const verifyPayment = async (req, res) => {
       paymentStatus: 'PAID',
       status: 'Processing',
       subtotal,
+      itemsPrice: itemsPrice || subtotal,
       deliveryCharges: deliveryCharges || 0,
       discount: discount || 0,
+      platformFee: platformFee || 0,
+      tax: tax || 0,
       total,
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id

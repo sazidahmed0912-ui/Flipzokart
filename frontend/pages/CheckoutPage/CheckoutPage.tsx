@@ -221,15 +221,11 @@ const CheckoutPage = () => {
     };
 
     const handlePlaceOrder = () => {
-        // Address is OPTIONAL as per new requirements
-        // if (!selectedAddressId) {
-        //     addToast('warning', 'Please select or add a delivery address first!');
-        //     return;
-        // }
         setIsPlaceOrderLoading(true);
         setTimeout(() => {
             setIsPlaceOrderLoading(false);
-            navigate('/payment');
+            // Pass the calculated deliveryCharges to PaymentPage to ensure consistency
+            navigate('/payment', { state: { deliveryCharges } });
         }, 1000);
     };
 
