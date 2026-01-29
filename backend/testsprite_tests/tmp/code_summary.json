@@ -2,96 +2,27 @@
     "tech_stack": [
         "Node.js",
         "Express",
-        "Mongoose",
+        "MongoDB",
         "Nodemailer",
-        "JWT",
-        "Bcrypt.js"
+        "Socket.io"
     ],
     "features": [
         {
-            "name": "Send Email OTP",
-            "description": "Sends a 6-digit OTP to the provided email address for authentication verification.",
+            "name": "Email Service",
+            "description": "Sends emails using Zoho OAuth2 (SMTP) via nodemailer.",
             "files": [
-                "controllers/emailAuthController.js",
-                "services/emailService.js",
-                "routes/auth.js"
+                "services/emailService.js"
             ],
-            "api_doc": {
-                "openapi": "3.0.0",
-                "paths": {
-                    "/api/auth/send-email-otp": {
-                        "post": {
-                            "summary": "Send OTP to Email",
-                            "requestBody": {
-                                "content": {
-                                    "application/json": {
-                                        "schema": {
-                                            "type": "object",
-                                            "properties": {
-                                                "email": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "responses": {
-                                "200": {
-                                    "description": "OTP sent successfully"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            "api_doc": {}
         },
         {
-            "name": "Verify Email OTP",
-            "description": "Verifies the provided OTP and logs in or registers the user.",
+            "name": "Auth API",
+            "description": "User authentication endpoints including OTP generation and email sending.",
             "files": [
-                "controllers/emailAuthController.js",
-                "models/User.js",
-                "routes/auth.js"
+                "routes/auth.js",
+                "controllers/authController.js"
             ],
-            "api_doc": {
-                "openapi": "3.0.0",
-                "paths": {
-                    "/api/auth/verify-email-otp": {
-                        "post": {
-                            "summary": "Verify OTP and Login",
-                            "requestBody": {
-                                "content": {
-                                    "application/json": {
-                                        "schema": {
-                                            "type": "object",
-                                            "properties": {
-                                                "email": {
-                                                    "type": "string"
-                                                },
-                                                "otp": {
-                                                    "type": "string"
-                                                },
-                                                "name": {
-                                                    "type": "string"
-                                                },
-                                                "password": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "responses": {
-                                "200": {
-                                    "description": "Login successful with token"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            "api_doc": {}
         }
     ]
 }

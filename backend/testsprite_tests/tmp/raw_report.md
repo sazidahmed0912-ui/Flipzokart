@@ -5,30 +5,23 @@
 
 ## 1️⃣ Document Metadata
 - **Project Name:** backend
-- **Date:** 2026-01-28
+- **Date:** 2026-01-29
 - **Prepared by:** TestSprite AI Team
 
 ---
 
 ## 2️⃣ Requirement Validation Summary
 
-#### Test TC001 send otp to email success
-- **Test Code:** [TC001_send_otp_to_email_success.py](./TC001_send_otp_to_email_success.py)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/a6dcd383-d45f-4e6f-8256-09521c657cd6/a8b8b6ba-2eae-4fc8-bcad-820eb6141569
-- **Status:** ✅ Passed
-- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
----
-
-#### Test TC002 verify otp and login success
-- **Test Code:** [TC002_verify_otp_and_login_success.py](./TC002_verify_otp_and_login_success.py)
+#### Test TC003 test email service integration with zoho oauth2 smtp
+- **Test Code:** [TC003_test_email_service_integration_with_zoho_oauth2_smtp.py](./TC003_test_email_service_integration_with_zoho_oauth2_smtp.py)
 - **Test Error:** Traceback (most recent call last):
   File "/var/task/handler.py", line 258, in run_with_retry
     exec(code, exec_env)
-  File "<string>", line 67, in <module>
-  File "<string>", line 54, in test_verify_otp_and_login_success
-AssertionError: Verify OTP failed: {"message":"Invalid or expired OTP"}
+  File "<string>", line 81, in <module>
+  File "<string>", line 18, in test_email_service_integration_with_zoho_oauth2_smtp
+AssertionError: Environment variable ZOHO_SMTP_EMAIL is not set
 
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/a6dcd383-d45f-4e6f-8256-09521c657cd6/a0d83b18-f74d-4fb0-a61a-ddabe47ace57
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/f0cc9759-3b53-4271-9e44-2b2e4fa041e7/64dbc54f-5fce-4b9d-a000-7b2a4b5122c6
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
@@ -36,7 +29,7 @@ AssertionError: Verify OTP failed: {"message":"Invalid or expired OTP"}
 
 ## 3️⃣ Coverage & Matching Metrics
 
-- **50.00** of tests passed
+- **0.00** of tests passed
 
 | Requirement        | Total Tests | ✅ Passed | ❌ Failed  |
 |--------------------|-------------|-----------|------------|

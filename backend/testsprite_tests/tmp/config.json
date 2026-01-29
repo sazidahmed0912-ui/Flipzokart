@@ -7,11 +7,13 @@
   "executionArgs": {
     "projectName": "backend",
     "projectPath": "d:\\Websites\\Flipzokart\\backend",
-    "testIds": [],
-    "additionalInstruction": "Focus on verifying email sending success and handling timeouts gracefully.",
+    "testIds": [
+      "TC003"
+    ],
+    "additionalInstruction": "Ensure the test specifically verifies the connection to smtp.zoho.in on port 465 using the provided environment variables. The goal is to verify the fix for ETIMEDOUT errors.",
     "envs": {
       "API_KEY": "sk-user-9bpwDiADBgTT_9Nmx7neRzSXSUT3vzD8lx_cY3b2QJMVOz86DK4ULALUqXEPvtxvdsQYIIzczgPSqjKb3xPqyiXf33yc_e8usGIJ5E3MNQyAHy5IzTt-VvC6NT2JcNV138s"
     }
   },
-  "proxy": "http://6430d276-a50a-4e4f-ad2d-c15406f7070f:2nqsarjRMppUPW7m59jk0asg5os8tMzl@tun.testsprite.com:8080"
+  "proxy": "http://bf991cf4-2f67-4daa-bf70-5961c0e45809:O0p0IvELgLrdqzDPOGt5lUvl5xG8y5o2@tun.testsprite.com:8080"
 }

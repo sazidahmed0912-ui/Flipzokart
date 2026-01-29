@@ -1,12 +1,17 @@
 [
   {
     "id": "TC001",
-    "title": "send otp to email success",
-    "description": "Test the /api/auth/send-email-otp endpoint to ensure it successfully sends a 6-digit OTP to the provided email address and responds with a success status."
+    "title": "test otp generation and email sending",
+    "description": "Verify that the API endpoint for OTP generation correctly generates an OTP, sends it via email using the Zoho OAuth2 SMTP service through Nodemailer, and responds with the appropriate success or error status."
   },
   {
     "id": "TC002",
-    "title": "verify otp and login success",
-    "description": "Test the /api/auth/verify-email-otp endpoint to verify that it correctly validates the provided OTP, registers a new user if name and password are provided, hashes the password securely, and returns a JWT token upon successful login."
+    "title": "test otp verification and user authentication",
+    "description": "Verify that the API endpoint for OTP verification correctly validates the submitted OTP, authenticates the user, and returns the appropriate session or token along with correct status and error messages."
+  },
+  {
+    "id": "TC003",
+    "title": "test email service integration with zoho oauth2 smtp",
+    "description": "Verify that the email service sends emails using Zoho OAuth2 SMTP via Nodemailer without authentication errors and handles failures gracefully."
   }
 ]
