@@ -214,6 +214,11 @@ app.get("/", (req, res) => {
 });
 
 // 🔐 Auth
+app.get("/oauth/zoho/callback", async (req, res) => {
+  const code = req.query.code;
+  res.send("Zoho callback received: " + code);
+});
+
 app.use("/api/auth", require("./routes/auth"));
 
 // 📦 Products
