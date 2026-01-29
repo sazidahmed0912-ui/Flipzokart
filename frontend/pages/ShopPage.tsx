@@ -17,15 +17,15 @@ export const ShopPage: React.FC = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]);
   const [sortBy, setSortBy] = useState('relevance');
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list'); // Default to list for search results style
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); // Default to grid for better mobile view
   const [minRating, setMinRating] = useState(0);
 
-  // Default to list view if searching, but allow user toggle
-  useEffect(() => {
-    if (initialQuery) {
-      setViewMode('list');
-    }
-  }, [initialQuery]);
+  // Default to list view if searching (Desktop only preference, but let's stick to Grid for consistency per user request)
+  // useEffect(() => {
+  //   if (initialQuery) {
+  //     console.log("Search mode");
+  //   }
+  // }, [initialQuery]);
 
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
@@ -53,11 +53,10 @@ export const ShopPage: React.FC = () => {
 
   return (
     <div className="bg-[#F1F3F6] min-h-screen font-sans">
-      <div className="max-w-[1400px] mx-auto px-4 lg:px-6 py-4">
-
-        {/* Mobile Filter Toggle */}
-        <div className="lg:hidden flex justify-between items-center mb-4 bg-white p-3 rounded shadow-sm">
-          <span className="font-bold text-gray-800">{filteredProducts.length} Results</span>
+      <div className="max-w-[1400px] mx-auto px-2 lg:px-6 py-2 lg:py-4">
+        {/* Mobile Filter Toggle - Sticky */}
+        <div className="lg:hidden flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm sticky top-[60px] z-30">
+          <span className="font-bold text-gray-800 text-sm">{filteredProducts.length} Results</span>
           <button
             onClick={() => setShowFilters(true)}
             className="flex items-center gap-2 text-sm font-bold text-gray-700"
@@ -149,27 +148,27 @@ export const ShopPage: React.FC = () => {
           </aside>
 
           {/* ──────── RIGHT GRID ──────── */}
+          {/* ──────── RIGHT GRID ──────── */}
           <main className="flex-1">
 
             {/* Top Bar - Mobile Optimized */}
-            <div className="bg-white p-4 rounded-sm shadow-sm mb-4">
-              <div className="flex flex-col gap-4">
+            <div className="bg-white p-2 sm:p-4 rounded-sm shadow-sm mb-2 sm:mb-4">
+              <div className="flex flex-col gap-2 sm:gap-4">
 
                 {/* Header & Result Count */}
                 <div className="flex justify-between items-center">
                   <div>
-                    {initialQuery && <h1 className="text-base sm:text-lg font-medium text-gray-900 line-clamp-1">Search results for <span className="font-bold italic">"{initialQuery}"</span></h1>}
-                    {!initialQuery && <h1 className="text-base sm:text-lg font-bold text-gray-900">{selectedCategory} Products</h1>}
-                    <p className="text-xs text-gray-500 mt-0.5">Check each product page for options</p>
+                    {initialQuery && <h1 className="text-sm sm:text-lg font-medium text-gray-900 line-clamp-1">Search results for <span className="font-bold italic">"{initialQuery}"</span></h1>}
+                    {!initialQuery && <h1 className="text-sm sm:text-lg font-bold text-gray-900">{selectedCategory} Products</h1>}
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Check each product page for options</p>
                   </div>
-                  {/* Mobile Filter Button (if not already handled by parent layout, but sticking to desktop structure for now inside main) */}
                 </div>
 
                 {/* Sort Options - Scrollable on Mobile */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 border-t sm:border-t-0 pt-2 sm:pt-0 border-gray-100">
                   <span className="text-sm font-bold text-gray-900 hidden sm:block">Sort By</span>
 
-                  <div className="flex gap-2 sm:gap-4 text-sm text-gray-600 overflow-x-auto pb-1 sm:pb-0 whitespace-nowrap scrollbar-hide">
+                  <div className="flex gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 overflow-x-auto pb-0 sm:pb-0 whitespace-nowrap scrollbar-hide">
                     {[
                       { label: 'Relevance', value: 'relevance' },
                       { label: 'Price -- Low to High', value: 'price-low' },
@@ -197,7 +196,7 @@ export const ShopPage: React.FC = () => {
 
             {/* Products List/Grid */}
             {filteredProducts.length > 0 ? (
-              <div className={viewMode === 'list' ? "flex flex-col gap-4" : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4"}>
+              <div className={viewMode === 'list' ? "flex flex-col gap-4" : "grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4"}>
                 {filteredProducts.map(product => (
                   viewMode === 'list' ? (
                     <SearchProductCard key={product.id} product={product} />
