@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "rukminim1.flixcart.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "res.cloudinary.com" }, // Common
+      { protocol: "https", hostname: "picsum.photos" },
+      { protocol: "https", hostname: "via.placeholder.com" },
+      { protocol: "http", hostname: "localhost" },
     ],
   },
   async rewrites() {

@@ -26,4 +26,18 @@
     overflow-y: auto;
     /* Allow scrolling if form is tall */
     position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure padding is minimal on mobile to prevent squishing */
+@media (max-width: 640px) {
+    .modal-content {
+        max-height: 95vh;
+        border-radius: 12px 12px 0 0;
+        /* Bottom sheet style feel if at bottom, but center is fine */
+        margin: 0 10px;
+        /* Slight margin from edges */
+        width: calc(100% - 20px);
+    }
 }

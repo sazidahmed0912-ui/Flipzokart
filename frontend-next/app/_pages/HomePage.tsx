@@ -23,8 +23,10 @@ const categories = [
 
 export const HomePage: React.FC = () => {
     const { products } = useApp();
-    const topDeals = products.slice(0, 8);
-    const featuredProducts = products.filter(p => p.isFeatured).slice(0, 8);
+    // Filter out groceries from general homepage sections
+    const nonGroceryProducts = products.filter(p => p.category !== 'Groceries');
+    const topDeals = nonGroceryProducts.slice(0, 8);
+    const featuredProducts = nonGroceryProducts.filter(p => p.isFeatured).slice(0, 8);
 
     const toggleFaq = (button: HTMLElement) => {
         const content = button.nextElementSibling as HTMLElement;
@@ -47,7 +49,13 @@ export const HomePage: React.FC = () => {
                         <div className="flex overflow-x-auto pb-2 gap-3 px-2 md:grid md:grid-cols-8 md:gap-6 no-scrollbar snap-x">                        {categories.map(category => (
                             <Link href={category.href} key={category.name} className="flex flex-col items-center flex-shrink-0 snap-center w-[72px] md:w-auto text-center group">
                                 <div className="w-14 h-14 md:w-20 md:h-20 mb-2 bg-gray-100 rounded-full md:rounded-xl p-3 border border-gray-200 group-hover:shadow-md transition-shadow flex items-center justify-center">
-                                    <LazyImage src={category.imageUrl} alt={category.name} className="w-full h-full object-contain" />
+                                    <LazyImage
+                                        src={category.imageUrl}
+                                        alt={category.name}
+                                        className="w-full h-full object-contain"
+                                        priority={true}
+                                        sizes="(max-width: 768px) 56px, 80px"
+                                    />
                                 </div>
                                 <span className="text-xs md:text-sm font-medium text-gray-700 whitespace-nowrap">{category.name}</span>
                             </Link>

@@ -13,6 +13,8 @@ import { ReviewForm } from './ProductDetails/components/ReviewForm';
 import { useSocket } from '@/app/hooks/useSocket';
 import LazyImage from '@/app/components/LazyImage';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
+import { ProductGallery } from '@/app/components/ProductGallery';
+import { getProductImageUrl } from '@/app/utils/imageHelper';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,46 +33,9 @@ export const ProductDetails: React.FC = () => {
   const token = localStorage.getItem("token");
   const socket = useSocket(token);
 
-  // Swipe Gesture Refs
-  const touchStartX = React.useRef<number | null>(null);
-  const touchEndX = React.useRef<number | null>(null);
 
-  // Handle Swipe Gesture
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.targetTouches[0].clientX;
-  };
+  // Swipe logic removed - handled by ProductGallery
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return;
-
-    const distance = touchStartX.current - touchEndX.current;
-    const isSwipeLeft = distance > 50;
-    const isSwipeRight = distance < -50;
-
-    if (isSwipeLeft || isSwipeRight) {
-      // Find current index
-      const currentIndex = allImages.findIndex(img => img === activeImage);
-      if (currentIndex === -1) return;
-
-      if (isSwipeLeft) {
-        // Next Image (Swipe Left)
-        const nextIndex = (currentIndex + 1) % allImages.length;
-        setActiveImage(allImages[nextIndex]);
-      } else {
-        // Prev Image (Swipe Right)
-        const prevIndex = (currentIndex - 1 + allImages.length) % allImages.length;
-        setActiveImage(allImages[prevIndex]);
-      }
-    }
-
-    // Reset
-    touchStartX.current = null;
-    touchEndX.current = null;
-  };
 
   const handleReviewUpdate = (newReview: Review) => {
     setReviews((prevReviews) => {
@@ -98,8 +63,12 @@ export const ProductDetails: React.FC = () => {
         if (updatedProduct.id === id) {
           setProduct(updatedProduct);
           const newGallery = updatedProduct.images || [];
-          if (activeImage !== updatedProduct.image && !newGallery.includes(activeImage)) {
-            setActiveImage(updatedProduct.image);
+          // Resolve current active image to full URL for comparison
+          const fullActiveImage = getProductImageUrl(activeImage);
+          const fullUpdatedImage = getProductImageUrl(updatedProduct.image);
+
+          if (fullActiveImage !== fullUpdatedImage && !newGallery.map(getProductImageUrl).includes(fullActiveImage)) {
+            setActiveImage(fullUpdatedImage);
           }
         }
       });
@@ -122,7 +91,7 @@ export const ProductDetails: React.FC = () => {
         const productResponse = await fetchProductById(id);
         const productData = productResponse.data?.data?.product || productResponse.data;
         setProduct(productData);
-        setActiveImage(productData.image);
+        setActiveImage(getProductImageUrl(productData.image));
         if (productData.reviews) setReviews(productData.reviews);
 
         // Default Variants Logic
@@ -136,7 +105,7 @@ export const ProductDetails: React.FC = () => {
                 defaults[v.name] = productData.defaultColor;
                 // Try to find image for this default color immediately
                 const match = productData.inventory?.find((inv: any) => inv.options[v.name] === productData.defaultColor);
-                if (match?.image) setActiveImage(match.image);
+                if (match?.image) setActiveImage(getProductImageUrl(match.image));
                 return;
               }
             }
@@ -174,8 +143,12 @@ export const ProductDetails: React.FC = () => {
 
           // Logic to update image if needed, but respect user selection if they have one?
           // For now keep existing simple logic
-          if (activeImage !== updatedProduct.image && (!updatedProduct.images || !updatedProduct.images.includes(activeImage))) {
-            setActiveImage(updatedProduct.image);
+          // Logic to update image if needed
+          const fullActive = getProductImageUrl(activeImage);
+          const fullNew = getProductImageUrl(updatedProduct.image);
+
+          if (fullActive !== fullNew && (!updatedProduct.images || !updatedProduct.images.map(getProductImageUrl).includes(fullActive))) {
+            setActiveImage(fullNew);
           }
         }
       } catch (error) {
@@ -188,10 +161,17 @@ export const ProductDetails: React.FC = () => {
   const allImages = useMemo(() => {
     if (!product) return [];
     const gallery = product.images || [];
-    if (gallery.length === 0) {
-      return [product.image, `https://picsum.photos/seed/${product.id}1/600/600`, `https://picsum.photos/seed/${product.id}2/600/600`, `https://picsum.photos/seed/${product.id}3/600/600`];
+
+    // Resolve all images to full URLs
+    const mainImage = getProductImageUrl(product.image);
+    const resolvedGallery = gallery.map(img => getProductImageUrl(img));
+
+    if (resolvedGallery.length === 0) {
+      // Fallback placeholders
+      return [mainImage, `https://picsum.photos/seed/${product.id}1/600/600`, `https://picsum.photos/seed/${product.id}2/600/600`, `https://picsum.photos/seed/${product.id}3/600/600`];
     }
-    return gallery.includes(product.image) ? gallery : [product.image, ...gallery];
+
+    return resolvedGallery.includes(mainImage) ? resolvedGallery : [mainImage, ...resolvedGallery];
   }, [product]);
 
   const { currentStock, isOutOfStock, currentPrice, currentOriginalPrice } = useMemo(() => {
@@ -279,7 +259,7 @@ export const ProductDetails: React.FC = () => {
 
       if (match?.image) {
         console.log('Switching image to:', match.image);
-        setActiveImage(match.image);
+        setActiveImage(getProductImageUrl(match.image));
       }
       return next;
     });
@@ -313,40 +293,12 @@ export const ProductDetails: React.FC = () => {
       <div className="max-w-6xl mx-auto p-2 sm:p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <div
-              className="relative bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 sm:p-8 mb-4 min-h-[300px] sm:min-h-[400px] flex items-center justify-center touch-pan-y"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              <button className="absolute top-2 sm:top-4 left-2 sm:left-4 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow">
-                <Check size={16} className="sm:w-[18px] sm:h-[18px] text-gray-600" />
-              </button>
-              <button className="absolute top-2 sm:top-4 right-2 sm:right-4 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow">
-                <Search size={16} className="sm:w-[18px] sm:h-[18px] text-gray-600" />
-              </button>
-              <LazyImage
-                src={activeImage}
-                alt={product.name}
-                className="max-w-full max-h-[250px] sm:max-h-[350px] object-contain pointer-events-none select-none"
-              />
-            </div>
-
-            <div className="flex gap-2 sm:gap-3 overflow-x-auto">
-              {allImages.slice(0, 4).map((img, i) => (
-                <div
-                  key={i}
-                  onClick={() => setActiveImage(img)}
-                  className={`w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl border-2 ${activeImage === img ? 'border-blue-500' : 'border-gray-200'} overflow-hidden cursor-pointer`}
-                >
-                  <img
-                    src={img}
-                    alt={`Thumbnail ${i}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
+            <ProductGallery
+              images={allImages}
+              activeImage={activeImage}
+              onImageChange={setActiveImage}
+              productName={product.name}
+            />
           </div>
 
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">

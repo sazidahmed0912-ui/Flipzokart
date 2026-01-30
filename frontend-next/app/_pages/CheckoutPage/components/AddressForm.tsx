@@ -118,61 +118,63 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
     };
 
     return (
-        <div className="w-full bg-white rounded-xl p-4 md:p-6 lg:p-8 space-y-6">
-
-            {/* Header */}
-            <div>
-                <h2 className="text-2xl font-bold text-gray-800">{addressToEdit ? "Edit Address" : "Add New Address"}</h2>
-                <p className="text-gray-500 text-sm mt-1">Please enter your delivery details below.</p>
+        <div className="w-full space-y-4 md:space-y-6">
+            {/* Header - Compact on mobile */}
+            <div className="px-4 pt-4 md:px-8 md:pt-6">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-800">{addressToEdit ? "Edit Address" : "Add New Address"}</h2>
+                <p className="text-gray-500 text-xs md:text-sm mt-1">Please enter your delivery details below.</p>
             </div>
 
-            {/* Info Banner */}
-            <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-800">
-                <Info className="flex-shrink-0 mt-0.5" size={18} />
-                <p>
-                    Fzokart ensures contactless delivery. Please consider paying online for a safer experience.
-                </p>
-            </div>
-
-            {/* PRICE FREEZE WARNING - Critical UX Requirement */}
-            <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-lg p-4 text-sm text-amber-800">
-                <Info className="flex-shrink-0 mt-0.5" size={18} />
-                <p className="font-medium">
-                    Price will update only after address is saved.
-                </p>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-
-                <div className="border border-gray-100 rounded-xl p-4 bg-gray-50/50">
-                    <AddressFormFields
-                        formData={formData}
-                        setFormData={setFormData}
-                        errors={errors}
-                    />
+            {/* Scrollable Content Area */}
+            <div className="px-4 md:px-8 pb-4 space-y-4 md:space-y-6">
+                {/* Info Banner */}
+                <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-lg p-3 md:p-4 text-xs md:text-sm text-blue-800">
+                    <Info className="flex-shrink-0 mt-0.5" size={16} />
+                    <p>
+                        Fzokart ensures contactless delivery. Please consider paying online for a safer experience.
+                    </p>
                 </div>
 
-                <div className="pt-4 flex gap-4">
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        className="flex-1 px-6 py-3.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-xl font-semibold transition-colors duration-200"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        className={`flex-1 px-6 py-3.5 rounded-xl font-bold shadow-sm transition-all duration-200 ${Object.keys(errors).length > 0
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                            : "bg-yellow-400 hover:bg-yellow-500 text-black hover:shadow-md active:transform active:scale-[0.98]"
-                            } ${(Object.keys(errors).length > 0 || !formData.name || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.zip) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
-                        disabled={Object.keys(errors).length > 0 || !formData.name || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.zip}
-                    >
-                        Save Address
-                    </button>
+                {/* PRICE FREEZE WARNING - Critical UX Requirement */}
+                <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-lg p-3 md:p-4 text-xs md:text-sm text-amber-800">
+                    <Info className="flex-shrink-0 mt-0.5" size={16} />
+                    <p className="font-medium">
+                        Price will update only after address is saved.
+                    </p>
                 </div>
-            </form>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+
+                    <div className="border-0 md:border md:border-gray-100 rounded-xl p-0 md:p-4 md:bg-gray-50/50">
+                        <AddressFormFields
+                            formData={formData}
+                            setFormData={setFormData}
+                            errors={errors}
+                        />
+                    </div>
+
+                    <div className="pt-2 md:pt-4 flex gap-3 md:gap-4 sticky bottom-0 bg-white pb-2 md:pb-0 z-10">
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            className="flex-1 px-4 py-3 md:px-6 md:py-3.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-xl font-semibold transition-colors duration-200 text-sm md:text-base"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className={`flex-1 px-4 py-3 md:px-6 md:py-3.5 rounded-xl font-bold shadow-sm transition-all duration-200 text-sm md:text-base ${Object.keys(errors).length > 0
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                : "bg-yellow-400 hover:bg-yellow-500 text-black hover:shadow-md active:transform active:scale-[0.98]"
+                                } ${(Object.keys(errors).length > 0 || !formData.name || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.zip) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                            disabled={Object.keys(errors).length > 0 || !formData.name || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.zip}
+                        >
+                            Save Address
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import LazyImage from '@/app/components/LazyImage';
 ;
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -81,14 +82,22 @@ export const HeroSlider: React.FC = () => {
 
                             {/* Image Content */}
                             <div className="absolute inset-0 md:relative md:h-full w-full flex justify-center md:justify-end items-center order-1 md:order-2 z-0 md:z-auto">
-                                <motion.img
+                                <motion.div
                                     initial={{ scale: 0.9, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     transition={{ delay: 0.1, duration: 0.4 }}
-                                    src={slides[currentIndex].image}
-                                    alt={slides[currentIndex].title}
-                                    className="w-full h-full object-cover md:h-[85%] md:w-auto md:object-contain md:max-w-full drop-shadow-2xl"
-                                />
+                                    className="relative w-full h-full md:h-[85%] md:w-full"
+                                >
+                                    <LazyImage
+                                        src={slides[currentIndex].image}
+                                        alt={slides[currentIndex].title}
+                                        priority={true} // Priority loading for Hero
+                                        fill={true}
+                                        className="object-cover md:object-contain drop-shadow-2xl"
+                                        sizes="(max-width: 768px) 100vw, 50vw"
+                                        wrapperClassName="w-full h-full bg-transparent"
+                                    />
+                                </motion.div>
                             </div>
 
                             {/* Text Content - Overlay on Mobile */}

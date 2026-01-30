@@ -249,7 +249,7 @@ const CartPage = () => {
               <div className="price-row">
                 <span>Delivery Charges</span>
                 <span className="success-text">
-                  {priceDetails.deliveryCharges === 0 ? 'Free' : `₹${priceDetails.deliveryCharges}`}
+                  {priceDetails.deliveryCharges === 0 ? <span className="text-green-600">Free (Prepaid)</span> : `₹${priceDetails.deliveryCharges}`}
                 </span>
               </div>
               <div className="price-row">
