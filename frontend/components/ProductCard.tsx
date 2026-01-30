@@ -69,7 +69,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <span className="text-[10px] md:text-xs text-gray-400 line-through">₹{product.originalPrice.toLocaleString('en-IN')}</span>
             )}
             {discount > 0 && (
-              <span className="text-[10px] md:text-sm text-green-600 font-semibold hidden md:inline-block">{discount}% off</span>
+              <span className="text-[10px] md:text-sm text-green-600 font-semibold">{discount}% off</span>
             )}
           </div>
 

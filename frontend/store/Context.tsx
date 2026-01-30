@@ -4,6 +4,7 @@ import { User, CartItem, Product, Order, Address } from '../types';
 import { MOCK_PRODUCTS } from '../constants';
 import authService from '../services/authService';
 import { fetchProducts, updateOrderStatus as updateOrderStatusAPI } from '../services/api';
+import { useSocket } from '../hooks/useSocket';
 
 interface AppContextType {
   user: User | null;
@@ -39,6 +40,9 @@ const getCartItemKey = (productId: string, variants?: Record<string, string>) =>
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const token = localStorage.getItem('token');
+  const socket = useSocket(token);
+
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('flipzokart_user');
     const token = localStorage.getItem('token');
@@ -160,7 +164,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        // Fire and Forget - we don't need to wait or show result to user
+        // Fire and Forget
         await fetch(`${(import.meta as any).env.VITE_API_URL}/api/user/update-location`, {
           method: 'POST',
           headers: {
@@ -173,6 +177,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     updateLocation();
   }, [user]);
+
+  // Socket: Real-Time Product Updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleProductUpdate = (updatedProduct: Product) => {
+      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+    };
+
+    const handleNewProduct = (newProduct: Product) => {
+      setProducts(prev => [newProduct, ...prev]);
+    };
+
+    const handleProductDelete = (productId: string) => {
+      setProducts(prev => prev.filter(p => p.id !== productId));
+    };
+
+    socket.on('productUpdated', handleProductUpdate);
+    socket.on('newProduct', handleNewProduct);
+    socket.on('deleteProduct', handleProductDelete); // Assuming backend emits this
+
+    return () => {
+      socket.off('productUpdated', handleProductUpdate);
+      socket.off('newProduct', handleNewProduct);
+      socket.off('deleteProduct', handleProductDelete);
+    };
+  }, [socket]);
 
   // Sync Cart: SAVE on Change
   useEffect(() => {
