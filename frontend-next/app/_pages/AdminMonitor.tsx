@@ -6,12 +6,13 @@ import {
 } from 'lucide-react';
 import { useSocket } from '@/app/hooks/useSocket';
 import { useApp } from '@/app/store/Context';
+import LeafletMap, { MapLocation } from '@/app/components/LeafletMap';
 
 export const AdminMonitor: React.FC = () => {
     const { user } = useApp();
     const [stats, setStats] = useState({
         activeUsers: 0,
-        activeUserList: [] as any[], // New State
+        activeUserList: [] as any[],
         serverLoad: 0,
         memoryUsage: 0,
         uptime: 0,
@@ -26,7 +27,7 @@ export const AdminMonitor: React.FC = () => {
     // Auto-scroll logs smart handling
     const logsEndRef = useRef<HTMLDivElement>(null);
     const logsContainerRef = useRef<HTMLDivElement>(null);
-    const [isAtBottom, setIsAtBottom] = useState(true); // Track if at bottom for "New Logs" button only
+    const [isAtBottom, setIsAtBottom] = useState(true);
 
     const scrollToBottom = () => {
         logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -40,12 +41,9 @@ export const AdminMonitor: React.FC = () => {
         }
     };
 
-    // Removed auto-scroll useEffect
-
     useEffect(() => {
         if (!socket) return;
 
-        // Join the monitor room to receive updates
         socket.emit('join_monitor');
 
         const handleStats = (data: any) => {
@@ -55,7 +53,7 @@ export const AdminMonitor: React.FC = () => {
         const handleLog = (log: any) => {
             setLogs(prev => {
                 const newLogs = [...prev, log];
-                if (newLogs.length > 50) newLogs.shift(); // Keep last 50
+                if (newLogs.length > 50) newLogs.shift();
                 return newLogs;
             });
         };
@@ -69,12 +67,23 @@ export const AdminMonitor: React.FC = () => {
         };
     }, [socket]);
 
-    // Format Uptime
     const formatUptime = (seconds: number) => {
         const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds % 3600) / 60);
         return `${h}h ${m}m`;
     };
+
+    // Transform active users to map locations
+    const mapLocations: MapLocation[] = stats.activeUserList
+        .filter((u: any) => u.lat && u.lng)
+        .map((u: any) => ({
+            id: u.id || u.socketId,
+            lat: u.lat,
+            lng: u.lng,
+            title: u.name || 'Visitor',
+            description: `${u.city || 'Unknown'}, ${u.country || ''}`,
+            status: 'Online'
+        }));
 
     return (
         <div className="p-8 bg-[#F5F7FA] min-h-screen">
@@ -93,14 +102,14 @@ export const AdminMonitor: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <MonitorCard
-                    title="Active Users (Sockets)"
+                    title="Active Users"
                     value={stats.activeUsers.toString()}
                     icon={Users}
                     color="blue"
                     change="Real-time Count"
                 />
                 <MonitorCard
-                    title="Server Load (CPU)"
+                    title="Server Load"
                     value={`${stats.serverLoad}%`}
                     icon={Cpu}
                     color={stats.serverLoad > 80 ? 'red' : 'green'}
@@ -123,27 +132,27 @@ export const AdminMonitor: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Active Users List */}
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col h-96">
-                    <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <Users size={18} className="text-blue-500" /> Active Users
-                    </h2>
-                    <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
-                        {stats.activeUserList?.length === 0 && (
-                            <div className="text-gray-500 italic text-sm text-center mt-10">No active users connected.</div>
-                        )}
-                        {stats.activeUserList?.map((u: any, i: number) => (
-                            <div key={i} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors border border-gray-100">
-                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
-                                    {u.name?.charAt(0) || 'U'}
-                                </div>
-                                <div className="overflow-hidden">
-                                    <p className="text-sm font-semibold text-gray-800 truncate">{u.name || 'Unknown User'}</p>
-                                    <p className="text-xs text-gray-500 truncate">{u.email}</p>
-                                </div>
-                                <span className="ml-auto w-2 h-2 bg-green-500 rounded-full shrink-0"></span>
+                {/* Real-time Map Replaces List */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col h-96 overflow-hidden relative">
+                    <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white z-10">
+                        <h2 className="font-bold text-gray-800 flex items-center gap-2">
+                            <Globe size={18} className="text-blue-500" /> Live Traffic
+                        </h2>
+                        <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-bold">
+                            {mapLocations.length} on Map
+                        </span>
+                    </div>
+                    <div className="flex-1 relative">
+                        <LeafletMap
+                            locations={mapLocations}
+                            height="100%"
+                            className="w-full h-full rounded-none border-none"
+                        />
+                        {mapLocations.length === 0 && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-gray-50/80 z-[1000] pointer-events-none">
+                                <p className="text-sm text-gray-400 font-medium">Waiting for location data...</p>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
 
@@ -192,12 +201,11 @@ export const AdminMonitor: React.FC = () => {
                     )}
                 </div>
 
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm col-span-1 lg:col-span-3">
                     <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <ShieldAlert size={18} className="text-orange-500" /> Security Events
                     </h2>
                     <div className="space-y-4">
-                        {/* Filter logs for security related items or show recent logs */}
                         {logs.filter(l => l.type === 'warning' || l.type === 'error').slice(-5).map(log => (
                             <SecurityLog
                                 key={log.id}

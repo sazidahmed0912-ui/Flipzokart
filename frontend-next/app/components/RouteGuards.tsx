@@ -4,24 +4,18 @@ import { useRouter } from 'next/navigation';
 import { useApp } from '@/app/store/Context';
 
 export const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, isAdmin } = useApp();
+    const { user, isAdmin, isInitialized } = useApp();
     const router = useRouter();
-    const [isChecked, setIsChecked] = useState(false);
 
     useEffect(() => {
-        // Wait for user load? Context initializes from localStorage synchronously.
-        if (user !== undefined) {
+        if (isInitialized) {
             if (!user || !isAdmin) {
                 router.push('/login');
-            } else {
-                setIsChecked(true);
             }
         }
-    }, [user, isAdmin, router]);
+    }, [user, isAdmin, isInitialized, router]);
 
-    // If we want to strictly prevent render until check:
-    // if (!isChecked) return null; 
-    // But strictly, user might be null initially.
+    if (!isInitialized) return <div className="h-screen w-full flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>;
     if (!user || !isAdmin) return null;
 
     return <>{children}</>;

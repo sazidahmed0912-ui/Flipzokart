@@ -26,6 +26,7 @@ interface AppContextType {
   setProducts: (products: Product[]) => void;
   selectedAddress: Address | null;
   setSelectedAddress: (address: Address | null) => void;
+  isInitialized: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -322,7 +323,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider value={{
       user, setUser, cart, addToCart, removeFromCart, removeProductFromCart, updateCartQuantity, clearCart,
       wishlist, toggleWishlist, isAdmin, logout, orders, placeOrder, updateOrderStatus,
-      products, setProducts, selectedAddress, setSelectedAddress
+      products, setProducts, selectedAddress, setSelectedAddress, isInitialized
     }}>
       {children}
     </AppContext.Provider>

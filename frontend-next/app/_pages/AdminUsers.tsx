@@ -185,7 +185,7 @@ export const AdminUsers: React.FC = () => {
                  We will use 'fixed' position for dropdown logic if current relative fails, 
                  but standard relative usually works if z-index is high enough and container allows visible overflow vertically. 
                  Here we depend on the ample pb-40 space. */}
-            <div className="overflow-x-auto overflow-y-visible">
+            <div className="overflow-visible">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#F5F7FA] border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">

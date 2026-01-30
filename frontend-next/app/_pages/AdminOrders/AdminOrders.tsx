@@ -170,7 +170,7 @@ export const AdminOrders: React.FC = () => {
                                 <span className="text-xs font-bold text-gray-700">Filter By:</span>
                             </div>
 
-                            {['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].map(status => (
+                            {['All', 'Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(status => (
                                 <button
                                     key={status}
                                     onClick={() => setStatusFilter(status)}
