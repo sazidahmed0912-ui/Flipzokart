@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 import { Lock, Loader } from 'lucide-react';
-import API, { calculateShipping } from '@/app/services/api';
+import API from '@/app/services/api';
 import { getSafeAddress } from '@/app/utils/addressHelper';
 import { useApp } from '@/app/store/Context';
 import { useToast } from '@/app/components/toast';
@@ -52,17 +52,10 @@ const CheckoutPage = () => {
                 });
                 setAddresses(formatted);
 
-                // If no selected address but we have addresses, select the first one
                 if (!selectedAddressId && formatted.length > 0) {
                     const firstId = formatted[0].id;
                     setSelectedAddressId(firstId);
-                    // We need to call handleSelectAddress but it depends on state. 
-                    // Let's set context directly here or effectively select it.
                     setContextAddress(formatted[0]);
-
-                    if (formatted[0].pincode) {
-                        calculateShippingCost(formatted[0].pincode);
-                    }
                 }
             } catch (error) {
                 console.error("Failed to fetch addresses", error);
@@ -75,19 +68,8 @@ const CheckoutPage = () => {
         fetchAddresses();
     }, [user]);
 
-    const calculateShippingCost = async (pincode: string) => {
-        if (!pincode || pincode.length < 6) return; // Guard against bad pincodes
-
-        try {
-            const { data } = await calculateShipping(pincode);
-            setDeliveryCharges(data.shippingCost);
-        } catch (error) {
-            console.error("Failed to calculate shipping:", error);
-            // Do NOT overwrite with default 50 if previous value exists, unless it's a hard error
-            // keeping it 50 as safe fallback is okay, but prevents 'random' jumps 
-            // setDeliveryCharges(50); 
-        }
-    }
+    // Removed legacy calculateShippingCost to prevent price overrides. 
+    // Pricing is now strictly handled by Unified Pricing Engine.
 
     const { subtotal, deliveryCharges: standardDelivery, platformFee, totalAmount } = calculateCartTotals(cart);
 
@@ -113,11 +95,8 @@ const CheckoutPage = () => {
         const selected = addresses.find(addr => addr.id === id);
 
         if (selected) {
-            console.log(`[Checkout] Address Found, Pincode: ${selected.pincode}`);
+            console.log(`[Checkout] Address Found: ${selected.pincode}`);
             setContextAddress(selected);
-            if (selected.pincode) {
-                calculateShippingCost(selected.pincode);
-            }
         } else {
             console.warn(`[Checkout] Address ${id} NOT found in local state`);
         }
@@ -227,6 +206,11 @@ const CheckoutPage = () => {
     };
 
     const handlePlaceOrder = () => {
+        if (!selectedAddressId) {
+            addToast('warning', 'Please select a delivery address to proceed!');
+            return;
+        }
+
         setIsPlaceOrderLoading(true);
         setTimeout(() => {
             setIsPlaceOrderLoading(false);
@@ -254,7 +238,7 @@ const CheckoutPage = () => {
             </header>
             <main className="checkout-main">
                 <div className="address-section">
-                    <h2>Select Delivery Address <span className="text-gray-500 font-normal text-base">(Optional)</span></h2>
+                    <h2>Select Delivery Address</h2>
                     <div className="address-list">
                         {isLoading && <div className="p-4">Loading addresses...</div>}
                         {!isLoading && addresses.map((addr) => (
