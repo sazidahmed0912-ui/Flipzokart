@@ -16,6 +16,7 @@ interface Product {
     _id: string;
     name: string;
     price: number;
+    originalPrice: number;
     image: string;
     category: string;
     countInStock: number;
@@ -206,7 +207,17 @@ export const AdminProducts: React.FC = () => {
                                         </div>
 
                                         <h3 className="font-bold text-gray-800 text-sm truncate mb-1">{product.name}</h3>
-                                        <p className="text-lg font-bold text-gray-900">₹{product.price.toLocaleString()}</p>
+                                        <div className="flex items-baseline gap-2">
+                                            <p className="text-lg font-bold text-gray-900">₹{product.price.toLocaleString()}</p>
+                                            {product.originalPrice > product.price && (
+                                                <>
+                                                    <p className="text-xs text-gray-400 line-through">₹{product.originalPrice.toLocaleString()}</p>
+                                                    <p className="text-xs font-bold text-green-600">
+                                                        {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                                                    </p>
+                                                </>
+                                            )}
+                                        </div>
 
                                         <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
                                             <p className="text-xs font-medium text-gray-500">
