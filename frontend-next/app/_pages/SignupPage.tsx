@@ -7,6 +7,7 @@ import { useApp } from '@/app/store/Context';
 import authService from '@/app/services/authService';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import { useToast } from '@/app/components/toast';
+import { Eye, EyeOff } from 'lucide-react';
 
 export const SignupPage: React.FC = () => {
   const { setUser } = useApp();
@@ -18,6 +19,7 @@ export const SignupPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -182,15 +184,24 @@ export const SignupPage: React.FC = () => {
                       />
 
                       {/* Password Input */}
-                      <input
-                        type="password"
-                        placeholder="Set Password"
-                        required
-                        className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={isLoading}
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Set Password"
+                          required
+                          className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 pr-10 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          disabled={isLoading}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </div>
 
                     <div className="flex items-start gap-2 mb-4 px-1">

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -28,6 +28,7 @@ interface LeafletMapProps {
     locations: MapLocation[];
     height?: string;
     className?: string;
+    autoFit?: boolean; // New prop to control auto-fitting behavior
 }
 
 // Custom Blinking Icon for Live Users
@@ -42,23 +43,35 @@ const createLiveIcon = () => L.divIcon({
 });
 
 // Component to auto-fit map bounds to markers
-const BoundsController: React.FC<{ locations: MapLocation[] }> = ({ locations }) => {
+const BoundsController: React.FC<{ locations: MapLocation[]; autoFit?: boolean }> = ({ locations, autoFit = true }) => {
     const map = useMap();
+    const [hasFitted, setHasFitted] = useState(false);
 
     useEffect(() => {
+        // Only fit if autoFit is true
+        if (!autoFit) return;
+
+        // If we have already fitted once, and we still have locations, don't snap back repeatedly
+        // This effectively locks the view after the first load, solving the "blink/snap" issue
+        // unless the user leaves and comes back (component remounts).
+        if (hasFitted && locations.length > 0) return;
+
         if (locations.length > 0) {
             const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
-            map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
-        } else {
-            // Default view (India Center)
+            if (bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true, duration: 1.5 });
+                setHasFitted(true);
+            }
+        } else if (!hasFitted) {
+            // Default view (India Center) if no locations yet
             map.setView([20.5937, 78.9629], 5);
         }
-    }, [locations, map]);
+    }, [locations, map, autoFit, hasFitted]);
 
     return null;
 };
 
-const LeafletMap: React.FC<LeafletMapProps> = ({ locations, height = "400px", className = "" }) => {
+const LeafletMap: React.FC<LeafletMapProps> = ({ locations, height = "400px", className = "", autoFit = true }) => {
     return (
         <div className={`w-full relative z-0 rounded-xl overflow-hidden border border-gray-200 shadow-sm ${className}`} style={{ height }}>
             <MapContainer
@@ -69,13 +82,13 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ locations, height = "400px", cl
                 zoomControl={true}
                 attributionControl={true}
             >
-                {/* English-friendly OSM Tiles (CartoDB Positron is cleaner, but OSM is requested standard) */}
+                {/* English-friendly OSM Tiles */}
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
-                <BoundsController locations={locations} />
+                <BoundsController locations={locations} autoFit={autoFit} />
 
                 {locations.map((loc) => (
                     <Marker
@@ -84,12 +97,17 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ locations, height = "400px", cl
                         icon={loc.status === 'Online' ? createLiveIcon() : new L.Icon.Default()}
                     >
                         <Popup>
-                            <div className="min-w-[150px]">
-                                <strong className="block text-gray-800 font-bold mb-1">{loc.title}</strong>
+                            <div className="min-w-[150px] p-1">
+                                <strong className="block text-gray-800 font-bold mb-1 text-sm">{loc.title}</strong>
                                 {loc.description && (
-                                    <p className="text-gray-600 text-sm m-0 leading-tight">
+                                    <p className="text-gray-600 text-xs m-0 leading-tight">
                                         {loc.description}
                                     </p>
+                                )}
+                                {loc.status === 'Online' && (
+                                    <span className="inline-block mt-2 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">
+                                        Active Now
+                                    </span>
                                 )}
                             </div>
                         </Popup>

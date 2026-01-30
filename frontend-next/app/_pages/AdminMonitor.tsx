@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Activity, Users, ShoppingCart, ShieldAlert,
-    Globe, Server, Cpu, Clock, Terminal
+    Globe, Server, Cpu, Clock, Terminal, Map as MapIcon, Maximize2
 } from 'lucide-react';
 import { useSocket } from '@/app/hooks/useSocket';
 import { useApp } from '@/app/store/Context';
@@ -19,6 +19,7 @@ export const AdminMonitor: React.FC = () => {
         systemStatus: 'Connecting...'
     });
     const [logs, setLogs] = useState<any[]>([]);
+    const [isMapExpanded, setIsMapExpanded] = useState(false);
 
     // Connect to socket using the hook
     const token = localStorage.getItem("token");
@@ -81,7 +82,10 @@ export const AdminMonitor: React.FC = () => {
             lat: u.lat,
             lng: u.lng,
             title: u.name || 'Visitor',
-            description: `${u.city || 'Unknown'}, ${u.country || ''}`,
+            // Show address if available, else City/Country
+            description: u.addresses && u.addresses.length > 0
+                ? `${u.addresses[0].address || ''}, ${u.city || ''}`
+                : `${u.city || 'Unknown Location'}, ${u.country || ''}`,
             status: 'Online'
         }));
 
@@ -100,91 +104,74 @@ export const AdminMonitor: React.FC = () => {
                 </div>
             </div>
 
+            {/* Core Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <MonitorCard
-                    title="Active Users"
-                    value={stats.activeUsers.toString()}
-                    icon={Users}
-                    color="blue"
-                    change="Real-time Count"
-                />
-                <MonitorCard
-                    title="Server Load"
-                    value={`${stats.serverLoad}%`}
-                    icon={Cpu}
-                    color={stats.serverLoad > 80 ? 'red' : 'green'}
-                    change="OS Load Average"
-                />
-                <MonitorCard
-                    title="Memory Usage"
-                    value={`${stats.memoryUsage}%`}
-                    icon={Server}
-                    color={stats.memoryUsage > 90 ? 'red' : 'purple'}
-                    change={`System RAM`}
-                />
-                <MonitorCard
-                    title="System Uptime"
-                    value={formatUptime(stats.uptime)}
-                    icon={Clock}
-                    color="green"
-                    change={stats.systemStatus}
-                />
+                <MonitorCard title="Active Users" value={stats.activeUsers.toString()} icon={Users} color="blue" change="Real-time Count" />
+                <MonitorCard title="Server Load" value={`${stats.serverLoad}%`} icon={Cpu} color={stats.serverLoad > 80 ? 'red' : 'green'} change="OS Load Average" />
+                <MonitorCard title="Memory Usage" value={`${stats.memoryUsage}%`} icon={Server} color={stats.memoryUsage > 90 ? 'red' : 'purple'} change="System RAM" />
+                <MonitorCard title="System Uptime" value={formatUptime(stats.uptime)} icon={Clock} color="green" change={stats.systemStatus} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Real-time Map Replaces List */}
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col h-96 overflow-hidden relative">
-                    <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white z-10">
-                        <h2 className="font-bold text-gray-800 flex items-center gap-2">
-                            <Globe size={18} className="text-blue-500" /> Live Traffic
-                        </h2>
-                        <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-bold">
-                            {mapLocations.length} on Map
-                        </span>
+            {/* FULL WIDTH MAP SECTION */}
+            <div className={`mb-8 transition-all duration-500 ease-in-out ${isMapExpanded ? 'h-[80vh]' : 'h-[500px]'}`}>
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col h-full overflow-hidden relative">
+                    <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white z-10">
+                        <div>
+                            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                <Globe size={20} className="text-blue-500" /> Live User Map
+                            </h2>
+                            <p className="text-xs text-gray-500 mt-0.5">Real-time geographic distribution of active users</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg font-bold">
+                                {mapLocations.length} Users Tracked
+                            </span>
+                            <button onClick={() => setIsMapExpanded(!isMapExpanded)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors" title="Toggle Size">
+                                <Maximize2 size={18} />
+                            </button>
+                        </div>
                     </div>
                     <div className="flex-1 relative">
                         <LeafletMap
                             locations={mapLocations}
                             height="100%"
                             className="w-full h-full rounded-none border-none"
+                            autoFit={true} // Only fits initially thanks to new logic
                         />
                         {mapLocations.length === 0 && (
                             <div className="absolute inset-0 flex items-center justify-center bg-gray-50/80 z-[1000] pointer-events-none">
-                                <p className="text-sm text-gray-400 font-medium">Waiting for location data...</p>
+                                <div className="text-center">
+                                    <MapIcon size={48} className="text-gray-300 mx-auto mb-2" />
+                                    <p className="text-sm text-gray-400 font-medium">Waiting for active users with location data...</p>
+                                </div>
                             </div>
                         )}
                     </div>
                 </div>
+            </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Real-time Logs Console */}
                 <div className="lg:col-span-2 bg-[#1e1e1e] p-6 rounded-xl border border-gray-800 shadow-sm flex flex-col h-96">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="font-bold text-gray-200 flex items-center gap-2">
                             <Terminal size={18} className="text-green-500" /> System Logs Stream
                         </h2>
-                        <span className="text-xs text-gray-500 italic">
-                            Auto-scroll Disabled
-                        </span>
+                        <span className="text-xs text-gray-500 italic">Auto-scroll Active</span>
                     </div>
                     <div
                         ref={logsContainerRef}
                         onScroll={handleScroll}
                         className="flex-1 overflow-y-auto font-mono text-sm space-y-1.5 pr-2 custom-scrollbar"
                     >
-                        {logs.length === 0 && (
-                            <div className="text-gray-600 italic text-center mt-10">Waiting for logs...</div>
-                        )}
+                        {logs.length === 0 && <div className="text-gray-600 italic text-center mt-10">Waiting for logs...</div>}
                         {logs.map((log) => (
                             <div key={log.id} className="flex gap-3 text-gray-300 border-b border-gray-800/30 pb-1">
-                                <span className="text-gray-500 shrink-0 select-none">
-                                    [{new Date(log.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}]
-                                </span>
+                                <span className="text-gray-500 shrink-0 select-none">[{new Date(log.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}]</span>
                                 <span className={`font-bold shrink-0 ${log.type === 'error' ? 'text-red-400' :
-                                    log.type === 'warning' ? 'text-yellow-400' :
-                                        log.type === 'success' ? 'text-green-400' : 'text-blue-400'
-                                    }`}>
-                                    {log.type.toUpperCase()}
-                                </span>
+                                        log.type === 'warning' ? 'text-yellow-400' :
+                                            log.type === 'success' ? 'text-green-400' : 'text-blue-400'
+                                    }`}>{log.type.toUpperCase()}</span>
                                 <span className="text-gray-400 shrink-0">[{log.source}]</span>
                                 <span>{log.message}</span>
                             </div>
@@ -192,16 +179,14 @@ export const AdminMonitor: React.FC = () => {
                         <div ref={logsEndRef} />
                     </div>
                     {!isAtBottom && (
-                        <button
-                            onClick={scrollToBottom}
-                            className="absolute bottom-8 right-8 bg-blue-600 text-white px-3 py-1 text-xs rounded-full shadow-lg animate-bounce"
-                        >
+                        <button onClick={scrollToBottom} className="absolute bottom-8 right-8 bg-blue-600 text-white px-3 py-1 text-xs rounded-full shadow-lg animate-bounce">
                             ⬇ New Logs
                         </button>
                     )}
                 </div>
 
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm col-span-1 lg:col-span-3">
+                {/* Security Events */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm col-span-1 lg:col-span-1">
                     <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <ShieldAlert size={18} className="text-orange-500" /> Security Events
                     </h2>
