@@ -35,6 +35,7 @@ export const AdminProducts: React.FC = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     useEffect(() => {
+        console.log("Admin Product List Version: v2.5 Check");
         loadProducts();
     }, []);
 

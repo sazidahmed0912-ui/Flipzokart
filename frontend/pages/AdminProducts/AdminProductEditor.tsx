@@ -32,6 +32,7 @@ export const AdminProductEditor: React.FC = () => {
     const [discount, setDiscount] = useState<number>(0);
 
     useEffect(() => {
+        console.log("Admin Product Version: v2.5 - Fixed Labels & Logic");
         if (isEditMode) {
             loadProduct(id);
         }
