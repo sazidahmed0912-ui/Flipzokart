@@ -8,7 +8,11 @@ import authService from '@/app/services/authService';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import { useToast } from '@/app/components/toast';
 
-export const LoginPage: React.FC = () => {
+interface LoginPageProps {
+  isAdmin?: boolean;
+}
+
+export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
   const { setUser } = useApp();
   const router = useRouter();
   const { addToast } = useToast();
@@ -122,7 +126,7 @@ export const LoginPage: React.FC = () => {
               Fzokart
             </div>
 
-            <h1 className="text-[30px] font-bold mb-3 leading-tight">Login</h1>
+            <h1 className="text-[30px] font-bold mb-3 leading-tight">{isAdmin ? 'Admin Login' : 'Login'}</h1>
             <p className="text-[15px] leading-relaxed opacity-95">
               Get access to your<br />
               Orders, Wishlist and<br />
