@@ -2,7 +2,7 @@
 import { Product, Coupon } from './types';
 
 export const CATEGORIES = [
-  'Mobiles', 'Electronics', 'Fashion', 'Home & Kitchen', 'Beauty', 'Books', 'Groceries'
+  'Mobiles', 'Electronics', 'Fashion', 'Home', 'Beauty', 'Appliances', 'Groceries', 'Offers', 'Kids', 'Books', 'Home & Kitchen'
 ];
 
 export const MOCK_PRODUCTS: Product[] = [

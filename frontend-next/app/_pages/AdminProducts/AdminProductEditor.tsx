@@ -11,6 +11,7 @@ import { AdminSidebar } from '@/app/components/AdminSidebar';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import { fetchProductById, createProduct, updateProduct, uploadFile } from '@/app/services/adminService';
 import { useToast } from '@/app/components/toast';
+import { CATEGORIES } from '@/app/constants';
 
 // --- Types ---
 interface VariantOption {
@@ -294,7 +295,7 @@ export const AdminProductEditor: React.FC = () => {
                     <div className="flex items-center gap-4">
                         <Link href="/admin/products" className="p-2 hover:bg-gray-50 rounded-xl text-gray-500 transition-colors"><ChevronLeft size={20} /></Link>
                         <div>
-                            <h1 className="text-xl font-bold text-gray-800">{isEditMode ? 'Edit Product' : 'Add New Product'}</h1>
+                            <h1 className="text-xl font-bold text-gray-800">{isEditMode ? 'Edit Product' : 'Add New Product'} <span className="text-xs text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full ml-2">v2.6</span></h1>
                             <div className="flex items-center gap-2 mt-0.5">
                                 <span className={`w-2 h-2 rounded-full ${isEditMode ? 'bg-orange-500' : 'bg-green-500'}`}></span>
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{isEditMode ? 'Updating Catalog Item' : 'Creating Catalog Item'}</p>
@@ -458,8 +459,26 @@ export const AdminProductEditor: React.FC = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2"><label className="text-xs font-bold text-gray-500">Product Name</label><input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm" /></div>
                                 <div className="col-span-1"><label className="text-xs font-bold text-gray-500">Base Price</label><input type="number" name="price" value={formData.price} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm" /></div>
-                                <div className="col-span-1"><label className="text-xs font-bold text-gray-500">Category</label><select name="category" value={formData.category} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm"><option>Mobiles</option><option>Fashion</option><option>Electronics</option></select></div>
+                                <div className="col-span-1">
+                                    <label className="text-xs font-bold text-gray-500">Category</label>
+                                    <select name="category" value={formData.category} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm">
+                                        {CATEGORIES.map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                </div>
                                 <div className="col-span-2"><label className="text-xs font-bold text-gray-500">Description</label><textarea name="description" value={formData.description} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm" rows={3}></textarea></div>
+                                <div className="col-span-2">
+                                    <label className="text-xs font-bold text-gray-500">Specifications</label>
+                                    <textarea
+                                        value={specifications}
+                                        onChange={(e) => setSpecifications(e.target.value)}
+                                        className="w-full mt-1 px-4 py-2 border rounded-xl text-sm font-mono"
+                                        rows={4}
+                                        placeholder={`Material: Cotton\nSize: Large\nBattery: 5000mAh`}
+                                    />
+                                    <p className="text-[10px] text-gray-400 mt-1">Key-value pairs (one per line)</p>
+                                </div>
                             </div>
                         </div>
                     </div>
