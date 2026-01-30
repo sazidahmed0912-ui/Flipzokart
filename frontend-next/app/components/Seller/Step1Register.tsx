@@ -49,7 +49,11 @@ const Step1Register: React.FC<Step1Props> = ({ onSuccess, API }) => {
         setError('');
         setLoading(true);
         try {
-            await API.post('/api/auth/send-email-otp', { email: formData.email });
+            await API.post('/api/auth/send-email-otp', {
+                email: formData.email,
+                name: formData.name,
+                type: 'seller_register'
+            });
             setIsOtpSent(true);
             setOtpTimer(300); // 5 mins
             setError('');
