@@ -34,7 +34,7 @@ export const AdminProductEditor: React.FC = () => {
     const [discount, setDiscount] = useState<number>(0);
 
     useEffect(() => {
-        console.log("Admin Product Version: v2.5 - Fixed Labels & Logic");
+        console.log("Admin Product Version: v2.6 - Specifications Added");
         if (isEditMode) {
             loadProduct(id);
         }
@@ -144,7 +144,7 @@ export const AdminProductEditor: React.FC = () => {
                         <ChevronLeft size={20} />
                     </Link>
                     <div>
-                        <h1 className="text-lg font-bold text-gray-800">{isEditMode ? 'Edit Product' : 'Add New Product'}</h1>
+                        <h1 className="text-lg font-bold text-gray-800">{isEditMode ? 'Edit Product' : 'Add New Product'} <span className="text-xs text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full ml-2">v2.6</span></h1>
                         <p className="text-xs text-gray-500">{isEditMode ? `ID: ${id}` : 'Create a new item for your catalog'}</p>
                     </div>
                 </header>
@@ -376,8 +376,8 @@ export const AdminProductEditor: React.FC = () => {
                         </div>
 
                     </form>
-                </div >
-            </div >
-        </div >
+                </div>
+            </div>
+        </div>
     );
 };
