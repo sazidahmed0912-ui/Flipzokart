@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
     ChevronLeft, Save, Loader2, Image as ImageIcon,
-    DollarSign, Package, Tag, Type, FileText
+    DollarSign, Package, Tag, Type, FileText, Percent
 } from 'lucide-react';
 import { AdminSidebar } from '../../components/AdminSidebar';
 import CircularGlassSpinner from '../../components/CircularGlassSpinner';
@@ -20,7 +20,8 @@ export const AdminProductEditor: React.FC = () => {
 
     const [formData, setFormData] = useState({
         name: '',
-        price: '',
+        price: '', // This will be the Sale Price
+        originalPrice: '', // This is the MRP
         image: '',
         category: 'Electronics', // Default
         countInStock: '',
@@ -28,11 +29,26 @@ export const AdminProductEditor: React.FC = () => {
         isFeatured: false
     });
 
+    const [discount, setDiscount] = useState<number>(0);
+
     useEffect(() => {
         if (isEditMode) {
             loadProduct(id);
         }
     }, [id]);
+
+    // Calculate discount whenever price or originalPrice changes
+    useEffect(() => {
+        const sale = parseFloat(formData.price) || 0;
+        const original = parseFloat(formData.originalPrice) || 0;
+
+        if (original > 0 && sale > 0 && original >= sale) {
+            const calculatedDiscount = Math.round(((original - sale) / original) * 100);
+            setDiscount(calculatedDiscount);
+        } else {
+            setDiscount(0);
+        }
+    }, [formData.price, formData.originalPrice]);
 
     const loadProduct = async (productId: string) => {
         try {
@@ -40,6 +56,7 @@ export const AdminProductEditor: React.FC = () => {
             setFormData({
                 name: data.name,
                 price: data.price,
+                originalPrice: data.originalPrice || '',
                 image: data.image,
                 category: data.category,
                 countInStock: data.countInStock,
@@ -68,9 +85,29 @@ export const AdminProductEditor: React.FC = () => {
         setSaving(true);
 
         try {
+            // Logic: If Sale Price is empty, use Original Price as Sale Price (0% discount)
+            let finalSalePrice = formData.price ? Number(formData.price) : Number(formData.originalPrice);
+            const finalOriginalPrice = Number(formData.originalPrice);
+
+            if (!finalOriginalPrice || finalOriginalPrice <= 0) {
+                addToast('error', 'Original Price (MRP) is required');
+                setSaving(false);
+                return;
+            }
+
+            if (finalSalePrice > finalOriginalPrice) {
+                addToast('error', 'Sale Price cannot be greater than Original Price');
+                setSaving(false);
+                return;
+            }
+
+            // If user cleared sale price, finalSalePrice became originalPrice.
+            // But we should send it as 'price'.
+
             const payload = {
                 ...formData,
-                price: Number(formData.price),
+                price: finalSalePrice,
+                originalPrice: finalOriginalPrice,
                 countInStock: Number(formData.countInStock)
             };
 
@@ -151,42 +188,68 @@ export const AdminProductEditor: React.FC = () => {
                             </div>
 
                             {/* Pricing & Stock */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                                    <h2 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                        <DollarSign size={18} className="text-[#2874F0]" /> Pricing
-                                    </h2>
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                <h2 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <DollarSign size={18} className="text-[#2874F0]" /> Pricing & Inventory
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Price (₹)</label>
-                                        <input
-                                            type="number"
-                                            name="price"
-                                            value={formData.price}
-                                            onChange={handleChange}
-                                            required
-                                            min="0"
-                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
-                                            placeholder="0.00"
-                                        />
+                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Original Price (MRP)</label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-2.5 text-gray-400 text-sm">₹</span>
+                                            <input
+                                                type="number"
+                                                name="originalPrice"
+                                                value={formData.originalPrice}
+                                                onChange={handleChange}
+                                                required
+                                                min="0"
+                                                className="w-full pl-7 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
+                                                placeholder="1000"
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                                    <h2 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                        <Package size={18} className="text-[#2874F0]" /> Inventory
-                                    </h2>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Sale Price</label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-2.5 text-gray-400 text-sm">₹</span>
+                                            <input
+                                                type="number"
+                                                name="price"
+                                                value={formData.price}
+                                                onChange={handleChange}
+                                                min="0"
+                                                className="w-full pl-7 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
+                                                placeholder={formData.originalPrice ? formData.originalPrice.toString() : "800"}
+                                            />
+                                        </div>
+                                        <p className="text-[10px] text-gray-400 mt-1 ml-1">Leave empty if no discount</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Discount</label>
+                                        <div className={`w-full py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-1 border ${discount > 0 ? 'bg-green-50 text-green-600 border-green-100' : 'bg-gray-50 text-gray-400 border-gray-200'}`}>
+                                            <Percent size={14} />
+                                            {discount}% OFF
+                                        </div>
+                                    </div>
+
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Count In Stock</label>
-                                        <input
-                                            type="number"
-                                            name="countInStock"
-                                            value={formData.countInStock}
-                                            onChange={handleChange}
-                                            required
-                                            min="0"
-                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
-                                            placeholder="0"
-                                        />
+                                        <div className="relative">
+                                            <Package size={16} className="absolute left-3 top-3 text-gray-400" />
+                                            <input
+                                                type="number"
+                                                name="countInStock"
+                                                value={formData.countInStock}
+                                                onChange={handleChange}
+                                                required
+                                                min="0"
+                                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
+                                                placeholder="100"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
