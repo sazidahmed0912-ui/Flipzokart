@@ -51,13 +51,29 @@ export const AdminProductEditor: React.FC = () => {
     // --- Legacy Fields ---
     const [formData, setFormData] = useState({
         name: '',
-        price: '',
+        price: '', // This will be the Sale Price
+        originalPrice: '', // This is the MRP
         image: '',
         category: 'Mobiles',
         countInStock: '',
         description: '',
         isFeatured: false
     });
+
+    const [discount, setDiscount] = useState<number>(0);
+
+    // Calculate discount whenever price or originalPrice changes
+    useEffect(() => {
+        const sale = parseFloat(formData.price) || 0;
+        const original = parseFloat(formData.originalPrice) || 0;
+
+        if (original > 0 && sale > 0 && original >= sale) {
+            const calculatedDiscount = Math.round(((original - sale) / original) * 100);
+            setDiscount(calculatedDiscount);
+        } else {
+            setDiscount(0);
+        }
+    }, [formData.price, formData.originalPrice]);
 
     // --- New Advanced Fields ---
     const [gallery, setGallery] = useState<string[]>([]);
@@ -88,6 +104,7 @@ export const AdminProductEditor: React.FC = () => {
             setFormData({
                 name: data.name,
                 price: data.price,
+                originalPrice: data.originalPrice || '',
                 image: data.image,
                 category: data.category,
                 countInStock: data.countInStock || 0,
@@ -258,9 +275,25 @@ export const AdminProductEditor: React.FC = () => {
         e.preventDefault();
         setSaving(true);
         try {
+            // Logic: If Sale Price is empty, use Original Price as Sale Price (0% discount)
+            let finalSalePrice = formData.price ? Number(formData.price) : Number(formData.originalPrice);
+            const finalOriginalPrice = Number(formData.originalPrice);
+
+            if (!finalOriginalPrice || finalOriginalPrice <= 0) {
+                addToast('error', 'Original Price (MRP) is required');
+                setSaving(false);
+                return;
+            }
+
+            if (finalSalePrice > finalOriginalPrice) {
+                addToast('error', 'Sale Price cannot be greater than Original Price');
+                setSaving(false);
+                return;
+            }
+
             const totalStock = matrix.length > 0 ? matrix.reduce((acc, c) => acc + c.stock, 0) : Number(formData.countInStock);
             const defaultVar = matrix.find(m => m.isDefault);
-            const finalPrice = defaultVar ? defaultVar.price : Number(formData.price);
+            const finalPrice = defaultVar ? defaultVar.price : finalSalePrice;
 
             const richData = {
                 sku: skuBase, gallery, specifications, variants: variantGroups, matrix,
@@ -269,6 +302,7 @@ export const AdminProductEditor: React.FC = () => {
             const payload = {
                 ...formData,
                 price: finalPrice,
+                originalPrice: finalOriginalPrice,
                 countInStock: totalStock,
                 description: formData.description + `\n<!-- METADATA:${JSON.stringify(richData)}-->`
             };
@@ -458,7 +492,30 @@ export const AdminProductEditor: React.FC = () => {
                             <h2 className="text-sm font-bold text-gray-800 mb-4">Core Details</h2>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2"><label className="text-xs font-bold text-gray-500">Product Name</label><input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm" /></div>
-                                <div className="col-span-1"><label className="text-xs font-bold text-gray-500">Base Price</label><input type="number" name="price" value={formData.price} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm" /></div>
+
+                                {/* Dual Pricing Section */}
+                                <div className="col-span-2 grid grid-cols-3 gap-4 bg-gray-50/50 p-4 rounded-xl border border-dashed border-gray-200">
+                                    <div className="col-span-1">
+                                        <label className="text-xs font-bold text-gray-500">MRP (Original)</label>
+                                        <div className="relative mt-1">
+                                            <span className="absolute left-3 top-2 text-gray-400 text-xs">₹</span>
+                                            <input type="number" name="originalPrice" value={formData.originalPrice} onChange={handleChange} className="w-full pl-6 pr-3 py-2 border rounded-lg text-sm" placeholder="1000" />
+                                        </div>
+                                    </div>
+                                    <div className="col-span-1">
+                                        <label className="text-xs font-bold text-gray-500">Sale Price</label>
+                                        <div className="relative mt-1">
+                                            <span className="absolute left-3 top-2 text-gray-400 text-xs">₹</span>
+                                            <input type="number" name="price" value={formData.price} onChange={handleChange} className="w-full pl-6 pr-3 py-2 border rounded-lg text-sm" placeholder={formData.originalPrice || "800"} />
+                                        </div>
+                                    </div>
+                                    <div className="col-span-1 flex flex-col justify-end pb-1">
+                                        <div className={`w-full py-2 px-3 rounded-lg text-xs font-bold text-center border ${discount > 0 ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-400'}`}>
+                                            {discount > 0 ? `${discount}% OFF` : 'No Discount'}
+                                        </div>
+                                    </div>
+                                    <p className="col-span-3 text-[10px] text-gray-400 text-center">If detailed inventory variants are set, their default price overrides this.</p>
+                                </div>
                                 <div className="col-span-1">
                                     <label className="text-xs font-bold text-gray-500">Category</label>
                                     <select name="category" value={formData.category} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm">
