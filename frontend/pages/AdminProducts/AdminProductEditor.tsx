@@ -8,6 +8,7 @@ import { AdminSidebar } from '../../components/AdminSidebar';
 import CircularGlassSpinner from '../../components/CircularGlassSpinner';
 import { fetchProductById, createProduct, updateProduct } from '../../services/adminService';
 import { useToast } from '../../components/toast';
+import { CATEGORIES } from '../../constants';
 
 export const AdminProductEditor: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -26,6 +27,7 @@ export const AdminProductEditor: React.FC = () => {
         category: 'Electronics', // Default
         countInStock: '',
         description: '',
+        specifications: '',
         isFeatured: false
     });
 
@@ -62,6 +64,7 @@ export const AdminProductEditor: React.FC = () => {
                 category: data.category,
                 countInStock: data.countInStock,
                 description: data.description || '',
+                specifications: data.specifications || '',
                 isFeatured: data.isFeatured || false
             });
         } catch (error) {
@@ -185,72 +188,85 @@ export const AdminProductEditor: React.FC = () => {
                                             placeholder="Enter product description..."
                                         />
                                     </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Specifications</label>
+                                        <textarea
+                                            name="specifications"
+                                            value={formData.specifications}
+                                            onChange={handleChange}
+                                            rows={6}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
+                                            placeholder={`Material: Cotton\nSize: Large\nBattery: 5000mAh`}
+                                        />
+                                        <p className="text-[10px] text-gray-400 mt-1 ml-1">Enter key-value pairs (one per line)</p>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Pricing & Stock */}
-                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                                <h2 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <DollarSign size={18} className="text-[#2874F0]" /> Pricing & Inventory
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Original Price (MRP)</label>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-2.5 text-gray-400 text-sm">₹</span>
-                                            <input
-                                                type="number"
-                                                name="originalPrice"
-                                                value={formData.originalPrice}
-                                                onChange={handleChange}
-                                                required
-                                                min="0"
-                                                className="w-full pl-7 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
-                                                placeholder="1000"
-                                            />
-                                        </div>
+                        {/* Pricing & Stock */}
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                            <h2 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <DollarSign size={18} className="text-[#2874F0]" /> Pricing & Inventory
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Original Price (MRP)</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-2.5 text-gray-400 text-sm">₹</span>
+                                        <input
+                                            type="number"
+                                            name="originalPrice"
+                                            value={formData.originalPrice}
+                                            onChange={handleChange}
+                                            required
+                                            min="0"
+                                            className="w-full pl-7 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
+                                            placeholder="1000"
+                                        />
                                     </div>
+                                </div>
 
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Sale Price (Discounted Price)</label>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-2.5 text-gray-400 text-sm">₹</span>
-                                            <input
-                                                type="number"
-                                                name="price"
-                                                value={formData.price}
-                                                onChange={handleChange}
-                                                min="0"
-                                                className="w-full pl-7 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
-                                                placeholder={formData.originalPrice ? formData.originalPrice.toString() : "800"}
-                                            />
-                                        </div>
-                                        <p className="text-[10px] text-gray-400 mt-1 ml-1">Leave empty to use MRP (No Discount)</p>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Sale Price (Discounted Price)</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-2.5 text-gray-400 text-sm">₹</span>
+                                        <input
+                                            type="number"
+                                            name="price"
+                                            value={formData.price}
+                                            onChange={handleChange}
+                                            min="0"
+                                            className="w-full pl-7 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
+                                            placeholder={formData.originalPrice ? formData.originalPrice.toString() : "800"}
+                                        />
                                     </div>
+                                    <p className="text-[10px] text-gray-400 mt-1 ml-1">Leave empty to use MRP (No Discount)</p>
+                                </div>
 
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Discount</label>
-                                        <div className={`w-full py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-1 border ${discount > 0 ? 'bg-green-50 text-green-600 border-green-100' : 'bg-gray-50 text-gray-400 border-gray-200'}`}>
-                                            <Percent size={14} />
-                                            {discount}% OFF
-                                        </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Discount</label>
+                                    <div className={`w-full py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-1 border ${discount > 0 ? 'bg-green-50 text-green-600 border-green-100' : 'bg-gray-50 text-gray-400 border-gray-200'}`}>
+                                        <Percent size={14} />
+                                        {discount}% OFF
                                     </div>
+                                </div>
 
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Count In Stock</label>
-                                        <div className="relative">
-                                            <Package size={16} className="absolute left-3 top-3 text-gray-400" />
-                                            <input
-                                                type="number"
-                                                name="countInStock"
-                                                value={formData.countInStock}
-                                                onChange={handleChange}
-                                                required
-                                                min="0"
-                                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
-                                                placeholder="100"
-                                            />
-                                        </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Count In Stock</label>
+                                    <div className="relative">
+                                        <Package size={16} className="absolute left-3 top-3 text-gray-400" />
+                                        <input
+                                            type="number"
+                                            name="countInStock"
+                                            value={formData.countInStock}
+                                            onChange={handleChange}
+                                            required
+                                            min="0"
+                                            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
+                                            placeholder="100"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -304,12 +320,9 @@ export const AdminProductEditor: React.FC = () => {
                                             onChange={handleChange}
                                             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all cursor-pointer"
                                         >
-                                            <option>Electronics</option>
-                                            <option>Fashion</option>
-                                            <option>Home</option>
-                                            <option>Beauty</option>
-                                            <option>Sports</option>
-                                            <option>Groceries</option>
+                                            {CATEGORIES.map(cat => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
                                         </select>
                                     </div>
 
@@ -363,8 +376,8 @@ export const AdminProductEditor: React.FC = () => {
                         </div>
 
                     </form>
-                </div>
-            </div>
-        </div>
+                </div >
+            </div >
+        </div >
     );
 };
