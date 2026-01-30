@@ -91,7 +91,28 @@ export const ProductDetails: React.FC = () => {
         const productResponse = await fetchProductById(id);
         const productData = productResponse.data?.data?.product || productResponse.data;
         setProduct(productData);
-        setActiveImage(getProductImageUrl(productData.image));
+
+        // CRITICAL FIX: Robust Image Initialization
+        // 1. Resolve main image URL
+        const mainImg = getProductImageUrl(productData.image);
+        // 2. Resolve gallery URLs
+        const galleryRaw = productData.images || [];
+        const galleryResolved = galleryRaw.map((img: string) => getProductImageUrl(img));
+
+        // 3. Determine initial active image
+        // Priority: Main Image -> First Gallery Image -> Placeholder
+        let initialImage = mainImg;
+
+        // If main image seems invalid (e.g. placeholder) and we have gallery, use gallery[0]
+        if ((!productData.image || productData.image.includes('placeholder')) && galleryResolved.length > 0) {
+          initialImage = galleryResolved[0];
+        } else if (!initialImage && galleryResolved.length > 0) {
+          initialImage = galleryResolved[0];
+        }
+
+        console.log("Setting Initial Active Image:", initialImage);
+        setActiveImage(initialImage);
+
         if (productData.reviews) setReviews(productData.reviews);
 
         // Default Variants Logic
@@ -208,11 +229,7 @@ export const ProductDetails: React.FC = () => {
     else if (isOutOfStock) setQuantity(1);
   }, [currentStock, isOutOfStock, quantity]);
 
-  if (isLoading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <CircularGlassSpinner />
-    </div>
-  );
+  if (isLoading) return <CircularGlassSpinner />;
 
   if (!product) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center space-y-4">

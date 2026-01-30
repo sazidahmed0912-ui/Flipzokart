@@ -66,88 +66,79 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     return (
         <div className="product-gallery w-full select-none">
             {/* Main Slider */}
-            <div className="relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm aspect-square md:aspect-[4/3] group">
+            <div className="relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm aspect-square md:aspect-[4/3] group min-h-[300px] flex items-center justify-center">
 
-                {/* Fullscreen Trigger */}
-                <button
-                    onClick={() => setIsFullscreen(true)}
-                    className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur rounded-full shadow-md text-gray-600 hover:text-blue-600 transition-colors opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 touch-manipulation"
-                    title="Full Screen"
-                >
-                    <Maximize2 size={20} />
-                </button>
+                {(!images || images.length === 0) ? (
+                    <div className="flex flex-col items-center justify-center text-gray-300 w-full h-full">
+                        <Maximize2 size={48} className="mb-2 opacity-50" />
+                        <span className="text-sm">No Images Available</span>
+                    </div>
+                ) : (
+                    <>
+                        {/* Fullscreen Trigger */}
+                        <button
+                            onClick={() => setIsFullscreen(true)}
+                            className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur rounded-full shadow-md text-gray-600 hover:text-blue-600 transition-colors opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 touch-manipulation"
+                            title="Full Screen"
+                        >
+                            <Maximize2 size={20} />
+                        </button>
 
-                <Swiper
-                    modules={[Navigation, Thumbs, Pagination]}
-                    thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
-                    loop={false}
-                    spaceBetween={0}
-                    slidesPerView={1}
-                    navigation={{
-                        prevEl: '.gallery-prev',
-                        nextEl: '.gallery-next',
-                    }}
-                    pagination={{ clickable: true, dynamicBullets: true }}
-                    onSwiper={setMainSwiper}
-                    onSlideChange={handleSlideChange}
-                    className="w-full h-full"
-                >
-                    {images.length > 0 ? (
-                        images.map((img, idx) => (
-                            <SwiperSlide key={idx} className="flex items-center justify-center bg-white cursor-zoom-in">
-                                <div
-                                    className="relative w-full h-full flex items-center justify-center overflow-hidden"
-                                    onMouseMove={handleMouseMove}
-                                    onMouseLeave={handleMouseLeave}
-                                    onClick={() => setIsFullscreen(true)}
-                                >
-                                    {/* Main Image */}
-                                    <LazyImage
-                                        src={img || "https://via.placeholder.com/600x600?text=No+Image"}
-                                        alt={`${productName} - View ${idx + 1}`}
-                                        className="max-w-full max-h-full object-contain pointer-events-none"
-                                        priority={idx === 0} // Priority for first image
-                                        fill={true}
-                                        sizes="(max-width: 768px) 100vw, 50vw"
-                                    />
-
-                                    {/* Desktop Hover Zoom Lens Effect */}
-                                    {hoverPosition.show && img && (
-                                        <div
-                                            className="absolute inset-0 z-20 pointer-events-none hidden md:block bg-no-repeat bg-white"
-                                            style={{
-                                                backgroundImage: `url(${img})`,
-                                                backgroundPosition: `${hoverPosition.x}% ${hoverPosition.y}%`,
-                                                backgroundSize: '200%', // 2x Zoom
-                                            }}
+                        <Swiper
+                            modules={[Navigation, Thumbs, Pagination]}
+                            thumbs={{ swiper: thumbsSwiper }}
+                            loop={false} // Loop can complicate controlled state with variants
+                            spaceBetween={10}
+                            slidesPerView={1}
+                            navigation={{
+                                prevEl: '.gallery-prev',
+                                nextEl: '.gallery-next',
+                            }}
+                            pagination={{ clickable: true, dynamicBullets: true }}
+                            onSwiper={setMainSwiper}
+                            onSlideChange={handleSlideChange}
+                            className="w-full h-full"
+                        >
+                            {images.map((img, idx) => (
+                                <SwiperSlide key={idx} className="flex items-center justify-center bg-white cursor-zoom-in">
+                                    <div
+                                        className="relative w-full h-full flex items-center justify-center overflow-hidden"
+                                        onMouseMove={handleMouseMove}
+                                        onMouseLeave={handleMouseLeave}
+                                        onClick={() => setIsFullscreen(true)}
+                                    >
+                                        {/* Main Image */}
+                                        <LazyImage
+                                            src={img}
+                                            alt={`${productName} - View ${idx + 1}`}
+                                            className="max-w-full max-h-full object-contain pointer-events-none"
                                         />
-                                    )}
-                                </div>
-                            </SwiperSlide>
-                        ))
-                    ) : (
-                        <SwiperSlide className="flex items-center justify-center bg-gray-50">
-                            <div className="flex flex-col items-center text-gray-400">
-                                <LazyImage
-                                    src="https://via.placeholder.com/600x600?text=No+Image"
-                                    alt="No Image Available"
-                                    className="opacity-50"
-                                    width={200}
-                                    height={200}
-                                />
-                                <span className="mt-2 text-sm">No images available</span>
-                            </div>
-                        </SwiperSlide>
-                    )}
-                </Swiper>
 
-                {/* Custom Navigation Arrows */}
-                <button className="gallery-prev absolute top-1/2 left-4 z-10 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md text-gray-800 hover:bg-white disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100">
-                    <ChevronLeft size={20} />
-                </button>
-                <button className="gallery-next absolute top-1/2 right-4 z-10 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md text-gray-800 hover:bg-white disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100">
-                    <ChevronRight size={20} />
-                </button>
+                                        {/* Desktop Hover Zoom Lens Effect */}
+                                        {hoverPosition.show && (
+                                            <div
+                                                className="absolute inset-0 z-20 pointer-events-none hidden md:block bg-no-repeat bg-white"
+                                                style={{
+                                                    backgroundImage: `url(${img})`,
+                                                    backgroundPosition: `${hoverPosition.x}% ${hoverPosition.y}%`,
+                                                    backgroundSize: '200%', // 2x Zoom
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
+
+                        {/* Custom Navigation Arrows */}
+                        <button className="gallery-prev absolute top-1/2 left-4 z-10 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md text-gray-800 hover:bg-white disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100">
+                            <ChevronLeft size={20} />
+                        </button>
+                        <button className="gallery-next absolute top-1/2 right-4 z-10 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md text-gray-800 hover:bg-white disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100">
+                            <ChevronRight size={20} />
+                        </button>
+                    </>
+                )}
             </div>
 
             {/* Thumbnails */}
