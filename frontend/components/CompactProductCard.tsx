@@ -46,7 +46,10 @@ export const CompactProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="flex items-baseline gap-2 mb-3">
           <span className="text-base font-semibold text-gray-900">₹{product.price.toLocaleString('en-IN')}</span>
           {discount > 0 && (
-            <span className="text-xs font-medium text-green-600">{discount}% off</span>
+            <>
+              <span className="text-xs text-gray-400 line-through">₹{product.originalPrice.toLocaleString('en-IN')}</span>
+              <span className="text-xs font-medium text-green-600">{discount}% off</span>
+            </>
           )}
         </div>
 
