@@ -208,7 +208,11 @@ export const ProductDetails: React.FC = () => {
     else if (isOutOfStock) setQuantity(1);
   }, [currentStock, isOutOfStock, quantity]);
 
-  if (isLoading) return <CircularGlassSpinner />;
+  if (isLoading) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <CircularGlassSpinner />
+    </div>
+  );
 
   if (!product) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center space-y-4">
