@@ -211,7 +211,7 @@ export const AdminProductEditor: React.FC = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Sale Price</label>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Sale Price (Discounted Price)</label>
                                         <div className="relative">
                                             <span className="absolute left-3 top-2.5 text-gray-400 text-sm">₹</span>
                                             <input
@@ -224,7 +224,7 @@ export const AdminProductEditor: React.FC = () => {
                                                 placeholder={formData.originalPrice ? formData.originalPrice.toString() : "800"}
                                             />
                                         </div>
-                                        <p className="text-[10px] text-gray-400 mt-1 ml-1">Leave empty if no discount</p>
+                                        <p className="text-[10px] text-gray-400 mt-1 ml-1">Leave empty to use MRP (No Discount)</p>
                                     </div>
 
                                     <div>
