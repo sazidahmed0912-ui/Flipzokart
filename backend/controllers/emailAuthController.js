@@ -7,7 +7,7 @@ const bcrypt = require("bcryptjs");
 // SEND EMAIL OTP
 const sendEmailOtp = async (req, res) => {
     try {
-        const { email, type } = req.body; // 'login' or 'seller_register'
+        const { email, name, type } = req.body; // 'login' or 'seller_register'
 
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
@@ -29,28 +29,27 @@ const sendEmailOtp = async (req, res) => {
         let emailHtml = '';
 
         if (type === 'seller_register') {
+            const sellerName = name || 'Seller';
             emailSubject = 'Verify Your Seller Account – OTP Confirmation | Fzokart';
             emailHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                <h2 style="color: #2874F0;">Verify Your Seller Account – OTP Confirmation | Fzokart</h2>
-                <p>Hello <strong>Seller</strong>,</p>
-                <p>Thank you for registering as a seller on Fzokart.</p>
-                <p>To complete your seller account registration, please verify your email address using the One-Time Password (OTP) below:</p>
+            <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+                <p style="font-size: 16px;">Hello <strong>${sellerName}</strong>,</p>
+                <p style="font-size: 16px;">Thank you for registering as a seller on Fzokart.</p>
+                <p style="font-size: 16px;">To complete your seller account registration, please verify your email address using the One-Time Password (OTP) below:</p>
                 
-                <h3 style="color: #555;">🔐 Your OTP Code:</h3>
-                <div style="background-color: #f4f4f4; padding: 15px; text-align: center; border-radius: 5px; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #2874F0; margin: 20px 0;">
+                <p style="font-size: 16px; font-weight: bold; margin-top: 25px;">🔐 Your OTP Code:</p>
+                <div style="font-size: 32px; font-weight: bold; letter-spacing: 2px; color: #2874F0; margin: 10px 0 25px 0;">
                 ${otp}
                 </div>
                 
-                <p>This OTP is valid for <strong>5 minutes only</strong>.</p>
-                <p>For security reasons, please do not share this OTP with anyone.</p>
-                <p>If you did not request this verification, please ignore this email.</p>
-                <p>Once verified, you can start listing products and selling on Fzokart.</p>
+                <p style="font-size: 14px; color: #555;">This OTP is valid for 5 minutes only.</p>
+                <p style="font-size: 14px; color: #555;">For security reasons, please do not share this OTP with anyone.</p>
+                <p style="font-size: 14px; color: #555;">If you did not request this verification, please ignore this email.</p>
+                <p style="font-size: 16px; margin-top: 25px;">Once verified, you can start listing products and selling on Fzokart.</p>
                 
                 <br/>
-                <p>Best regards,</p>
-                <p><strong>Team Fzokart</strong><br/>Empowering sellers to grow online</p>
-                <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;" />
+                <p style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Best regards,</p>
+                <p style="font-size: 16px; margin-top: 0;">Team Fzokart<br/><span style="font-size: 14px; font-weight: normal; color: #666;">Empowering sellers to grow online</span></p>
             </div>
             `;
         } else {
