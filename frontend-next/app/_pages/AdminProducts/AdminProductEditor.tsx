@@ -48,6 +48,14 @@ export const AdminProductEditor: React.FC = () => {
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
 
+    // --- Helper for Images ---
+    const getFullImageUrl = (url?: string) => {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+    };
+
     // --- Legacy Fields ---
     const [formData, setFormData] = useState({
         name: '',
@@ -408,7 +416,7 @@ export const AdminProductEditor: React.FC = () => {
                                                                 {/* Image Uploader for Colors */}
                                                                 {group.name.toLowerCase() === 'color' && (
                                                                     <div className="relative w-10 h-10 rounded-lg border border-dashed border-gray-300 hover:border-blue-500 flex items-center justify-center shrink-0 cursor-pointer overflow-hidden bg-gray-50 group/img">
-                                                                        {opt.image ? <img src={opt.image} className="w-full h-full object-cover" /> : <ImageIcon size={14} className="text-gray-400 group-hover/img:text-blue-500" />}
+                                                                        {opt.image ? <img src={getFullImageUrl(opt.image)} className="w-full h-full object-cover" /> : <ImageIcon size={14} className="text-gray-400 group-hover/img:text-blue-500" />}
                                                                         <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileUpload(e, (url) => updateOption(group.id, opt.id, 'image', url))} />
                                                                     </div>
                                                                 )}
@@ -450,7 +458,7 @@ export const AdminProductEditor: React.FC = () => {
                                                 <tr key={row.id} className="group hover:bg-blue-50/30 transition-colors">
                                                     <td className="px-6 py-3">
                                                         <div className="w-10 h-10 rounded-lg border border-gray-200 bg-white p-0.5 shadow-sm overflow-hidden relative">
-                                                            {row.image ? <img src={row.image} className="w-full h-full object-cover rounded-md" /> : <div className="w-full h-full bg-gray-50 flex items-center justify-center"><ImageIcon size={14} className="text-gray-300" /></div>}
+                                                            {row.image ? <img src={getFullImageUrl(row.image)} className="w-full h-full object-cover rounded-md" /> : <div className="w-full h-full bg-gray-50 flex items-center justify-center"><ImageIcon size={14} className="text-gray-300" /></div>}
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-3"><span className="text-sm font-bold text-gray-700">{row.combination}</span></td>
@@ -561,7 +569,7 @@ export const AdminProductEditor: React.FC = () => {
                             <div className="mb-4">
                                 <label className="text-xs font-bold text-gray-500 mb-2 block">Main Image</label>
                                 <div className="aspect-square bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative cursor-pointer hover:border-blue-500 transition-colors group">
-                                    {formData.image ? <img src={formData.image} className="w-full h-full object-cover" /> : <div className="flex flex-col items-center justify-center text-gray-400"><UploadCloud className="mb-2 group-hover:text-blue-500 transition-colors" /><span className="text-xs">Click to Upload</span></div>}
+                                    {formData.image ? <img src={getFullImageUrl(formData.image)} className="w-full h-full object-cover" /> : <div className="flex flex-col items-center justify-center text-gray-400"><UploadCloud className="mb-2 group-hover:text-blue-500 transition-colors" /><span className="text-xs">Click to Upload</span></div>}
                                     <input type="file" onChange={(e) => handleFileUpload(e, (url) => setFormData(prev => ({ ...prev, image: url })))} className="absolute inset-0 opacity-0 cursor-pointer" />
                                     {/* URL Fallback */}
                                     <input type="text" value={formData.image} onChange={handleChange} onClick={(e) => e.stopPropagation()} className="absolute bottom-0 w-full text-[10px] p-1 bg-white/90 border-t" placeholder="Or enter URL..." name="image" />
@@ -570,7 +578,7 @@ export const AdminProductEditor: React.FC = () => {
                             <div className="grid grid-cols-3 gap-2">
                                 {[0, 1, 2, 3, 4, 5].map(i => (
                                     <div key={i} className="aspect-square bg-gray-50 rounded-lg border border-gray-200 relative overflow-hidden group cursor-pointer hover:border-blue-400">
-                                        {gallery[i] ? <img src={gallery[i]} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Plus size={16} className="text-gray-300" /></div>}
+                                        {gallery[i] ? <img src={getFullImageUrl(gallery[i])} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Plus size={16} className="text-gray-300" /></div>}
                                         <input type="file" onChange={(e) => handleFileUpload(e, (url) => handleGalleryChange(i, url))} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
                                         <input type="text" value={gallery[i] || ''} onChange={(e) => handleGalleryChange(i, e.target.value)} onClick={(e) => e.stopPropagation()} className="absolute bottom-0 w-full text-[10px] p-0.5 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity z-20" placeholder="URL..." />
                                     </div>
