@@ -5,6 +5,7 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const { sendOrderConfirmationEmail } = require('../utils/email');
+const { calculateOrderTotals } = require('../utils/priceCalculator');
 
 // Helper function to update stock
 const updateStock = async (products) => {
@@ -99,6 +100,14 @@ const createOrder = async (req, res) => {
       });
     }
 
+    // -------------------------------------------------------------------------
+    // 🛡️ UNIFIED PRICING ENGINE ENFORCEMENT
+    // -------------------------------------------------------------------------
+    // Instead of trusting req.body totals, we RE-CALCULATE based on DB products.
+    const priceDetails = calculateOrderTotals(finalOrderProducts, 'COD');
+
+    console.log('🛡️ Server-Calculated Totals:', priceDetails);
+
     // Create order
     const order = new Order({
       user: req.user.id,
@@ -106,23 +115,26 @@ const createOrder = async (req, res) => {
       shippingAddress: address,
       paymentMethod: 'COD',
       paymentStatus: 'PENDING',
-      subtotal,
-      itemsPrice: itemsPrice || subtotal, // Fallback to subtotal if itemsPrice missing
-      deliveryCharges: deliveryCharges || 0,
-      discount: discount || 0,
-      platformFee: platformFee || 0,
-      tax: tax || 0,
-      mrp: mrp || 0,
-      total,
-      finalAmount: finalAmount || total,
+
+      // Use Server-Calculated Values
+      subtotal: priceDetails.itemsPrice,
+      itemsPrice: priceDetails.itemsPrice,
+      deliveryCharges: priceDetails.deliveryCharges,
+      discount: priceDetails.discount,
+      platformFee: priceDetails.platformFee,
+      tax: priceDetails.tax,
+      mrp: priceDetails.mrp,
+      total: priceDetails.totalAmount,
+      finalAmount: priceDetails.finalAmount,
+
       orderSummary: {
-        itemsPrice: itemsPrice || subtotal || 0,
-        tax: tax || 0,
-        deliveryCharges: deliveryCharges || 0,
-        discount: discount || 0,
-        platformFee: platformFee || 0,
-        finalAmount: finalAmount || total,
-        mrp: mrp || 0
+        itemsPrice: priceDetails.itemsPrice,
+        tax: priceDetails.tax,
+        deliveryCharges: priceDetails.deliveryCharges,
+        discount: priceDetails.discount,
+        platformFee: priceDetails.platformFee,
+        finalAmount: priceDetails.finalAmount,
+        mrp: priceDetails.mrp
       }
     });
 
@@ -277,6 +289,25 @@ const verifyPayment = async (req, res) => {
       }
     }
 
+    // -------------------------------------------------------------------------
+    // 🛡️ UNIFIED PRICING ENGINE ENFORCEMENT
+    // -------------------------------------------------------------------------
+    // Re-fetch products with details for calculation
+    const productsForCalc = [];
+    for (const item of products) {
+      const p = await Product.findById(item.productId);
+      if (p) {
+        productsForCalc.push({
+          price: p.price,
+          originalPrice: p.originalPrice || p.price,
+          quantity: item.quantity
+        });
+      }
+    }
+
+    // Calculate using 'RAZORPAY' (Prepaid) logic
+    const priceDetails = calculateOrderTotals(productsForCalc, 'RAZORPAY');
+
     // Create order after successful payment
     const order = new Order({
       user: req.user.id,
@@ -285,23 +316,26 @@ const verifyPayment = async (req, res) => {
       paymentMethod: 'RAZORPAY',
       paymentStatus: 'PAID',
       status: 'Processing',
-      subtotal,
-      itemsPrice: itemsPrice || subtotal,
-      deliveryCharges: deliveryCharges || 0,
-      discount: discount || 0,
-      platformFee: platformFee || 0,
-      tax: tax || 0,
-      mrp: mrp || 0,
-      total,
-      finalAmount: finalAmount || total,
+
+      // Use Server-Calculated Values
+      subtotal: priceDetails.itemsPrice,
+      itemsPrice: priceDetails.itemsPrice,
+      deliveryCharges: priceDetails.deliveryCharges,
+      discount: priceDetails.discount,
+      platformFee: priceDetails.platformFee,
+      tax: priceDetails.tax,
+      mrp: priceDetails.mrp,
+      total: priceDetails.totalAmount,
+      finalAmount: priceDetails.finalAmount,
+
       orderSummary: {
-        itemsPrice: itemsPrice || 0,
-        tax: tax || 0,
-        deliveryCharges: deliveryCharges || 0,
-        discount: discount || 0,
-        platformFee: platformFee || 0,
-        finalAmount: finalAmount || total,
-        mrp: mrp || 0
+        itemsPrice: priceDetails.itemsPrice,
+        tax: priceDetails.tax,
+        deliveryCharges: priceDetails.deliveryCharges,
+        discount: priceDetails.discount,
+        platformFee: priceDetails.platformFee,
+        finalAmount: priceDetails.finalAmount,
+        mrp: priceDetails.mrp
       },
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id
