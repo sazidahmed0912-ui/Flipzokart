@@ -1,0 +1,29 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 16px;
+    /* Ensure some spacing on small mobile screens */
+}
+
+.modal-content {
+    background-color: #fff;
+    border-radius: 12px;
+    /* Slightly softer corners */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 800px;
+    /* Increased from 500px to allow landscape/grid layout */
+    max-height: 90vh;
+    /* Prevent it from being taller than screen */
+    overflow-y: auto;
+    /* Allow scrolling if form is tall */
+    position: relative;
+}

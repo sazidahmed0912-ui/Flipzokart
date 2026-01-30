@@ -300,6 +300,10 @@ const getUserLocations = async (req, res) => {
         const mapData = users.map(user => {
             // Priority 1: Recent Real-Time Location (IP based) - within last 24h? Or just if exists.
             if (user.latitude && user.longitude) {
+                const address = (user.addresses && user.addresses.length > 0)
+                    ? (user.addresses.find(a => a.type === 'Home') || user.addresses[0])
+                    : null;
+
                 return {
                     id: user._id,
                     name: user.name,
@@ -307,6 +311,9 @@ const getUserLocations = async (req, res) => {
                     status: user.status,
                     city: user.locationCity || 'Unknown',
                     state: user.locationCountry || 'Unknown',
+                    address: address ? address.address : undefined,
+                    locality: address ? address.locality : undefined,
+                    pincode: address ? address.pincode : undefined,
                     lat: user.latitude,
                     lng: user.longitude,
                     joined: user.createdAt,
@@ -325,6 +332,10 @@ const getUserLocations = async (req, res) => {
                     status: user.status,
                     city: address.city,
                     state: address.state,
+                    // New fields for full address
+                    address: address.address,
+                    locality: address.locality,
+                    pincode: address.pincode,
                     lat: coords.lat,
                     lng: coords.lng,
                     joined: user.createdAt,

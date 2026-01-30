@@ -1,0 +1,105 @@
+.flipzokart-banner {
+  position: relative;
+  width: 100%;
+  max-width: 300px; /* Compact for header */
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #ffffff 0%, #fefefe 50%, #fdfdfd 100%);
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 8px 12px;
+  position: relative;
+  z-index: 2; /* Above the texture */
+}
+
+.left-side {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.right-side {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 8px;
+}
+
+.couple-image {
+  width: 40px;
+  height: 40px;
+}
+
+.couple-image svg {
+  width: 100%;
+  height: 100%;
+}
+
+.brand-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #ff9f00;
+  margin: 0 0 2px 0;
+  letter-spacing: -0.5px;
+}
+
+.featured-text {
+  font-size: 10px;
+  color: #666;
+  margin: 0 0 4px 0;
+  display: none; /* Hide for compact header version */
+}
+
+.discount-badge {
+  background: linear-gradient(90deg, #ff9f00, #ffcc00);
+  color: white;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  width: fit-content;
+  box-shadow: 0 1px 3px rgba(255, 159, 0, 0.3);
+}
+
+/* Dot texture overlay */
+.dot-texture {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(#ff9f00 15%, transparent 15%);
+  background-size: 10px 10px;
+  opacity: 0.05;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .flipzokart-banner {
+    height: 50px;
+    max-width: 250px;
+  }
+
+  .brand-name {
+    font-size: 12px;
+  }
+
+  .discount-badge {
+    font-size: 8px;
+    padding: 2px 6px;
+  }
+}

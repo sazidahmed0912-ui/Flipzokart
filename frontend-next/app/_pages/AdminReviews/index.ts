@@ -1,0 +1,1 @@
+export { AdminReviews } from './AdminReviews';

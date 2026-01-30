@@ -1,13 +1,14 @@
+"use client";
 import React, { useState, useEffect } from 'react';
-import { AdminSidebar } from '../components/AdminSidebar';
-import { SmoothReveal } from '../components/SmoothReveal';
+import { AdminSidebar } from '@/app/components/AdminSidebar';
+import { SmoothReveal } from '@/app/components/SmoothReveal';
 import {
     Search, Bell, LogOut, ChevronDown,
     Globe, Users, Share2
 } from 'lucide-react';
-import { useSocket } from '../hooks/useSocket';
-import { useApp } from '../store/Context';
-import LeafletMap, { MapLocation } from '../components/LeafletMap';
+import { useSocket } from '@/app/hooks/useSocket';
+import { useApp } from '@/app/store/Context';
+import LeafletMap, { MapLocation } from '@/app/components/LeafletMap';
 
 interface UserLocation {
     id: string;
@@ -40,7 +41,7 @@ export const AdminMap: React.FC = () => {
     useEffect(() => {
         const fetchLocations = async () => {
             try {
-                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
                 const response = await fetch(`${API_URL}/api/user/locations`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
