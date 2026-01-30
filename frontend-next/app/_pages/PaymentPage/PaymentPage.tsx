@@ -69,10 +69,6 @@ const PaymentPage: React.FC = () => {
   /* =========================
      Price Calculation
   ========================= */
-  // Use delivery charges passed from checkout if available
-  const deliveryParam = searchParams.get('deliveryCharges');
-  const passedDeliveryCharges = deliveryParam ? parseInt(deliveryParam, 10) : undefined;
-
   const {
     subtotal: itemsPrice, // Alias subtotal to itemsPrice from helper
     originalPrice: mrp,
@@ -81,7 +77,7 @@ const PaymentPage: React.FC = () => {
     platformFee,
     tax,
     totalAmount: totalPayable
-  } = calculateCartTotals(cart, passedDeliveryCharges);
+  } = calculateCartTotals(cart, undefined, paymentMethod);
 
   /* =========================
      ERROR HANDLING HELPER

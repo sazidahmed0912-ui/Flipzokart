@@ -99,6 +99,11 @@ const CheckoutPage = () => {
         setDeliveryCharges(standardDelivery);
     }, [standardDelivery]);
 
+    // Calculate free delivery nudge
+    const FREE_DELIVERY_THRESHOLD = 499;
+    const neededForFreeDelivery = FREE_DELIVERY_THRESHOLD - subtotal;
+    const isFreeDeliveryEligible = subtotal >= FREE_DELIVERY_THRESHOLD;
+
     // Recalculate total if delivery charges change dynamically
     const totalPayable = subtotal + deliveryCharges + platformFee;
 
@@ -237,6 +242,11 @@ const CheckoutPage = () => {
                 <div className="checkout-steps">
                     <span>Cart</span> → <span className="active">Address</span> → <span>Payment</span> → <span>Confirmation</span>
                 </div>
+                {!isFreeDeliveryEligible && (
+                    <div className="bg-blue-50 text-blue-800 text-xs px-4 py-2 text-center font-medium border-b border-blue-100 w-full absolute top-[60px] left-0 z-20">
+                        Add <span className="font-bold">₹{neededForFreeDelivery}</span> more for <span className="font-bold text-[#2874F0]">FREE Delivery</span> on all orders!
+                    </div>
+                )}
                 <div className="secure-checkout">
                     <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12c5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"></path></svg>
                     <span>Secure Checkout</span>
@@ -299,7 +309,9 @@ const CheckoutPage = () => {
                         </div>
                         <div className="price-summary-item">
                             <span>Delivery charges</span>
-                            <span className={deliveryCharges === 0 ? "free" : ""}>{deliveryCharges === 0 ? 'FREE' : `₹${deliveryCharges.toLocaleString('en-IN')}`}</span>
+                            <span className={deliveryCharges === 0 ? "free" : ""}>
+                                {isFreeDeliveryEligible ? 'FREE' : <span className="text-[10px] text-gray-500">Free (Prepaid) / ₹50 (COD)</span>}
+                            </span>
                         </div>
                         <div className="price-summary-item">
                             <span>Platform Fee</span>
