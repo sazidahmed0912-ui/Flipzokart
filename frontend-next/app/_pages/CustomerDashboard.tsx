@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';;
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   User as UserIcon, Package, MapPin, CreditCard,
   Settings, LogOut, ChevronRight, ShoppingBag,
@@ -14,7 +14,8 @@ import { Review, Order } from '@/app/types';
 
 export const CustomerDashboard: React.FC = () => {
   const { user, logout } = useApp();
-  const pathname = usePathname(); const searchParams = useSearchParams();;
+  const router = useRouter();
+  const pathname = usePathname(); const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState('overview');
   const [userReviews, setUserReviews] = useState<Review[]>([]);
   const [userOrders, setUserOrders] = useState<Order[]>([]);
@@ -65,7 +66,11 @@ export const CustomerDashboard: React.FC = () => {
     fetchUserOrders();
   }, [user]);
 
-  if (!user) return <Navigate to="/login" />;
+  useEffect(() => {
+    if (!user) router.push("/login");
+  }, [user, router]);
+
+  if (!user) return null;
 
   return (
     <div className="container mx-auto px-4 lg:px-8 py-10">

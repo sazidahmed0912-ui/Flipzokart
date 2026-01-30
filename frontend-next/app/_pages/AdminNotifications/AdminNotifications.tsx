@@ -11,7 +11,7 @@ import { useApp } from '@/app/store/Context';
 
 export const AdminNotifications: React.FC = () => {
     const { user } = useApp();
-    const { notifications, clearNotification, markAsRead } = useNotifications();
+    const { notifications, deleteNotification: clearNotification, markNotificationAsRead: markAsRead } = useNotifications();
     const [filter, setFilter] = useState('All');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -79,8 +79,8 @@ export const AdminNotifications: React.FC = () => {
                                 <SmoothReveal key={note._id || idx} direction="up" delay={idx * 50}>
                                     <div className={`bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex gap-4 ${note.isRead ? 'opacity-70' : ''}`}>
                                         <div className={`p-3 rounded-lg h-fit ${note.type === 'error' ? 'bg-red-50' :
-                                                note.type === 'success' ? 'bg-green-50' :
-                                                    note.type === 'warning' ? 'bg-yellow-50' : 'bg-blue-50'
+                                            note.type === 'success' ? 'bg-green-50' :
+                                                note.type === 'warning' ? 'bg-yellow-50' : 'bg-blue-50'
                                             }`}>
                                             {getIcon(note.type)}
                                         </div>

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Search, Package, User, RefreshCw, CreditCard, FileText, Shield, ArrowRight, Phone, Mail, MessageSquare, Ticket } from 'lucide-react';
 
-import { useRouter } from 'next/navigation';;
+import { useRouter } from 'next/navigation';
 
 const HelpCenterPage: React.FC = () => {
     const router = useRouter();

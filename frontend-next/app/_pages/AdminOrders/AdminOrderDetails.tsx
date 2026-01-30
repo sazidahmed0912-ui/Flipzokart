@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';;
+import { useParams } from 'next/navigation';
 import {
     ChevronLeft, Package, Truck, CheckCircle,
     MapPin, User, Calendar, DollarSign,

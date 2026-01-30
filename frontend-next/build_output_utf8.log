@@ -1,0 +1,53 @@
+﻿
+> frontend-next@0.1.0 build
+> next build
+
+node.exe : ΓÜá Warning: Next.js inferred your workspace root, but it 
+may not be correct.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜá Warning: Ne...not be 
+correc    t.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ We detected multiple lockfiles and selected the directory of 
+D:\Websites\Flipzokart\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js 
+config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js
+/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * D:\Websites\Flipzokart\frontend-next\package-lock.json
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 8.8s
+  Running TypeScript ...
+Failed to compile.
+
+./app/constants.ts:9:3
+Type error: Property 'countInStock' is missing in type '{ id: string; 
+name: string; description: string; price: number; originalPrice: 
+number; image: string; category: string; rating: number; 
+reviewsCount: number; stock: number; isFeatured: true; variants: { 
+...; }[]; }' but required in type 'Product'.
+
+[0m [90m  7 |[39m
+ [90m  8 |[39m [36mexport[39m [36mconst[39m 
+[33mMOCK_PRODUCTS[39m[33m:[39m [33mProduct[39m[] [33m=[39m [
+[31m[1m>[22m[39m[90m  9 |[39m   {
+ [90m    |[39m   [31m[1m^[22m[39m
+ [90m 10 |[39m     id[33m:[39m 
+[32m'65f6170d4f3b7d1e8c7c9f1a'[39m[33m,[39m [90m// Example 
+ObjectId[39m
+ [90m 11 |[39m     name[33m:[39m [32m'iPhone 15 Pro Max - 
+Natural Titanium'[39m[33m,[39m
+ [90m 12 |[39m     description[33m:[39m [32m'The ultimate iPhone 
+experience with A17 Pro chip and advanced camera 
+system.'[39m[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null

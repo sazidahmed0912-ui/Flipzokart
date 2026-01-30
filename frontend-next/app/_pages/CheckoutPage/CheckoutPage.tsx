@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 
-import { useRouter } from 'next/navigation';;
+import { useRouter } from 'next/navigation';
 import { Lock, Loader } from 'lucide-react';
 import API, { calculateShipping } from '@/app/services/api';
 import { getSafeAddress } from '@/app/utils/addressHelper';
@@ -225,7 +225,7 @@ const CheckoutPage = () => {
         setTimeout(() => {
             setIsPlaceOrderLoading(false);
             // Pass the calculated deliveryCharges to PaymentPage to ensure consistency
-            navigate('/payment', { state: { deliveryCharges } });
+            router.push(`/payment?deliveryCharges=${deliveryCharges}`);
         }, 1000);
     };
 

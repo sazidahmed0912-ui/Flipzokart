@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useMemo, useEffect } from 'react';
-
-;
+import { useSearchParams } from 'next/navigation';
 import { Filter, ChevronDown, Grid, List, Search, X, Star } from 'lucide-react';
 import { ProductCard } from '@/app/components/ProductCard';
 import { SearchProductCard } from '@/app/components/SearchProductCard';
@@ -11,7 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 export const ShopPage: React.FC = () => {
   const { products } = useApp();
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'All';
   const initialQuery = searchParams.get('q') || '';
 

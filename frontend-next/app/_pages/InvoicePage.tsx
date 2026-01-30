@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef } from 'react';
 
-import { useParams } from 'next/navigation';;
+import { useParams } from 'next/navigation';
 import API from '@/app/services/api';
 import { InvoiceTemplate } from '@/app/components/InvoiceTemplate';
 import { normalizeOrder } from '@/app/utils/orderHelper';

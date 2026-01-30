@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';;
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   Banknote,
   ChevronRight,
@@ -21,8 +21,7 @@ import { calculateCartTotals } from '@/app/utils/priceHelper';
 /* =========================
    Razorpay ENV SAFE ACCESS
 ========================= */
-const RAZORPAY_KEY_ID = (import.meta as any).env
-  .VITE_RAZORPAY_KEY_ID as string;
+const RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string;
 
 /* =========================
    Razorpay Script Loader
@@ -47,7 +46,7 @@ const useRazorpay = () => {
 
 const PaymentPage: React.FC = () => {
   const router = useRouter();
-  const pathname = usePathname(); const searchParams = useSearchParams();;
+  const pathname = usePathname(); const searchParams = useSearchParams();
   const { user, cart, clearCart, selectedAddress, removeProductFromCart } = useApp();
   const { addToast } = useToast();
 
@@ -70,7 +69,8 @@ const PaymentPage: React.FC = () => {
      Price Calculation
   ========================= */
   // Use delivery charges passed from checkout if available
-  const passedDeliveryCharges = location.state?.deliveryCharges;
+  const deliveryParam = searchParams.get('deliveryCharges');
+  const passedDeliveryCharges = deliveryParam ? parseInt(deliveryParam, 10) : undefined;
 
   const {
     subtotal: itemsPrice, // Alias subtotal to itemsPrice from helper

@@ -17,6 +17,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.8,
     reviewsCount: 1250,
     stock: 15,
+    countInStock: 15,
     isFeatured: true,
     variants: [
       { name: 'Storage', options: ['128GB', '256GB', '512GB', '1TB'] },
@@ -34,6 +35,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 850,
     stock: 25,
+    countInStock: 25,
     isFeatured: true,
     variants: [
       { name: 'Color', options: ['Black', 'Silver', 'Midnight Blue'] }
@@ -50,6 +52,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.5,
     reviewsCount: 430,
     stock: 40,
+    countInStock: 40,
     variants: [
       { name: 'Size', options: ['UK 7', 'UK 8', 'UK 9', 'UK 10', 'UK 11'] },
       { name: 'Color', options: ['Triple Black', 'White/Blue', 'Red/White'] }
@@ -66,6 +69,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.7,
     reviewsCount: 320,
     stock: 10,
+    countInStock: 10,
     isFeatured: true,
     variants: [
       { name: 'RAM', options: ['8GB', '16GB', '24GB'] },
@@ -82,7 +86,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'Mobiles',
     rating: 4.8,
     reviewsCount: 910,
-    stock: 20
+    stock: 20,
+    countInStock: 20
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f1f', // Example ObjectId
@@ -94,7 +99,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'Home & Kitchen',
     rating: 4.6,
     reviewsCount: 2100,
-    stock: 50
+    stock: 50,
+    countInStock: 50
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f20', // Example ObjectId
@@ -107,6 +113,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.7,
     reviewsCount: 450,
     stock: 100,
+    countInStock: 100,
     isFeatured: true
   },
   {
@@ -119,7 +126,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'Groceries',
     rating: 4.8,
     reviewsCount: 890,
-    stock: 75
+    stock: 75,
+    countInStock: 75
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f22', // Example ObjectId
@@ -131,7 +139,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'Groceries',
     rating: 4.6,
     reviewsCount: 320,
-    stock: 50
+    stock: 50,
+    countInStock: 50
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f23', // Example ObjectId
@@ -143,7 +152,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'Groceries',
     rating: 4.7,
     reviewsCount: 670,
-    stock: 60
+    stock: 60,
+    countInStock: 60
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f24', // Example ObjectId
@@ -156,6 +166,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.8,
     reviewsCount: 540,
     stock: 80,
+    countInStock: 80,
     isFeatured: true
   },
   {
@@ -168,7 +179,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'Groceries',
     rating: 4.5,
     reviewsCount: 780,
-    stock: 40
+    stock: 40,
+    countInStock: 40
   }
 ];
 

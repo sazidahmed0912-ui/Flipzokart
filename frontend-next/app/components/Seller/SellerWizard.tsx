@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 
-import { useRouter } from 'next/navigation';;
+import { useRouter } from 'next/navigation';
 import API from '@/app/services/api';
 import { useApp } from '@/app/store/Context';
 import Step1Register from './Step1Register';

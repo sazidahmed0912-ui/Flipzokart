@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';;
+import { useRouter } from 'next/navigation';
 import { Minus, Plus, Star, Trash2, Heart, ShieldCheck, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { CartItem } from '@/app/types';

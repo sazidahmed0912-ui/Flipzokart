@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useNetworkStatus } from '@/app/hooks/useNetworkStatus';
 import CircularGlassSpinner from '../CircularGlassSpinner';
 
@@ -10,12 +10,10 @@ interface PageTransitionProps {
 
 const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
     const pathname = usePathname();
-    const searchParams = useSearchParams();
-
     const location = useMemo(() => ({
         pathname: pathname || '/',
-        search: searchParams ? ('?' + searchParams.toString()) : ''
-    }), [pathname, searchParams]);
+        search: '' // searchParams removed to fix missing suspense boundary error
+    }), [pathname]);
 
     const [displayLocation, setDisplayLocation] = useState(location);
     const [transitionStage, setTransitionStage] = useState<'fadeIn' | 'fadeOut'>('fadeIn');

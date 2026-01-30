@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 
-import { useRouter } from 'next/navigation';;
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   CheckCircle, Copy, Package, Truck, MapPin,
   Calendar, CreditCard, ChevronRight, Home,
@@ -45,7 +45,7 @@ interface OrderDetails {
 
 const OrderSuccessPage = () => {
   const router = useRouter();
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
   const { addToast } = useToast();
 

@@ -14,6 +14,8 @@ export const mockCartItems: CartItem[] = [
     quantity: 1,
     seller: 'StyleFe',
     deliveryDate: 'Delivery by Sat Jan 24',
+    description: 'A stylish blouse for casual wear.',
+    countInStock: 20
   },
   {
     id: '2',
@@ -28,6 +30,8 @@ export const mockCartItems: CartItem[] = [
     quantity: 2,
     seller: 'DENNIS LINGO',
     deliveryDate: 'Delivery by Sun Jan 25',
+    description: 'Comfortable cotton shirt.',
+    countInStock: 50
   },
   {
     id: '3',
@@ -42,5 +46,7 @@ export const mockCartItems: CartItem[] = [
     quantity: 1,
     seller: 'RetailNet',
     deliveryDate: 'Delivery by Tue Jan 27',
+    description: 'Latest iPhone with dynamic island.',
+    countInStock: 10
   },
 ];

@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';;
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Package, ShoppingCart,
   Users, TicketPercent, Settings,
@@ -28,7 +28,7 @@ const navItems = [
 ];
 
 export const AdminSidebar: React.FC = () => {
-  const pathname = usePathname(); const searchParams = useSearchParams();;
+  const pathname = usePathname();
 
   return (
     <div className="w-full lg:w-72 bg-white border-r border-gray-100 h-full flex flex-col shrink-0">

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { useRouter } from 'next/navigation';;
+import { useRouter } from 'next/navigation';
 import { ShieldCheck, Truck, CreditCard, Banknote, MapPin, CheckCircle2 } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { Order } from '@/app/types';

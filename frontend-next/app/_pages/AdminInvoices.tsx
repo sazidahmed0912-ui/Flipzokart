@@ -10,7 +10,7 @@ import {
 import { useApp } from '@/app/store/Context';
 import { fetchAllOrders } from '@/app/services/adminService';
 
-import { useRouter } from 'next/navigation';;
+import { useRouter } from 'next/navigation';
 import { InvoiceTemplate } from '@/app/components/InvoiceTemplate';
 
 export const AdminInvoices: React.FC = () => {

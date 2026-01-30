@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Info } from "lucide-react";
 
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';;
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import API from '@/app/services/api';
 import { useToast } from "./toast";
 import { AddressFormFields, AddressFormData } from "./AddressFormFields";
@@ -10,14 +10,14 @@ import { validateAddressForm } from '@/app/utils/addressValidation';
 
 const AddNewAddress: React.FC = () => {
     const router = useRouter();
-    const pathname = usePathname(); const searchParams = useSearchParams();;
+    const pathname = usePathname(); const searchParams = useSearchParams();
     const { addToast } = useToast();
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     // Check if we are in Edit Mode
-    const addressToEdit = location.state?.addressToEdit;
-    const isEditMode = !!addressToEdit;
+    const addressId = searchParams.get('id');
+    const isEditMode = !!addressId;
 
     const [formData, setFormData] = useState<AddressFormData>({
         name: "",
@@ -31,21 +31,39 @@ const AddNewAddress: React.FC = () => {
         type: "Home"
     });
 
+    // Fetch address if in edit mode
     useEffect(() => {
-        if (isEditMode && addressToEdit) {
-            setFormData({
-                name: addressToEdit.fullName || addressToEdit.name || "",
-                phone: addressToEdit.phone || "",
-                email: addressToEdit.email || "",
-                street: addressToEdit.address || "",
-                locality: addressToEdit.locality || "",
-                city: addressToEdit.city || "",
-                state: addressToEdit.state || "",
-                zip: addressToEdit.pincode || "",
-                type: (addressToEdit.type as any) || "Home"
-            });
+        if (isEditMode && addressId) {
+            const fetchAddress = async () => {
+                try {
+                    setLoading(true);
+                    const { data } = await API.get(`/api/user/address/${addressId}`);
+                    // Adjust based on actual API response structure for single address
+                    // Assuming data is the address object or data.address
+                    const addr = data.address || data;
+                    if (addr) {
+                        setFormData({
+                            name: addr.fullName || addr.name || "",
+                            phone: addr.phone || "",
+                            email: addr.email || "",
+                            street: addr.address || addr.street || "",
+                            locality: addr.locality || "",
+                            city: addr.city || "",
+                            state: addr.state || "",
+                            zip: addr.pincode || "",
+                            type: (addr.type as any) || "Home"
+                        });
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch address for edit", error);
+                    addToast?.('error', "Failed to load address details");
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchAddress();
         }
-    }, [isEditMode, addressToEdit]);
+    }, [isEditMode, addressId]);
 
     const handleSave = async () => {
         // Validate Form
@@ -77,7 +95,7 @@ const AddNewAddress: React.FC = () => {
 
             if (isEditMode) {
                 // UPDATE Existing Address
-                await API.put(`/api/user/address/${addressToEdit._id || addressToEdit.id}`, payload);
+                await API.put(`/api/user/address/${addressId}`, payload);
                 addToast?.('success', 'Address updated successfully');
             } else {
                 // CREATE New Address

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import authService from '@/app/services/authService';
 
-import { useRouter } from 'next/navigation';;
+import { useRouter } from 'next/navigation';
 import {
   Store,
   User,

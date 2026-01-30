@@ -40,45 +40,42 @@ const getCartItemKey = (productId: string, variants?: Record<string, string>) =>
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('flipzokart_user');
-    const token = localStorage.getItem('token');
-    if (!token) return null; // Force logout if token missing
-    try {
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('flipzokart_cart');
-    try {
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [wishlist, setWishlist] = useState<string[]>(() => {
-    const saved = localStorage.getItem('flipzokart_wishlist');
-    try {
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem('flipzokart_orders');
-    try {
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
   const [products, setProducts] = useState<Product[]>([]);
+
+  // Hydrate from LocalStorage
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('flipzokart_user');
+      if (token && savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+
+      const savedCart = localStorage.getItem('flipzokart_cart');
+      if (savedCart) setCart(JSON.parse(savedCart));
+
+      const savedWishlist = localStorage.getItem('flipzokart_wishlist');
+      if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
+
+      const savedOrders = localStorage.getItem('flipzokart_orders');
+      if (savedOrders) setOrders(JSON.parse(savedOrders));
+
+      const savedAddress = localStorage.getItem('flipzokart_selected_address');
+      if (savedAddress) setSelectedAddress(JSON.parse(savedAddress));
+
+    } catch (e) {
+      console.error("Failed to hydrate state", e);
+    } finally {
+      setIsInitialized(true);
+    }
+  }, []);
 
   // Fetch products from API on mount
   useEffect(() => {
@@ -105,20 +102,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     loadProducts();
   }, []);
 
-  const [selectedAddress, setSelectedAddress] = useState<Address | null>(() => {
-    const saved = localStorage.getItem('flipzokart_selected_address');
-    try {
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
-
   const [isCartLoading, setIsCartLoading] = useState(false);
 
   // Sync Cart: FETCH on Login/Mount
   useEffect(() => {
     if (!user) return; // Don't fetch if no user
+    if (!isInitialized) return;
 
     const fetchCart = async () => {
       try {
@@ -151,7 +140,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     fetchCart();
-  }, [user]); // Run when user changes (Login)
+  }, [user, isInitialized]); // Run when user changes (Login)
 
   // Real-Time Location Update (IP-based)
   useEffect(() => {
@@ -177,6 +166,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Sync Cart: SAVE on Change
   useEffect(() => {
+    if (!isInitialized) return;
     if (!user || isCartLoading) return; // Don't save if loading or no user
 
     const saveCart = async () => {
@@ -200,65 +190,47 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Debounce to prevent too many requests
     const timeoutId = setTimeout(saveCart, 1000);
     return () => clearTimeout(timeoutId);
-  }, [cart, user, isCartLoading]);
+  }, [cart, user, isCartLoading, isInitialized]);
 
   useEffect(() => {
+    if (!isInitialized) return;
     if (user) {
       localStorage.setItem('flipzokart_user', JSON.stringify(user));
     } else {
       localStorage.removeItem('flipzokart_user');
     }
-  }, [user]);
+  }, [user, isInitialized]);
 
 
   useEffect(() => {
+    if (!isInitialized) return;
     localStorage.setItem('flipzokart_cart', JSON.stringify(cart));
-  }, [cart]);
+  }, [cart, isInitialized]);
 
   useEffect(() => {
+    if (!isInitialized) return;
     localStorage.setItem('flipzokart_wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
+  }, [wishlist, isInitialized]);
 
   useEffect(() => {
+    if (!isInitialized) return;
     localStorage.setItem('flipzokart_orders', JSON.stringify(orders));
-  }, [orders]);
+  }, [orders, isInitialized]);
 
   useEffect(() => {
+    if (!isInitialized) return;
     localStorage.setItem('flipzokart_products', JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem('flipzokart_wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
-
-  useEffect(() => {
-    localStorage.setItem('flipzokart_orders', JSON.stringify(orders));
-  }, [orders]);
-
-  useEffect(() => {
-    localStorage.setItem('flipzokart_products', JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem('flipzokart_wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
-
-  useEffect(() => {
-    localStorage.setItem('flipzokart_orders', JSON.stringify(orders));
-  }, [orders]);
-
-  useEffect(() => {
-    localStorage.setItem('flipzokart_products', JSON.stringify(products));
-  }, [products]);
+  }, [products, isInitialized]);
 
   // Saved address local storage
   useEffect(() => {
+    if (!isInitialized) return;
     if (selectedAddress) {
       localStorage.setItem('flipzokart_selected_address', JSON.stringify(selectedAddress));
     } else {
       localStorage.removeItem('flipzokart_selected_address');
     }
-  }, [selectedAddress]);
+  }, [selectedAddress, isInitialized]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
     const selectedVariants = product.selectedVariants;

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';;
+import { useRouter, useParams } from 'next/navigation';
 import {
     ChevronLeft, Save, Loader2, Image as ImageIcon,
     DollarSign, Package, Tag, Type, FileText
@@ -253,22 +253,25 @@ export const AdminProductEditor: React.FC = () => {
 
                                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
                                         <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                                            <input
-                                                type="checkbox"
-                                                name="isFeatured"
-                                                id="isFeatured"
-                                                checked={formData.isFeatured}
-                                                onChange={handleChange}
-                                                className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                                                style={{
-                                                    right: formData.isFeatured ? '0' : '50%',
-                                                    borderColor: formData.isFeatured ? '#2874F0' : '#E5E7EB'
-                                                }}
-                                            />
-                                            <label
-                                                htmlFor="isFeatured"
-                                                className={`toggle-label block overflow-hidden h-5 rounded-full cursor-pointer ${formData.isFeatured ? 'bg-[#2874F0]' : 'bg-gray-300'}`}
-                                            ></label>
+                                            <div className={`relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in`}>
+                                                <input
+                                                    type="checkbox"
+                                                    name="isFeatured"
+                                                    id="isFeatured"
+                                                    checked={formData.isFeatured}
+                                                    onChange={handleChange}
+                                                    className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                                                    style={{
+                                                        right: formData.isFeatured ? '0' : 'auto',
+                                                        left: formData.isFeatured ? 'auto' : '0',
+                                                        borderColor: formData.isFeatured ? '#2874F0' : '#E5E7EB'
+                                                    }}
+                                                />
+                                                <label
+                                                    htmlFor="isFeatured"
+                                                    className={`toggle-label block overflow-hidden h-5 rounded-full cursor-pointer ${formData.isFeatured ? 'bg-[#2874F0]' : 'bg-gray-300'}`}
+                                                ></label>
+                                            </div>
                                         </div>
                                         <div>
                                             <label htmlFor="isFeatured" className="text-sm font-bold text-gray-700 cursor-pointer block">

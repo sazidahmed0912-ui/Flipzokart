@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';;
+import { useRouter, usePathname } from 'next/navigation';
 import { Store, ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag, ChevronRight } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import NotificationBell from './NotificationBell';
@@ -367,7 +367,7 @@ const Header: React.FC = () => {
 };
 
 const BottomNav: React.FC = () => {
-  const pathname = usePathname(); const searchParams = useSearchParams();;
+  const pathname = usePathname();
   const { cart } = useApp();
   const isActive = (path: string, exact = true) => exact ? pathname === path : pathname.startsWith(path);
 

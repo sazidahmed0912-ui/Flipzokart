@@ -2,15 +2,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';;
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import authService from '@/app/services/authService';
 
 export const ResetPasswordPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
   const router = useRouter();
-  
+
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +59,7 @@ export const ResetPasswordPage: React.FC = () => {
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">New Password</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input 
+                  <input
                     type="password"
                     required
                     placeholder="••••••••"
@@ -74,7 +74,7 @@ export const ResetPasswordPage: React.FC = () => {
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Confirm Password</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input 
+                  <input
                     type="password"
                     required
                     placeholder="••••••••"
@@ -85,7 +85,7 @@ export const ResetPasswordPage: React.FC = () => {
                 </div>
               </div>
 
-              <button 
+              <button
                 type="submit"
                 disabled={isLoading}
                 className="w-full bg-primary text-white py-5 rounded-[1.5rem] font-bold text-lg hover:shadow-2xl transition-all flex items-center justify-center gap-3 disabled:opacity-50"

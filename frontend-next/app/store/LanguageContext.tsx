@@ -83,13 +83,22 @@ export const translations = {
 };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [language, setLanguage] = useState<Language>(() => {
-        return (localStorage.getItem('app_language') as Language) || 'en';
-    });
+    const [language, setLanguage] = useState<Language>('en');
+    const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
-        localStorage.setItem('app_language', language);
-    }, [language]);
+        const saved = localStorage.getItem('app_language');
+        if (saved) {
+            setLanguage(saved as Language);
+        }
+        setIsInitialized(true);
+    }, []);
+
+    useEffect(() => {
+        if (isInitialized) {
+            localStorage.setItem('app_language', language);
+        }
+    }, [language, isInitialized]);
 
     const t = (key: string) => {
         return translations[language][key as keyof typeof translations['en']] || key;

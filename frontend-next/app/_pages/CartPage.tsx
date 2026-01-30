@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';;
+import { useRouter } from 'next/navigation';
 // Added ShieldCheck to the imported icons from lucide-react
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Tag, XCircle, ShieldCheck, Heart } from 'lucide-react';
 import { useApp } from '@/app/store/Context';

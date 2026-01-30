@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useCallback } from 'react';
 
-import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';;
+import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';
 import API from '@/app/services/api';
 import { useSocket } from '@/app/hooks/useSocket';
 import { normalizeOrder } from '@/app/utils/orderHelper';
@@ -17,6 +17,7 @@ export const TrackOrderPage: React.FC = () => {
     const { trackingId } = useParams<{ trackingId: string }>();
     const router = useRouter();
     const { addToast } = useToast();
+    const searchParams = useSearchParams();
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -279,8 +280,7 @@ export const TrackOrderPage: React.FC = () => {
                 )}
 
 
-                {/* Product Information - Hidden if view=shipping_label */}
-                {!new URLSearchParams(usePathname().search).get('view')?.includes('shipping_label') && (
+                {!searchParams.get('view')?.includes('shipping_label') && (
                     <div className="bg-white rounded-sm shadow-sm mb-4">
                         <div className="p-4 border-b border-gray-100">
                             <h3 className="font-bold text-lg text-gray-800">Product Information</h3>
@@ -398,7 +398,7 @@ export const TrackOrderPage: React.FC = () => {
                                 <span>Payment Mode: <span className="font-bold text-gray-700">{order.paymentMethod || order.paymentMode || 'COD'}</span></span>
                             </div>
 
-                            {!new URLSearchParams(usePathname().search).get('view')?.includes('shipping_label') && (
+                            {!searchParams.get('view')?.includes('shipping_label') && (
                                 <button
 
                                     onClick={() => {

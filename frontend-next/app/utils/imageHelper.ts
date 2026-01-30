@@ -11,7 +11,7 @@ export const getProductImageUrl = (imagePath?: string): string => {
 
     // Otherwise, prepend the API URL
     // We try to get it from environment, or fallback to localhost
-    const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
     // Handle case where path might already have a leading slash or backslashes
     let cleanPath = imagePath.replace(/\\/g, '/');

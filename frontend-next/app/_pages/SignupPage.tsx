@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';;
+import { useRouter } from 'next/navigation';
 import { OtpInput } from '@/app/components/OtpInput';
 import { useApp } from '@/app/store/Context';
 import authService from '@/app/services/authService';

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';;
+import { useRouter, usePathname } from 'next/navigation';
 import {
     User,
     Package,
@@ -18,11 +18,12 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { useLanguage } from '@/app/store/LanguageContext';
-import Modal from '../../pages/CheckoutPage/components/Modal'; // Resusing existing Modal
+import Modal from '@/app/_pages/CheckoutPage/components/Modal'; // Resusing existing Modal
 
 const ProfileSidebar: React.FC = () => {
     const router = useRouter();
-    const pathname = usePathname(); const searchParams = useSearchParams();;
+    const pathname = usePathname();
+    // const searchParams = useSearchParams(); // Removed to avoid missing suspense boundary error
     const { user, logout } = useApp();
     const { t, language, setLanguage } = useLanguage();
     const [isLangModalOpen, setLangModalOpen] = useState(false);
