@@ -23,3 +23,8 @@ export default API;
 // Review Management
 export const fetchAllReviews = () => API.get("/api/reviews/admin/all");
 export const deleteReview = (id: string) => API.delete(`/api/reviews/${id}`);
+
+// 📤 Upload Management
+export const uploadFile = (formData: FormData) => API.post("/api/upload", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+});

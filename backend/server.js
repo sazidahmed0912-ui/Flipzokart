@@ -278,6 +278,13 @@ app.use("/api/cart", require("./routes/cartRoutes"));
 // 🔗 Frontend compatibility - alias /admin to /api/admin
 app.use("/admin", require("./routes/adminRoutes"));
 
+// 📂 Static Config for Uploads
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
+
+// 📤 Upload Route
+app.use('/api/upload', require('./routes/uploadRoutes'));
+
 /* ===============================
    ✅ SERVER START
    =============================== */
