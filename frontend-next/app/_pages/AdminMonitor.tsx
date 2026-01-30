@@ -113,7 +113,7 @@ export const AdminMonitor: React.FC = () => {
             </div>
 
             {/* FULL WIDTH MAP SECTION */}
-            <div className={`mb-8 transition-all duration-500 ease-in-out ${isMapExpanded ? 'h-[80vh]' : 'h-[500px]'}`}>
+            <div className={`mb-8 transition-all duration-500 ease-in-out ${isMapExpanded ? 'h-[800px]' : 'h-[500px]'}`}>
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col h-full overflow-hidden relative">
                     <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white z-10">
                         <div>
@@ -131,12 +131,12 @@ export const AdminMonitor: React.FC = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="flex-1 relative">
+                    <div className="flex-1 relative w-full bg-gray-100">
                         <LeafletMap
                             locations={mapLocations}
                             height="100%"
-                            className="w-full h-full rounded-none border-none"
-                            autoFit={true} // Only fits initially thanks to new logic
+                            className="w-full h-full rounded-none border-none z-0"
+                            autoFit={true}
                         />
                         {mapLocations.length === 0 && (
                             <div className="absolute inset-0 flex items-center justify-center bg-gray-50/80 z-[1000] pointer-events-none">
@@ -169,8 +169,8 @@ export const AdminMonitor: React.FC = () => {
                             <div key={log.id} className="flex gap-3 text-gray-300 border-b border-gray-800/30 pb-1">
                                 <span className="text-gray-500 shrink-0 select-none">[{new Date(log.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}]</span>
                                 <span className={`font-bold shrink-0 ${log.type === 'error' ? 'text-red-400' :
-                                        log.type === 'warning' ? 'text-yellow-400' :
-                                            log.type === 'success' ? 'text-green-400' : 'text-blue-400'
+                                    log.type === 'warning' ? 'text-yellow-400' :
+                                        log.type === 'success' ? 'text-green-400' : 'text-blue-400'
                                     }`}>{log.type.toUpperCase()}</span>
                                 <span className="text-gray-400 shrink-0">[{log.source}]</span>
                                 <span>{log.message}</span>

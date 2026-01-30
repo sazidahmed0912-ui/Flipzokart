@@ -7,7 +7,7 @@ const bcrypt = require("bcryptjs");
 // SEND EMAIL OTP
 const sendEmailOtp = async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, type } = req.body; // 'login' or 'seller_register'
 
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
@@ -24,22 +24,52 @@ const sendEmailOtp = async (req, res) => {
             otp,
         });
 
-        // Email Template
-        const emailSubject = 'Your Login OTP for Fzokart';
-        const emailHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2874F0;">Fzokart Login Verification</h2>
-            <p>Hello,</p>
-            <p>Your One-Time Password (OTP) for login is:</p>
-            <div style="background-color: #f4f4f4; padding: 15px; text-align: center; border-radius: 5px; font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #333;">
-              ${otp}
+        // Email Templates
+        let emailSubject = 'Your Login OTP for Fzokart';
+        let emailHtml = '';
+
+        if (type === 'seller_register') {
+            emailSubject = 'Verify Your Seller Account – OTP Confirmation | Fzokart';
+            emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+                <h2 style="color: #2874F0;">Verify Your Seller Account – OTP Confirmation | Fzokart</h2>
+                <p>Hello <strong>Seller</strong>,</p>
+                <p>Thank you for registering as a seller on Fzokart.</p>
+                <p>To complete your seller account registration, please verify your email address using the One-Time Password (OTP) below:</p>
+                
+                <h3 style="color: #555;">🔐 Your OTP Code:</h3>
+                <div style="background-color: #f4f4f4; padding: 15px; text-align: center; border-radius: 5px; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #2874F0; margin: 20px 0;">
+                ${otp}
+                </div>
+                
+                <p>This OTP is valid for <strong>5 minutes only</strong>.</p>
+                <p>For security reasons, please do not share this OTP with anyone.</p>
+                <p>If you did not request this verification, please ignore this email.</p>
+                <p>Once verified, you can start listing products and selling on Fzokart.</p>
+                
+                <br/>
+                <p>Best regards,</p>
+                <p><strong>Team Fzokart</strong><br/>Empowering sellers to grow online</p>
+                <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;" />
             </div>
-            <p>This OTP is valid for 5 minutes. Do not share this with anyone.</p>
-            <p>If you didn't request this code, you can ignore this email.</p>
-            <hr style="border: none; border-top: 1px solid #eee;" />
-            <p style="font-size: 12px; color: #888;">&copy; ${new Date().getFullYear()} Fzokart. All rights reserved.</p>
-          </div>
-        `;
+            `;
+        } else {
+            // Default Login OTP
+            emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #2874F0;">Fzokart Login Verification</h2>
+                <p>Hello,</p>
+                <p>Your One-Time Password (OTP) for login is:</p>
+                <div style="background-color: #f4f4f4; padding: 15px; text-align: center; border-radius: 5px; font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #333;">
+                ${otp}
+                </div>
+                <p>This OTP is valid for 5 minutes. Do not share this with anyone.</p>
+                <p>If you didn't request this code, you can ignore this email.</p>
+                <hr style="border: none; border-top: 1px solid #eee;" />
+                <p style="font-size: 12px; color: #888;">&copy; ${new Date().getFullYear()} Fzokart. All rights reserved.</p>
+            </div>
+            `;
+        }
 
         // Send Email
         res.status(200).json({
