@@ -17,7 +17,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToast } = useToast();
   const isWishlisted = wishlist.includes(product.id);
 
-  const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+  const originalPrice = Number(product.originalPrice) || 0;
+  const price = Number(product.price) || 0;
+  const discount = originalPrice > price
+    ? Math.round(((originalPrice - price) / originalPrice) * 100)
+    : 0;
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -64,9 +68,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         <div className="mt-auto pt-1 md:pt-2">
           <div className="flex items-baseline gap-1 md:gap-2 mb-2 md:mb-3 flex-wrap">
-            <span className="text-sm md:text-lg font-bold text-gray-900">₹{product.price.toLocaleString('en-IN')}</span>
-            {product.originalPrice > product.price && (
-              <span className="text-[10px] md:text-xs text-gray-400 line-through">₹{product.originalPrice.toLocaleString('en-IN')}</span>
+            <span className="text-sm md:text-lg font-bold text-gray-900">₹{price.toLocaleString('en-IN')}</span>
+            {originalPrice > price && (
+              <span className="text-[10px] md:text-xs text-gray-500 line-through">₹{originalPrice.toLocaleString('en-IN')}</span>
             )}
             {discount > 0 && (
               <span className="text-[10px] md:text-sm text-green-600 font-semibold">{discount}% off</span>

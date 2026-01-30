@@ -10,6 +10,11 @@ const createProduct = async (req, res) => {
     console.log("👉 [POST /add] Payload:", JSON.stringify(req.body, null, 2));
     const product = new Product(req.body);
     const savedProduct = await product.save();
+
+    // Socket Emit
+    const io = req.app.get('socketio');
+    if (io) io.emit('newProduct', savedProduct);
+
     // Return wrapped format to match AdminProducts.tsx: data.data.product
     res.status(201).json({ success: true, data: { product: savedProduct } });
   } catch (error) {
@@ -178,6 +183,11 @@ router.put("/:id", async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    // Socket Emit
+    const io = req.app.get('socketio');
+    if (io) io.emit('productUpdated', product);
+
     res.status(200).json({ success: true, data: { product } });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -191,6 +201,11 @@ router.delete("/:id", async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    // Socket Emit
+    const io = req.app.get('socketio');
+    if (io) io.emit('deleteProduct', req.params.id);
+
     res.status(200).json({ success: true, message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
