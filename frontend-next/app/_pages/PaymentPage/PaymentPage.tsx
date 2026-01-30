@@ -18,6 +18,7 @@ import {
 import { useApp } from '@/app/store/Context';
 import { useToast } from '@/app/components/toast';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
+import './PaymentPage.css';
 /* =========================
    Razorpay ENV SAFE ACCESS
 ========================= */

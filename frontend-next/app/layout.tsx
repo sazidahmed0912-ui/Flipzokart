@@ -9,7 +9,7 @@ import ClientLayout from "./ClientLayout";
 
 export const metadata: Metadata = {
   title: "Fzokart - Premium Indian Marketplace",
-  description: "Fzokart - Premium Indian Marketplace",
+  description: "A modern, high-performance e-commerce platform with a clean Indian marketplace aesthetic, featuring a full shopping experience and a robust admin dashboard.",
 };
 
 export default function RootLayout({

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import authService from '@/app/services/authService';
-
+import './ProfilePage.css';
 import { useRouter } from 'next/navigation';
 import {
   Store,

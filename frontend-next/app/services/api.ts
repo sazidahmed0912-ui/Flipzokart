@@ -43,7 +43,7 @@ API.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("flipzokart_user");
       // Optional: Redirect to login if not already there
-      if (!window.location.pathname.includes("/login")) {
+      if (typeof window !== 'undefined' && !window.location.pathname.includes("/login")) {
         window.location.href = "/login";
       }
     }

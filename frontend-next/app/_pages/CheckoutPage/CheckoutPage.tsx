@@ -11,6 +11,7 @@ import { Address } from '@/app/types';
 import AddressCard from './components/AddressCard';
 import AddressForm from './components/AddressForm';
 import Modal from './components/Modal';
+import './CheckoutPage.css';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
 
 const CheckoutPage = () => {

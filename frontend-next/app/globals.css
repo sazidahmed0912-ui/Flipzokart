@@ -1,6 +1,26 @@
 @import "tailwindcss";
 
+@theme {
+    --color-primary: #ff7a00;
+    --color-dark: #111111;
+    --color-light-gray: #f3f4f6;
+
+    --font-roboto: "Roboto", sans-serif;
+}
+
 @layer base {
+    .primary-bg {
+        background-color: #ff7a00;
+    }
+
+    .primary-text {
+        color: #ff7a00;
+    }
+
+    .primary-border {
+        border-color: #ff7a00;
+    }
+
     * {
         font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     }

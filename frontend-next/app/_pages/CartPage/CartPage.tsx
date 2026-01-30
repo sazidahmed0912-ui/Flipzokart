@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Minus, Plus, Star, Trash2, Heart, ShieldCheck, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { CartItem } from '@/app/types';
+import './CartPage.css';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
 
 const getCartItemKey = (productId: string, variants?: Record<string, string>) => {
