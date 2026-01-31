@@ -125,6 +125,21 @@ export const HeroSlider: React.FC = () => {
                     </div>
                 </motion.div>
             </AnimatePresence>
+
+            {/* Banner Indicators (Flipkart Style) */}
+            <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex items-center gap-1.5 z-20">
+                {slides.map((_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => setCurrentIndex(index)}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${index === currentIndex
+                                ? 'w-4 bg-white opacity-100'
+                                : 'w-1.5 bg-white/50 hover:bg-white/80'
+                            }`}
+                        aria-label={`Go to slide ${index + 1}`}
+                    />
+                ))}
+            </div>
         </section>
     );
 };

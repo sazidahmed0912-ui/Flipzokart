@@ -726,6 +726,15 @@ export const AdminProducts: React.FC = () => {
                           </div>
                         </div>
                         <div>
+                          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">SKU</label>
+                          <input
+                            type="text"
+                            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800"
+                            value={formData.sku}
+                            onChange={e => setFormData({ ...formData, sku: e.target.value })}
+                          />
+                        </div>
+                        <div>
                           <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Category</label>
                           <select
                             className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800"
@@ -736,16 +745,7 @@ export const AdminProducts: React.FC = () => {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">SKU</label>
-                          <input
-                            type="text"
-                            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800"
-                            value={formData.sku}
-                            onChange={e => setFormData({ ...formData, sku: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Base Stock</label>
+                          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Stock</label>
                           <input
                             type="number"
                             className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2874F0]/20 focus:border-[#2874F0] outline-none transition-all font-medium text-sm text-gray-800"

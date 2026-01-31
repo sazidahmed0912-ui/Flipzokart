@@ -108,10 +108,10 @@ const Header: React.FC = () => {
                 </div>
                 <ul>
                   {searchHistory.map((historyItem, index) => (
-                    <li key={index}>
+                    <li key={index} className="flex items-center justify-between hover:bg-gray-50 pr-4">
                       <button
                         type="button"
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        className="flex-1 text-left px-4 py-2 text-sm text-gray-700 flex items-center gap-2"
                         onClick={() => {
                           setSearchQuery(historyItem);
                           navigate(`/shop?q=${historyItem}`);
@@ -120,6 +120,21 @@ const Header: React.FC = () => {
                       >
                         <Search size={14} className="text-gray-400" />
                         {historyItem}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          const newHistory = [...searchHistory];
+                          newHistory.splice(index, 1);
+                          setSearchHistory(newHistory);
+                          localStorage.setItem('search_history', JSON.stringify(newHistory));
+                        }}
+                        className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                        title="Remove from history"
+                      >
+                        <X size={14} />
                       </button>
                     </li>
                   ))}

@@ -312,7 +312,20 @@ export const ProductDetails: React.FC = () => {
       <div className="max-w-6xl mx-auto p-2 sm:p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <ProductImage product={product} />
+            <ProductImage product={{ ...product, image: activeImage }} />
+
+            {/* Banner Switching Indicator (Flipkart Style) */}
+            {allImages.length > 1 && (
+              <div className="flex justify-center items-center gap-1.5 mt-2 mb-3">
+                {allImages.map((img, index) => (
+                  <div
+                    key={index}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${activeImage === img ? 'w-4 bg-gray-800' : 'w-1.5 bg-gray-300'
+                      }`}
+                  />
+                ))}
+              </div>
+            )}
 
             <div className="flex gap-2 sm:gap-3 overflow-x-auto">
               {allImages.slice(0, 4).map((img, i) => (
