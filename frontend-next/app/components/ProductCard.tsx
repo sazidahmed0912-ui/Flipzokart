@@ -6,7 +6,7 @@ import { ShoppingCart, Heart, Star } from 'lucide-react';
 import { Product } from '@/app/types';
 import { useApp } from '@/app/store/Context';
 import { useToast } from './toast';
-import { getProductImageUrl } from '@/app/utils/imageHelper';
+import { getProductImageUrl, resolveProductImage } from '@/app/utils/imageHelper';
 
 interface ProductCardProps {
   product: Product;
@@ -23,8 +23,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   useEffect(() => {
     // Priority: product.images[0] -> product.image -> placeholder
-    const rawImg = product.images?.[0] || product.image;
-    const resolvedUrl = getProductImageUrl(rawImg);
+    const resolvedUrl = resolveProductImage(product);
     setImgSrc(resolvedUrl);
     setIsLoading(true);
   }, [product]);

@@ -2,9 +2,9 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-;
 import { useApp } from '@/app/store/Context';
 import { Product } from '@/app/types';
+import { resolveProductImage } from '@/app/utils/imageHelper';
 import LazyImage from './LazyImage';
 import { useToast } from './toast';
 
@@ -31,7 +31,7 @@ export const NewProductCard: React.FC<ProductCardProps> = ({ product, variant = 
       <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow w-full">
         <Link href={`/product/${product.id}`}>
           <div className="w-full h-32 md:h-40 mb-3 bg-gray-100 rounded-lg p-2 border border-gray-200">
-            <LazyImage src={product.image} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+            <LazyImage src={resolveProductImage(product)} alt={product.name} className="w-full h-full object-cover rounded-lg" />
           </div>
         </Link>
         <h3 className="text-sm font-medium text-gray-800 mb-2 line-clamp-2 h-10">{product.name}</h3>
@@ -54,7 +54,7 @@ export const NewProductCard: React.FC<ProductCardProps> = ({ product, variant = 
       <Link href={`/product/${product.id}`}>
         <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 mb-3">
           <LazyImage
-            src={product.image}
+            src={resolveProductImage(product)}
             alt={product.name}
             className="w-full h-32 md:h-40 object-cover rounded-lg"
           />

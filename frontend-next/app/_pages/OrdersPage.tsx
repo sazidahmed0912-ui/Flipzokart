@@ -17,6 +17,7 @@ import { useApp } from '@/app/store/Context';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import API from '@/app/services/api';
 import ProfileSidebar from '@/app/components/Profile/ProfileSidebar';
+import { resolveProductImage } from '@/app/utils/imageHelper';
 
 const OrdersPage: React.FC = () => {
     const router = useRouter();
@@ -168,7 +169,7 @@ const OrdersPage: React.FC = () => {
                                                 {/* Left: Image */}
                                                 <div className="w-32 h-32 flex-shrink-0 border border-gray-200 rounded-md p-2 flex items-center justify-center bg-white cursor-pointer" onClick={() => router.push(`/product/${item.productId}`)}>
                                                     <img
-                                                        src={item.image}
+                                                        src={resolveProductImage(item)}
                                                         alt={item.name}
                                                         className="max-w-full max-h-full object-contain hover:scale-105 transition-transform"
                                                     />
@@ -210,26 +211,12 @@ const OrdersPage: React.FC = () => {
 
                                                                 {/* Dots */}
                                                                 <div className="relative z-10 flex justify-between w-full">
-                                                                    {/* Ordered */}
-                                                                    <div className="flex flex-col items-center gap-1">
-                                                                        <div className={`w-3 h-3 rounded-full border-2 ${['Pending', 'Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}></div>
-                                                                        <span className="text-xs text-gray-500 font-medium absolute top-4 whitespace-nowrap">Ordered</span>
-                                                                    </div>
-                                                                    {/* Shipped */}
-                                                                    <div className="flex flex-col items-center gap-1">
-                                                                        <div className={`w-3 h-3 rounded-full border-2 ${['Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}></div>
-                                                                        <span className="text-xs text-gray-500 font-medium absolute top-4 whitespace-nowrap">Shipped</span>
-                                                                    </div>
-                                                                    {/* Out for Delivery */}
-                                                                    <div className="flex flex-col items-center gap-1">
-                                                                        <div className={`w-3 h-3 rounded-full border-2 ${['Out for Delivery', 'Delivered'].includes(order.status) ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}></div>
-                                                                        <span className="text-xs text-gray-500 font-medium absolute top-4 whitespace-nowrap">Out for Delivery</span>
-                                                                    </div>
-                                                                    {/* Delivered */}
-                                                                    <div className="flex flex-col items-center gap-1">
-                                                                        <div className={`w-3 h-3 rounded-full border-2 ${['Delivered'].includes(order.status) ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}></div>
-                                                                        <span className="text-xs text-gray-500 font-medium absolute top-4 whitespace-nowrap">Delivered</span>
-                                                                    </div>
+                                                                    {['Pending', 'Shipped', 'Out for Delivery', 'Delivered'].map((step, sIdx) => (
+                                                                        <div key={sIdx} className="flex flex-col items-center gap-1">
+                                                                            <div className={`w-3 h-3 rounded-full border-2 ${['Pending', 'Shipped', 'Out for Delivery', 'Delivered'].indexOf(order.status) >= sIdx ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}></div>
+                                                                            <span className="text-xs text-gray-500 font-medium absolute top-4 whitespace-nowrap">{step === 'Pending' ? 'Ordered' : step}</span>
+                                                                        </div>
+                                                                    ))}
                                                                 </div>
                                                             </div>
                                                         )}
@@ -241,8 +228,6 @@ const OrdersPage: React.FC = () => {
                                                     <div className="text-xl font-bold text-gray-900">₹{(item.price || 0).toLocaleString()}</div>
 
                                                     <div className="flex flex-row items-center gap-2 mt-2">
-
-
                                                         <button
                                                             onClick={() => {
                                                                 const idToTrack = order.trackingId || order.orderNumber || order.id || order._id;
@@ -274,14 +259,16 @@ const OrdersPage: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                        )))}
-                                </div>
+                                        ))
+                                    )}
+
+                                </div >
                             ))
                         )}
-                    </SmoothReveal>
-                </div>
-            </div>
-        </div>
+                    </SmoothReveal >
+                </div >
+            </div >
+        </div >
     );
 };
 

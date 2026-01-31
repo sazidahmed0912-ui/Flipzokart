@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import Image from "next/image";
-import { getProductImageUrl } from '@/app/utils/imageHelper';
+import { getProductImageUrl, resolveProductImage } from '@/app/utils/imageHelper';
 
 interface ProductImageProps {
     product: {
@@ -17,17 +17,17 @@ export default function ProductImage({ product }: ProductImageProps) {
 
     // Update image source when product changes
     React.useEffect(() => {
-        if (product?.image) {
-            const url = getProductImageUrl(product.image);
+        if (product) {
+            const url = resolveProductImage(product);
             console.log("ProductImage Component - Setting Image URL:", url);
             setImgSrc(url);
             setIsLoading(true); // Reset loading state when source changes
         } else {
-            console.warn("ProductImage Component - No image found in product:", product);
+            console.warn("ProductImage Component - No product provided");
             setImgSrc("/placeholder.png");
             setIsLoading(false);
         }
-    }, [product?.image]);
+    }, [product]);
 
     const handleOnError = (e: any) => {
         console.error("ProductImage Component - Image Load Error for URL:", imgSrc);

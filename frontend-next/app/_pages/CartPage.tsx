@@ -8,6 +8,7 @@ import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Tag, XCircle, ShieldCheck
 import { useApp } from '@/app/store/Context';
 import { MOCK_COUPONS } from '@/app/constants';
 import { useToast } from '@/app/components/toast';
+import { resolveProductImage } from '@/app/utils/imageHelper';
 
 export const CartPage: React.FC = () => {
   const { cart, removeFromCart, updateCartQuantity, clearCart, user } = useApp();
@@ -94,7 +95,7 @@ export const CartPage: React.FC = () => {
             return (
               <div key={itemKey} className="flex flex-col sm:flex-row gap-6 p-6 bg-white border border-gray-100 rounded-[2.5rem] group hover:shadow-2xl hover:border-primary/10 transition-all duration-500 relative">
                 <div className="w-full sm:w-40 aspect-square bg-lightGray rounded-3xl overflow-hidden shrink-0 border border-gray-100 shadow-inner">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <img src={resolveProductImage(item)} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 </div>
 
                 <div className="flex-grow flex flex-col justify-between py-2">

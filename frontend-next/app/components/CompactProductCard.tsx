@@ -2,8 +2,8 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-;
 import { useApp } from '@/app/store/Context';
+import { resolveProductImage } from '@/app/utils/imageHelper';
 import { Product } from '@/app/types';
 import { useToast } from './toast';
 
@@ -30,7 +30,7 @@ export const CompactProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="p-2">
         <Link href={`/product/${product.id}`} className="block rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
           <img
-            src={product.image}
+            src={resolveProductImage(product)}
             alt={product.name}
             className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-300"
           />

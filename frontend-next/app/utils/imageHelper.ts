@@ -19,3 +19,28 @@ export const getProductImageUrl = (imagePath?: string): string => {
 
     return `${API_URL}/${cleanPath}`;
 };
+
+/**
+ * Standardized logic to resolve product image from various possible sources.
+ * Priority: images[0] > thumbnail > image > placeholder
+ */
+export const resolveProductImage = (product: any): string => {
+    if (!product) return "/placeholder.png";
+
+    // 1. Array (images[0])
+    if (Array.isArray(product.images) && product.images.length > 0 && product.images[0]) {
+        return getProductImageUrl(product.images[0]);
+    }
+
+    // 2. Thumbnail (if exists)
+    if (product.thumbnail) {
+        return getProductImageUrl(product.thumbnail);
+    }
+
+    // 3. Legacy String (image)
+    if (product.image) {
+        return getProductImageUrl(product.image);
+    }
+
+    return "/placeholder.png";
+};
