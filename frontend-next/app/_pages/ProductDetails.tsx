@@ -114,7 +114,7 @@ export const ProductDetails: React.FC = () => {
 
     if (product.variants && product.variants.length > 0 && product.inventory) {
       const match = product.inventory.find(inv =>
-        Object.entries(selectedVariants).every(([k, v]) => inv.options[k] === v)
+        inv.options && Object.entries(selectedVariants).every(([k, v]) => inv.options[k] === v)
       );
       if (match) {
         stock = match.stock;
