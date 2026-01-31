@@ -10,9 +10,19 @@ export class ProductService {
         const slug = (data.slug && data.slug !== '') ? data.slug : (title.toLowerCase().replace(/ /g, '-') + '-' + Date.now());
 
         // Extract allowed fields
-        const { price, description, images, rating, isActive } = data;
+        const { price, description, rating, isActive } = data;
         const stock = data.countInStock || data.stock || 0;
         const brand = data.brand || 'Generic'; // Default brand if missing
+
+        // Handle Images & Thumbnail Logic
+        let images = Array.isArray(data.images) ? data.images : [];
+        // If legacy 'image' is provided and not in images array, add it
+        if (data.image && !images.includes(data.image)) {
+            images = [data.image, ...images];
+        }
+
+        // Determine thumbnail: Explicit > First Image > Empty
+        const thumbnail = data.thumbnail || (images.length > 0 ? images[0] : null);
 
         // Handle Category
         let categoryId;
@@ -64,14 +74,22 @@ export class ProductService {
                 price: Number(price),
                 stock: Number(stock),
                 brand,
-                images: images || [],
+                images: images,
+                thumbnail: thumbnail,
                 rating: Number(rating) || 0,
                 isActive: isActive !== undefined ? isActive : true,
                 categoryId
             },
             include: { category: true }
         });
-        return { ...product, name: product.title, category: product.category?.name || 'Unknown' };
+
+        // Return mapped object for frontend compatibility
+        return {
+            ...product,
+            name: product.title,
+            image: product.thumbnail || (product.images.length > 0 ? product.images[0] : ''),
+            category: product.category?.name || 'Unknown'
+        };
     }
 
     async updateProduct(id: string, data: any) {
@@ -82,7 +100,24 @@ export class ProductService {
         if (data.price) updateData.price = Number(data.price);
         if (data.stock !== undefined) updateData.stock = Number(data.stock);
         if (data.countInStock !== undefined) updateData.stock = Number(data.countInStock);
-        if (data.images) updateData.images = data.images;
+
+        // Image Update Logic
+        if (data.images) {
+            updateData.images = data.images;
+            // If thumbnail not explicitly updated, verify current thumbnail still exists in new images? 
+            // Simplest approach: If images updated, reset thumbnail to first new image unless specific thumbnail provided
+            if (!data.thumbnail && data.images.length > 0) {
+                updateData.thumbnail = data.images[0];
+            }
+        }
+        if (data.thumbnail) updateData.thumbnail = data.thumbnail;
+        // Legacy 'image' support - if user updates single image, treat as updating thumbnail + images list check
+        if (data.image) {
+            updateData.thumbnail = data.image;
+            // We can't easily push to images array here without fetching first, 
+            // relying on frontend sending full 'images' array for better sync.
+        }
+
         if (data.isActive !== undefined) updateData.isActive = data.isActive;
         if (data.brand) updateData.brand = data.brand;
 
@@ -104,7 +139,13 @@ export class ProductService {
             data: updateData,
             include: { category: true }
         });
-        return { ...product, name: product.title, category: product.category?.name || 'Unknown' };
+
+        return {
+            ...product,
+            name: product.title,
+            image: product.thumbnail || (product.images.length > 0 ? product.images[0] : ''),
+            category: product.category?.name || 'Unknown'
+        };
     }
 
     async deleteProduct(id: string) {
@@ -127,7 +168,13 @@ export class ProductService {
             },
         });
         if (!product) throw new AppError('Product not found', 404);
-        return { ...product, name: product.title, category: product.category?.name || 'Unknown' };
+
+        return {
+            ...product,
+            name: product.title,
+            image: product.thumbnail || (product.images.length > 0 ? product.images[0] : ''),
+            category: product.category?.name || 'Unknown'
+        };
     }
 
     async getAllProducts(query: any) {
@@ -158,7 +205,12 @@ export class ProductService {
             prisma.product.count({ where }),
         ]);
 
-        const mappedProducts = products.map((p: any) => ({ ...p, name: p.title, category: p.category?.name || 'Unknown' }));
+        const mappedProducts = products.map((p: any) => ({
+            ...p,
+            name: p.title,
+            image: p.thumbnail || (p.images.length > 0 ? p.images[0] : ''), // Map for frontend compatibility
+            category: p.category?.name || 'Unknown'
+        }));
 
         return { products: mappedProducts, total, page: Number(page), pages: Math.ceil(total / Number(limit)) };
     }

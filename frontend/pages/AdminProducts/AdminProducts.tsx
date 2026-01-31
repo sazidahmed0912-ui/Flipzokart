@@ -18,6 +18,8 @@ interface Product {
     price: number;
     originalPrice: number;
     image: string;
+    images?: string[];
+    thumbnail?: string;
     category: string;
     countInStock: number;
     description: string;

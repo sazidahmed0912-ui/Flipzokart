@@ -97,6 +97,7 @@ model Product {
   categoryId    String   @db.ObjectId
   category      Category @relation(fields: [categoryId], references: [id])
   images        String[]
+  thumbnail     String?
   rating        Float    @default(0)
   totalSales    Int      @default(0)
   isActive      Boolean  @default(true)

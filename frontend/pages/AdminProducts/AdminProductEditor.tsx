@@ -23,7 +23,8 @@ export const AdminProductEditor: React.FC = () => {
         name: '',
         price: '', // This will be the Sale Price
         originalPrice: '', // This is the MRP
-        image: '',
+        images: [] as string[], // Changed from single image string to array
+        image: '', // Keep for legacy/fallback
         category: 'Electronics', // Default
         countInStock: '',
         description: '',
@@ -60,6 +61,7 @@ export const AdminProductEditor: React.FC = () => {
                 name: data.name,
                 price: data.price,
                 originalPrice: data.originalPrice || '',
+                images: data.images && data.images.length > 0 ? data.images : (data.image ? [data.image] : []),
                 image: data.image,
                 category: data.category,
                 countInStock: data.countInStock,
@@ -112,7 +114,9 @@ export const AdminProductEditor: React.FC = () => {
                 ...formData,
                 price: finalSalePrice,
                 originalPrice: finalOriginalPrice,
-                countInStock: Number(formData.countInStock)
+                countInStock: Number(formData.countInStock),
+                images: formData.images,
+                thumbnail: formData.images.length > 0 ? formData.images[0] : formData.image
             };
 
             if (isEditMode) {
@@ -274,32 +278,92 @@ export const AdminProductEditor: React.FC = () => {
 
                         {/* Right Column: Media & Organization */}
                         <div className="space-y-6">
-                            {/* Image */}
+                            {/* Images */}
                             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                                 <h2 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <ImageIcon size={18} className="text-[#2874F0]" /> Product Image
+                                    <ImageIcon size={18} className="text-[#2874F0]" /> Product Images
                                 </h2>
 
-                                <div className="mb-4">
-                                    <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Image URL</label>
-                                    <input
-                                        type="text"
-                                        name="image"
-                                        value={formData.image}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
-                                        placeholder="https://..."
-                                    />
-                                </div>
+                                <div className="space-y-4">
+                                    {/* Add New Image */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Add Image URL</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                id="newImageInput"
+                                                className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 focus:border-[#2874F0] outline-none transition-all"
+                                                placeholder="https://... (Enter URL)"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        const val = e.currentTarget.value;
+                                                        if (val) {
+                                                            setFormData(prev => ({ ...prev, images: [...prev.images, val], image: prev.images.length === 0 ? val : prev.image }));
+                                                            e.currentTarget.value = '';
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const input = document.getElementById('newImageInput') as HTMLInputElement;
+                                                    if (input && input.value) {
+                                                        setFormData(prev => ({ ...prev, images: [...prev.images, input.value], image: prev.images.length === 0 ? input.value : prev.image }));
+                                                        input.value = '';
+                                                    }
+                                                }}
+                                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-200"
+                                            >
+                                                Add
+                                            </button>
+                                        </div>
+                                    </div>
 
-                                <div className="aspect-square rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
-                                    {formData.image ? (
-                                        <img src={formData.image} alt="Preview" className="w-full h-full object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
-                                    ) : (
-                                        <div className="text-center p-4">
+                                    {/* Image List */}
+                                    <div className="grid grid-cols-2 gap-3 mt-4">
+                                        {formData.images.map((img, idx) => (
+                                            <div key={idx} className="relative group aspect-square rounded-xl bg-gray-50 border border-gray-200 overflow-hidden">
+                                                <img src={img} alt={`Product ${idx}`} className="w-full h-full object-contain" />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newImages = formData.images.filter((_, i) => i !== idx);
+                                                            setFormData(valid => ({ ...valid, images: newImages, image: newImages[0] || '' }));
+                                                        }}
+                                                        className="p-2 bg-white text-red-500 rounded-full hover:bg-red-50"
+                                                        title="Remove"
+                                                    >
+                                                        <span className="sr-only">Remove</span>
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                                                    </button>
+                                                    {idx !== 0 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const newImages = [...formData.images];
+                                                                [newImages[0], newImages[idx]] = [newImages[idx], newImages[0]];
+                                                                setFormData(prev => ({ ...prev, images: newImages, image: newImages[0] }));
+                                                            }}
+                                                            className="p-2 bg-white text-blue-500 rounded-full hover:bg-blue-50"
+                                                            title="Set as Thumbnail"
+                                                        >
+                                                            <span className="sr-only">Set Main</span>
+                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                {idx === 0 && <span className="absolute top-2 left-2 bg-[#2874F0] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">Main</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {formData.images.length === 0 && (
+                                        <div className="text-center p-8 border-2 border-dashed border-gray-200 rounded-xl">
                                             <ImageIcon size={32} className="mx-auto text-gray-300 mb-2" />
-                                            <p className="text-xs text-gray-400">Image Preview</p>
+                                            <p className="text-xs text-gray-400">No images added</p>
                                         </div>
                                     )}
                                 </div>
