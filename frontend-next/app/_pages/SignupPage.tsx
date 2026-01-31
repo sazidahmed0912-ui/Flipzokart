@@ -116,7 +116,7 @@ export const SignupPage: React.FC = () => {
         >
           {/* Left Panel */}
           <div
-            className="w-full md:w-[45%] lg:w-[40%] p-6 py-8 md:p-12 text-white flex flex-col justify-center min-h-[30vh] md:min-h-auto"
+            className="w-full md:w-[45%] lg:w-[40%] px-6 pb-8 pt-[calc(40px+env(safe-area-inset-top))] md:p-12 text-white flex flex-col justify-center min-h-[30vh] md:min-h-auto"
             style={{ background: 'linear-gradient(180deg, #2874F0 0%, #4f9cff 100%)' }}
           >
             <div className="flex items-center gap-2.5 font-bold text-[16px] md:text-[22px] mb-4 md:mb-10">
