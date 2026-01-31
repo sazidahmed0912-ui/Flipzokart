@@ -171,11 +171,74 @@ export const ProductDetails: React.FC = () => {
     ? Math.round(((currentOriginalPrice - currentPrice) / currentOriginalPrice) * 100)
     : 0;
 
+  // Derived State for Variant Images
+  const { activeImages, activeImage } = useMemo(() => {
+    if (!product) return { activeImages: [], activeImage: '' };
+
+    // Default to main product images
+    let images = getProductImageUrl ? [getProductImageUrl(product.image), ...(product.images || []).map(getProductImageUrl)] : [];
+    // Deduplicate
+    images = Array.from(new Set(images.filter(Boolean)));
+
+    // If no helper available (SSR/Initial), fallback
+    if (images.length === 0 && product.image) images = [product.image];
+
+    // Find active color
+    let selectedColor = '';
+    if (product.variants) {
+      const colorVariant = product.variants.find((v: any) => v.name.toLowerCase() === 'color' || v.name.toLowerCase() === 'colour');
+      if (colorVariant) {
+        selectedColor = selectedVariants[colorVariant.name];
+      }
+    }
+
+    // Filter by color if available in Rich Variants (Metadata or Backend structure)
+    if (selectedColor && product.variants) {
+      // Logic: Look for the variant group definition or inventory that matches this color and has images
+      // Assuming 'product.variants' (Rich) metadata contains images:
+      const colorVariantDef = product.variants.find((v: any) =>
+        (v.name.toLowerCase() === 'color' || v.name.toLowerCase() === 'colour')
+        && v.options.some((opt: any) => (typeof opt === 'object' ? opt.name : opt) === selectedColor)
+      );
+
+      // Check if the specific option in the variant definition has images (Rich Variant Structure)
+      // OR Check if the top-level variants array has an entry for this color with images.
+
+      // Common pattern: We need to find where the images are stored per color. 
+      // Based on USER PROMPT: "product.variants[] { color, images[] }"
+      // This implies the 'variants' array itself might be the list of variants (Inventory-like) OR the definition has it.
+
+      // Attempt 1: Check Metadata Variants (as parsed in useEffect)
+      const richVariant = product.variants.find((v: any) => v.color === selectedColor || (v.options && v.options.includes(selectedColor)));
+      // BUT 'product.variants' in types is VariantGroup[].
+      // Let's rely on the 'richVariants' logic we saw in useEffect which overwrote product.variants.
+
+      // Refined Logic based on typical structure where product.variants might be the rich array if overwritten:
+      // We iterate product.variants to find one that matches the color.
+
+      const matchedVariant = product.variants.find((v: any) =>
+        v.color === selectedColor ||
+        (v.name === selectedColor) || // If structure is flat
+        (v.options && v.options.some((o: any) => (typeof o === 'object' ? o.name : o) === selectedColor) && (v as any).images?.length > 0)
+      );
+
+      if (matchedVariant && (matchedVariant as any).images && (matchedVariant as any).images.length > 0) {
+        images = (matchedVariant as any).images.map((img: string) => getProductImageUrl(img));
+      }
+    }
+
+    return {
+      activeImages: images,
+      activeImage: images[0] || getProductImageUrl(product.image)
+    };
+  }, [product, selectedVariants]);
+
   const handleAddToCart = () => {
     if (isOutOfStock) return;
     const productWithSelection = {
       ...product,
       price: currentPrice,
+      image: activeImage, // SNAPSHOT: Strict Image Link
       selectedVariants: Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined
     };
     addToCart(productWithSelection, quantity);
@@ -187,6 +250,7 @@ export const ProductDetails: React.FC = () => {
     const productWithSelection = {
       ...product,
       price: currentPrice,
+      image: activeImage, // SNAPSHOT: Strict Image Link
       selectedVariants: Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined
     };
     addToCart(productWithSelection, quantity);
@@ -212,7 +276,7 @@ export const ProductDetails: React.FC = () => {
       <div className="max-w-6xl mx-auto p-2 sm:p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <ProductGallery product={product} />
+            <ProductGallery product={product} images={activeImages} />
           </div>
 
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">

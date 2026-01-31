@@ -10,9 +10,10 @@ import { getAllProductImages } from '@/app/utils/imageHelper';
 
 interface ProductGalleryProps {
     product: any;
+    images?: string[]; // Optional override for variant images
 }
 
-export default function ProductGallery({ product }: ProductGalleryProps) {
+export default function ProductGallery({ product, images }: ProductGalleryProps) {
     const [allImages, setAllImages] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -29,8 +30,17 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
     useEffect(() => {
         if (!product) return;
 
-        // Use universal helper to get all valid images
-        const validImages = getAllProductImages(product);
+        let validImages: string[] = [];
+
+        // 1. Priority: Prop images (Variant specific)
+        if (images && images.length > 0) {
+            validImages = images;
+        }
+        // 2. Fallback: Universal helper (Product default)
+        else {
+            validImages = getAllProductImages(product);
+        }
+
         setAllImages(validImages);
         setActiveIndex(0);
         setIsLoading(true);
@@ -38,7 +48,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
         if (swiperRef.current) {
             swiperRef.current.slideTo(0, 0);
         }
-    }, [product]);
+    }, [product, images]);
 
     // Zoom Handlers (Desktop Hover)
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {

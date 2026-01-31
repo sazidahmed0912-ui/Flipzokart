@@ -39,8 +39,13 @@ export const AdminUsers: React.FC = () => {
     useEffect(() => {
         const loadUsers = async () => {
             try {
-                const { data } = await fetchAllUsers();
-                setUsers(data);
+                const response = await fetchAllUsers();
+                const data = response.data;
+                // Robust data extraction
+                const usersList = Array.isArray(data)
+                    ? data
+                    : (data.users || data.data || []);
+                setUsers(usersList);
             } catch (error) {
                 console.error("Failed to fetch users:", error);
             } finally {
