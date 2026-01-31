@@ -16,6 +16,7 @@ import { CATEGORIES } from '@/app/constants';
 import { AdminSidebar } from '@/app/components/AdminSidebar';
 import { createProduct, updateProduct, deleteProduct } from '@/app/services/adminService';
 import { fetchProductById } from '@/app/services/api';
+import { getProductImageUrl } from '@/app/utils/imageHelper';
 
 export const AdminProducts: React.FC = () => {
   const { products, setProducts, user, logout } = useApp();
@@ -566,7 +567,7 @@ export const AdminProducts: React.FC = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <img
-                            src={product.image || product.images?.[0] || 'https://placehold.co/48x48/png?text=No+Img'}
+                            src={getProductImageUrl(product.image || product.images?.[0])}
                             alt={product.name}
                             className="w-12 h-12 rounded-lg object-cover border border-gray-100 bg-gray-50"
                             onError={(e) => {

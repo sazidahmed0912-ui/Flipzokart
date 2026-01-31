@@ -33,23 +33,39 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
 
         const mainImg = product.image ? getProductImageUrl(product.image) : "/placeholder.png";
 
-        let gallery: string[] = [];
-        if (product.images && product.images.length > 0) {
-            gallery = product.images.map(img => getProductImageUrl(img));
+        let galleryImgs: string[] = [];
+        if (product.images && Array.isArray(product.images)) {
+            galleryImgs = product.images.map(img => getProductImageUrl(img));
         }
 
-        // Ensure main image is in gallery
-        if (!gallery.includes(mainImg) && mainImg !== "/placeholder.png") {
-            gallery = [mainImg, ...gallery];
+        // Combine Main + Gallery, Deduplicate
+        const uniqueSet = new Set<string>();
+
+        // Always add Main Image first
+        if (mainImg && mainImg !== "/placeholder.png") {
+            uniqueSet.add(mainImg);
         }
 
-        // If gallery empty, use main image
-        if (gallery.length === 0) {
-            gallery = [mainImg];
+        // Add remaining gallery images
+        galleryImgs.forEach(img => {
+            if (img && img !== "/placeholder.png") uniqueSet.add(img);
+        });
+
+        // Convert back to array
+        let finalGallery = Array.from(uniqueSet);
+
+        // Fallback
+        if (finalGallery.length === 0) {
+            finalGallery = ["/placeholder.png"];
         }
 
-        setAllImages(gallery);
-        setSelectedImage(mainImg);
+        setAllImages(finalGallery);
+
+        // On load, default to first image
+        // Only verify validity selection if current is gone
+        // But simpler: just always reset to first on product change for safety
+        setSelectedImage(finalGallery[0]);
+
         setIsLoading(true);
         setIsZoomed(false);
     }, [product]);
