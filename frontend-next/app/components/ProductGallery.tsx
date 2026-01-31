@@ -111,11 +111,10 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
     return (
         <div className="w-full flex flex-col gap-4">
             {/* Main Image Container */}
-            <div className="relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100 min-h-[350px] md:min-h-[500px]">
-
+            <div className="relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100">
                 {/* Loading Spinner */}
                 {isLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/50 pointer-events-none">
+                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/50 pointer-events-none h-[400px]">
                         <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                     </div>
                 )}
@@ -124,18 +123,19 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                     onSwiper={(swiper) => swiperRef.current = swiper}
                     spaceBetween={0}
                     slidesPerView={1}
-                    speed={300} // Smooth 300ms transition
-                    className="w-full h-full"
+                    autoHeight={true} // Enable auto height adjustment
+                    speed={300}
+                    className="w-full"
                     onSlideChange={(swiper) => {
                         setActiveIndex(swiper.activeIndex);
-                        setIsZoomed(false); // Reset zoom on slide change
+                        setIsZoomed(false);
                     }}
-                    allowTouchMove={!isZoomed} // Disable swipe when zoomed
+                    allowTouchMove={!isZoomed}
                 >
                     {allImages.map((img, idx) => (
                         <SwiperSlide key={idx}>
                             <div
-                                className={`relative w-full h-[350px] md:h-[500px] flex items-center justify-center p-4 select-none
+                                className={`relative w-full flex items-center justify-center select-none
                                     ${isZoomed ? 'cursor-zoom-out touch-none' : 'cursor-zoom-in touch-pan-y'}
                                 `}
                                 onTouchStart={handleTouchStart}
@@ -143,19 +143,21 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                                 onMouseMove={handleMouseMove}
                                 onMouseLeave={handleMouseLeave}
                             >
-                                <div className="relative w-full h-full">
+                                <div className="relative w-full aspect-square md:aspect-[4/5] max-h-[70vh] md:max-h-[600px]">
                                     <Image
                                         src={img}
                                         alt={`Product View ${idx + 1}`}
                                         fill
                                         priority={idx === 0}
-                                        className={`object-contain transition-transform duration-200 ease-out`}
+                                        className={`object-contain p-2 md:p-4 transition-transform duration-200 ease-out`}
                                         style={{
                                             transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
                                             transform: isZoomed && !isLoading ? 'scale(2.5)' : 'scale(1)',
                                             opacity: isLoading && idx === activeIndex ? 0 : 1
                                         }}
                                         onLoad={() => {
+                                            // Force swiper update to recalculate height after image load if needed
+                                            if (swiperRef.current) swiperRef.current.update();
                                             if (idx === activeIndex) setIsLoading(false);
                                         }}
                                         onError={() => {
