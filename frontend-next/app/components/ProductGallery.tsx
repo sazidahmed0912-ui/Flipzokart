@@ -98,23 +98,60 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
 
         if (tapLength < 300 && tapLength > 0) {
             // Double Tap Detected
-            e.preventDefault(); // Prevent default zoom
-            setIsZoomed(!isZoomed);
-            setZoomPos({ x: 50, y: 50 }); // Center zoom on double tap
+            e.preventDefault();
+            const newZoomState = !isZoomed;
+            setIsZoomed(newZoomState);
+
+            // If turning on, set initial pos to tap location to feel natural
+            if (newZoomState) {
+                const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+                const touch = e.targetTouches[0];
+                const x = ((touch.clientX - left) / width) * 100;
+                const y = ((touch.clientY - top) / height) * 100;
+                setZoomPos({ x, y });
+            }
         } else {
-            // Normal Swipe Start
+            // Normal Touch Start
             touchStartX.current = e.targetTouches[0].clientX;
+
+            // If already zoomed, strictly track touch immediately for panning
+            if (isZoomed) {
+                const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+                const touch = e.targetTouches[0];
+                const x = ((touch.clientX - left) / width) * 100;
+                const y = ((touch.clientY - top) / height) * 100;
+                setZoomPos({ x, y });
+            }
         }
         lastTap.current = currentTime;
     };
 
     const handleTouchMove = (e: React.TouchEvent) => {
-        if (isZoomed) return; // Disable swipe while zoomed
+        if (isZoomed) {
+            // Pan logic
+            const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+            const touch = e.targetTouches[0];
+            const x = ((touch.clientX - left) / width) * 100;
+            const y = ((touch.clientY - top) / height) * 100;
+
+            // Constrain constraints (0-100)
+            const safeX = Math.max(0, Math.min(100, x));
+            const safeY = Math.max(0, Math.min(100, y));
+
+            setZoomPos({ x: safeX, y: safeY });
+
+            // Prevent scrolling while panning
+            // e.preventDefault(); // Note: This might need passive: false listener in vanilla JS, but React synthetic event wrapper often handles it if we use touch-action: none CSS
+            return;
+        }
+
+        // Swipe logic
         touchEndX.current = e.targetTouches[0].clientX;
     };
 
     const handleTouchEnd = () => {
-        if (isZoomed) return;
+        if (isZoomed) return; // Keep zoomed state
+
         if (!touchStartX.current || !touchEndX.current) return;
         const distance = touchStartX.current - touchEndX.current;
         const isSwipeLeft = distance > 50;
@@ -143,7 +180,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
             {/* Main Image Container */}
             <div
                 className={`relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100 min-h-[350px] md:min-h-[500px] flex items-center justify-center p-4 touch-pan-y
-                    ${isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}
+                    ${isZoomed ? 'cursor-zoom-out touch-none' : 'cursor-zoom-in touch-pan-y'}
                 `}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
@@ -151,9 +188,9 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
             >
-                {/* Desktop Zoom Hint / Floating Actions */}
+                {/* Floating Action Buttons (Optional per original design) */}
                 <div className="absolute top-4 right-4 flex gap-2 z-10 pointer-events-none">
-                    {/* Hidden hints or icons can go here */}
+                    {/* Can add zoom/share buttons here if needed */}
                 </div>
 
                 {/* Left Arrow (Desktop) */}
