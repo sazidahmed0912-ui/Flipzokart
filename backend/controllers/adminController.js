@@ -81,19 +81,38 @@ const getAllUsers = async (req, res) => {
 
       // Try to find a recent address from orders
       const lastOrder = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-      // Fix: Order schema has shippingAddress as string, not object. 
-      // If schema says shippingAddress: String, then lastOrder.address.city will fail.
-      // But let's check Order.js again. It says shippingAddress: String.
-      // So lastOrder.address.city is likely wrong too.
-      // We'll use shippingAddress string as location for now.
-      const address = lastOrder ? lastOrder.shippingAddress : 'N/A';
+      // Fix: Order schema has shippingAddress as Mixed (String or Object)
+      let location = 'Unknown';
+      let fullAddress = 'N/A';
+
+      if (lastOrder && lastOrder.shippingAddress) {
+        const addr = lastOrder.shippingAddress;
+
+        if (typeof addr === 'string') {
+          fullAddress = addr;
+          // Try to extract City, State from string if it follows pattern roughly
+          location = addr.split(',').slice(-2).join(', ');
+          if (!location.trim()) location = addr; // Fallback to full string if split fails
+        } else if (typeof addr === 'object') {
+          // Construct string representation from Object
+          const parts = [
+            addr.address || addr.street,
+            addr.city,
+            addr.state,
+            addr.zipCode || addr.pincode
+          ].filter(Boolean);
+
+          fullAddress = parts.join(', ');
+          location = [addr.city, addr.state].filter(Boolean).join(', ') || 'Unknown';
+        }
+      }
 
       return {
         ...user.toObject(),
         orders: orders.length,
         totalSpent,
-        location: address !== 'N/A' ? address.split(',').slice(-2).join(', ') : 'Unknown', // Extract City/State if possible or use full string
-        fullAddress: address // Detailed address for 'View Address'
+        location,
+        fullAddress
       };
     }));
 
