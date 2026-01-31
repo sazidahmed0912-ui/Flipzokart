@@ -97,7 +97,7 @@ export const SignupPage: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-0 md:p-4 font-sans"
+      className="min-h-[100dvh] h-auto flex items-center justify-center p-0 md:p-4 font-sans"
       style={{
         background: 'linear-gradient(135deg, #1e63d6 0%, #6fb6ff 100%)', // Legacy Gradient
         color: '#1F2937'
@@ -116,7 +116,7 @@ export const SignupPage: React.FC = () => {
         >
           {/* Left Panel */}
           <div
-            className="w-full md:w-[45%] lg:w-[40%] px-6 pb-8 pt-[calc(48px_+_env(safe-area-inset-top))] md:p-12 text-white flex flex-col justify-center min-h-auto md:min-h-auto"
+            className="w-full md:w-[45%] lg:w-[40%] px-6 pb-8 pt-[calc(44px_+_env(safe-area-inset-top))] md:p-12 text-white flex flex-col justify-center min-h-auto md:min-h-auto"
             style={{ background: 'linear-gradient(180deg, #2874F0 0%, #4f9cff 100%)' }}
           >
             <div className="flex items-center gap-2.5 font-bold text-[16px] md:text-[22px] mb-4 md:mb-10">
