@@ -13,6 +13,7 @@ import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import { fetchProducts, deleteProduct } from '@/app/services/adminService';
 import { useToast } from '@/app/components/toast';
 import { useApp } from '@/app/store/Context';
+import { getProductImage } from '@/app/utils/imageHelper';
 
 interface Product {
     _id: string;
@@ -192,7 +193,7 @@ export const AdminProducts: React.FC = () => {
 
                                     <div className="h-48 bg-gray-50 relative overflow-hidden">
                                         <img
-                                            src={product.image}
+                                            src={getProductImage(product)}
                                             alt={product.name}
                                             className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                                         />
