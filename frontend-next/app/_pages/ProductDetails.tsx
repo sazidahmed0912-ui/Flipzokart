@@ -13,7 +13,7 @@ import { ReviewForm } from './ProductDetails/components/ReviewForm';
 import { useSocket } from '@/app/hooks/useSocket';
 import LazyImage from '@/app/components/LazyImage';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
-import { ProductGallery } from '@/app/components/ProductGallery';
+import ProductImage from '@/app/components/ProductImage';
 import { getProductImageUrl } from '@/app/utils/imageHelper';
 
 export const ProductDetails: React.FC = () => {
@@ -28,7 +28,7 @@ export const ProductDetails: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
-  const [activeImage, setActiveImage] = useState<string>('');
+
 
   const token = localStorage.getItem("token");
   const socket = useSocket(token);
@@ -62,14 +62,7 @@ export const ProductDetails: React.FC = () => {
       socket.on('productUpdated', (updatedProduct: Product) => {
         if (updatedProduct.id === id) {
           setProduct(updatedProduct);
-          const newGallery = updatedProduct.images || [];
-          // Resolve current active image to full URL for comparison
-          const fullActiveImage = getProductImageUrl(activeImage);
-          const fullUpdatedImage = getProductImageUrl(updatedProduct.image);
 
-          if (fullActiveImage !== fullUpdatedImage && !newGallery.map(getProductImageUrl).includes(fullActiveImage)) {
-            setActiveImage(fullUpdatedImage);
-          }
         }
       });
     }
@@ -95,23 +88,13 @@ export const ProductDetails: React.FC = () => {
         // CRITICAL FIX: Robust Image Initialization
         // 1. Resolve main image URL
         const mainImg = getProductImageUrl(productData.image);
+        console.log("ProductDetails Page - Product Data:", productData);
+        console.log("ProductDetails Page - Resolved Main Image:", mainImg);
         // 2. Resolve gallery URLs
         const galleryRaw = productData.images || [];
         const galleryResolved = galleryRaw.map((img: string) => getProductImageUrl(img));
 
-        // 3. Determine initial active image
-        // Priority: Main Image -> First Gallery Image -> Placeholder
-        let initialImage = mainImg;
 
-        // If main image seems invalid (e.g. placeholder) and we have gallery, use gallery[0]
-        if ((!productData.image || productData.image.includes('placeholder')) && galleryResolved.length > 0) {
-          initialImage = galleryResolved[0];
-        } else if (!initialImage && galleryResolved.length > 0) {
-          initialImage = galleryResolved[0];
-        }
-
-        console.log("Setting Initial Active Image:", initialImage);
-        setActiveImage(initialImage);
 
         if (productData.reviews) setReviews(productData.reviews);
 
@@ -124,10 +107,7 @@ export const ProductDetails: React.FC = () => {
               // Only if the default color is actually a valid option
               if (v.options.includes(productData.defaultColor)) {
                 defaults[v.name] = productData.defaultColor;
-                // Try to find image for this default color immediately
-                const match = productData.inventory?.find((inv: any) => inv.options[v.name] === productData.defaultColor);
-                if (match?.image) setActiveImage(getProductImageUrl(match.image));
-                return;
+
               }
             }
             // Fallback to first option
@@ -165,35 +145,16 @@ export const ProductDetails: React.FC = () => {
           // Logic to update image if needed, but respect user selection if they have one?
           // For now keep existing simple logic
           // Logic to update image if needed
-          const fullActive = getProductImageUrl(activeImage);
-          const fullNew = getProductImageUrl(updatedProduct.image);
 
-          if (fullActive !== fullNew && (!updatedProduct.images || !updatedProduct.images.map(getProductImageUrl).includes(fullActive))) {
-            setActiveImage(fullNew);
-          }
         }
       } catch (error) {
       }
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [id, activeImage]);
+  }, [id]);
 
-  const allImages = useMemo(() => {
-    if (!product) return [];
-    const gallery = product.images || [];
 
-    // Resolve all images to full URLs
-    const mainImage = getProductImageUrl(product.image);
-    const resolvedGallery = gallery.map(img => getProductImageUrl(img));
-
-    if (resolvedGallery.length === 0) {
-      // Fallback placeholders
-      return [mainImage, `https://picsum.photos/seed/${product.id}1/600/600`, `https://picsum.photos/seed/${product.id}2/600/600`, `https://picsum.photos/seed/${product.id}3/600/600`];
-    }
-
-    return resolvedGallery.includes(mainImage) ? resolvedGallery : [mainImage, ...resolvedGallery];
-  }, [product]);
 
   const { currentStock, isOutOfStock, currentPrice, currentOriginalPrice } = useMemo(() => {
     if (!product) return { currentStock: 0, isOutOfStock: true, currentPrice: 0, currentOriginalPrice: 0 };
@@ -278,10 +239,7 @@ export const ProductDetails: React.FC = () => {
 
       console.log('Found inventory match:', match);
 
-      if (match?.image) {
-        console.log('Switching image to:', match.image);
-        setActiveImage(getProductImageUrl(match.image));
-      }
+
       return next;
     });
   };
@@ -314,12 +272,7 @@ export const ProductDetails: React.FC = () => {
       <div className="max-w-6xl mx-auto p-2 sm:p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <ProductGallery
-              images={allImages}
-              activeImage={activeImage}
-              onImageChange={setActiveImage}
-              productName={product.name}
-            />
+            <ProductImage product={product} />
           </div>
 
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">

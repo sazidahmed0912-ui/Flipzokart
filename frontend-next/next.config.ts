@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "res.cloudinary.com" }, // Common
       { protocol: "https", hostname: "picsum.photos" },
       { protocol: "https", hostname: "via.placeholder.com" },
+      { protocol: "https", hostname: "your-api-domain.com" },
+      { protocol: "https", hostname: "cdn.yoursite.com" },
       { protocol: "http", hostname: "localhost" },
     ],
   },

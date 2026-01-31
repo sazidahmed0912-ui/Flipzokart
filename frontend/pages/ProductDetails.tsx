@@ -11,6 +11,7 @@ import { ReviewForm } from './ProductDetails/components/ReviewForm';
 import { useSocket } from '../hooks/useSocket';
 import LazyImage from '../components/LazyImage';
 import CircularGlassSpinner from '../components/CircularGlassSpinner';
+import ProductImage from '../components/ProductImage';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -311,24 +312,7 @@ export const ProductDetails: React.FC = () => {
       <div className="max-w-6xl mx-auto p-2 sm:p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <div
-              className="relative bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 sm:p-8 mb-4 min-h-[300px] sm:min-h-[400px] flex items-center justify-center touch-pan-y"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              <button className="absolute top-2 sm:top-4 left-2 sm:left-4 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow">
-                <Check size={16} className="sm:w-[18px] sm:h-[18px] text-gray-600" />
-              </button>
-              <button className="absolute top-2 sm:top-4 right-2 sm:right-4 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow">
-                <Search size={16} className="sm:w-[18px] sm:h-[18px] text-gray-600" />
-              </button>
-              <LazyImage
-                src={activeImage}
-                alt={product.name}
-                className="max-w-full max-h-[250px] sm:max-h-[350px] object-contain pointer-events-none select-none"
-              />
-            </div>
+            <ProductImage product={product} />
 
             <div className="flex gap-2 sm:gap-3 overflow-x-auto">
               {allImages.slice(0, 4).map((img, i) => (
