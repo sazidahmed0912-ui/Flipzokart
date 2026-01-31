@@ -524,13 +524,27 @@ export const AdminProductEditor: React.FC = () => {
                                     </div>
                                     <p className="col-span-3 text-[10px] text-gray-400 text-center">If detailed inventory variants are set, their default price overrides this.</p>
                                 </div>
-                                <div className="col-span-1">
-                                    <label className="text-xs font-bold text-gray-500">Category</label>
-                                    <select name="category" value={formData.category} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm">
-                                        {CATEGORIES.map(cat => (
-                                            <option key={cat} value={cat}>{cat}</option>
-                                        ))}
-                                    </select>
+                                <div className="col-span-1 grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500">Category</label>
+                                        <select name="category" value={formData.category} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm">
+                                            {CATEGORIES.map(cat => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500">Stock</label>
+                                        <input
+                                            type="number"
+                                            name="countInStock"
+                                            value={formData.countInStock}
+                                            onChange={handleChange}
+                                            className="w-full mt-1 px-4 py-2 border rounded-xl text-sm"
+                                            placeholder="0"
+                                            disabled={matrix.length > 0}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="col-span-2"><label className="text-xs font-bold text-gray-500">Description</label><textarea name="description" value={formData.description} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm" rows={3}></textarea></div>
                                 <div className="col-span-2">

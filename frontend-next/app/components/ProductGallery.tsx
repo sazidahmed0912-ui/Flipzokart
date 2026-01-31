@@ -244,6 +244,18 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                 )}
             </div>
 
+            {/* Banner Switching Indicators */}
+            {allImages.length > 1 && (
+                <div className="flex justify-center items-center gap-1.5 -mt-2">
+                    {allImages.map((img, index) => (
+                        <div
+                            key={index}
+                            className={`h-1.5 rounded-full transition-all duration-300 ${selectedImage === img ? 'w-4 bg-gray-800' : 'w-1.5 bg-gray-300'}`}
+                        />
+                    ))}
+                </div>
+            )}
+
             {/* Thumbnail Strip */}
             {allImages.length > 1 && (
                 <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 px-1 snap-x no-scrollbar">

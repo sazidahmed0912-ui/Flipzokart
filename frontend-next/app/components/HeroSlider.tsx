@@ -66,8 +66,41 @@ export const HeroSlider: React.FC = () => {
         return () => clearInterval(timer);
     }, []);
 
+    const touchStartX = React.useRef(0);
+    const touchEndX = React.useRef(0);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.targetTouches[0].clientX;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        touchEndX.current = e.targetTouches[0].clientX;
+    };
+
+    const handleTouchEnd = () => {
+        if (!touchStartX.current || !touchEndX.current) return;
+        const distance = touchStartX.current - touchEndX.current;
+        const isSwipeLeft = distance > 50;
+        const isSwipeRight = distance < -50;
+
+        if (isSwipeLeft) {
+            setCurrentIndex((prev) => (prev + 1) % slides.length);
+        }
+        if (isSwipeRight) {
+            setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
+        }
+
+        touchStartX.current = 0;
+        touchEndX.current = 0;
+    };
+
     return (
-        <section className="relative w-full md:w-auto md:mx-8 md:my-6 h-[30vh] min-h-[220px] md:h-[55vh] md:min-h-[450px] max-h-[600px] overflow-hidden md:rounded-2xl shadow-lg group bg-gray-100">
+        <section
+            className="relative w-full md:w-auto md:mx-8 md:my-6 h-[30vh] min-h-[220px] md:h-[55vh] md:min-h-[450px] max-h-[600px] overflow-hidden md:rounded-2xl shadow-lg group bg-gray-100 touch-pan-y"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+        >
             <AnimatePresence mode='wait'>
                 <motion.div
                     key={currentIndex}
@@ -135,6 +168,18 @@ export const HeroSlider: React.FC = () => {
                     </div>
                 </motion.div>
             </AnimatePresence>
+
+            {/* Banner Switching Indicators */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+                {slides.map((_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => setCurrentIndex(index)}
+                        className={`h-1.5 rounded-full transition-all duration-300 shadow-sm ${index === currentIndex ? "w-6 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"}`}
+                        aria-label={`Go to slide ${index + 1}`}
+                    />
+                ))}
+            </div>
         </section>
     );
 };
