@@ -97,15 +97,15 @@ export const SignupPage: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 font-sans"
+      className="min-h-screen flex items-center justify-center p-0 md:p-4 font-sans"
       style={{
         background: 'linear-gradient(135deg, #1e63d6 0%, #6fb6ff 100%)', // Legacy Gradient
         color: '#1F2937'
       }}
     >
-      <SmoothReveal duration="500">
+      <SmoothReveal duration="500" className="w-full md:w-auto">
         <div
-          className="w-full max-w-[1100px] h-auto min-h-[560px] flex flex-col md:flex-row rounded-[18px] overflow-hidden"
+          className="w-full md:max-w-[1100px] h-auto min-h-screen md:min-h-[560px] flex flex-col md:flex-row md:rounded-[18px] overflow-hidden"
           style={{
             background: 'rgba(255,255,255,0.25)', // Legacy Glassmorphism
             backdropFilter: 'blur(18px)',
@@ -116,27 +116,27 @@ export const SignupPage: React.FC = () => {
         >
           {/* Left Panel */}
           <div
-            className="w-full md:w-[45%] lg:w-[40%] p-12 text-white flex flex-col justify-center"
+            className="w-full md:w-[45%] lg:w-[40%] p-6 py-8 md:p-12 text-white flex flex-col justify-center min-h-[30vh] md:min-h-auto"
             style={{ background: 'linear-gradient(180deg, #2874F0 0%, #4f9cff 100%)' }}
           >
-            <div className="flex items-center gap-2.5 font-bold text-[22px] mb-10">
+            <div className="flex items-center gap-2.5 font-bold text-[16px] md:text-[22px] mb-4 md:mb-10">
               <div className="w-9 h-9 bg-[#F9C74F] text-[#1f3fbf] font-extrabold flex items-center justify-center rounded-lg">F</div>
               Fzokart
             </div>
 
-            <h1 className="text-[30px] font-bold mb-3 leading-tight">Signup</h1>
-            <p className="text-[15px] leading-relaxed opacity-95">
+            <h1 className="text-[18px] md:text-[30px] font-bold mb-2 md:mb-3 leading-tight">Signup</h1>
+            <p className="text-[12px] md:text-[15px] leading-relaxed opacity-95">
               Sign up with your details<br />
               to get started today!
             </p>
           </div>
 
           {/* Right Panel */}
-          <div className="flex-1 flex items-center justify-center p-8 bg-transparent">
+          <div className="flex-1 flex items-center justify-center p-4 md:p-8 bg-transparent -mt-6 md:mt-0">
             {/* Signup Card */}
-            <SmoothReveal direction="up" delay={200} className="w-full max-w-[360px]">
+            <SmoothReveal direction="up" delay={200} className="w-full md:w-auto md:max-w-[360px]">
               <div
-                className="p-7 rounded-2xl"
+                className="p-5 md:p-7 rounded-xl md:rounded-2xl w-[94%] md:w-full mx-auto shadow-sm md:shadow-none"
                 style={{
                   background: 'rgba(255,255,255,0.75)',
                   backdropFilter: 'blur(18px)',
@@ -145,18 +145,18 @@ export const SignupPage: React.FC = () => {
                   boxShadow: '0 20px 40px rgba(0,0,0,0.12)'
                 }}
               >
-                <h2 className="text-[20px] font-bold mb-[5px] text-[#1F2937]">Looks like you're new here!</h2>
-                <p className="text-[13px] text-[#4B5563] mb-[18px]">Sign up with your email to get started</p>
+                <h2 className="text-[17px] md:text-[20px] font-bold mb-[5px] text-[#1F2937]">Looks like you're new here!</h2>
+                <p className="text-[12px] md:text-[13px] text-[#4B5563] mb-[15px] md:mb-[18px]">Sign up with your email to get started</p>
 
                 {step === 1 ? (
                   <form onSubmit={handleSendOtp}>
-                    <div className="space-y-4 mb-[18px]">
+                    <div className="space-y-2 md:space-y-4 mb-[15px] md:mb-[18px]">
                       {/* Name Input */}
                       <input
                         type="text"
                         placeholder="Full Name"
                         required
-                        className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                        className="w-full h-[42px] md:h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-[13px] md:text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         disabled={isLoading}
@@ -166,7 +166,7 @@ export const SignupPage: React.FC = () => {
                       <input
                         type="tel"
                         placeholder="Mobile Number (Optional)"
-                        className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                        className="w-full h-[42px] md:h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-[13px] md:text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         disabled={isLoading}
@@ -177,7 +177,7 @@ export const SignupPage: React.FC = () => {
                         type="email"
                         placeholder="Email Address"
                         required
-                        className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                        className="w-full h-[42px] md:h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-[13px] md:text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={isLoading}
@@ -189,7 +189,7 @@ export const SignupPage: React.FC = () => {
                           type={showPassword ? "text" : "password"}
                           placeholder="Set Password"
                           required
-                          className="w-full h-11 rounded-[10px] border border-[#d1d5db] px-3.5 pr-10 text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                          className="w-full h-[42px] md:h-11 rounded-[10px] border border-[#d1d5db] px-3.5 pr-10 text-[13px] md:text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           disabled={isLoading}
@@ -197,9 +197,9 @@ export const SignupPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-2.5 md:top-3 text-gray-400 hover:text-gray-600"
                         >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          {showPassword ? <EyeOff size={16} className="md:w-[18px] md:h-[18px]" /> : <Eye size={16} className="md:w-[18px] md:h-[18px]" />}
                         </button>
                       </div>
                     </div>
@@ -212,7 +212,7 @@ export const SignupPage: React.FC = () => {
                         onChange={(e) => setAcceptedTerms(e.target.checked)}
                         className="mt-1 w-4 h-4 text-[#2874F0] border-gray-300 rounded focus:ring-[#2874F0] cursor-pointer"
                       />
-                      <label htmlFor="terms-checkbox" className="text-[12px] text-[#4B5563] leading-tight cursor-pointer">
+                      <label htmlFor="terms-checkbox" className="text-[11px] md:text-[12px] text-[#4B5563] leading-tight cursor-pointer">
                         I agree to Fzokart's <Link href="/terms-of-service" className="text-[#2874F0] hover:underline font-medium">Terms of Use</Link> and <Link href="/privacy-policy" className="text-[#2874F0] hover:underline font-medium">Privacy Policy</Link>.
                       </label>
                     </div>
@@ -220,19 +220,19 @@ export const SignupPage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={isLoading || !email || !name || !password || !acceptedTerms}
-                      className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center disabled:cursor-not-allowed"
+                      className="w-full h-[44px] md:h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center disabled:cursor-not-allowed"
                     >
                       {isLoading ? 'Sending OTP...' : 'Continue'}
                     </button>
 
-                    <div className="mt-[18px] text-[13px] text-[#2874F0] text-center">
+                    <div className="mt-[15px] md:mt-[18px] text-[12px] md:text-[13px] text-[#2874F0] text-center">
                       Already have an account? <Link href="/login" className="font-bold hover:underline" style={{ color: '#FF3333' }}>Login</Link>
                     </div>
                   </form>
                 ) : (
                   <form onSubmit={handleVerifyOtp}>
                     <div className="mb-6">
-                      <p className="text-[13px] text-center mb-4 text-[#4B5563]">
+                      <p className="text-[12px] md:text-[13px] text-center mb-4 text-[#4B5563]">
                         Enter OTP sent to <span className="font-semibold text-[#1F2937]">{email}</span>
                         <span className="text-[#2874F0] font-medium cursor-pointer ml-2 hover:underline" onClick={() => { setStep(1); setOtp(['', '', '', '', '', '']); }}>Change</span>
                       </p>
@@ -250,7 +250,7 @@ export const SignupPage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 mb-4 flex items-center justify-center"
+                      className="w-full h-[44px] md:h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 mb-4 flex items-center justify-center"
                     >
                       {isLoading ? 'Verifying...' : 'Verify & Signup'}
                     </button>
