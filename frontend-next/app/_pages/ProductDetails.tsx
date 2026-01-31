@@ -341,10 +341,8 @@ export const ProductDetails: React.FC = () => {
           <div className="p-4 sm:p-6">
             {activeTab === 'description' && (
               <div className="text-sm sm:text-base text-gray-700">
-                <p className="mb-3 sm:mb-4">{product.description || "Very good quality product with comfortable sole and durable build. Perfect for casual daily wear."}</p>
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <Check size={14} className="sm:w-4 sm:h-4 text-blue-600" /> <span>Seller</span> <span className="text-gray-400">|</span> <span>UPI</span>
-                </div>
+                <p className="mb-3 sm:mb-4 whitespace-pre-wrap">{product.description}</p>
+
               </div>
             )}
             {activeTab === 'specifications' && (

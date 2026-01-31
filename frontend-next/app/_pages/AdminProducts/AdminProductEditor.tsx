@@ -102,6 +102,21 @@ export const AdminProductEditor: React.FC = () => {
     const loadProduct = async (productId: string) => {
         try {
             const { data } = await fetchProductById(productId);
+            let cleanDescription = data.description || '';
+            let meta: any = {};
+
+            // Parse Metadata if present (Legacy Support)
+            if (cleanDescription.includes('<!-- METADATA:')) {
+                try {
+                    const parts = cleanDescription.split('<!-- METADATA:');
+                    cleanDescription = parts[0].trim(); // Strip metadata from UI description
+                    const jsonStr = parts[1].split('-->')[0];
+                    meta = JSON.parse(jsonStr);
+                } catch (e) {
+                    console.error("Failed to parse metadata", e);
+                }
+            }
+
             setFormData({
                 name: data.name,
                 price: data.price,
@@ -109,44 +124,24 @@ export const AdminProductEditor: React.FC = () => {
                 image: data.image,
                 category: data.category,
                 countInStock: data.countInStock || 0,
-                description: data.description || '',
+                description: cleanDescription, // Load ONLY clean text
                 isFeatured: data.isFeatured || false
             });
 
-            if (data.description && data.description.includes('<!-- METADATA:')) {
-                try {
-                    const jsonStr = data.description.split('<!-- METADATA:')[1].split('-->')[0];
-                    const meta = JSON.parse(jsonStr);
-                    // Legacy support: Only load gallery from metadata if data.images is empty
-                    if ((!data.images || data.images.length === 0) && meta.gallery) {
-                        setGallery(meta.gallery);
-                    }
-                    if (meta.specifications) setSpecifications(meta.specifications);
-                    if (meta.variants) setVariantGroups(meta.variants);
-                    if (meta.matrix) setMatrix(meta.matrix);
-                    if (meta.sku) setSkuBase(meta.sku);
+            // Load Advanced Fields (Priority: Top Level -> Metadata -> Default)
+            setGallery((data.images && data.images.filter((img: string) => img !== (data.thumbnail || data.image))) || meta.gallery || []);
+            setSpecifications(data.specifications || meta.specifications || '');
+            setVariantGroups(data.variants || meta.variants || []);
+            setMatrix(data.inventory || meta.matrix || []); // key is 'inventory' in DB, 'matrix' in UI state
+            setSkuBase(data.sku || meta.sku || 'FZK');
 
-                    if (meta.section) {
-                        setSectionTitle(meta.section.title || '');
-                        setSectionColor(meta.section.color || '#111827');
-                        setSectionSize(meta.section.size || 'text-xl');
-                    }
-                } catch (e) { console.error("Failed to parse metadata", e); }
+            if (meta.section) {
+                setSectionTitle(meta.section.title || '');
+                setSectionColor(meta.section.color || '#111827');
+                setSectionSize(meta.section.size || 'text-xl');
             }
 
-            // PRIMARY: Load images from Standard Schema
-            if (data.images && data.images.length > 0) {
-                // If thumbnail is set, ensure it is the main image
-                const mainImg = data.thumbnail || data.images[0];
-                setFormData(prev => ({ ...prev, image: mainImg }));
-
-                // Gallery is everything else
-                // We want to avoid duplicates in gallery if possible, or just load them all
-                // Admin UI has "Main Image" separate from "Gallery" slots.
-                // So we filter out the main image from the gallery array to populate the slots
-                const otherImages = data.images.filter((img: string) => img !== mainImg);
-                setGallery(otherImages);
-            }
+            // Images are already loaded above using prioritization logic
 
         } catch (error) {
             console.error("Failed to load product", error);
@@ -331,7 +326,11 @@ export const AdminProductEditor: React.FC = () => {
                 countInStock: totalStock,
                 images: allImages, // SAVE ARRAY
                 thumbnail: mainImage, // SAVE THUMBNAIL
-                description: formData.description + `\n<!-- METADATA:${JSON.stringify(richData)}-->`
+                variants: variantGroups,
+                inventory: matrix,
+                specifications: specifications,
+                sku: skuBase,
+                // description is already in formData as clean text
             };
 
             if (isEditMode) await updateProduct(id, payload);
