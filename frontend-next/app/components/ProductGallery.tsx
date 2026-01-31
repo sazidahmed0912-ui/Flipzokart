@@ -1,216 +1,190 @@
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Thumbs, Pagination, Zoom as SwiperZoom } from 'swiper/modules';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import LazyImage from './LazyImage';
-
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/thumbs';
-import 'swiper/css/zoom';
+import React, { useState, useEffect, useRef } from 'react';
+import Image from "next/image";
+import { ChevronLeft, ChevronRight, Check, Search } from 'lucide-react';
+import { getProductImageUrl } from '@/app/utils/imageHelper';
 
 interface ProductGalleryProps {
-    images: string[];
-    activeImage?: string; // Controlled by parent (variants)
-    onImageChange?: (image: string) => void;
-    productName: string;
+    product: {
+        image?: string;
+        images?: string[];
+        title?: string;
+        name?: string;
+    } | null;
 }
 
-export const ProductGallery: React.FC<ProductGalleryProps> = ({
-    images,
-    activeImage,
-    onImageChange,
-    productName
-}) => {
-    const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
-    const [mainSwiper, setMainSwiper] = useState<any>(null);
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0, show: false });
-    const imgRef = useRef<HTMLImageElement>(null);
+export default function ProductGallery({ product }: ProductGalleryProps) {
+    const [selectedImage, setSelectedImage] = useState<string>("/placeholder.png");
+    const [allImages, setAllImages] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    // Sync activeImage prop with Swiper
+    // Swipe Refs
+    const touchStartX = useRef<number | null>(null);
+    const touchEndX = useRef<number | null>(null);
+
+    // Initialize Images
     useEffect(() => {
-        if (activeImage && mainSwiper && images.includes(activeImage)) {
-            const index = images.indexOf(activeImage);
-            if (mainSwiper.activeIndex !== index) {
-                mainSwiper.slideTo(index);
-            }
+        if (!product) return;
+
+        const mainImg = product.image ? getProductImageUrl(product.image) : "/placeholder.png";
+
+        let gallery: string[] = [];
+        if (product.images && product.images.length > 0) {
+            gallery = product.images.map(img => getProductImageUrl(img));
         }
-    }, [activeImage, mainSwiper, images]);
 
-    const handleSlideChange = (swiper: any) => {
-        const newIndex = swiper.activeIndex;
-        const newImage = images[newIndex];
-        if (onImageChange && newImage !== activeImage) {
-            onImageChange(newImage);
+        // Ensure main image is in gallery
+        if (!gallery.includes(mainImg) && mainImg !== "/placeholder.png") {
+            gallery = [mainImg, ...gallery];
         }
+
+        // If gallery empty, use main image
+        if (gallery.length === 0) {
+            gallery = [mainImg];
+        }
+
+        setAllImages(gallery);
+        setSelectedImage(mainImg);
+        setIsLoading(true);
+    }, [product]);
+
+    const handleImageSelect = (img: string) => {
+        if (img === selectedImage) return;
+        setSelectedImage(img);
+        setIsLoading(true);
     };
 
-    // Basic Hover Lens Logic for Desktop
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (window.innerWidth < 768) return; // Disable on mobile
-        const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-        const x = ((e.clientX - left) / width) * 100;
-        const y = ((e.clientY - top) / height) * 100;
-        setHoverPosition({ x, y, show: true });
+    const handleNext = () => {
+        const currentIndex = allImages.findIndex(img => img === selectedImage);
+        const nextIndex = (currentIndex + 1) % allImages.length;
+        setSelectedImage(allImages[nextIndex]);
+        setIsLoading(true);
     };
 
-    const handleMouseLeave = () => {
-        setHoverPosition(prev => ({ ...prev, show: false }));
+    const handlePrev = () => {
+        const currentIndex = allImages.findIndex(img => img === selectedImage);
+        const prevIndex = (currentIndex - 1 + allImages.length) % allImages.length;
+        setSelectedImage(allImages[prevIndex]);
+        setIsLoading(true);
     };
+
+    // Swipe Handlers
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.targetTouches[0].clientX;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        touchEndX.current = e.targetTouches[0].clientX;
+    };
+
+    const handleTouchEnd = () => {
+        if (!touchStartX.current || !touchEndX.current) return;
+        const distance = touchStartX.current - touchEndX.current;
+        const isSwipeLeft = distance > 50;
+        const isSwipeRight = distance < -50;
+
+        if (isSwipeLeft) {
+            handleNext();
+        } else if (isSwipeRight) {
+            handlePrev();
+        }
+
+        touchStartX.current = null;
+        touchEndX.current = null;
+    };
+
+    if (!product) {
+        return (
+            <div className="w-full h-[300px] md:h-[500px] bg-gray-100 animate-pulse flex items-center justify-center rounded-xl">
+                <span className="text-gray-400 font-medium">Loading Product...</span>
+            </div>
+        );
+    }
 
     return (
-        <div className="product-gallery w-full select-none">
-            {/* Main Slider */}
-            <div className="relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm aspect-square md:aspect-[4/3] group min-h-[300px] flex items-center justify-center">
+        <div className="w-full flex flex-col gap-4">
+            {/* Main Image Container */}
+            <div
+                className="relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100 min-h-[350px] md:min-h-[500px] flex items-center justify-center p-4 touch-pan-y"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+            >
+                {/* Floating Action Buttons (Optional per original design) */}
+                <div className="absolute top-4 right-4 flex gap-2 z-10">
+                    {/* Can add zoom/share buttons here if needed */}
+                </div>
 
-                {(!images || images.length === 0) ? (
-                    <div className="flex flex-col items-center justify-center text-gray-300 w-full h-full">
-                        <Maximize2 size={48} className="mb-2 opacity-50" />
-                        <span className="text-sm">No Images Available</span>
+                {/* Left Arrow (Desktop) */}
+                {allImages.length > 1 && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                        className="absolute left-2 md:left-4 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-all hidden md:flex items-center justify-center group"
+                    >
+                        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-gray-600 group-hover:text-black" />
+                    </button>
+                )}
+
+                {/* Loading Spinner */}
+                {isLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/50">
+                        <div className="w-10 h-10 border-4 border-gray-100 border-t-orange-500 rounded-full animate-spin"></div>
                     </div>
-                ) : (
-                    <>
-                        {/* Fullscreen Trigger */}
-                        <button
-                            onClick={() => setIsFullscreen(true)}
-                            className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur rounded-full shadow-md text-gray-600 hover:text-blue-600 transition-colors opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 touch-manipulation"
-                            title="Full Screen"
-                        >
-                            <Maximize2 size={20} />
-                        </button>
+                )}
 
-                        <Swiper
-                            modules={[Navigation, Thumbs, Pagination]}
-                            thumbs={{ swiper: thumbsSwiper }}
-                            loop={false} // Loop can complicate controlled state with variants
-                            spaceBetween={10}
-                            slidesPerView={1}
-                            navigation={{
-                                prevEl: '.gallery-prev',
-                                nextEl: '.gallery-next',
-                            }}
-                            pagination={{ clickable: true, dynamicBullets: true }}
-                            onSwiper={setMainSwiper}
-                            onSlideChange={handleSlideChange}
-                            className="w-full h-full"
-                        >
-                            {images.map((img, idx) => (
-                                <SwiperSlide key={idx} className="flex items-center justify-center bg-white cursor-zoom-in">
-                                    <div
-                                        className="relative w-full h-full flex items-center justify-center overflow-hidden"
-                                        onMouseMove={handleMouseMove}
-                                        onMouseLeave={handleMouseLeave}
-                                        onClick={() => setIsFullscreen(true)}
-                                    >
-                                        {/* Main Image */}
-                                        <LazyImage
-                                            src={img}
-                                            alt={`${productName} - View ${idx + 1}`}
-                                            className="max-w-full max-h-full object-contain pointer-events-none"
-                                        />
+                {/* Main Image */}
+                <div className="relative w-full h-[300px] md:h-[450px]">
+                    <Image
+                        src={selectedImage}
+                        alt={product.name || "Product Image"}
+                        fill
+                        priority
+                        className={`object-contain transition-all duration-300 ${isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+                        onLoad={() => setIsLoading(false)}
+                        onError={() => {
+                            setSelectedImage("/placeholder.png");
+                            setIsLoading(false);
+                        }}
+                        unoptimized={true}
+                    />
+                </div>
 
-                                        {/* Desktop Hover Zoom Lens Effect */}
-                                        {hoverPosition.show && (
-                                            <div
-                                                className="absolute inset-0 z-20 pointer-events-none hidden md:block bg-no-repeat bg-white"
-                                                style={{
-                                                    backgroundImage: `url(${img})`,
-                                                    backgroundPosition: `${hoverPosition.x}% ${hoverPosition.y}%`,
-                                                    backgroundSize: '200%', // 2x Zoom
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                </SwiperSlide>
-                            ))}
-                        </Swiper>
-
-                        {/* Custom Navigation Arrows */}
-                        <button className="gallery-prev absolute top-1/2 left-4 z-10 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md text-gray-800 hover:bg-white disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100">
-                            <ChevronLeft size={20} />
-                        </button>
-                        <button className="gallery-next absolute top-1/2 right-4 z-10 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md text-gray-800 hover:bg-white disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100">
-                            <ChevronRight size={20} />
-                        </button>
-                    </>
+                {/* Right Arrow (Desktop) */}
+                {allImages.length > 1 && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                        className="absolute right-2 md:right-4 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-all hidden md:flex items-center justify-center group"
+                    >
+                        <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-gray-600 group-hover:text-black" />
+                    </button>
                 )}
             </div>
 
-            {/* Thumbnails */}
-            {images.length > 1 && (
-                <div className="mt-4">
-                    <Swiper
-                        onSwiper={setThumbsSwiper}
-                        spaceBetween={12}
-                        slidesPerView={4}
-                        freeMode={true}
-                        watchSlidesProgress={true}
-                        modules={[Navigation, Thumbs]}
-                        className="thumbs-swiper px-1"
-                        breakpoints={{
-                            640: { slidesPerView: 5 },
-                            768: { slidesPerView: 5 },
-                            1024: { slidesPerView: 6 }
-                        }}
-                    >
-                        {images.map((img, idx) => (
-                            <SwiperSlide key={idx} className="cursor-pointer group">
-                                <div className={`aspect-square rounded-xl border-2 overflow-hidden transition-all relative ${mainSwiper?.activeIndex === idx ? 'border-blue-600 ring-2 ring-blue-100' : 'border-gray-200 group-hover:border-blue-400'}`}>
-                                    <img
-                                        src={img}
-                                        alt={`Thumbnail ${idx + 1}`}
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                            </SwiperSlide>
-                        ))}
-                    </Swiper>
-                </div>
-            )}
-
-            {/* Fullscreen Overlay */}
-            {isFullscreen && (
-                <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
-                    <div className="absolute top-4 right-4 z-50 flex gap-4">
-                        <div className="px-4 py-2 bg-black/50 rounded-full text-white text-sm font-medium border border-white/20">
-                            {mainSwiper ? mainSwiper.activeIndex + 1 : 1} / {images.length}
-                        </div>
+            {/* Thumbnail Strip */}
+            {allImages.length > 1 && (
+                <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 px-1 snap-x no-scrollbar">
+                    {allImages.map((img, idx) => (
                         <button
-                            onClick={() => setIsFullscreen(false)}
-                            className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                            key={idx}
+                            onClick={() => handleImageSelect(img)}
+                            className={`
+                                relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all snap-center
+                                ${selectedImage === img
+                                    ? 'border-orange-500 ring-2 ring-orange-100 ring-offset-1'
+                                    : 'border-gray-100 hover:border-gray-300 opacity-70 hover:opacity-100'}
+                            `}
                         >
-                            <X size={24} />
+                            <Image
+                                src={img}
+                                alt={`Thumbnail ${idx + 1}`}
+                                fill
+                                className="object-cover"
+                                unoptimized={true}
+                            />
                         </button>
-                    </div>
-
-                    <div className="flex-1 w-full h-full flex items-center justify-center p-4">
-                        <Swiper
-                            initialSlide={mainSwiper?.activeIndex || 0}
-                            spaceBetween={20}
-                            slidesPerView={1}
-                            modules={[Navigation, Pagination, SwiperZoom]}
-                            navigation={true}
-                            pagination={{ type: 'fraction' }}
-                            zoom={true}
-                            className="w-full h-full fullscreen-swiper"
-                            style={{ '--swiper-navigation-color': '#fff', '--swiper-pagination-color': '#fff' } as React.CSSProperties}
-                        >
-                            {images.map((img, idx) => (
-                                <SwiperSlide key={idx} className="flex items-center justify-center bg-transparent">
-                                    <div className="swiper-zoom-container">
-                                        <img src={img} alt="Fullscreen" className="max-h-screen max-w-full object-contain" />
-                                    </div>
-                                </SwiperSlide>
-                            ))}
-                        </Swiper>
-                    </div>
+                    ))}
                 </div>
             )}
         </div>
     );
-};
+}

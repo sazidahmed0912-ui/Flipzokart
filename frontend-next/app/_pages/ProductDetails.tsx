@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
-
 import { useRouter, useParams } from 'next/navigation';
 import { ShoppingCart, Heart, Star, ShieldCheck, Truck, RotateCcw, Minus, Plus, Share2, Check, AlertTriangle, Info, Clock, ArrowRight, CreditCard, Package, ChevronRight, Search, Lock } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
@@ -13,7 +12,7 @@ import { ReviewForm } from './ProductDetails/components/ReviewForm';
 import { useSocket } from '@/app/hooks/useSocket';
 import LazyImage from '@/app/components/LazyImage';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
-import ProductImage from '@/app/components/ProductImage';
+import ProductGallery from '@/app/components/ProductGallery';
 import { getProductImageUrl } from '@/app/utils/imageHelper';
 
 export const ProductDetails: React.FC = () => {
@@ -29,13 +28,8 @@ export const ProductDetails: React.FC = () => {
   const [activeTab, setActiveTab] = useState('description');
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
 
-
-  const token = localStorage.getItem("token");
+  const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
   const socket = useSocket(token);
-
-
-  // Swipe logic removed - handled by ProductGallery
-
 
   const handleReviewUpdate = (newReview: Review) => {
     setReviews((prevReviews) => {
@@ -62,7 +56,6 @@ export const ProductDetails: React.FC = () => {
       socket.on('productUpdated', (updatedProduct: Product) => {
         if (updatedProduct.id === id) {
           setProduct(updatedProduct);
-
         }
       });
     }
@@ -73,7 +66,7 @@ export const ProductDetails: React.FC = () => {
         socket.off('productUpdated');
       }
     };
-  }, [id, socket, handleReviewUpdate]);
+  }, [id, socket]);
 
   useEffect(() => {
     if (!id) return;
@@ -85,33 +78,18 @@ export const ProductDetails: React.FC = () => {
         const productData = productResponse.data?.data?.product || productResponse.data;
         setProduct(productData);
 
-        // CRITICAL FIX: Robust Image Initialization
-        // 1. Resolve main image URL
-        const mainImg = getProductImageUrl(productData.image);
-        console.log("ProductDetails Page - Product Data:", productData);
-        console.log("ProductDetails Page - Resolved Main Image:", mainImg);
-        // 2. Resolve gallery URLs
-        const galleryRaw = productData.images || [];
-        const galleryResolved = galleryRaw.map((img: string) => getProductImageUrl(img));
-
-
-
         if (productData.reviews) setReviews(productData.reviews);
 
         // Default Variants Logic
         if (productData.variants && productData.variants.length > 0) {
           const defaults: Record<string, string> = {};
           productData.variants.forEach((v: any) => {
-            // Rule: Use Admin Default Color if Available
             if (v.name.toLowerCase() === 'color' && productData.defaultColor) {
-              // Only if the default color is actually a valid option
               if (v.options.includes(productData.defaultColor)) {
                 defaults[v.name] = productData.defaultColor;
-
               }
             }
-            // Fallback to first option
-            if (v.options && v.options.length > 0) defaults[v.name] = v.options[0];
+            if (v.options && v.options.length > 0 && !defaults[v.name]) defaults[v.name] = v.options[0];
           });
           setSelectedVariants(defaults);
         }
@@ -127,35 +105,6 @@ export const ProductDetails: React.FC = () => {
     getProductAndReviews();
   }, [id]);
 
-  useEffect(() => {
-    if (!id) return;
-    const intervalId = setInterval(async () => {
-      try {
-        const productResponse = await fetchProductById(id);
-        const updatedProduct = productResponse.data?.data?.product || productResponse.data;
-
-        if (updatedProduct) {
-          setProduct((prev) => {
-            if (JSON.stringify(prev) !== JSON.stringify(updatedProduct)) {
-              return updatedProduct;
-            }
-            return prev;
-          });
-
-          // Logic to update image if needed, but respect user selection if they have one?
-          // For now keep existing simple logic
-          // Logic to update image if needed
-
-        }
-      } catch (error) {
-      }
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [id]);
-
-
-
   const { currentStock, isOutOfStock, currentPrice, currentOriginalPrice } = useMemo(() => {
     if (!product) return { currentStock: 0, isOutOfStock: true, currentPrice: 0, currentOriginalPrice: 0 };
 
@@ -164,16 +113,12 @@ export const ProductDetails: React.FC = () => {
     let originalPrice = product.originalPrice;
 
     if (product.variants && product.variants.length > 0 && product.inventory) {
-      console.log('Checking inventory for variants:', selectedVariants);
       const match = product.inventory.find(inv =>
         Object.entries(selectedVariants).every(([k, v]) => inv.options[k] === v)
       );
       if (match) {
-        console.log('Found variant match:', match);
         stock = match.stock;
         if (match.price) price = match.price;
-      } else {
-        console.log('No matching inventory found');
       }
     }
 
@@ -201,18 +146,19 @@ export const ProductDetails: React.FC = () => {
   );
 
   const isWishlisted = wishlist.includes(product.id);
+  const discount = currentOriginalPrice > currentPrice
+    ? Math.round(((currentOriginalPrice - currentPrice) / currentOriginalPrice) * 100)
+    : 0;
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
     const productWithSelection = {
       ...product,
-      price: currentPrice, // Use potentially updated price
+      price: currentPrice,
       selectedVariants: Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined
     };
     addToCart(productWithSelection, quantity);
     addToast('success', '✅ Product added to bag!');
-    // Redirect Blocked: automatically redirect cart page block
-    // router.push('/cart'); 
   };
 
   const handleBuyNow = () => {
@@ -228,57 +174,28 @@ export const ProductDetails: React.FC = () => {
   };
 
   const handleVariantSelect = (name: string, value: string) => {
-    console.log(`Selecting variant: ${name} = ${value}`);
-    setSelectedVariants(prev => {
-      const next = { ...prev, [name]: value };
-      console.log('New variants state:', next);
-
-      const match = product.inventory?.find(inv =>
-        Object.entries(next).every(([k, v]) => inv.options[k] === v)
-      );
-
-      console.log('Found inventory match:', match);
-
-
-      return next;
-    });
+    setSelectedVariants(prev => ({ ...prev, [name]: value }));
   };
-
-  const ratingCounts = [5, 4, 3, 2, 1].map(stars => reviews.filter(r => Math.floor(r.rating) === stars).length);
-  const totalRatings = reviews.length || 1;
 
   const getColorClass = (colorName: string) => {
     const map: Record<string, string> = {
-      'Blue': 'bg-blue-500',
-      'Red': 'bg-red-500',
-      'Green': 'bg-green-500',
-      'Black': 'bg-gray-900',
-      'White': 'bg-white',
-      'Yellow': 'bg-yellow-400',
-      'Orange': 'bg-orange-500',
-      'Purple': 'bg-purple-500',
-      'Pink': 'bg-pink-500',
-      'Gray': 'bg-gray-500',
+      'Blue': 'bg-blue-500', 'Red': 'bg-red-500', 'Green': 'bg-green-500',
+      'Black': 'bg-gray-900', 'White': 'bg-white', 'Yellow': 'bg-yellow-400',
+      'Orange': 'bg-orange-500', 'Purple': 'bg-purple-500', 'Pink': 'bg-pink-500', 'Gray': 'bg-gray-500',
     };
     return map[colorName] || 'bg-gray-200';
   };
-
-  const discount = currentOriginalPrice > currentPrice
-    ? Math.round(((currentOriginalPrice - currentPrice) / currentOriginalPrice) * 100)
-    : 0;
 
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-6xl mx-auto p-2 sm:p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <ProductImage product={product} />
+            <ProductGallery product={product} />
           </div>
 
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              {product.name}
-            </h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{product.name}</h1>
             <p className="text-sm sm:text-base text-gray-600 mt-1">Brand: {product.category}</p>
 
             <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -296,7 +213,6 @@ export const ProductDetails: React.FC = () => {
               </span>
             </div>
 
-            {/* Price Display */}
             <div className="mt-4 flex items-baseline gap-3">
               <span className="text-3xl font-bold text-gray-900">₹{currentPrice.toLocaleString()}</span>
               {currentOriginalPrice > currentPrice && (
@@ -319,7 +235,6 @@ export const ProductDetails: React.FC = () => {
                   <div className="flex gap-2 sm:gap-3 flex-wrap">
                     {variant.options.map((option, oIdx) => {
                       const isActive = selectedValue === option || (!selectedValue && oIdx === 0);
-
                       if (matchesColor) {
                         return (
                           <button
@@ -330,15 +245,11 @@ export const ProductDetails: React.FC = () => {
                           />
                         );
                       }
-
                       return (
                         <button
                           key={oIdx}
                           onClick={() => handleVariantSelect(variant.name, option)}
-                          className={`px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg border-2 text-xs sm:text-sm font-medium ${isActive
-                            ? 'border-gray-800 bg-gray-900 text-white'
-                            : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                            }`}
+                          className={`px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg border-2 text-xs sm:text-sm font-medium ${isActive ? 'border-gray-800 bg-gray-900 text-white' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}
                         >
                           {option}
                         </button>
@@ -349,15 +260,11 @@ export const ProductDetails: React.FC = () => {
               );
             })}
 
-            {/* Action Buttons (Visible on Mobile & Desktop) */}
             <div className="flex mt-6 sm:mt-8 flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className={`w-full sm:flex-1 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2 transition-transform active:scale-[0.98] ${isOutOfStock
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-orange-500 text-white hover:bg-orange-600 shadow-md'
-                  }`}
+                className={`w-full sm:flex-1 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2 transition-transform active:scale-[0.98] ${isOutOfStock ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-orange-500 text-white hover:bg-orange-600 shadow-md'}`}
               >
                 <ShoppingCart size={18} className="sm:w-5 sm:h-5" />
                 ADD TO CART
@@ -365,10 +272,7 @@ export const ProductDetails: React.FC = () => {
               <button
                 onClick={handleBuyNow}
                 disabled={isOutOfStock}
-                className={`w-full sm:flex-1 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2 transition-transform active:scale-[0.98] ${isOutOfStock
-                  ? 'hidden'
-                  : 'bg-orange-500 text-white hover:bg-orange-600 shadow-md'
-                  }`}
+                className={`w-full sm:flex-1 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2 transition-transform active:scale-[0.98] ${isOutOfStock ? 'hidden' : 'bg-orange-500 text-white hover:bg-orange-600 shadow-md'}`}
               >
                 BUY NOW
                 <ChevronRight size={18} className="sm:w-5 sm:h-5" />
@@ -390,15 +294,6 @@ export const ProductDetails: React.FC = () => {
                 <div>
                   <p className="text-sm sm:text-base font-semibold text-gray-900">5% Unlimited Cashback</p>
                   <p className="text-xs sm:text-sm text-gray-600">on Fzokart Axis Bank Credit Card</p>
-                </div>
-              </div>
-              <div className="flex gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <CreditCard size={16} className="sm:w-5 sm:h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm sm:text-base font-semibold text-gray-900">10% Instant Discount</p>
-                  <p className="text-xs sm:text-sm text-gray-600">on HDFC Bank Credit Card</p>
                 </div>
               </div>
               <div className="flex gap-2 sm:gap-3">
@@ -438,131 +333,48 @@ export const ProductDetails: React.FC = () => {
       <div className="max-w-6xl mx-auto px-2 sm:px-4 mt-4 sm:mt-6 mb-4">
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="flex border-b border-gray-200 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('description')}
-              className={`px-4 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'description'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-                }`}
-            >
-              Description
-            </button>
-            <button
-              onClick={() => setActiveTab('specifications')}
-              className={`px-4 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'specifications'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-                }`}
-            >
-              Specifications
-            </button>
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`px-4 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'reviews'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-                }`}
-            >
-              Customer Reviews
-            </button>
+            <button onClick={() => setActiveTab('description')} className={`px-4 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'description' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>Description</button>
+            <button onClick={() => setActiveTab('specifications')} className={`px-4 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'specifications' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>Specifications</button>
+            <button onClick={() => setActiveTab('reviews')} className={`px-4 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'reviews' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>Customer Reviews</button>
           </div>
 
           <div className="p-4 sm:p-6">
             {activeTab === 'description' && (
               <div className="text-sm sm:text-base text-gray-700">
-                <p className="mb-3 sm:mb-4">
-                  {product.description || "Very good quality product with comfortable sole and durable build. Perfect for casual daily wear."}
-                </p>
+                <p className="mb-3 sm:mb-4">{product.description || "Very good quality product with comfortable sole and durable build. Perfect for casual daily wear."}</p>
                 <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <Check size={14} className="sm:w-4 sm:h-4 text-blue-600" />
-                  <span>Seller</span>
-                  <span className="text-gray-400">|</span>
-                  <span>UPI</span>
+                  <Check size={14} className="sm:w-4 sm:h-4 text-blue-600" /> <span>Seller</span> <span className="text-gray-400">|</span> <span>UPI</span>
                 </div>
               </div>
             )}
-
             {activeTab === 'specifications' && (
               <div>
                 <div className="space-y-4">
                   {product.specifications ? (
-                    <div className="whitespace-pre-line text-sm sm:text-base text-gray-700 leading-relaxed border p-4 rounded-lg bg-gray-50">
-                      {product.specifications}
-                    </div>
+                    <div className="whitespace-pre-line text-sm sm:text-base text-gray-700 leading-relaxed border p-4 rounded-lg bg-gray-50">{product.specifications}</div>
                   ) : (
                     <div className="text-gray-500 italic text-sm">No specific specifications available for this product.</div>
                   )}
-
-                  {/* Basic Info Always Shown in Specs Tab */}
                   <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                    <div className="flex justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-500">Category</span>
-                      <span className="font-medium text-gray-900">{product.category}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-500">Stock Status</span>
-                      <span className={`font-medium ${product.countInStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
-                      </span>
-                    </div>
+                    <div className="flex justify-between py-2 border-b border-gray-100"><span className="text-gray-500">Category</span><span className="font-medium text-gray-900">{product.category}</span></div>
+                    <div className="flex justify-between py-2 border-b border-gray-100"><span className="text-gray-500">Stock Status</span><span className={`font-medium ${product.countInStock > 0 ? 'text-green-600' : 'text-red-600'}`}>{product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}</span></div>
                   </div>
                 </div>
               </div>
             )}
-
             {activeTab === 'reviews' && (
               <div>
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
                   <h3 className="font-bold text-base sm:text-lg">Customer Reviews</h3>
-                  <select className="px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-lg text-xs sm:text-sm">
-                    <option>Latest</option>
-                    <option>All Star 9</option>
-                  </select>
+                  <select className="px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"><option>Latest</option></select>
                 </div>
-
-                {isReviewsLoading ? (
-                  <CircularGlassSpinner />
-                ) : (
-                  <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-                    <ReviewList reviews={reviews} />
-                  </div>
-                )}
-
-                {id && (
-                  <ReviewForm productId={id} onReviewSubmitted={handleReviewUpdate} />
-                )}
+                {isReviewsLoading ? <CircularGlassSpinner /> : <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6"><ReviewList reviews={reviews} /></div>}
+                {id && <ReviewForm productId={id} onReviewSubmitted={handleReviewUpdate} />}
               </div>
             )}
           </div>
         </div>
       </div>
-
-      {/* Mobile Sticky Bottom Action Bar - HIDDEN as per request to move buttons inline
-      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-3 z-50 md:hidden flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <button
-          onClick={handleAddToCart}
-          disabled={isOutOfStock}
-          className={`flex-1 py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 ${isOutOfStock
-            ? 'bg-gray-100 text-gray-400'
-            : 'bg-white border-2 border-orange-500 text-orange-500'
-            }`}
-        >
-          <ShoppingCart size={18} />
-          Add
-        </button>
-        <button
-          onClick={handleBuyNow}
-          disabled={isOutOfStock}
-          className={`flex-1 py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 ${isOutOfStock
-            ? 'bg-gray-200 text-gray-500'
-            : 'bg-orange-500 text-white'
-            }`}
-        >
-          {isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW'}
-        </button>
-      </div> 
-      */}
-
     </div>
   );
 };
