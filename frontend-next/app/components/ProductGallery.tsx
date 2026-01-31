@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Check, Search } from 'lucide-react';
-import { getProductImageUrl } from '@/app/utils/imageHelper';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { getAllProductImages } from '@/app/utils/imageHelper';
 
 interface ProductGalleryProps {
     product: any;
@@ -23,42 +23,13 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
     const touchEndX = useRef<number | null>(null);
 
     // Initialize Images
-    // Initialize Images
     useEffect(() => {
         if (!product) return;
 
-        let galleryImgs: string[] = [];
-
-        // STRICT requirement: Use product.images[] as the ONLY image source. 
-        // Do NOT use product.image.
-        if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-            galleryImgs = product.images.map((img: string) => getProductImageUrl(img));
-        }
-
-        // Deduplicate
-        const uniqueSet = new Set<string>();
-        galleryImgs.forEach(img => {
-            if (img && img !== "/placeholder.png") uniqueSet.add(img);
-        });
-
-        // Convert back to array
-        let finalGallery = Array.from(uniqueSet);
-
-        // Fallback
-        if (finalGallery.length === 0) {
-            // Check thumbnail as a last resort before placeholder, but strict rule says NO product.image
-            if (product.thumbnail) {
-                finalGallery = [getProductImageUrl(product.thumbnail)];
-            } else {
-                finalGallery = ["/placeholder.png"];
-            }
-        }
-
-        setAllImages(finalGallery);
-
-        // On load, default to first image
-        setSelectedImage(finalGallery[0]);
-
+        // Use universal helper to get all valid images
+        const validImages = getAllProductImages(product);
+        setAllImages(validImages);
+        setSelectedImage(validImages[0]);
         setIsLoading(true);
         setIsZoomed(false);
     }, [product]);
@@ -100,19 +71,19 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
         setIsZoomed(false);
     };
 
-    // Swipe & Mobile Zoom Handlers
+    // Mobile Touch & Zoom Handlers
     const handleTouchStart = (e: React.TouchEvent) => {
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTap.current;
 
         if (tapLength < 300 && tapLength > 0) {
-            // Double Tap Detected
+            // Double Tap Detected (Toggle Zoom)
             e.preventDefault();
             const newZoomState = !isZoomed;
             setIsZoomed(newZoomState);
 
-            // If turning on, set initial pos to tap location to feel natural
             if (newZoomState) {
+                // Zoom IN at touch point
                 const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
                 const touch = e.targetTouches[0];
                 const x = ((touch.clientX - left) / width) * 100;
@@ -120,10 +91,10 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                 setZoomPos({ x, y });
             }
         } else {
-            // Normal Touch Start
+            // Normal Swipe Start
             touchStartX.current = e.targetTouches[0].clientX;
 
-            // If already zoomed, strictly track touch immediately for panning
+            // If already zoomed, allow panning
             if (isZoomed) {
                 const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
                 const touch = e.targetTouches[0];
@@ -137,29 +108,26 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
 
     const handleTouchMove = (e: React.TouchEvent) => {
         if (isZoomed) {
-            // Pan logic
+            // Panning Logic
             const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
             const touch = e.targetTouches[0];
             const x = ((touch.clientX - left) / width) * 100;
             const y = ((touch.clientY - top) / height) * 100;
 
-            // Constrain constraints (0-100)
-            const safeX = Math.max(0, Math.min(100, x));
-            const safeY = Math.max(0, Math.min(100, y));
+            // Allow full pan
+            setZoomPos({ x, y });
 
-            setZoomPos({ x: safeX, y: safeY });
-
-            // Prevent scrolling while panning
-            // e.preventDefault(); // Note: This might need passive: false listener in vanilla JS, but React synthetic event wrapper often handles it if we use touch-action: none CSS
+            // Prevent scrolling if zoomed
+            // e.preventDefault(); 
             return;
         }
 
-        // Swipe logic
+        // Swipe Logic
         touchEndX.current = e.targetTouches[0].clientX;
     };
 
     const handleTouchEnd = () => {
-        if (isZoomed) return; // Keep zoomed state
+        if (isZoomed) return;
 
         if (!touchStartX.current || !touchEndX.current) return;
         const distance = touchStartX.current - touchEndX.current;
@@ -179,7 +147,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
     if (!product) {
         return (
             <div className="w-full h-[300px] md:h-[500px] bg-gray-100 animate-pulse flex items-center justify-center rounded-xl">
-                <span className="text-gray-400 font-medium">Loading Product...</span>
+                <span className="text-gray-400 font-medium">Loading...</span>
             </div>
         );
     }
@@ -188,8 +156,8 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
         <div className="w-full flex flex-col gap-4">
             {/* Main Image Container */}
             <div
-                className={`relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100 min-h-[350px] md:min-h-[500px] flex items-center justify-center p-4 touch-pan-y
-                    ${isZoomed ? 'cursor-zoom-out touch-none' : 'cursor-zoom-in touch-pan-y'}
+                className={`relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100 min-h-[350px] md:min-h-[500px] flex items-center justify-center p-4 touch-pan-y select-none
+                    ${isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}
                 `}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
@@ -197,33 +165,30 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
             >
-                {/* Floating Action Buttons (Optional per original design) */}
-                <div className="absolute top-4 right-4 flex gap-2 z-10 pointer-events-none">
-                    {/* Can add zoom/share buttons here if needed */}
-                </div>
-
-                {/* Left Arrow (Desktop) */}
+                {/* Desktop Arrows */}
                 {allImages.length > 1 && (
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                        className="absolute left-2 md:left-4 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-all hidden md:flex items-center justify-center group"
-                    >
-                        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-gray-600 group-hover:text-black" />
-                    </button>
+                    <>
+                        <button onClick={(e) => { e.stopPropagation(); handlePrev(); }} className="absolute left-4 z-10 p-2 bg-white/80 rounded-full shadow hidden md:flex hover:bg-white transition">
+                            <ChevronLeft className="w-6 h-6 text-gray-700" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); handleNext(); }} className="absolute right-4 z-10 p-2 bg-white/80 rounded-full shadow hidden md:flex hover:bg-white transition">
+                            <ChevronRight className="w-6 h-6 text-gray-700" />
+                        </button>
+                    </>
                 )}
 
                 {/* Loading Spinner */}
                 {isLoading && (
                     <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/50">
-                        <div className="w-10 h-10 border-4 border-gray-100 border-t-orange-500 rounded-full animate-spin"></div>
+                        <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                     </div>
                 )}
 
                 {/* Main Image */}
-                <div className="relative w-full h-[300px] md:h-[450px] overflow-hidden">
+                <div className="relative w-full h-[300px] md:h-[450px]">
                     <Image
                         src={selectedImage}
-                        alt={product.name || "Product Image"}
+                        alt="Product"
                         fill
                         priority
                         className={`object-contain transition-transform duration-200 ease-out`}
@@ -234,58 +199,36 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                         }}
                         onLoad={() => setIsLoading(false)}
                         onError={() => {
-                            setSelectedImage("/placeholder.png");
+                            // If this image fails and it's not placeholder, try placeholder
+                            if (selectedImage !== "/placeholder.png") {
+                                setSelectedImage("/placeholder.png");
+                            }
                             setIsLoading(false);
-                            setIsZoomed(false);
                         }}
                         unoptimized={true}
                     />
                 </div>
-
-                {/* Right Arrow (Desktop) */}
-                {allImages.length > 1 && (
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                        className="absolute right-2 md:right-4 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-all hidden md:flex items-center justify-center group"
-                    >
-                        <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-gray-600 group-hover:text-black" />
-                    </button>
-                )}
             </div>
 
-            {/* Banner Switching Indicators */}
+            {/* Pagination Dots (Mobile) */}
             {allImages.length > 1 && (
-                <div className="flex justify-center items-center gap-1.5 -mt-2">
+                <div className="flex justify-center items-center gap-1.5 md:hidden -mt-2">
                     {allImages.map((img, index) => (
-                        <div
-                            key={index}
-                            className={`h-1.5 rounded-full transition-all duration-300 ${selectedImage === img ? 'w-4 bg-gray-800' : 'w-1.5 bg-gray-300'}`}
-                        />
+                        <div key={index} className={`h-1.5 rounded-full transition-all ${selectedImage === img ? 'w-4 bg-gray-800' : 'w-1.5 bg-gray-300'}`} />
                     ))}
                 </div>
             )}
 
-            {/* Thumbnail Strip */}
+            {/* Thumbnails (Desktop) */}
             {allImages.length > 1 && (
-                <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 px-1 snap-x no-scrollbar">
+                <div className="hidden md:flex gap-3 overflow-x-auto pb-2 px-1 snap-x no-scrollbar">
                     {allImages.map((img, idx) => (
                         <button
                             key={idx}
                             onClick={() => handleImageSelect(img)}
-                            className={`
-                                relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all snap-center
-                                ${selectedImage === img
-                                    ? 'border-orange-500 ring-2 ring-orange-100 ring-offset-1'
-                                    : 'border-gray-100 hover:border-gray-300 opacity-70 hover:opacity-100'}
-                            `}
+                            className={`relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-orange-500 ring-1 ring-orange-500' : 'border-gray-100 opacity-70 hover:opacity-100 hover:border-gray-300'}`}
                         >
-                            <Image
-                                src={img}
-                                alt={`Thumbnail ${idx + 1}`}
-                                fill
-                                className="object-cover"
-                                unoptimized={true}
-                            />
+                            <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" unoptimized={true} />
                         </button>
                     ))}
                 </div>

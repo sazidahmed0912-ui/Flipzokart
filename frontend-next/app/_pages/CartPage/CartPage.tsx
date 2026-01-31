@@ -7,7 +7,7 @@ import { useApp } from '@/app/store/Context';
 import { CartItem } from '@/app/types';
 import './CartPage.css';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
-import { resolveProductImage } from '@/app/utils/imageHelper';
+import { getProductImage } from '@/app/utils/imageHelper';
 
 const getCartItemKey = (productId: string, variants?: Record<string, string>) => {
   if (!variants) return productId;
@@ -151,7 +151,7 @@ const CartPage = () => {
                 <div className="cart-item-content">
                   {/* Product Image */}
                   <div className="item-image-container">
-                    <img src={resolveProductImage(item)} alt={item.name} className="item-image" />
+                    <img src={getProductImage(item)} alt={item.name} className="item-image" />
                   </div>
 
                   {/* Product Details */}

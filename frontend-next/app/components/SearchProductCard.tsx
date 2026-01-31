@@ -7,7 +7,7 @@ import { Product } from '@/app/types';
 import { useApp } from '@/app/store/Context';
 import LazyImage from './LazyImage';
 import { useToast } from './toast';
-import { getProductImageUrl, resolveProductImage } from '@/app/utils/imageHelper';
+import { getProductImage } from '@/app/utils/imageHelper';
 
 interface SearchProductCardProps {
     product: Product;
@@ -59,7 +59,7 @@ export const SearchProductCard: React.FC<SearchProductCardProps> = ({ product })
 
                 <div className="w-full h-full flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
                     <LazyImage
-                        src={resolveProductImage(product)}
+                        src={getProductImage(product)}
                         alt={product.name}
                         className="max-h-full max-w-full object-contain mix-blend-multiply"
                     />
