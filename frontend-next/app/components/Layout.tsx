@@ -17,6 +17,7 @@ const Header: React.FC = () => {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const profileRef = useRef<HTMLDivElement>(null);
 
   // Load history on mount
@@ -197,14 +198,36 @@ const Header: React.FC = () => {
               <span className="text-[#222]">Fzo</span><span className="text-[#f28c28]">kart</span>
             </Link>
           </div>
-          <button className="p-2" onClick={() => setIsSearchOpen(!isSearchOpen)}>
-            <Search className="w-6 h-6 text-gray-700" />
-          </button>
+          {/* Conditionally render Search Button */}
+          {pathname !== '/profile' && (
+            <button className="p-2" onClick={() => setIsSearchOpen(!isSearchOpen)}>
+              <Search className="w-6 h-6 text-gray-700" />
+            </button>
+          )}
+          {/* If on profile page, render a placeholder or nothing to keep layout?
+              Just hiding it is fine as it's flex justify-between.
+              (Menu - Logo - [Search]) -> (Menu - Logo).
+              To keep Logo centered or Left aligned?
+              Previous: justify-between.
+              Left: Menu. Center: Logo. Right: Search.
+              If Search is gone, Logo might drift to right.
+              Let's add an invisible dummy div if on profile page to maintain spacing?
+              Or just let it be. 'justify-between' with 2 items puts one left, one right.
+              We probably want Logo in center or left?
+              Current code:
+               <button Menu>
+               <div Logo>
+               <button Search>
+              If 3 items: Left, Center(ish), Right.
+              If 2 items: Left, Right.
+              If we want Logo centered, we might need a blank div on right.
+          */}
+          {pathname === '/profile' && <div className="w-10"></div>}
         </div>
       </div>
 
       {/* Mobile Search Bar */}
-      {isSearchOpen && (
+      {isSearchOpen && pathname !== '/profile' && (
         <div className="md:hidden px-4 pb-4 border-b">
           <form onSubmit={handleSearch}>
             <div className="relative">
