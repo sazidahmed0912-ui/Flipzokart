@@ -1,12 +1,10 @@
-
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-;
+import Image from 'next/image';
 import { ShoppingCart, Heart, Star } from 'lucide-react';
 import { Product } from '@/app/types';
 import { useApp } from '@/app/store/Context';
-import LazyImage from './LazyImage';
 import { useToast } from './toast';
 import { getProductImageUrl } from '@/app/utils/imageHelper';
 
@@ -19,32 +17,63 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToast } = useToast();
   const isWishlisted = wishlist.includes(product.id);
 
+  // Robust Image Selection
+  const [imgSrc, setImgSrc] = useState<string>("/placeholder.png");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Priority: product.images[0] -> product.image -> placeholder
+    const rawImg = product.images?.[0] || product.image;
+    const resolvedUrl = getProductImageUrl(rawImg);
+    setImgSrc(resolvedUrl);
+    setIsLoading(true);
+  }, [product]);
+
   const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation if clicked on button
     addToCart(product);
     addToast('success', '✅ Product added to bag!');
   };
 
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toggleWishlist(product.id);
+  }
+
   return (
     <div className="group bg-white rounded-lg md:rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
-      <div className="relative w-full h-36 md:h-48 overflow-hidden bg-gray-50">
-        <Link href={`/product/${product.id}`}>
-          <LazyImage
-            src={getProductImageUrl(product.image)}
+      <div className="relative w-full h-36 md:h-48 overflow-hidden bg-white">
+        <Link href={`/product/${product.id}`} className="block w-full h-full">
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+              <div className="w-6 h-6 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
+            </div>
+          )}
+          <Image
+            src={imgSrc}
             alt={product.name}
-            className="w-full h-full object-contain p-2 md:p-0 md:object-cover group-hover:scale-110 transition-transform duration-500"
+            width={300}
+            height={300}
+            className={`w-full h-full object-contain p-2 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+            unoptimized={true}
+            onLoad={() => setIsLoading(false)}
+            onError={() => {
+              setImgSrc("/placeholder.png");
+              setIsLoading(false);
+            }}
           />
         </Link>
         <button
-          onClick={() => toggleWishlist(product.id)}
-          className={`absolute top-1.5 right-1.5 md:top-3 md:right-3 p-1.5 md:p-2 rounded-full shadow-md z-10 transition-colors ${isWishlisted ? 'bg-primary text-white' : 'bg-white text-gray-400 hover:text-primary'
+          onClick={handleWishlist}
+          className={`absolute top-1.5 right-1.5 md:top-3 md:right-3 p-1.5 md:p-2 rounded-full shadow-md z-20 transition-colors ${isWishlisted ? 'bg-primary text-white' : 'bg-white text-gray-400 hover:text-primary'
             }`}
         >
           <Heart size={14} className="md:w-[18px] md:h-[18px]" fill={isWishlisted ? "currentColor" : "none"} />
         </button>
         {discount > 0 && (
-          <span className="absolute top-1.5 left-1.5 md:top-3 md:left-3 bg-primary text-white text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+          <span className="absolute top-1.5 left-1.5 md:top-3 md:left-3 bg-primary text-white text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm z-20">
             {discount}% OFF
           </span>
         )}
