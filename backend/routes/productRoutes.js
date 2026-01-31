@@ -7,6 +7,30 @@ const router = express.Router();
 // ➕ ADD PRODUCT
 const createProduct = async (req, res) => {
   try {
+    // 🛠️ DATA HYDRATION: Unpack Metadata from Description
+    // The Admin Panel packs rich data (gallery, variants) into description.
+    // We must unpack this to top-level fields for the Storefront to work.
+    if (req.body.description && req.body.description.includes('<!-- METADATA:')) {
+      try {
+        const metaStr = req.body.description.split('<!-- METADATA:')[1].split('-->')[0];
+        const meta = JSON.parse(metaStr);
+
+        // Map Metadata to Schema Fields
+        if (meta.gallery && Array.isArray(meta.gallery)) req.body.images = meta.gallery;
+        if (meta.variants) req.body.variants = meta.variants;
+        if (meta.matrix) req.body.inventory = meta.matrix;
+        if (meta.specifications) req.body.specifications = meta.specifications;
+        if (meta.sku) req.body.sku = meta.sku;
+
+        console.log("✅ [Product] Unpacked Metadata:", {
+          images: req.body.images?.length,
+          variants: req.body.variants?.length
+        });
+      } catch (e) {
+        console.warn("⚠️ [Product] Failed to parse metadata:", e.message);
+      }
+    }
+
     console.log("👉 [POST /add] Payload:", JSON.stringify(req.body, null, 2));
     const product = new Product(req.body);
     const savedProduct = await product.save();
@@ -75,6 +99,20 @@ router.get("/", async (req, res) => {
     const products = await query;
     const hydratedProducts = products.map(p => {
       const pObj = p.toObject();
+
+      // 1. Unpack Metadata
+      if (pObj.description && pObj.description.includes('<!-- METADATA:')) {
+        try {
+          const metaStr = pObj.description.split('<!-- METADATA:')[1].split('-->')[0];
+          const meta = JSON.parse(metaStr);
+          if (meta.gallery && Array.isArray(meta.gallery) && (!pObj.images || pObj.images.length === 0)) {
+            pObj.images = meta.gallery;
+          }
+          if (meta.variants && (!pObj.variants || pObj.variants.length === 0)) pObj.variants = meta.variants;
+        } catch (e) { }
+      }
+
+      // 2. Legacy Fallback
       if ((!pObj.images || pObj.images.length === 0) && pObj.image) {
         pObj.images = [pObj.image];
       }
@@ -170,9 +208,34 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // 🛠️ DATA HYDRATION: Polyfill 'images' from 'image' for legacy products
-    // This allows the strict frontend array logic to work with old data
+    // 🛠️ DATA HYDRATION: Polyfill 'images' from 'image' AND Unpack Metadata
+    // This allows the strict frontend array logic to work with old data on the fly
     const productObj = product.toObject();
+
+    // 1. Unpack Metadata if it exists (for variants, specs, gallery)
+    if (productObj.description && productObj.description.includes('<!-- METADATA:')) {
+      try {
+        const metaStr = productObj.description.split('<!-- METADATA:')[1].split('-->')[0];
+        const meta = JSON.parse(metaStr);
+
+        if (meta.gallery && Array.isArray(meta.gallery) && (!productObj.images || productObj.images.length === 0)) {
+          productObj.images = meta.gallery;
+        }
+        if (meta.variants && (!productObj.variants || productObj.variants.length === 0)) {
+          productObj.variants = meta.variants;
+        }
+        if (meta.matrix && (!productObj.inventory || productObj.inventory.length === 0)) {
+          productObj.inventory = meta.matrix;
+        }
+        if (meta.specifications && !productObj.specifications) {
+          productObj.specifications = meta.specifications;
+        }
+      } catch (e) {
+        // Ignore parse errors on read
+      }
+    }
+
+    // 2. Legacy Image Fallback (if still empty after unpack)
     if ((!productObj.images || productObj.images.length === 0) && productObj.image) {
       productObj.images = [productObj.image];
     }
@@ -189,6 +252,23 @@ router.get("/:id", async (req, res) => {
 // ✏️ UPDATE PRODUCT
 router.put("/:id", async (req, res) => {
   try {
+    // 🛠️ DATA HYDRATION: Unpack Metadata logic for Updates
+    if (req.body.description && req.body.description.includes('<!-- METADATA:')) {
+      try {
+        const metaStr = req.body.description.split('<!-- METADATA:')[1].split('-->')[0];
+        const meta = JSON.parse(metaStr);
+
+        if (meta.gallery && Array.isArray(meta.gallery)) req.body.images = meta.gallery;
+        if (meta.variants) req.body.variants = meta.variants;
+        if (meta.matrix) req.body.inventory = meta.matrix;
+        if (meta.specifications) req.body.specifications = meta.specifications;
+        if (meta.sku) req.body.sku = meta.sku;
+
+      } catch (e) {
+        console.warn("⚠️ [Product-Put] Failed to parse metadata:", e.message);
+      }
+    }
+
     console.log(`👉 [PUT /${req.params.id}] Payload:`, JSON.stringify(req.body, null, 2));
     const product = await Product.findByIdAndUpdate(
       req.params.id,
