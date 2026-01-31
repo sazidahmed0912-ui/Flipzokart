@@ -1,7 +1,11 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import type { Swiper as SwiperType } from 'swiper'; // Import type safely
+// Import Swiper styles
+import 'swiper/css';
+
 import { getAllProductImages } from '@/app/utils/imageHelper';
 
 interface ProductGalleryProps {
@@ -9,18 +13,17 @@ interface ProductGalleryProps {
 }
 
 export default function ProductGallery({ product }: ProductGalleryProps) {
-    const [selectedImage, setSelectedImage] = useState<string>("/placeholder.png");
     const [allImages, setAllImages] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    // Swiper Ref
+    const swiperRef = useRef<SwiperType | null>(null);
 
     // Zoom State
     const [isZoomed, setIsZoomed] = useState<boolean>(false);
     const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
     const lastTap = useRef<number>(0);
-
-    // Swipe Refs
-    const touchStartX = useRef<number | null>(null);
-    const touchEndX = useRef<number | null>(null);
 
     // Initialize Images
     useEffect(() => {
@@ -29,35 +32,15 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
         // Use universal helper to get all valid images
         const validImages = getAllProductImages(product);
         setAllImages(validImages);
-        setSelectedImage(validImages[0]);
+        setActiveIndex(0);
         setIsLoading(true);
         setIsZoomed(false);
+        if (swiperRef.current) {
+            swiperRef.current.slideTo(0, 0);
+        }
     }, [product]);
 
-    const handleImageSelect = (img: string) => {
-        if (img === selectedImage) return;
-        setSelectedImage(img);
-        setIsLoading(true);
-        setIsZoomed(false);
-    };
-
-    const handleNext = () => {
-        const currentIndex = allImages.findIndex(img => img === selectedImage);
-        const nextIndex = (currentIndex + 1) % allImages.length;
-        setSelectedImage(allImages[nextIndex]);
-        setIsLoading(true);
-        setIsZoomed(false);
-    };
-
-    const handlePrev = () => {
-        const currentIndex = allImages.findIndex(img => img === selectedImage);
-        const prevIndex = (currentIndex - 1 + allImages.length) % allImages.length;
-        setSelectedImage(allImages[prevIndex]);
-        setIsLoading(true);
-        setIsZoomed(false);
-    };
-
-    // Zoom Handlers
+    // Zoom Handlers (Desktop Hover)
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (isLoading) return;
         const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
@@ -90,25 +73,13 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                 const y = ((touch.clientY - top) / height) * 100;
                 setZoomPos({ x, y });
             }
-        } else {
-            // Normal Swipe Start
-            touchStartX.current = e.targetTouches[0].clientX;
-
-            // If already zoomed, allow panning
-            if (isZoomed) {
-                const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-                const touch = e.targetTouches[0];
-                const x = ((touch.clientX - left) / width) * 100;
-                const y = ((touch.clientY - top) / height) * 100;
-                setZoomPos({ x, y });
-            }
         }
         lastTap.current = currentTime;
     };
 
     const handleTouchMove = (e: React.TouchEvent) => {
         if (isZoomed) {
-            // Panning Logic
+            // Panning Logic when zoomed
             const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
             const touch = e.targetTouches[0];
             const x = ((touch.clientX - left) / width) * 100;
@@ -117,31 +88,16 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
             // Allow full pan
             setZoomPos({ x, y });
 
-            // Prevent scrolling if zoomed
-            // e.preventDefault(); 
-            return;
+            // Stop propagation and prevent default to lock screen while panning
+            e.stopPropagation();
+            // e.preventDefault(); // Optional: might block scrolling excessively if logic fails
         }
-
-        // Swipe Logic
-        touchEndX.current = e.targetTouches[0].clientX;
     };
 
-    const handleTouchEnd = () => {
-        if (isZoomed) return;
-
-        if (!touchStartX.current || !touchEndX.current) return;
-        const distance = touchStartX.current - touchEndX.current;
-        const isSwipeLeft = distance > 50;
-        const isSwipeRight = distance < -50;
-
-        if (isSwipeLeft) {
-            handleNext();
-        } else if (isSwipeRight) {
-            handlePrev();
+    const handleDotClick = (index: number) => {
+        if (swiperRef.current) {
+            swiperRef.current.slideTo(index);
         }
-
-        touchStartX.current = null;
-        touchEndX.current = null;
     };
 
     if (!product) {
@@ -155,78 +111,99 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
     return (
         <div className="w-full flex flex-col gap-4">
             {/* Main Image Container */}
-            <div
-                className={`relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100 min-h-[350px] md:min-h-[500px] flex items-center justify-center p-4 touch-pan-y select-none
-                    ${isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}
-                `}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-            >
-                {/* Desktop Arrows */}
-                {allImages.length > 1 && (
-                    <>
-                        <button onClick={(e) => { e.stopPropagation(); handlePrev(); }} className="absolute left-4 z-10 p-2 bg-white/80 rounded-full shadow hidden md:flex hover:bg-white transition">
-                            <ChevronLeft className="w-6 h-6 text-gray-700" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); handleNext(); }} className="absolute right-4 z-10 p-2 bg-white/80 rounded-full shadow hidden md:flex hover:bg-white transition">
-                            <ChevronRight className="w-6 h-6 text-gray-700" />
-                        </button>
-                    </>
-                )}
+            <div className="relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100 min-h-[350px] md:min-h-[500px]">
 
                 {/* Loading Spinner */}
                 {isLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/50">
+                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/50 pointer-events-none">
                         <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                     </div>
                 )}
 
-                {/* Main Image */}
-                <div className="relative w-full h-[300px] md:h-[450px]">
-                    <Image
-                        src={selectedImage}
-                        alt="Product"
-                        fill
-                        priority
-                        className={`object-contain transition-transform duration-200 ease-out`}
-                        style={{
-                            transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
-                            transform: isZoomed && !isLoading ? 'scale(2.5)' : 'scale(1)',
-                            opacity: isLoading ? 0 : 1
-                        }}
-                        onLoad={() => setIsLoading(false)}
-                        onError={() => {
-                            // If this image fails and it's not placeholder, try placeholder
-                            if (selectedImage !== "/placeholder.png") {
-                                setSelectedImage("/placeholder.png");
-                            }
-                            setIsLoading(false);
-                        }}
-                        unoptimized={true}
-                    />
-                </div>
+                <Swiper
+                    onSwiper={(swiper) => swiperRef.current = swiper}
+                    spaceBetween={0}
+                    slidesPerView={1}
+                    speed={300} // Smooth 300ms transition
+                    className="w-full h-full"
+                    onSlideChange={(swiper) => {
+                        setActiveIndex(swiper.activeIndex);
+                        setIsZoomed(false); // Reset zoom on slide change
+                    }}
+                    allowTouchMove={!isZoomed} // Disable swipe when zoomed
+                >
+                    {allImages.map((img, idx) => (
+                        <SwiperSlide key={idx}>
+                            <div
+                                className={`relative w-full h-[350px] md:h-[500px] flex items-center justify-center p-4 select-none
+                                    ${isZoomed ? 'cursor-zoom-out touch-none' : 'cursor-zoom-in touch-pan-y'}
+                                `}
+                                onTouchStart={handleTouchStart}
+                                onTouchMove={handleTouchMove}
+                                onMouseMove={handleMouseMove}
+                                onMouseLeave={handleMouseLeave}
+                            >
+                                <div className="relative w-full h-full">
+                                    <Image
+                                        src={img}
+                                        alt={`Product View ${idx + 1}`}
+                                        fill
+                                        priority={idx === 0}
+                                        className={`object-contain transition-transform duration-200 ease-out`}
+                                        style={{
+                                            transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                                            transform: isZoomed && !isLoading ? 'scale(2.5)' : 'scale(1)',
+                                            opacity: isLoading && idx === activeIndex ? 0 : 1
+                                        }}
+                                        onLoad={() => {
+                                            if (idx === activeIndex) setIsLoading(false);
+                                        }}
+                                        onError={() => {
+                                            if (idx === activeIndex) setIsLoading(false);
+                                        }}
+                                        unoptimized={true}
+                                    />
+                                </div>
+                            </div>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
             </div>
 
-            {/* Pagination Dots (Mobile) */}
+            {/* Custom Dot Indicator */}
             {allImages.length > 1 && (
-                <div className="flex justify-center items-center gap-1.5 md:hidden -mt-2">
-                    {allImages.map((img, index) => (
-                        <div key={index} className={`h-1.5 rounded-full transition-all ${selectedImage === img ? 'w-4 bg-gray-800' : 'w-1.5 bg-gray-300'}`} />
-                    ))}
+                <div className="flex justify-center items-center gap-2 mt-1">
+                    {allImages.map((_, index) => {
+                        const isActive = index === activeIndex;
+                        return (
+                            <button
+                                key={index}
+                                onClick={() => handleDotClick(index)}
+                                className={`rounded-full transition-all duration-300 ease-out focus:outline-none
+                                    ${isActive
+                                        ? 'w-3 h-3 bg-orange-500 scale-110'
+                                        : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'
+                                    }
+                                `}
+                                aria-label={`View image ${index + 1}`}
+                            />
+                        );
+                    })}
                 </div>
             )}
 
             {/* Thumbnails (Desktop) */}
             {allImages.length > 1 && (
-                <div className="hidden md:flex gap-3 overflow-x-auto pb-2 px-1 snap-x no-scrollbar">
+                <div className="hidden md:flex gap-3 overflow-x-auto pb-2 px-1 snap-x no-scrollbar justify-center">
                     {allImages.map((img, idx) => (
                         <button
                             key={idx}
-                            onClick={() => handleImageSelect(img)}
-                            className={`relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-orange-500 ring-1 ring-orange-500' : 'border-gray-100 opacity-70 hover:opacity-100 hover:border-gray-300'}`}
+                            onClick={() => handleDotClick(idx)}
+                            className={`relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200
+                                ${idx === activeIndex
+                                    ? 'border-orange-500 ring-1 ring-orange-500 scale-105'
+                                    : 'border-gray-100 opacity-70 hover:opacity-100 hover:border-gray-300'
+                                }`}
                         >
                             <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" unoptimized={true} />
                         </button>
