@@ -37,10 +37,6 @@ export const resolveProductImage = (product: any): string => {
         return getProductImageUrl(product.thumbnail);
     }
 
-    // 3. Legacy String (image)
-    if (product.image) {
-        return getProductImageUrl(product.image);
-    }
-
+    // 3. Fallback to placeholder
     return "/placeholder.png";
 };

@@ -5,12 +5,7 @@ import { ChevronLeft, ChevronRight, Check, Search } from 'lucide-react';
 import { getProductImageUrl } from '@/app/utils/imageHelper';
 
 interface ProductGalleryProps {
-    product: {
-        image?: string;
-        images?: string[];
-        title?: string;
-        name?: string;
-    } | null;
+    product: any;
 }
 
 export default function ProductGallery({ product }: ProductGalleryProps) {
@@ -28,25 +23,20 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
     const touchEndX = useRef<number | null>(null);
 
     // Initialize Images
+    // Initialize Images
     useEffect(() => {
         if (!product) return;
 
-        const mainImg = product.image ? getProductImageUrl(product.image) : "/placeholder.png";
-
         let galleryImgs: string[] = [];
-        if (product.images && Array.isArray(product.images)) {
+
+        // STRICT requirement: Use product.images[] as the ONLY image source. 
+        // Do NOT use product.image.
+        if (product.images && Array.isArray(product.images) && product.images.length > 0) {
             galleryImgs = product.images.map(img => getProductImageUrl(img));
         }
 
-        // Combine Main + Gallery, Deduplicate
+        // Deduplicate
         const uniqueSet = new Set<string>();
-
-        // Always add Main Image first
-        if (mainImg && mainImg !== "/placeholder.png") {
-            uniqueSet.add(mainImg);
-        }
-
-        // Add remaining gallery images
         galleryImgs.forEach(img => {
             if (img && img !== "/placeholder.png") uniqueSet.add(img);
         });
@@ -56,14 +46,17 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
 
         // Fallback
         if (finalGallery.length === 0) {
-            finalGallery = ["/placeholder.png"];
+            // Check thumbnail as a last resort before placeholder, but strict rule says NO product.image
+            if (product.thumbnail) {
+                finalGallery = [getProductImageUrl(product.thumbnail)];
+            } else {
+                finalGallery = ["/placeholder.png"];
+            }
         }
 
         setAllImages(finalGallery);
 
         // On load, default to first image
-        // Only verify validity selection if current is gone
-        // But simpler: just always reset to first on product change for safety
         setSelectedImage(finalGallery[0]);
 
         setIsLoading(true);
