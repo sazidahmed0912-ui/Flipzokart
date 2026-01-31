@@ -126,6 +126,7 @@ export const ProductDetails: React.FC = () => {
     getProductAndReviews();
   }, [id]);
 
+  // Derived State for Inventory/Stock
   const { currentStock, isOutOfStock, currentPrice, currentOriginalPrice } = useMemo(() => {
     if (!product) return { currentStock: 0, isOutOfStock: true, currentPrice: 0, currentOriginalPrice: 0 };
 
@@ -151,26 +152,6 @@ export const ProductDetails: React.FC = () => {
     };
   }, [product, selectedVariants]);
 
-  useEffect(() => {
-    if (!isOutOfStock && quantity > currentStock && currentStock > 0) setQuantity(currentStock);
-    else if (isOutOfStock) setQuantity(1);
-  }, [currentStock, isOutOfStock, quantity]);
-
-  if (isLoading) return <CircularGlassSpinner />;
-
-  if (!product) return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center space-y-4">
-      <div className="p-6 bg-gray-100 rounded-full text-gray-400"><Info size={48} /></div>
-      <h2 className="text-2xl font-bold">Product Not Found</h2>
-      <button onClick={() => router.push('/shop')} className="text-blue-600 font-bold hover:underline">Return to Shop</button>
-    </div>
-  );
-
-  const isWishlisted = wishlist.includes(product.id);
-  const discount = currentOriginalPrice > currentPrice
-    ? Math.round(((currentOriginalPrice - currentPrice) / currentOriginalPrice) * 100)
-    : 0;
-
   // Derived State for Variant Images
   const { activeImages, activeImage } = useMemo(() => {
     if (!product) return { activeImages: [], activeImage: '' };
@@ -192,30 +173,8 @@ export const ProductDetails: React.FC = () => {
       }
     }
 
-    // Filter by color if available in Rich Variants (Metadata or Backend structure)
+    // Filter by color if available in Rich Variants
     if (selectedColor && product.variants) {
-      // Logic: Look for the variant group definition or inventory that matches this color and has images
-      // Assuming 'product.variants' (Rich) metadata contains images:
-      const colorVariantDef = product.variants.find((v: any) =>
-        (v.name.toLowerCase() === 'color' || v.name.toLowerCase() === 'colour')
-        && v.options.some((opt: any) => (typeof opt === 'object' ? opt.name : opt) === selectedColor)
-      );
-
-      // Check if the specific option in the variant definition has images (Rich Variant Structure)
-      // OR Check if the top-level variants array has an entry for this color with images.
-
-      // Common pattern: We need to find where the images are stored per color. 
-      // Based on USER PROMPT: "product.variants[] { color, images[] }"
-      // This implies the 'variants' array itself might be the list of variants (Inventory-like) OR the definition has it.
-
-      // Attempt 1: Check Metadata Variants (as parsed in useEffect)
-      const richVariant = product.variants.find((v: any) => v.color === selectedColor || (v.options && v.options.includes(selectedColor)));
-      // BUT 'product.variants' in types is VariantGroup[].
-      // Let's rely on the 'richVariants' logic we saw in useEffect which overwrote product.variants.
-
-      // Refined Logic based on typical structure where product.variants might be the rich array if overwritten:
-      // We iterate product.variants to find one that matches the color.
-
       const matchedVariant = product.variants.find((v: any) =>
         v.color === selectedColor ||
         (v.name === selectedColor) || // If structure is flat
@@ -233,8 +192,23 @@ export const ProductDetails: React.FC = () => {
     };
   }, [product, selectedVariants]);
 
+  if (isLoading) return <CircularGlassSpinner />;
+
+  if (!product) return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center space-y-4">
+      <div className="p-6 bg-gray-100 rounded-full text-gray-400"><Info size={48} /></div>
+      <h2 className="text-2xl font-bold">Product Not Found</h2>
+      <button onClick={() => router.push('/shop')} className="text-blue-600 font-bold hover:underline">Return to Shop</button>
+    </div>
+  );
+
+  const isWishlisted = wishlist.includes(product.id);
+  const discount = currentOriginalPrice > currentPrice
+    ? Math.round(((currentOriginalPrice - currentPrice) / currentOriginalPrice) * 100)
+    : 0;
+
   const handleAddToCart = () => {
-    if (isOutOfStock) return;
+    if (isOutOfStock || !product) return;
     const productWithSelection = {
       ...product,
       price: currentPrice,
@@ -246,7 +220,7 @@ export const ProductDetails: React.FC = () => {
   };
 
   const handleBuyNow = () => {
-    if (isOutOfStock) return;
+    if (isOutOfStock || !product) return;
     const productWithSelection = {
       ...product,
       price: currentPrice,
