@@ -14,7 +14,7 @@ import { useApp } from '@/app/store/Context';
 import { Product, VariantGroup, VariantCombination } from '@/app/types';
 import { CATEGORIES } from '@/app/constants';
 import { AdminSidebar } from '@/app/components/AdminSidebar';
-import { createProduct, updateProduct, deleteProduct } from '@/app/services/adminService';
+import { createProduct, updateProduct, deleteProduct, uploadFile } from '@/app/services/adminService';
 import { fetchProductById } from '@/app/services/api';
 import { getProductImageUrl } from '@/app/utils/imageHelper';
 
@@ -140,43 +140,52 @@ export const AdminProducts: React.FC = () => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'main' | 'gallery' | 'variant' = 'main') => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'main' | 'gallery' | 'variant' = 'main') => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    if (type === 'variant') {
-      if (variantUploadingIndex === null) return;
-      const file = files[0];
-      // Added null check for file
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updateInventoryField(variantUploadingIndex!, 'image', reader.result as string);
+    setIsUploading(true);
+    try {
+      if (type === 'variant') {
+        if (variantUploadingIndex === null) return;
+        const file = files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        const { data } = await uploadFile(formData);
+
+        updateInventoryField(variantUploadingIndex!, 'image', data.path); // Use path, helper will render it
         setVariantUploadingIndex(null);
-      };
-      reader.readAsDataURL(file);
-    } else if (type === 'gallery') {
-      // Cast Array.from to File[] to ensure type safety in forEach loop
-      (Array.from(files) as File[]).slice(0, 6 - formData.images.length).forEach((file: File) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setFormData(prev => ({ ...prev, images: [...prev.images, reader.result as string] }));
-        };
-        reader.readAsDataURL(file);
-      });
-    } else {
-      const file = files[0];
-      // Added null check for file
-      if (!file) return;
-      setIsUploading(true);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, image: reader.result as string }));
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+
+      } else if (type === 'gallery') {
+        const uploadPromises = Array.from(files).slice(0, 6 - formData.images.length).map(async (file: File) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          const { data } = await uploadFile(formData);
+          return data.path;
+        });
+
+        const newPaths = await Promise.all(uploadPromises);
+        setFormData(prev => ({ ...prev, images: [...prev.images, ...newPaths] }));
+
+      } else {
+        const file = files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        const { data } = await uploadFile(formData);
+
+        setFormData(prev => ({ ...prev, image: data.path }));
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Image upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
     }
-    e.target.value = '';
   };
 
   const removeGalleryImage = (index: number) => {
@@ -256,14 +265,19 @@ export const AdminProducts: React.FC = () => {
 
 
   // --- Color-Image Sync Logic ---
-  const handleColorImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleColorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setNewColorImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const { data } = await uploadFile(formData);
+      setNewColorImage(data.path);
+    } catch (error) {
+      console.error("Color image upload failed:", error);
+      alert("Failed to upload image.");
+    }
     e.target.value = '';
   };
 
@@ -645,7 +659,7 @@ export const AdminProducts: React.FC = () => {
                           onClick={triggerMainUpload}
                         >
                           {formData.image ? (
-                            <img src={formData.image} className="w-full h-full object-cover" alt="Main" />
+                            <img src={getProductImageUrl(formData.image)} className="w-full h-full object-cover" alt="Main" />
                           ) : (
                             <>
                               <Upload size={32} className="mb-2" />
@@ -669,7 +683,7 @@ export const AdminProducts: React.FC = () => {
                         <div className="grid grid-cols-3 gap-2">
                           {formData.images.map((img, idx) => (
                             <div key={idx} className="aspect-square rounded-lg border border-gray-200 overflow-hidden relative group">
-                              <img src={img} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
+                              <img src={getProductImageUrl(img)} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
                               <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute top-0.5 right-0.5 bg-red-500 text-white p-0.5 rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                 <X size={10} />
                               </button>
@@ -785,7 +799,7 @@ export const AdminProducts: React.FC = () => {
                             title="Upload Color Image"
                           >
                             {newColorImage ? (
-                              <img src={newColorImage} className="w-full h-full object-cover" alt="Color Variant" />
+                              <img src={getProductImageUrl(newColorImage)} className="w-full h-full object-cover" alt="Color Variant" />
                             ) : (
                               <ImagePlus size={18} className="text-blue-400" />
                             )}
