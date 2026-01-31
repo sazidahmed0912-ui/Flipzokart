@@ -1,28 +1,29 @@
 {
     "tech_stack": [
+        "JavaScript",
         "Node.js",
         "Express",
         "MongoDB",
-        "Nodemailer",
-        "Socket.io"
+        "Mongoose"
     ],
     "features": [
         {
-            "name": "Email Service",
-            "description": "Sends emails using Zoho OAuth2 (SMTP) via nodemailer.",
+            "name": "Product API",
+            "description": "CRUD operations for products, including image handling.",
             "files": [
-                "services/emailService.js"
-            ],
-            "api_doc": {}
+                "routes/productRoutes.js",
+                "controllers/productController.js",
+                "models/productModel.js"
+            ]
         },
         {
-            "name": "Auth API",
-            "description": "User authentication endpoints including OTP generation and email sending.",
+            "name": "Order API",
+            "description": "Order creation and management.",
             "files": [
-                "routes/auth.js",
-                "controllers/authController.js"
-            ],
-            "api_doc": {}
+                "routes/orderRoutes.js",
+                "controllers/orderController.js",
+                "models/orderModel.js"
+            ]
         }
     ]
 }

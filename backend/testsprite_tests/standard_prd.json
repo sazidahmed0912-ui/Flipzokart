@@ -1,61 +1,60 @@
 {
   "meta": {
-    "project": "User Auth & Email Service",
+    "project": "E-commerce API Backend",
     "date": "2026-01-29",
     "prepared_by": "Software Development Manager"
   },
-  "product_overview": "This product provides user authentication with OTP via email and a robust email sending service leveraging Zoho OAuth2 SMTP through Nodemailer. It is designed to secure user access while ensuring reliable email communications.",
+  "product_overview": "This project is a backend service for an e-commerce platform, providing robust APIs for managing products and orders with support for CRUD operations and image handling for products.",
   "core_goals": [
-    "Enable secure user authentication with OTP via email.",
-    "Integrate an email service using Zoho OAuth2 SMTP with Nodemailer.",
-    "Provide API endpoints for user authentication and email operations.",
-    "Ensure real-time features using WebSocket as applicable."
+    "Provide reliable and secure CRUD operations for product management.",
+    "Enable efficient order creation and management functionality.",
+    "Ensure scalable and maintainable backend architecture using Node.js and MongoDB.",
+    "Support image handling for product representation."
   ],
   "key_features": [
-    "Email Service that sends emails via Zoho OAuth2 SMTP using Nodemailer.",
-    "User authentication API supporting OTP generation and validation.",
-    "Sending OTP emails securely and reliably.",
-    "REST API endpoints for login and authentication flows.",
-    "Technology stack includes Node.js, Express, MongoDB, Nodemailer, and Socket.io for real-time capabilities."
+    "Product API supporting create, read, update, and delete operations for products.",
+    "Image handling capability integrated into the Product API for uploading and managing product images.",
+    "Order API to facilitate creation, retrieval, and management of customer orders.",
+    "RESTful API design using Express framework for easy integration with front-end applications."
   ],
   "user_flow_summary": [
-    "User initiates login by requesting an OTP with their email address.",
-    "System generates OTP and sends it to the user email via the email service.",
-    "User submits the received OTP for verification.",
-    "System validates OTP and authenticates the user, returning session/token as needed."
+    "Admin authenticates and manages products through the Product API, including uploading product images.",
+    "Customers place orders via the Order API, which records and manages order data.",
+    "System handles saving and retrieving product and order data from MongoDB using Mongoose ORM."
   ],
   "validation_criteria": [
-    "OTP emails are delivered successfully to user inboxes in a timely manner.",
-    "User authentication endpoints correctly generate, send, and verify OTPs.",
-    "Email service uses Zoho OAuth2 SMTP and Nodemailer with no authentication errors.",
-    "API endpoints respond with appropriate status and error messages as per specification.",
-    "System supports multiple simultaneous authentication requests without degradation."
+    "All CRUD operations on products must function correctly with appropriate image handling.",
+    "Orders must be correctly created, retrieved, and updated as per the Order API specifications.",
+    "APIs should respond within acceptable time frames and handle error scenarios gracefully.",
+    "System must maintain data integrity and consistency in MongoDB.",
+    "Codebase should pass all unit and integration tests related to product and order management."
   ],
   "code_summary": {
     "tech_stack": [
+      "JavaScript",
       "Node.js",
       "Express",
       "MongoDB",
-      "Nodemailer",
-      "Socket.io"
+      "Mongoose"
     ],
     "features": [
       {
-        "name": "Email Service",
-        "description": "Sends emails using Zoho OAuth2 (SMTP) via nodemailer.",
+        "name": "Product API",
+        "description": "CRUD operations for products, including image handling.",
         "files": [
-          "services/emailService.js"
-        ],
-        "api_doc": {}
+          "routes/productRoutes.js",
+          "controllers/productController.js",
+          "models/productModel.js"
+        ]
       },
       {
-        "name": "Auth API",
-        "description": "User authentication endpoints including OTP generation and email sending.",
+        "name": "Order API",
+        "description": "Order creation and management.",
         "files": [
-          "routes/auth.js",
-          "controllers/authController.js"
-        ],
-        "api_doc": {}
+          "routes/orderRoutes.js",
+          "controllers/orderController.js",
+          "models/orderModel.js"
+        ]
       }
     ]
   }

@@ -1,0 +1,23 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "executionArgs": {
+    "projectName": "frontend-next",
+    "projectPath": "d:\\Websites\\Flipzokart\\frontend-next",
+    "testIds": [
+      "TC001",
+      "TC002",
+      "TC003",
+      "TC004",
+      "TC006",
+      "TC015"
+    ],
+    "additionalInstruction": "Focus on verifying that multiple images are displayed in the gallery and that fallback logic works correctly. Ensure no single image is shown if multiple are available.",
+    "envs": {
+      "API_KEY": "sk-user-9bpwDiADBgTT_9Nmx7neRzSXSUT3vzD8lx_cY3b2QJMVOz86DK4ULALUqXEPvtxvdsQYIIzczgPSqjKb3xPqyiXf33yc_e8usGIJ5E3MNQyAHy5IzTt-VvC6NT2JcNV138s"
+    }
+  },
+  "proxy": "http://4b2adeee-a1f4-4813-aee3-2b116255afe0:lgrVQE36ZWbCmkmMjMEB4rltWcVpX3f2@tun.testsprite.com:8080"
+}

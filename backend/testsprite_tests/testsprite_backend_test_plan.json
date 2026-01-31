@@ -1,17 +1,52 @@
 [
   {
     "id": "TC001",
-    "title": "test otp generation and email sending",
-    "description": "Verify that the API endpoint for OTP generation correctly generates an OTP, sends it via email using the Zoho OAuth2 SMTP service through Nodemailer, and responds with the appropriate success or error status."
+    "title": "test create product with image upload",
+    "description": "Verify that a product can be created successfully with all required fields and an image uploaded, ensuring the image is stored and linked correctly."
   },
   {
     "id": "TC002",
-    "title": "test otp verification and user authentication",
-    "description": "Verify that the API endpoint for OTP verification correctly validates the submitted OTP, authenticates the user, and returns the appropriate session or token along with correct status and error messages."
+    "title": "test read product details",
+    "description": "Verify that product details can be retrieved correctly by product ID, including all product information and associated image data."
   },
   {
     "id": "TC003",
-    "title": "test email service integration with zoho mail rest api",
-    "description": "Verify that the email service sends emails using Zoho Mail REST API via Axios (not Nodemailer) without auth errors and handles API failures gracefully."
+    "title": "test update product information and image",
+    "description": "Verify that product information and its image can be updated successfully, and changes are reflected in the database."
+  },
+  {
+    "id": "TC004",
+    "title": "test delete product and associated image",
+    "description": "Verify that a product can be deleted successfully and that the associated image is also removed from storage."
+  },
+  {
+    "id": "TC005",
+    "title": "test create order with valid data",
+    "description": "Verify that an order can be created successfully with valid customer and product data, and the order is stored correctly in the database."
+  },
+  {
+    "id": "TC006",
+    "title": "test retrieve order details",
+    "description": "Verify that order details can be retrieved correctly by order ID, including customer information and ordered products."
+  },
+  {
+    "id": "TC007",
+    "title": "test update order status",
+    "description": "Verify that the status of an existing order can be updated successfully and the update is reflected in the database."
+  },
+  {
+    "id": "TC008",
+    "title": "test product api response time",
+    "description": "Verify that the Product API endpoints respond within acceptable time frames under normal load conditions."
+  },
+  {
+    "id": "TC009",
+    "title": "test order api response time",
+    "description": "Verify that the Order API endpoints respond within acceptable time frames under normal load conditions."
+  },
+  {
+    "id": "TC010",
+    "title": "test error handling for invalid product requests",
+    "description": "Verify that the Product API handles invalid requests gracefully, returning appropriate error messages and status codes."
   }
 ]

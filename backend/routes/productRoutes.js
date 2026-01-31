@@ -73,7 +73,14 @@ router.get("/", async (req, res) => {
     }
 
     const products = await query;
-    res.status(200).json(products);
+    const hydratedProducts = products.map(p => {
+      const pObj = p.toObject();
+      if ((!pObj.images || pObj.images.length === 0) && pObj.image) {
+        pObj.images = [pObj.image];
+      }
+      return pObj;
+    });
+    res.status(200).json(hydratedProducts);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -162,7 +169,15 @@ router.get("/:id", async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    res.status(200).json(product);
+
+    // 🛠️ DATA HYDRATION: Polyfill 'images' from 'image' for legacy products
+    // This allows the strict frontend array logic to work with old data
+    const productObj = product.toObject();
+    if ((!productObj.images || productObj.images.length === 0) && productObj.image) {
+      productObj.images = [productObj.image];
+    }
+
+    res.status(200).json(productObj);
   } catch (error) {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: "Product not found (Invalid ID)" });

@@ -8,12 +8,14 @@
     "projectName": "backend",
     "projectPath": "d:\\Websites\\Flipzokart\\backend",
     "testIds": [
+      "TC001",
+      "TC002",
       "TC003"
     ],
-    "additionalInstruction": "Verify that the email service successfully sends an email using the Zoho Mail API (Axios). Ensure it handles token logic by mocking or allowing real network calls if env vars are present. The test should check for success status 200 from the Zoho API structure.",
+    "additionalInstruction": "Focus on verifying that the response for TC001 and TC002 includes the 'images' array field, and that it is correctly populated.",
     "envs": {
       "API_KEY": "sk-user-9bpwDiADBgTT_9Nmx7neRzSXSUT3vzD8lx_cY3b2QJMVOz86DK4ULALUqXEPvtxvdsQYIIzczgPSqjKb3xPqyiXf33yc_e8usGIJ5E3MNQyAHy5IzTt-VvC6NT2JcNV138s"
     }
   },
-  "proxy": "http://a45f4e73-744c-42e0-9e21-82d399ce377a:AHU4DVscixUiP9YyNmMXy1Z89SNwfQoD@tun.testsprite.com:8080"
+  "proxy": "http://b372bb00-5d4b-41dd-96e9-70639e897eb7:lIJvZSob5rWnXUj3mfmtXw1X93mzBXrx@tun.testsprite.com:8080"
 }
