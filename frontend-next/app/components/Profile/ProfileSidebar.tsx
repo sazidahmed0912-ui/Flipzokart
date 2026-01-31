@@ -80,7 +80,7 @@ const ProfileSidebar: React.FC = () => {
 
             {/* Navigation Menu (Scrollable Tabs on Mobile) */}
             <div className="bg-white rounded-xl shadow-none lg:shadow-[0_4px_12px_rgba(0,0,0,0.06)] overflow-hidden">
-                <div className="flex lg:flex-col overflow-x-auto lg:overflow-visible scrollbar-hide py-2 lg:py-0 px-2 lg:px-0 gap-2 lg:gap-0">
+                <div className="flex lg:flex-col overflow-x-auto lg:overflow-visible scrollbar-hide py-1 md:py-2 lg:py-0 px-0 md:px-2 lg:px-0 gap-1.5 md:gap-2 lg:gap-0">
                     {menuItems.map((item, i) => {
                         // Inject Language Option before Help Center
                         if (item.key === 'help_center') {
@@ -88,11 +88,11 @@ const ProfileSidebar: React.FC = () => {
                                 <React.Fragment key="lang-fragment">
                                     <div
                                         onClick={() => setLangModalOpen(true)}
-                                        className="flex items-center gap-2 lg:gap-4 px-4 lg:px-6 py-2.5 lg:py-4 cursor-pointer transition-all border border-gray-100 lg:border-0 lg:border-b lg:border-gray-50 flex-shrink-0 whitespace-nowrap text-gray-600 bg-white hover:bg-gray-50 rounded-full lg:rounded-none"
+                                        className="flex items-center gap-1.5 md:gap-2 lg:gap-4 px-3 md:px-4 lg:px-6 py-1.5 md:py-2.5 lg:py-4 cursor-pointer transition-all border border-gray-100 lg:border-0 lg:border-b lg:border-gray-50 flex-shrink-0 whitespace-nowrap text-gray-600 bg-white hover:bg-gray-50 rounded-full lg:rounded-none"
                                     >
-                                        <Globe size={18} className="lg:w-5 lg:h-5 text-gray-400" />
+                                        <Globe size={16} className="md:w-[18px] md:h-[18px] lg:w-5 lg:h-5 text-gray-400" />
                                         <div className="flex-1 flex items-center justify-between">
-                                            <span className="text-sm lg:text-base font-medium">{t('languages')}</span>
+                                            <span className="text-[13px] md:text-sm lg:text-base font-medium">{t('languages')}</span>
                                             <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-500 hidden lg:block">
                                                 {languages.find(l => l.code === language)?.native}
                                             </span>
@@ -165,15 +165,15 @@ const MenuItem = ({ item, isActive, onClick, t }: any) => {
     return (
         <div
             onClick={() => onClick(item.path)}
-            className={`flex items-center gap-2 lg:gap-4 px-4 lg:px-6 py-2.5 lg:py-4 cursor-pointer transition-all border lg:border-0 lg:border-b last:border-0 flex-shrink-0 whitespace-nowrap rounded-full lg:rounded-none
+            className={`flex items-center gap-1.5 md:gap-2 lg:gap-4 px-3 md:px-4 lg:px-6 py-1.5 md:py-2.5 lg:py-4 cursor-pointer transition-all border lg:border-0 lg:border-b last:border-0 flex-shrink-0 whitespace-nowrap rounded-full lg:rounded-none
                 ${isActive
                     ? "bg-[#2874F0] text-white border-[#2874F0] lg:bg-[#F5FAFF] lg:text-[#2874F0] lg:border-gray-50"
                     : "bg-white text-gray-600 border-gray-100 hover:bg-gray-50"
                 }
             `}
         >
-            <Icon size={18} className={`lg:w-5 lg:h-5 ${isActive ? "text-white lg:text-[#2874F0]" : "text-gray-400"}`} />
-            <span className={`text-sm lg:text-base font-medium ${isActive ? 'font-bold' : ''}`}>{t(item.key)}</span>
+            <Icon size={16} className={`md:w-[18px] md:h-[18px] lg:w-5 lg:h-5 ${isActive ? "text-white lg:text-[#2874F0]" : "text-gray-400"}`} />
+            <span className={`text-[13px] md:text-sm lg:text-base font-medium ${isActive ? 'font-bold' : ''}`}>{t(item.key)}</span>
             {isActive && <ChevronRight size={16} className="ml-auto text-[#2874F0] hidden lg:block" />}
         </div>
     )
