@@ -565,7 +565,15 @@ export const AdminProducts: React.FC = () => {
                     <tr key={product.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <img src={product.image} alt={product.name} className="w-12 h-12 rounded-lg object-cover border border-gray-100" />
+                          <img
+                            src={product.image || product.images?.[0] || 'https://placehold.co/48x48/png?text=No+Img'}
+                            alt={product.name}
+                            className="w-12 h-12 rounded-lg object-cover border border-gray-100 bg-gray-50"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = 'https://placehold.co/48x48/png?text=Err';
+                            }}
+                          />
                           <div className="min-w-0">
                             <p className="font-semibold text-gray-800 text-sm truncate max-w-[200px]">{product.name}</p>
                           </div>
