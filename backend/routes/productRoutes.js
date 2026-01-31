@@ -17,7 +17,15 @@ const createProduct = async (req, res) => {
 
         // Map Metadata to Schema Fields
         if (meta.gallery && Array.isArray(meta.gallery)) req.body.images = meta.gallery;
-        if (meta.variants) req.body.variants = meta.variants;
+
+        // Transform Rich Variants (Admin format) to Simple Variants (DB Schema)
+        if (meta.variants && Array.isArray(meta.variants)) {
+          req.body.variants = meta.variants.map(v => ({
+            name: v.name,
+            options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
+          }));
+        }
+
         if (meta.matrix) req.body.inventory = meta.matrix;
         if (meta.specifications) req.body.specifications = meta.specifications;
         if (meta.sku) req.body.sku = meta.sku;
@@ -108,7 +116,13 @@ router.get("/", async (req, res) => {
           if (meta.gallery && Array.isArray(meta.gallery) && (!pObj.images || pObj.images.length === 0)) {
             pObj.images = meta.gallery;
           }
-          if (meta.variants && (!pObj.variants || pObj.variants.length === 0)) pObj.variants = meta.variants;
+          if (meta.variants && (!pObj.variants || pObj.variants.length === 0)) {
+            // Transform Rich Variants to Simple Schema for consistency
+            pObj.variants = meta.variants.map(v => ({
+              name: v.name,
+              options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
+            }));
+          }
         } catch (e) { }
       }
 
@@ -222,7 +236,11 @@ router.get("/:id", async (req, res) => {
           productObj.images = meta.gallery;
         }
         if (meta.variants && (!productObj.variants || productObj.variants.length === 0)) {
-          productObj.variants = meta.variants;
+          // Transform Rich Variants to Simple Schema
+          productObj.variants = meta.variants.map(v => ({
+            name: v.name,
+            options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
+          }));
         }
         if (meta.matrix && (!productObj.inventory || productObj.inventory.length === 0)) {
           productObj.inventory = meta.matrix;
@@ -259,7 +277,15 @@ router.put("/:id", async (req, res) => {
         const meta = JSON.parse(metaStr);
 
         if (meta.gallery && Array.isArray(meta.gallery)) req.body.images = meta.gallery;
-        if (meta.variants) req.body.variants = meta.variants;
+
+        // Transform Rich Variants to Simple Schema
+        if (meta.variants && Array.isArray(meta.variants)) {
+          req.body.variants = meta.variants.map(v => ({
+            name: v.name,
+            options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
+          }));
+        }
+
         if (meta.matrix) req.body.inventory = meta.matrix;
         if (meta.specifications) req.body.specifications = meta.specifications;
         if (meta.sku) req.body.sku = meta.sku;
