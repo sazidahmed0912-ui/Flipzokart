@@ -18,6 +18,11 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
     const [allImages, setAllImages] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
+    // Zoom State
+    const [isZoomed, setIsZoomed] = useState<boolean>(false);
+    const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+    const lastTap = useRef<number>(0);
+
     // Swipe Refs
     const touchStartX = useRef<number | null>(null);
     const touchEndX = useRef<number | null>(null);
@@ -46,12 +51,14 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
         setAllImages(gallery);
         setSelectedImage(mainImg);
         setIsLoading(true);
+        setIsZoomed(false);
     }, [product]);
 
     const handleImageSelect = (img: string) => {
         if (img === selectedImage) return;
         setSelectedImage(img);
         setIsLoading(true);
+        setIsZoomed(false);
     };
 
     const handleNext = () => {
@@ -59,6 +66,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
         const nextIndex = (currentIndex + 1) % allImages.length;
         setSelectedImage(allImages[nextIndex]);
         setIsLoading(true);
+        setIsZoomed(false);
     };
 
     const handlePrev = () => {
@@ -66,18 +74,47 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
         const prevIndex = (currentIndex - 1 + allImages.length) % allImages.length;
         setSelectedImage(allImages[prevIndex]);
         setIsLoading(true);
+        setIsZoomed(false);
     };
 
-    // Swipe Handlers
+    // Zoom Handlers
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isLoading) return;
+        const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - left) / width) * 100;
+        const y = ((e.clientY - top) / height) * 100;
+        setZoomPos({ x, y });
+        setIsZoomed(true);
+    };
+
+    const handleMouseLeave = () => {
+        setIsZoomed(false);
+    };
+
+    // Swipe & Mobile Zoom Handlers
     const handleTouchStart = (e: React.TouchEvent) => {
-        touchStartX.current = e.targetTouches[0].clientX;
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap.current;
+
+        if (tapLength < 300 && tapLength > 0) {
+            // Double Tap Detected
+            e.preventDefault(); // Prevent default zoom
+            setIsZoomed(!isZoomed);
+            setZoomPos({ x: 50, y: 50 }); // Center zoom on double tap
+        } else {
+            // Normal Swipe Start
+            touchStartX.current = e.targetTouches[0].clientX;
+        }
+        lastTap.current = currentTime;
     };
 
     const handleTouchMove = (e: React.TouchEvent) => {
+        if (isZoomed) return; // Disable swipe while zoomed
         touchEndX.current = e.targetTouches[0].clientX;
     };
 
     const handleTouchEnd = () => {
+        if (isZoomed) return;
         if (!touchStartX.current || !touchEndX.current) return;
         const distance = touchStartX.current - touchEndX.current;
         const isSwipeLeft = distance > 50;
@@ -105,14 +142,18 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
         <div className="w-full flex flex-col gap-4">
             {/* Main Image Container */}
             <div
-                className="relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100 min-h-[350px] md:min-h-[500px] flex items-center justify-center p-4 touch-pan-y"
+                className={`relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100 min-h-[350px] md:min-h-[500px] flex items-center justify-center p-4 touch-pan-y
+                    ${isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}
+                `}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
             >
-                {/* Floating Action Buttons (Optional per original design) */}
-                <div className="absolute top-4 right-4 flex gap-2 z-10">
-                    {/* Can add zoom/share buttons here if needed */}
+                {/* Desktop Zoom Hint / Floating Actions */}
+                <div className="absolute top-4 right-4 flex gap-2 z-10 pointer-events-none">
+                    {/* Hidden hints or icons can go here */}
                 </div>
 
                 {/* Left Arrow (Desktop) */}
@@ -133,17 +174,23 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                 )}
 
                 {/* Main Image */}
-                <div className="relative w-full h-[300px] md:h-[450px]">
+                <div className="relative w-full h-[300px] md:h-[450px] overflow-hidden">
                     <Image
                         src={selectedImage}
                         alt={product.name || "Product Image"}
                         fill
                         priority
-                        className={`object-contain transition-all duration-300 ${isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+                        className={`object-contain transition-transform duration-200 ease-out`}
+                        style={{
+                            transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                            transform: isZoomed && !isLoading ? 'scale(2.5)' : 'scale(1)',
+                            opacity: isLoading ? 0 : 1
+                        }}
                         onLoad={() => setIsLoading(false)}
                         onError={() => {
                             setSelectedImage("/placeholder.png");
                             setIsLoading(false);
+                            setIsZoomed(false);
                         }}
                         unoptimized={true}
                     />
