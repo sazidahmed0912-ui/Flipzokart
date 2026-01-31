@@ -32,7 +32,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
         // STRICT requirement: Use product.images[] as the ONLY image source. 
         // Do NOT use product.image.
         if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-            galleryImgs = product.images.map(img => getProductImageUrl(img));
+            galleryImgs = product.images.map((img: string) => getProductImageUrl(img));
         }
 
         // Deduplicate
