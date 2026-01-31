@@ -314,11 +314,19 @@ export const AdminProductEditor: React.FC = () => {
             const validGallery = gallery.filter(g => g && g.trim() !== '' && g !== mainImage);
             const allImages = mainImage ? [mainImage, ...validGallery] : validGallery;
 
+
+            // 2. Prepare Simple Variants for Backend (Strict Schema Compliance: options: [String])
+            const simpleVariants = variantGroups.map(g => ({
+                name: g.name,
+                options: g.options.map(o => o.name) // Send only names
+            }));
+
+            // 3. Prepare Rich Metadata (To persist Colors/Images/Hex)
             const richData = {
                 sku: skuBase, specifications, variants: variantGroups, matrix,
                 section: { title: sectionTitle, color: sectionColor, size: sectionSize }
-                // Removed gallery from metadata as it is now first-class citizen
             };
+
             const payload = {
                 ...formData,
                 price: finalPrice,
@@ -326,11 +334,11 @@ export const AdminProductEditor: React.FC = () => {
                 countInStock: totalStock,
                 images: allImages, // SAVE ARRAY
                 thumbnail: mainImage, // SAVE THUMBNAIL
-                variants: variantGroups,
+                variants: simpleVariants, // COMPLIANT
                 inventory: matrix,
                 specifications: specifications,
                 sku: skuBase,
-                // description is already in formData as clean text
+                description: formData.description + `\n<!-- METADATA:${JSON.stringify(richData)}-->` // PERSIST RICH DATA
             };
 
             if (isEditMode) await updateProduct(id, payload);

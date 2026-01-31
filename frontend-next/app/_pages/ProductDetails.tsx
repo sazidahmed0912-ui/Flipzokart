@@ -76,20 +76,41 @@ export const ProductDetails: React.FC = () => {
       try {
         const productResponse = await fetchProductById(id);
         const productData = productResponse.data?.data?.product || productResponse.data;
-        setProduct(productData);
 
-        if (productData.reviews) setReviews(productData.reviews);
+        // Metadata Parsing for Rich Variants (Hex Colors, etc.)
+        let richVariants = productData.variants;
+        if (productData.description && productData.description.includes('<!-- METADATA:')) {
+          try {
+            const parts = productData.description.split('<!-- METADATA:');
+            productData.description = parts[0].trim(); // Clean Description
+            const meta = JSON.parse(parts[1].split('-->')[0]);
+            if (meta.variants) richVariants = meta.variants; // Use Rich Variants
+          } catch (e) { console.error("Meta parse error", e); }
+        }
+
+        // Apply Rich Variants to Product Object
+        const finalProduct = { ...productData, variants: richVariants };
+        setProduct(finalProduct);
+
+        if (finalProduct.reviews) setReviews(finalProduct.reviews);
 
         // Default Variants Logic
-        if (productData.variants && productData.variants.length > 0) {
+        if (finalProduct.variants && finalProduct.variants.length > 0) {
           const defaults: Record<string, string> = {};
-          productData.variants.forEach((v: any) => {
-            if (v.name.toLowerCase() === 'color' && productData.defaultColor) {
-              if (v.options.includes(productData.defaultColor)) {
-                defaults[v.name] = productData.defaultColor;
-              }
+          finalProduct.variants.forEach((v: any) => {
+            // Handle Object Options (Rich) or String Options (Legacy)
+            const optionName = (opt: any) => typeof opt === 'object' ? opt.name : opt;
+            const firstOption = v.options[0];
+
+            if (v.name.toLowerCase() === 'color' && finalProduct.defaultColor) {
+              // Check if default color exists in options
+              const hasColor = v.options.some((o: any) => optionName(o) === finalProduct.defaultColor);
+              if (hasColor) defaults[v.name] = finalProduct.defaultColor;
             }
-            if (v.options && v.options.length > 0 && !defaults[v.name]) defaults[v.name] = v.options[0];
+
+            if (v.options.length > 0 && !defaults[v.name]) {
+              defaults[v.name] = optionName(firstOption);
+            }
           });
           setSelectedVariants(defaults);
         }
@@ -230,28 +251,33 @@ export const ProductDetails: React.FC = () => {
               return (
                 <div key={vIdx} className="mt-4 sm:mt-6">
                   <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">
-                    {variant.name}: <span className="text-blue-600">{selectedValue || variant.options[0]}</span>
+                    {variant.name}: <span className="text-blue-600">{selectedValue || (typeof variant.options[0] === 'object' ? (variant.options[0] as any).name : variant.options[0])}</span>
                   </h3>
                   <div className="flex gap-2 sm:gap-3 flex-wrap">
-                    {variant.options.map((option, oIdx) => {
-                      const isActive = selectedValue === option || (!selectedValue && oIdx === 0);
+                    {variant.options.map((option: any, oIdx: number) => {
+                      const optName = typeof option === 'object' ? option.name : option;
+                      const optColor = typeof option === 'object' ? option.color : null;
+
+                      const isActive = selectedValue === optName || (!selectedValue && oIdx === 0);
+
                       if (matchesColor) {
                         return (
                           <button
                             key={oIdx}
-                            onClick={() => handleVariantSelect(variant.name, option)}
-                            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${getColorClass(option)} border-2 ${isActive ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'}`}
-                            title={option}
+                            onClick={() => handleVariantSelect(variant.name, optName)}
+                            style={{ backgroundColor: optColor && optColor !== 'bg-gray-200' ? optColor : undefined }} // Use Rich Color if available
+                            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${!optColor ? getColorClass(optName) : ''} border-2 ${isActive ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'} shadow-sm`}
+                            title={optName}
                           />
                         );
                       }
                       return (
                         <button
                           key={oIdx}
-                          onClick={() => handleVariantSelect(variant.name, option)}
+                          onClick={() => handleVariantSelect(variant.name, optName)}
                           className={`px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg border-2 text-xs sm:text-sm font-medium ${isActive ? 'border-gray-800 bg-gray-900 text-white' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}
                         >
-                          {option}
+                          {optName}
                         </button>
                       );
                     })}
