@@ -15,7 +15,9 @@ export const mockCartItems: CartItem[] = [
     seller: 'StyleFe',
     deliveryDate: 'Delivery by Sat Jan 24',
     description: 'A stylish blouse for casual wear.',
-    countInStock: 20
+    countInStock: 20,
+    images: ['https://rukminim2.flixcart.com/image/832/832/xif0q/top/b/s/k/s-1211-12-a-style-fe-original-imagz262uhz8zchp.jpeg?q=70'],
+    thumbnail: 'https://rukminim2.flixcart.com/image/832/832/xif0q/top/b/s/k/s-1211-12-a-style-fe-original-imagz262uhz8zchp.jpeg?q=70'
   },
   {
     id: '2',
@@ -31,7 +33,9 @@ export const mockCartItems: CartItem[] = [
     seller: 'DENNIS LINGO',
     deliveryDate: 'Delivery by Sun Jan 25',
     description: 'Comfortable cotton shirt.',
-    countInStock: 50
+    countInStock: 50,
+    images: ['https://rukminim2.flixcart.com/image/832/832/xif0q/shirt/g/f/f/xl-c821-dark-maroon-dennis-lingo-original-imagn9yj5gzzdvf2.jpeg?q=70'],
+    thumbnail: 'https://rukminim2.flixcart.com/image/832/832/xif0q/shirt/g/f/f/xl-c821-dark-maroon-dennis-lingo-original-imagn9yj5gzzdvf2.jpeg?q=70'
   },
   {
     id: '3',
@@ -47,6 +51,8 @@ export const mockCartItems: CartItem[] = [
     seller: 'RetailNet',
     deliveryDate: 'Delivery by Tue Jan 27',
     description: 'Latest iPhone with dynamic island.',
-    countInStock: 10
+    countInStock: 10,
+    images: ['https://rukminim2.flixcart.com/image/832/832/xif0q/mobile/t/a/x/-original-imaghxebk4xscxnw.jpeg?q=70'],
+    thumbnail: 'https://rukminim2.flixcart.com/image/832/832/xif0q/mobile/t/a/x/-original-imaghxebk4xscxnw.jpeg?q=70'
   },
 ];

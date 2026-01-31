@@ -22,7 +22,9 @@ export const MOCK_PRODUCTS: Product[] = [
     variants: [
       { name: 'Storage', options: ['128GB', '256GB', '512GB', '1TB'] },
       { name: 'Color', options: ['Natural Titanium', 'Blue Titanium', 'White Titanium', 'Black Titanium'] }
-    ]
+    ],
+    images: ['https://picsum.photos/seed/iphone/600/600'],
+    thumbnail: 'https://picsum.photos/seed/iphone/600/600'
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f1b', // Example ObjectId
@@ -39,7 +41,9 @@ export const MOCK_PRODUCTS: Product[] = [
     isFeatured: true,
     variants: [
       { name: 'Color', options: ['Black', 'Silver', 'Midnight Blue'] }
-    ]
+    ],
+    images: ['https://picsum.photos/seed/headphones/600/600'],
+    thumbnail: 'https://picsum.photos/seed/headphones/600/600'
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f1c', // Example ObjectId
@@ -56,7 +60,9 @@ export const MOCK_PRODUCTS: Product[] = [
     variants: [
       { name: 'Size', options: ['UK 7', 'UK 8', 'UK 9', 'UK 10', 'UK 11'] },
       { name: 'Color', options: ['Triple Black', 'White/Blue', 'Red/White'] }
-    ]
+    ],
+    images: ['https://picsum.photos/seed/nike/600/600'],
+    thumbnail: 'https://picsum.photos/seed/nike/600/600'
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f1d', // Example ObjectId
@@ -74,7 +80,9 @@ export const MOCK_PRODUCTS: Product[] = [
     variants: [
       { name: 'RAM', options: ['8GB', '16GB', '24GB'] },
       { name: 'Storage', options: ['256GB', '512GB', '1TB'] }
-    ]
+    ],
+    images: ['https://picsum.photos/seed/macbook/600/600'],
+    thumbnail: 'https://picsum.photos/seed/macbook/600/600'
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f1e', // Example ObjectId
@@ -87,7 +95,9 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.8,
     reviewsCount: 910,
     stock: 20,
-    countInStock: 20
+    countInStock: 20,
+    images: ['https://picsum.photos/seed/samsung/600/600'],
+    thumbnail: 'https://picsum.photos/seed/samsung/600/600'
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f1f', // Example ObjectId
@@ -100,7 +110,9 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.6,
     reviewsCount: 2100,
     stock: 50,
-    countInStock: 50
+    countInStock: 50,
+    images: ['https://picsum.photos/seed/fryer/600/600'],
+    thumbnail: 'https://picsum.photos/seed/fryer/600/600'
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f20', // Example ObjectId
@@ -114,7 +126,9 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewsCount: 450,
     stock: 100,
     countInStock: 100,
-    isFeatured: true
+    isFeatured: true,
+    images: ['https://picsum.photos/seed/tomatoes/600/600'],
+    thumbnail: 'https://picsum.photos/seed/tomatoes/600/600'
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f21', // Example ObjectId
@@ -127,7 +141,9 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.8,
     reviewsCount: 890,
     stock: 75,
-    countInStock: 75
+    countInStock: 75,
+    images: ['https://picsum.photos/seed/rice/600/600'],
+    thumbnail: 'https://picsum.photos/seed/rice/600/600'
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f22', // Example ObjectId
@@ -140,7 +156,9 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.6,
     reviewsCount: 320,
     stock: 50,
-    countInStock: 50
+    countInStock: 50,
+    images: ['https://picsum.photos/seed/milk/600/600'],
+    thumbnail: 'https://picsum.photos/seed/milk/600/600'
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f23', // Example ObjectId
@@ -153,7 +171,9 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.7,
     reviewsCount: 670,
     stock: 60,
-    countInStock: 60
+    countInStock: 60,
+    images: ['https://picsum.photos/seed/atta/600/600'],
+    thumbnail: 'https://picsum.photos/seed/atta/600/600'
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f24', // Example ObjectId
@@ -167,7 +187,9 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewsCount: 540,
     stock: 80,
     countInStock: 80,
-    isFeatured: true
+    isFeatured: true,
+    images: ['https://picsum.photos/seed/apples/600/600'],
+    thumbnail: 'https://picsum.photos/seed/apples/600/600'
   },
   {
     id: '65f6170d4f3b7d1e8c7c9f25', // Example ObjectId
@@ -180,7 +202,9 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.5,
     reviewsCount: 780,
     stock: 40,
-    countInStock: 40
+    countInStock: 40,
+    images: ['https://picsum.photos/seed/oil/600/600'],
+    thumbnail: 'https://picsum.photos/seed/oil/600/600'
   }
 ];
 
