@@ -1,7 +1,6 @@
-
 import React from 'react';
 import Link from 'next/link';
-;
+import Image from 'next/image';
 import { ShieldCheck, Zap, Heart, Award, Users, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export const AboutUsPage: React.FC = () => {
@@ -10,12 +9,15 @@ export const AboutUsPage: React.FC = () => {
       {/* Hero Section */}
       <section className="relative h-[400px] lg:h-[500px] flex items-center justify-center overflow-hidden bg-dark">
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=1600"
-            className="w-full h-full object-cover opacity-40 grayscale"
             alt="About Us"
+            fill
+            className="object-cover opacity-40 grayscale"
+            priority
+            unoptimized={true}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-dark/60 via-dark/40 to-white"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-dark/60 via-dark/40 to-white relative z-10"></div>
         </div>
 
         <div className="container mx-auto px-4 relative z-10 text-center space-y-6">
@@ -62,10 +64,12 @@ export const AboutUsPage: React.FC = () => {
 
             <div className="relative">
               <div className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl relative z-10">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=800"
-                  className="w-full h-full object-cover"
                   alt="Quality Products"
+                  fill
+                  className="object-cover"
+                  unoptimized={true}
                 />
               </div>
               {/* Decorative background elements */}
