@@ -124,7 +124,10 @@ export const AdminProductEditor: React.FC = () => {
                 try {
                     const jsonStr = data.description.split('<!-- METADATA:')[1].split('-->')[0];
                     const meta = JSON.parse(jsonStr);
-                    if (meta.gallery) setGallery(meta.gallery);
+                    // Legacy support: Only load gallery from metadata if data.images is empty
+                    if ((!data.images || data.images.length === 0) && meta.gallery) {
+                        setGallery(meta.gallery);
+                    }
                     if (meta.specifications) setSpecifications(meta.specifications);
                     if (meta.variants) setVariantGroups(meta.variants);
                     if (meta.matrix) setMatrix(meta.matrix);
@@ -136,6 +139,20 @@ export const AdminProductEditor: React.FC = () => {
                         setSectionSize(meta.section.size || 'text-xl');
                     }
                 } catch (e) { console.error("Failed to parse metadata", e); }
+            }
+
+            // PRIMARY: Load images from Standard Schema
+            if (data.images && data.images.length > 0) {
+                // If thumbnail is set, ensure it is the main image
+                const mainImg = data.thumbnail || data.images[0];
+                setFormData(prev => ({ ...prev, image: mainImg }));
+
+                // Gallery is everything else
+                // We want to avoid duplicates in gallery if possible, or just load them all
+                // Admin UI has "Main Image" separate from "Gallery" slots.
+                // So we filter out the main image from the gallery array to populate the slots
+                const otherImages = data.images.filter((img: string) => img !== mainImg);
+                setGallery(otherImages);
             }
 
         } catch (error) {
@@ -303,15 +320,24 @@ export const AdminProductEditor: React.FC = () => {
             const defaultVar = matrix.find(m => m.isDefault);
             const finalPrice = defaultVar ? defaultVar.price : finalSalePrice;
 
+            // 1. Consolidate Images
+            // Ensure Main Image is first (Thumbnail)
+            const mainImage = formData.image;
+            const validGallery = gallery.filter(g => g && g.trim() !== '' && g !== mainImage);
+            const allImages = mainImage ? [mainImage, ...validGallery] : validGallery;
+
             const richData = {
-                sku: skuBase, gallery, specifications, variants: variantGroups, matrix,
+                sku: skuBase, specifications, variants: variantGroups, matrix,
                 section: { title: sectionTitle, color: sectionColor, size: sectionSize }
+                // Removed gallery from metadata as it is now first-class citizen
             };
             const payload = {
                 ...formData,
                 price: finalPrice,
                 originalPrice: finalOriginalPrice,
                 countInStock: totalStock,
+                images: allImages, // SAVE ARRAY
+                thumbnail: mainImage, // SAVE THUMBNAIL
                 description: formData.description + `\n<!-- METADATA:${JSON.stringify(richData)}-->`
             };
 

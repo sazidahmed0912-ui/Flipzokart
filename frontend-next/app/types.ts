@@ -21,7 +21,8 @@ export interface Product {
   price: number;
   originalPrice: number;
   image: string;
-  images?: string[];
+  thumbnail?: string;
+  images: string[];
   category: string;
   rating: number;
   reviewsCount: number;
