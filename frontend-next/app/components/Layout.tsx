@@ -125,9 +125,10 @@ const Header: React.FC = () => {
                       </button>
                       <button
                         type="button"
+                        onMouseDown={(e) => e.preventDefault()} // Prevent input blur
                         onClick={(e) => {
                           e.stopPropagation();
-                          e.preventDefault();
+                          // e.preventDefault(); // Not needed if onMouseDown handles it, but good safety
                           const newHistory = [...searchHistory];
                           newHistory.splice(index, 1);
                           setSearchHistory(newHistory);

@@ -11,6 +11,8 @@ import {
   ShieldCheck,
   MapPin,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   LogOut,
   CheckCircle2,
   Calendar,
@@ -42,6 +44,7 @@ const ProfilePage = () => {
   const [profileData, setProfileData] = useState<any>(user || {});
   const [activities, setActivities] = useState<any[]>([]);
   const [orderCount, setOrderCount] = useState(0);
+  const [isMobileInfoExpanded, setIsMobileInfoExpanded] = useState(false);
 
   // STRICT 5s SYNC ENGINE
   useEffect(() => {
@@ -169,10 +172,10 @@ const ProfilePage = () => {
 
           {/* PROFILE HEADER CARD */}
           <SmoothReveal direction="up" delay={200}>
-            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6 relative">
-              <div className="flex items-center gap-4 md:gap-6 w-full">
+            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-3 md:p-8 flex flex-row md:flex-row items-center justify-between gap-3 md:gap-6 relative min-h-[80px] md:min-h-0">
+              <div className="flex items-center gap-3 md:gap-6 w-full">
                 <div className="relative group cursor-pointer flex-shrink-0" onClick={handleAvatarClick}>
-                  <div className="w-[60px] h-[60px] md:w-24 md:h-24 rounded-full bg-[#FFE11B] flex items-center justify-center text-xl md:text-3xl font-bold text-[#1F2937] border-2 md:border-4 border-white shadow-sm overflow-hidden">
+                  <div className="w-[44px] h-[44px] md:w-24 md:h-24 rounded-full bg-[#FFE11B] flex items-center justify-center text-lg md:text-3xl font-bold text-[#1F2937] border-2 md:border-4 border-white shadow-sm overflow-hidden">
                     {profileData.avatar ? (
                       <img src={profileData.avatar.startsWith('http') ? profileData.avatar : `/${profileData.avatar}`} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
@@ -185,40 +188,40 @@ const ProfilePage = () => {
                   <input type="file" id="avatar-input" className="hidden" accept="image/*" onChange={handleFileChange} />
                 </div>
 
-                <div className="space-y-0.5 md:space-y-1 overflow-hidden">
-                  <h2 className="text-lg md:text-2xl font-bold text-[#1F2937] flex items-center gap-1.5 md:gap-2 truncate">
+                <div className="space-y-0.5 md:space-y-1 overflow-hidden flex-1">
+                  <h2 className="text-[15px] md:text-2xl font-bold text-[#1F2937] flex items-center gap-1.5 md:gap-2 truncate">
                     {profileData.name || "User Name"}
-                    <CheckCircle2 size={16} className="text-green-500 fill-current md:w-5 md:h-5" />
+                    <CheckCircle2 size={14} className="text-green-500 fill-current md:w-5 md:h-5" />
                   </h2>
-                  <div className="text-sm text-gray-500 font-medium truncate">{profileData.email || "email@example.com"}</div>
-                  <div className="text-sm text-gray-500 font-medium truncate">{profileData.phone || "+91 XXXXXXXXXX"}</div>
+                  <div className="text-[11px] md:text-sm text-gray-400 md:text-gray-500 font-medium truncate">{profileData.email || "email@example.com"}</div>
+                  <div className="text-[11px] md:text-sm text-gray-500 font-medium truncate md:hidden">{profileData.phone || "+91 XXXXXXXXXX"}</div>
                 </div>
               </div>
 
               <button
                 onClick={openModal}
-                className="bg-[#F9C74F] text-[#1F2937] px-4 md:px-6 py-2 md:py-2.5 rounded-[6px] font-semibold text-xs md:text-sm shadow-sm hover:shadow-md transition-shadow active:scale-95 whitespace-nowrap h-[36px] md:h-auto self-start md:self-auto ml-auto md:ml-0"
+                className="bg-[#F9C74F] text-[#1F2937] px-3 md:px-6 py-1.5 md:py-2.5 rounded-full md:rounded-[6px] font-semibold text-[10px] md:text-sm shadow-sm hover:shadow-md transition-shadow active:scale-95 whitespace-nowrap h-[28px] md:h-auto self-center"
               >
-                Edit Profile
+                Edit
               </button>
             </div>
           </SmoothReveal>
 
           {/* QUICK INFO CARDS */}
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
             {[
               { label: "Total Orders", value: orderCount.toString(), icon: Package },
               { label: "Account Status", value: profileData.status || "Active", icon: ShieldCheck, isStatus: true },
               { label: "Member Since", value: getMemberSince(), icon: Calendar }
             ].map((stat, i) => (
               <SmoothReveal key={i} direction="up" delay={300 + (i * 100)} className="h-full">
-                <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-3 md:p-5 flex items-center gap-3 md:gap-4 h-full">
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#2874F0] flex-shrink-0">
-                    <stat.icon size={16} className="md:w-5 md:h-5" />
+                <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] md:shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-2.5 md:p-5 flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 h-full min-h-[64px] md:min-h-0">
+                  <div className="w-6 h-6 md:w-10 md:h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#2874F0] flex-shrink-0">
+                    <stat.icon size={14} className="md:w-5 md:h-5" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[10px] md:text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{stat.label}</div>
-                    <div className={`text-sm md:text-lg font-bold truncate ${stat.isStatus ? "text-green-600" : "text-[#1F2937]"}`}>{stat.value}</div>
+                    <div className="text-[10px] md:text-xs text-gray-400 md:text-gray-500 font-medium uppercase tracking-wide truncate">{stat.label}</div>
+                    <div className={`text-[13px] md:text-lg font-bold truncate ${stat.isStatus ? "text-green-600" : "text-[#1F2937]"}`}>{stat.value}</div>
                   </div>
                 </div>
               </SmoothReveal>
@@ -227,44 +230,60 @@ const ProfilePage = () => {
 
           {/* PERSONAL INFORMATION CARD (TOGGLED) */}
           <SmoothReveal direction="up" delay={600}>
-            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 md:p-8">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-[#1F2937]">Personal Information</h3>
+            <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] md:shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 md:p-8">
+              <div
+                className="flex justify-between items-center mb-0 md:mb-6 cursor-pointer md:cursor-auto"
+                onClick={() => setIsMobileInfoExpanded(!isMobileInfoExpanded)}
+              >
+                <div className="flex items-center gap-2">
+                  <h3 className="text-[15px] md:text-lg font-bold text-[#1F2937]">Personal Information</h3>
+                  <div className="md:hidden text-gray-400">
+                    {isMobileInfoExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </div>
+                </div>
                 {!isModalOpen && (
                   <button
-                    onClick={openModal}
-                    className="bg-[#F9C74F] text-[#1F2937] px-4 py-1.5 rounded-[2px] font-semibold text-sm shadow-sm hover:shadow-md transition-shadow active:scale-95"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openModal();
+                    }}
+                    className="bg-transparent md:bg-[#F9C74F] text-blue-600 md:text-[#1F2937] px-0 md:px-4 py-0 md:py-1.5 rounded-[2px] font-semibold text-xs md:text-sm shadow-none md:shadow-sm hover:underline md:hover:no-underline md:hover:shadow-md transition-all active:scale-95"
                   >
                     Edit
                   </button>
                 )}
               </div>
 
+              {/* Mobile Separator */}
+              {isMobileInfoExpanded && <div className="h-[1px] bg-gray-100 my-3 md:hidden"></div>}
+
               {isModalOpen ? (
                 /* FORM MODE */
-                <EditProfileForm
-                  initialData={profileData}
-                  onCancel={closeModal}
-                  onSuccess={(updatedUser: any) => {
-                    setProfileData(updatedUser);
-                    setUser({ ...user, ...updatedUser });
-                    closeModal();
-                  }}
-                />
+                <div className="mt-4 md:mt-0">
+                  <EditProfileForm
+                    initialData={profileData}
+                    onCancel={closeModal}
+                    onSuccess={(updatedUser: any) => {
+                      setProfileData(updatedUser);
+                      setUser({ ...user, ...updatedUser });
+                      closeModal();
+                    }}
+                  />
+                </div>
               ) : (
                 /* VIEW MODE */
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Full Name</label>
-                    <div className="font-semibold text-[#1F2937] text-base">{profileData.name || "N/A"}</div>
+                <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-8 ${!isMobileInfoExpanded ? 'hidden md:grid' : ''}`}>
+                  <div className="grid grid-cols-3 md:block">
+                    <label className="text-[11px] md:text-xs font-bold text-gray-400 md:text-gray-500 uppercase col-span-1 self-center">Full Name</label>
+                    <div className="font-semibold text-[#1F2937] text-[13px] md:text-base col-span-2">{profileData.name || "N/A"}</div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Email Address</label>
-                    <div className="font-semibold text-[#1F2937] text-base">{profileData.email || "N/A"}</div>
+                  <div className="grid grid-cols-3 md:block">
+                    <label className="text-[11px] md:text-xs font-bold text-gray-400 md:text-gray-500 uppercase col-span-1 self-center">Email</label>
+                    <div className="font-semibold text-[#1F2937] text-[13px] md:text-base col-span-2 truncate">{profileData.email || "N/A"}</div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Mobile Number</label>
-                    <div className="font-semibold text-[#1F2937] text-base">{profileData.phone || "N/A"}</div>
+                  <div className="grid grid-cols-3 md:block">
+                    <label className="text-[11px] md:text-xs font-bold text-gray-400 md:text-gray-500 uppercase col-span-1 self-center">Mobile</label>
+                    <div className="font-semibold text-[#1F2937] text-[13px] md:text-base col-span-2">{profileData.phone || "N/A"}</div>
                   </div>
                 </div>
               )}
@@ -273,26 +292,26 @@ const ProfilePage = () => {
 
           {/* RECENT ACTIVITY */}
           <SmoothReveal direction="up" delay={700}>
-            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6 md:p-8">
-              <h3 className="text-lg font-bold text-[#1F2937] mb-6">Recent Activity</h3>
+            <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] md:shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 md:p-8 mb-20 md:mb-0">
+              <h3 className="text-[15px] md:text-lg font-bold text-[#1F2937] mb-3 md:mb-6">Recent Activity</h3>
               {activities.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                <div className="text-center py-6 md:py-8 text-[12px] md:text-base text-gray-400 md:text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
                   No recent activity found.
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {activities.map((activity, idx) => (
-                    <div key={idx} className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-xl transition-colors border border-gray-100">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0
+                    <div key={idx} className="flex items-center gap-3 md:gap-4 p-3 md:p-4 hover:bg-gray-50 rounded-xl transition-colors border border-gray-100">
+                      <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center shrink-0
                         ${activity.type === 'order' ? 'bg-blue-100 text-blue-600' :
                           activity.type === 'login' ? 'bg-green-100 text-green-600' :
                             'bg-gray-100 text-gray-600'}`}>
-                        {activity.type === 'order' ? <Package size={18} /> :
-                          activity.type === 'login' ? <Lock size={18} /> : <Info size={18} />}
+                        {activity.type === 'order' ? <Package size={14} className="md:w-[18px]" /> :
+                          activity.type === 'login' ? <Lock size={14} className="md:w-[18px]" /> : <Info size={14} className="md:w-[18px]" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-800 text-sm md:text-base truncate">{activity.message}</p>
-                        <p className="text-xs text-gray-500">{new Date(activity.date).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</p>
+                        <p className="font-semibold text-gray-800 text-[12px] md:text-base truncate">{activity.message}</p>
+                        <p className="text-[10px] md:text-xs text-gray-400 md:text-gray-500">{new Date(activity.date).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                       </div>
                     </div>
                   ))}
