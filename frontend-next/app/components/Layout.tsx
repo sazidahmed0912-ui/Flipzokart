@@ -447,21 +447,21 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
             <h3 className="font-semibold text-gray-900 mb-3">Company</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
+            <ul className="space-y-2 text-xs md:text-sm text-gray-600">
               <li><Link href="/about" className="hover:text-[#f28c28]">About Us</Link></li>
               <li><a href="#" className="hover:text-[#f28c28]">Careers</a></li>
             </ul>
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 mb-3">Support</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
+            <ul className="space-y-2 text-xs md:text-sm text-gray-600">
               <li><Link href="/contact" className="hover:text-[#f28c28]">Contact Us</Link></li>
               <li><a href="#" className="hover:text-[#f28c28]">Returns</a></li>
             </ul>
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 mb-3">Legal</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
+            <ul className="space-y-2 text-xs md:text-sm text-gray-600">
               <li><Link href="/privacy-policy" className="hover:text-[#f28c28]">Privacy Policy</Link></li>
               <li><Link href="/terms-of-service" className="hover:text-[#f28c28]">Terms of Service</Link></li>
             </ul>
