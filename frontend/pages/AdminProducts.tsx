@@ -13,7 +13,7 @@ import { Product, VariantGroup, VariantCombination } from '../types';
 import { CATEGORIES } from '../constants';
 import { AdminSidebar } from '../components/AdminSidebar';
 import { createProduct, updateProduct, deleteProduct } from '../services/adminService';
-import { fetchProductById } from '../services/api';
+import { fetchProductById, uploadImage } from '../services/api';
 
 export const AdminProducts: React.FC = () => {
   const { products, setProducts, user, logout } = useApp();
@@ -137,43 +137,59 @@ export const AdminProducts: React.FC = () => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'main' | 'gallery' | 'variant' = 'main') => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'main' | 'gallery' | 'variant' = 'main') => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    if (type === 'variant') {
-      if (variantUploadingIndex === null) return;
-      const file = files[0];
-      // Added null check for file
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updateInventoryField(variantUploadingIndex!, 'image', reader.result as string);
+    setIsUploading(true);
+    const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000';
+
+    try {
+      if (type === 'variant') {
+        if (variantUploadingIndex === null) return;
+        const file = files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+        const { data: path } = await uploadImage(formData);
+        const fullUrl = `${API_URL}${path}`;
+
+        updateInventoryField(variantUploadingIndex!, 'image', fullUrl);
         setVariantUploadingIndex(null);
-      };
-      reader.readAsDataURL(file);
-    } else if (type === 'gallery') {
-      // Cast Array.from to File[] to ensure type safety in forEach loop
-      (Array.from(files) as File[]).slice(0, 6 - formData.images.length).forEach((file: File) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setFormData(prev => ({ ...prev, images: [...prev.images, reader.result as string] }));
-        };
-        reader.readAsDataURL(file);
-      });
-    } else {
-      const file = files[0];
-      // Added null check for file
-      if (!file) return;
-      setIsUploading(true);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, image: reader.result as string }));
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+
+      } else if (type === 'gallery') {
+        const remainingSlots = 6 - formData.images.length;
+        const selectedFiles = Array.from(files).slice(0, remainingSlots);
+
+        const uploadPromises = selectedFiles.map(file => {
+          const fd = new FormData();
+          fd.append('image', file);
+          return uploadImage(fd).then(res => `${API_URL}${res.data}`);
+        });
+
+        const uploadedUrls = await Promise.all(uploadPromises);
+        setFormData(prev => ({ ...prev, images: [...prev.images, ...uploadedUrls] }));
+
+      } else {
+        // Main Image
+        const file = files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+        const { data: path } = await uploadImage(formData);
+        const fullUrl = `${API_URL}${path}`;
+
+        setFormData(prev => ({ ...prev, image: fullUrl }));
+      }
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setIsUploading(false);
+      e.target.value = ''; // Reset input
     }
-    e.target.value = '';
   };
 
   const removeGalleryImage = (index: number) => {
@@ -253,14 +269,24 @@ export const AdminProducts: React.FC = () => {
 
 
   // --- Color-Image Sync Logic ---
-  const handleColorImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleColorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setNewColorImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+
+    try {
+      const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000';
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const { data: path } = await uploadImage(formData);
+      const fullUrl = `${API_URL}${path}`;
+
+      setNewColorImage(fullUrl);
+    } catch (error) {
+      console.error("Color image upload failed:", error);
+      alert("Failed to upload color image.");
+    }
+
     e.target.value = '';
   };
 

@@ -68,4 +68,8 @@ export const fetchOrderById = (id: string) => API.get(`/api/order/${id}`);
 export const deleteOrder = (id: string) => API.delete(`/api/order/${id}`);
 export const updateOrderStatus = (id: string, status: string) => API.put(`/api/order/${id}/status`, { status });
 
+export const uploadImage = (formData: FormData) => API.post("/api/upload", formData, {
+  headers: { "Content-Type": "multipart/form-data" },
+});
+
 export default API;
