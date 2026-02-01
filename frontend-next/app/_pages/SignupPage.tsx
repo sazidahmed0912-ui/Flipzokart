@@ -44,6 +44,22 @@ export const SignupPage: React.FC = () => {
   const widgetId = "3662616b7765363133313539";
   const tokenAuth = "491551TGhhpXBdgY1697f3ab8P1";
 
+  // Helper to check existence
+  const checkUserExists = async (field: 'email' | 'phone', value: string) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/check-exists`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value })
+      });
+      const data = await res.json();
+      return data.exists;
+    } catch (e) {
+      console.error("Check Exists Failed", e);
+      return false;
+    }
+  };
+
   const handleMobileOtpClick = () => {
     // Fallback: Check window object directly if state is lagging or script loaded from cache
     // @ts-ignore
@@ -55,7 +71,9 @@ export const SignupPage: React.FC = () => {
     const configuration = {
       widgetId: widgetId,
       tokenAuth: tokenAuth,
-      success: (data: any) => {
+      identifier: "mobile", // 🟢 ADDED: Prevents widget crash
+      exposeMethods: false,
+      success: async (data: any) => {
         console.log("Mobile Verified Data:", data);
 
         // Extract mobile number from response (if available) or rely on user knowing it
@@ -73,10 +91,19 @@ export const SignupPage: React.FC = () => {
         // For now, if we get it, use it. If not, just mark verified (user enters number manually)
         // But the requirement says "Sign up with Mobile OTP".
 
-        setIsMobileVerified(true);
         if (verifiedMobile) {
+          // 🟢 DUPLICATE CHECK: Mobile
+          const exists = await checkUserExists('phone', verifiedMobile);
+          if (exists) {
+            addToast("warning", "Mobile number already registered! Redirecting to Login...");
+            setTimeout(() => router.push('/login'), 2000);
+            return;
+          }
+
           setPhone(verifiedMobile);
         }
+
+        setIsMobileVerified(true);
         addToast("success", "Mobile Verified Successfully! ✅");
       },
       failure: (err: any) => {
@@ -112,6 +139,14 @@ export const SignupPage: React.FC = () => {
 
     setIsLoading(true);
     try {
+      // 🟢 DUPLICATE CHECK: Email
+      const exists = await checkUserExists('email', email);
+      if (exists) {
+        addToast("error", "Email already registered! Please Login.");
+        setIsLoading(false);
+        return;
+      }
+
       await authService.sendEmailOtp(email);
       setStep(2);
       setTimer(300); // 5 minutes

@@ -65,8 +65,12 @@ export default function MobileOtpLogin() {
         console.log("MSG91 RAW DATA: " + JSON.stringify(data, null, 2));
 
         try {
+            // Extract mobile if available
+            const mobile = data.mobile || data?.message?.mobile;
+
             const payload = {
-                access_token: data.access_token || data?.message || data
+                access_token: data.access_token || data?.message || data,
+                mobile: mobile // 🟢 SEND MOBILE EXPLICITLY
             };
             console.log("Sending Payload to Backend: " + JSON.stringify(payload));
 
