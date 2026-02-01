@@ -184,6 +184,15 @@ export default function MobileOtpLogin() {
             >
                 {isScriptLoaded ? "Login with Mobile OTP" : "Loading OTP Widget..."}
             </button>
+
+            {/* 🔴 DEV BYPASS */}
+            <button
+                type="button"
+                onClick={() => handleSuccess({ mobile: "9876543210", message: "DEV_TOKEN" }, "dev_bypass")}
+                className="w-full text-[11px] text-red-500 underline mt-2 cursor-pointer hover:text-red-700 bg-transparent border-none"
+            >
+                (Dev) Force Login 9876543210
+            </button>
         </>
     );
 }

@@ -275,6 +275,22 @@ export const SignupPage: React.FC = () => {
                             <span className="text-[11px] text-gray-500 uppercase">OR</span>
                             <div className="h-[1px] flex-1 bg-gray-300"></div>
                           </div>
+
+                          {/* 🔴 DEV BYPASS: For IP Blocked Users */}
+                          <div className="text-center mb-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsMobileVerified(true);
+                                setPhone('9876543210');
+                                addToast("success", "Dev Bypass: Mobile Verified (Dummy) ✅");
+                              }}
+                              className="text-[11px] text-red-500 underline hover:text-red-700 cursor-pointer"
+                            >
+                              (Dev) Force Verify 9876543210
+                            </button>
+                          </div>
+
                         </div>
                       )}
 
