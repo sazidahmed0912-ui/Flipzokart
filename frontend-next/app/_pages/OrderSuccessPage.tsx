@@ -378,7 +378,8 @@ const OrderSuccessPage = () => {
           </div>
         </div>
       </div>
-      );
+    </div>
+  );
 };
 
-      export default OrderSuccessPage;
+export default OrderSuccessPage;
