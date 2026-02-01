@@ -43,10 +43,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <div className="group bg-white rounded-lg md:rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
-      <div className="relative w-full h-36 md:h-48 overflow-hidden bg-white">
-        <Link href={`/product/${product.id}`} className="block w-full h-full">
+      <div className="relative w-full h-36 md:h-48 overflow-hidden bg-white flex items-center justify-center p-4">
+        <Link href={`/product/${product.id}`} className="block w-full h-full relative">
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10 transition-opacity duration-300">
               <div className="w-6 h-6 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
             </div>
           )}
@@ -55,13 +55,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             alt={product.name}
             width={300}
             height={300}
-            className={`w-full h-full object-contain p-2 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
-            unoptimized={true}
+            className={`w-full h-full object-contain transition-transform duration-300 hover:scale-105 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
             onLoad={() => setIsLoading(false)}
             onError={() => {
               setImgSrc("/placeholder.png");
               setIsLoading(false);
             }}
+            unoptimized={true}
           />
         </Link>
         <button

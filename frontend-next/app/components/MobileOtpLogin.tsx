@@ -33,7 +33,7 @@ export default function MobileOtpLogin() {
             return;
         }
 
-        console.log("Initializing MSG91 OTP Widget... (Attempt 3 - Fixed Config)");
+        console.log("Initializing MSG91 OTP Widget... (Attempt 4 - Log Check)");
 
         try {
             const config = {
@@ -42,11 +42,11 @@ export default function MobileOtpLogin() {
                 identifier: "mobile",
                 exposeMethods: false,
 
-                success: (data: any) => handleSuccess(data, 'widget_success_v3'),
-                failure: (err: any) => handleFailure(err, 'widget_failure_v3')
+                success: (data: any) => handleSuccess(data, 'widget_success_v4'),
+                failure: (err: any) => handleFailure(err, 'widget_failure_v4')
             };
 
-            console.log("Calling initSendOTP with STANDARD config v3:", config);
+            console.log("Calling initSendOTP with STANDARD config v4:", config);
 
             // Invoke
             (window as any).initSendOTP(config);
@@ -62,25 +62,30 @@ export default function MobileOtpLogin() {
     };
 
     const handleSuccess = async (data: any, source: string) => {
-        console.log(`MSG91 Success via [${source}]:`, data);
+        // FORCE STRING CONCATENATION because console.log(obj) shows [Object]
+        console.log("MSG91 RAW DATA: " + JSON.stringify(data, null, 2));
 
         try {
+            const payload = {
+                access_token: data.access_token || data?.message || data // Try to find the string token
+            };
+            console.log("Sending Payload to Backend: " + JSON.stringify(payload));
+
             const res = await fetch("/api/mobile-otp-verify", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    access_token: data.access_token || data, // Handle different data shapes
-                }),
+                body: JSON.stringify(payload),
             });
 
             const result = await res.json();
-            console.log("Backend verification result:", result);
+            console.log("Backend verification result RAW: " + JSON.stringify(result, null, 2));
 
             if (result.success) {
                 alert("Mobile OTP Login Success ✅");
             } else {
-                // ALERT THE ACTUAL BACKEND ERROR
-                alert(`Mobile OTP Failed ❌\nReason: ${result.message || JSON.stringify(result.raw)}`);
+                const msg = result.message || JSON.stringify(result);
+                console.error("Backend Error Message: " + msg);
+                alert(`Mobile OTP Failed ❌\nReason: ${msg}`);
             }
         } catch (e) {
             console.error("Verification error:", e);
