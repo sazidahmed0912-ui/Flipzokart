@@ -153,7 +153,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                 onMouseMove={handleMouseMove}
                                 onMouseLeave={handleMouseLeave}
                             >
-                                <div className="relative w-full aspect-square md:aspect-[4/5] max-h-[70vh] md:max-h-[600px]">
+                                <div className="relative w-full aspect-square md:h-[600px] max-h-[70vh]">
                                     <Image
                                         src={img}
                                         alt={`Product View ${idx + 1}`}
@@ -163,7 +163,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                         style={{
                                             transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
                                             transform: isZoomed && !isLoading ? 'scale(2.5)' : 'scale(1)',
-                                            opacity: isLoading && idx === activeIndex ? 0 : 1
+                                            opacity: 1
                                         }}
                                         onLoad={() => {
                                             // Force swiper update to recalculate height after image load if needed
