@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "via.placeholder.com" },
       { protocol: "https", hostname: "your-api-domain.com" },
       { protocol: "https", hostname: "cdn.yoursite.com" },
+      { protocol: "https", hostname: "flipzokart-backend.onrender.com" },
       { protocol: "http", hostname: "localhost" },
     ],
   },
