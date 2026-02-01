@@ -5,6 +5,7 @@ const protect = require("../middleware/protect");
 const {
   register,
   login,
+  logout,
   forgotPassword,
   resetPassword,
   registerSeller,
@@ -19,6 +20,7 @@ const {
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/logout", logout);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 

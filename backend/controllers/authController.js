@@ -133,6 +133,21 @@ const login = async (req, res) => {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });
   }
+}
+};
+
+// LOGOUT
+const logout = async (req, res) => {
+  try {
+    // For JWT, we can't really invalidate the token server-side without a blocklist
+    // But we can return success so frontend can clear it
+    res.status(200).json({
+      success: true,
+      message: "Logout successful"
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };
 
 // FORGOT PASSWORD
@@ -383,6 +398,7 @@ const registerStore = async (req, res) => {
 module.exports = {
   register,
   login,
+  logout,
   forgotPassword,
   resetPassword,
   registerSeller,
