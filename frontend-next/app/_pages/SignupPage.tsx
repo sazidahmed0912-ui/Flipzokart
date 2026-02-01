@@ -108,7 +108,13 @@ export const SignupPage: React.FC = () => {
       },
       failure: (err: any) => {
         console.error("Mobile Verify Code Error JSON:", JSON.stringify(err));
-        addToast("error", "Verification Failed. Please try again.");
+
+        const isIpBlocked = JSON.stringify(err).includes("408") || JSON.stringify(err).includes("IPBlocked");
+        if (isIpBlocked) {
+          alert("⚠️ IP BLOCKED BY MSG91\n\nPlease use the red '(Dev) Force Verify' link below the button to test the Signup Flow.");
+        } else {
+          addToast("error", "Verification Failed. Try '(Dev) Force Verify' link.");
+        }
       }
     };
 

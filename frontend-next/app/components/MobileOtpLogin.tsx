@@ -149,7 +149,14 @@ export default function MobileOtpLogin() {
 
     const handleFailure = (err: any, source: string) => {
         console.error(`MSG91 Failure via [${source}]:`, err);
-        alert(`OTP Verification Failed (${source})`);
+        // 🟢 UX IMPROVEMENT: Suggest Dev Bypass
+        const isIpBlocked = JSON.stringify(err).includes("408") || JSON.stringify(err).includes("IPBlocked");
+
+        if (isIpBlocked) {
+            alert(`⚠️ IP BLOCKED BY MSG91 (Error 408)\n\nYou cannot use the real widget.\n\n👉 Please click the red "(Dev) Force Login" link below to skip verification and test the flow.`);
+        } else {
+            alert(`OTP Verification Failed (${source})\n\nIf this persists, try the "(Dev) Force Login" link below.`);
+        }
     };
 
     return (
