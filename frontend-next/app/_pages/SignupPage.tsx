@@ -301,20 +301,33 @@ export const SignupPage: React.FC = () => {
                       )}
 
                       <div className="space-y-2 md:space-y-4 mb-[15px] md:mb-[18px]">
+
+                        {/* 🟢 Form Header for Mobile Signup */}
+                        {isMobileVerified && (
+                          <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-2">
+                            <h3 className="text-sm font-semibold text-blue-800">Complete Registration</h3>
+                            <p className="text-xs text-blue-600">Please fill the remaining details.</p>
+                          </div>
+                        )}
+
                         {/* Name Input */}
-                        <input
-                          type="text"
-                          placeholder="Full Name"
-                          required
-                          className="w-full h-[42px] md:h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-[13px] md:text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          disabled={isLoading}
-                        />
+                        <div>
+                          <label className="text-[11px] font-semibold text-gray-500 mb-1 ml-1">Full Name</label>
+                          <input
+                            type="text"
+                            placeholder="Enter Full Name"
+                            required
+                            className="w-full h-[42px] md:h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-[13px] md:text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            disabled={isLoading}
+                          />
+                        </div>
 
                         {/* Mobile Number Input - ONLY SHOW IF VERIFIED (via Widget) */}
                         {isMobileVerified && (
                           <div className="relative">
+                            <label className="text-[11px] font-semibold text-gray-500 mb-1 ml-1">Mobile Number (Verified)</label>
                             <input
                               type="tel"
                               placeholder="Mobile Number"
@@ -323,26 +336,30 @@ export const SignupPage: React.FC = () => {
                               onChange={(e) => !isMobileVerified && setPhone(e.target.value)}
                               disabled={isLoading || isMobileVerified}
                             />
-                            <CheckCircle size={18} className="absolute right-3 top-3 text-green-500" />
+                            <CheckCircle size={18} className="absolute right-3 top-8 text-green-500" />
                           </div>
                         )}
 
                         {/* Email Input */}
-                        <input
-                          type="email"
-                          placeholder="Email Address"
-                          required
-                          className="w-full h-[42px] md:h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-[13px] md:text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          disabled={isLoading}
-                        />
+                        <div>
+                          <label className="text-[11px] font-semibold text-gray-500 mb-1 ml-1">Email Address</label>
+                          <input
+                            type="email"
+                            placeholder="Enter Email Address"
+                            required
+                            className="w-full h-[42px] md:h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-[13px] md:text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            disabled={isLoading}
+                          />
+                        </div>
 
                         {/* Password Input */}
                         <div className="relative">
+                          <label className="text-[11px] font-semibold text-gray-500 mb-1 ml-1">Password</label>
                           <input
                             type={showPassword ? "text" : "password"}
-                            placeholder="Set Password"
+                            placeholder="Set a Password"
                             required
                             className="w-full h-[42px] md:h-11 rounded-[10px] border border-[#d1d5db] px-3.5 pr-10 text-[13px] md:text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all"
                             value={password}
@@ -352,7 +369,7 @@ export const SignupPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-2.5 md:top-3 text-gray-400 hover:text-gray-600"
+                            className="absolute right-3 top-8 md:top-8 text-gray-400 hover:text-gray-600"
                           >
                             {showPassword ? <EyeOff size={16} className="md:w-[18px] md:h-[18px]" /> : <Eye size={16} className="md:w-[18px] md:h-[18px]" />}
                           </button>
