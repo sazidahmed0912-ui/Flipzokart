@@ -22,7 +22,7 @@ export const AboutUsPage: React.FC = () => {
           <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-1000">
             About <span className="text-primary">Us</span>
           </h1>
-          <p className="text-gray-300 max-w-2xl mx-auto text-lg lg:text-xl font-medium animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          <p className="text-gray-300 max-w-2xl mx-auto text-[13px] leading-[1.7] md:text-lg lg:text-xl font-medium animate-in fade-in slide-in-from-bottom-8 duration-1000">
             Redefining the Indian digital marketplace through innovation, quality, and unwavering trust.
           </p>
         </div>
@@ -40,7 +40,7 @@ export const AboutUsPage: React.FC = () => {
                 <div className="w-20 h-1.5 bg-primary rounded-full"></div>
               </div>
 
-              <div className="space-y-6 text-gray-500 text-lg lg:text-xl leading-relaxed">
+              <div className="space-y-6 text-gray-500 text-[13px] leading-[1.7] md:text-lg lg:text-xl leading-relaxed">
                 <p className="font-medium text-dark">
                   This is a modern e-commerce platform built to provide customers with high-quality products, affordable prices, and a smooth online shopping experience.
                 </p>
@@ -118,7 +118,7 @@ export const AboutUsPage: React.FC = () => {
                   <value.icon size={32} />
                 </div>
                 <h3 className="text-xl font-bold mb-4">{value.title}</h3>
-                <p className="text-gray-500 leading-relaxed">{value.desc}</p>
+                <p className="text-gray-500 text-[13px] leading-[1.7] md:text-base leading-relaxed">{value.desc}</p>
               </div>
             ))}
           </div>

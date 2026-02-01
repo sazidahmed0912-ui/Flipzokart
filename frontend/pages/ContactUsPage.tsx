@@ -18,7 +18,7 @@ export const ContactUsPage: React.FC = () => {
         <div className="container mx-auto px-4 relative z-10 text-center">
           <h4 className="text-primary font-bold uppercase tracking-[0.3em] text-xs mb-4">Support Center</h4>
           <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tighter">Get in <span className="text-primary">Touch</span></h1>
-          <p className="text-gray-400 max-w-2xl mx-auto mt-6 text-lg">
+          <p className="text-gray-400 max-w-2xl mx-auto mt-6 text-[13px] leading-[1.7] md:text-lg">
             Have questions about your order or our services? Our dedicated support team is here to assist you.
           </p>
         </div>
@@ -39,7 +39,7 @@ export const ContactUsPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Email Us</p>
-                    <a href="mailto:fzokart@gmail.com" className="text-lg font-bold text-dark hover:text-primary transition-colors">fzokartshop@gmail.com</a>
+                    <a href="mailto:fzokart@gmail.com" className="text-[15px] md:text-lg font-bold text-dark hover:text-primary transition-colors">fzokartshop@gmail.com</a>
                   </div>
                 </div>
 
@@ -49,7 +49,7 @@ export const ContactUsPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Call Support</p>
-                    <a href="tel:+917636067699" className="text-lg font-bold text-dark hover:text-primary transition-colors">+91 7636067699</a>
+                    <a href="tel:+917636067699" className="text-[15px] md:text-lg font-bold text-dark hover:text-primary transition-colors">+91 7636067699</a>
                   </div>
                 </div>
 
@@ -63,7 +63,7 @@ export const ContactUsPage: React.FC = () => {
                       href="https://wa.me/917636067699"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-lg font-bold text-dark hover:text-[#25D366] transition-colors"
+                      className="text-[15px] md:text-lg font-bold text-dark hover:text-[#25D366] transition-colors"
                     >
                       Instant Message Now
                     </a>
@@ -76,7 +76,7 @@ export const ContactUsPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Support Hours</p>
-                    <p className="text-lg font-bold text-dark">Mon to Sat — 9 AM to 7 PM</p>
+                    <p className="text-[15px] md:text-lg font-bold text-dark">Mon to Sat — 9 AM to 7 PM</p>
                   </div>
                 </div>
 
@@ -86,7 +86,7 @@ export const ContactUsPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Office Address</p>
-                    <div className="text-lg font-bold text-dark leading-tight">
+                    <div className="text-[15px] md:text-lg font-bold text-dark leading-tight">
                       Contact Us <br />
                       Moirabari, Morigaon <br />
                       Assam, India
