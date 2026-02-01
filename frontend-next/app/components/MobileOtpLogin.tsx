@@ -1,12 +1,21 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import Script from 'next/script';
 
 export default function MobileOtpLogin() {
+    const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+
+    useEffect(() => {
+        // Check if already loaded from cache or other navigations
+        if ((window as any).initOtp) {
+            setIsScriptLoaded(true);
+        }
+    }, []);
+
     const openMobileOtp = () => {
-        // Check if the MSG91 SDK is loaded
-        if (!(window as any).initOtp) {
-            alert("OTP loading, wait...");
+        if (!isScriptLoaded || !(window as any).initOtp) {
+            alert("OTP widget is still loading. Please wait...");
             return;
         }
 
@@ -17,7 +26,6 @@ export default function MobileOtpLogin() {
             exposeMethods: true,
 
             success: async (data: any) => {
-                // MSG91 verified on client
                 const res = await fetch("/api/mobile-otp-verify", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -29,7 +37,6 @@ export default function MobileOtpLogin() {
                 const result = await res.json();
 
                 if (result.success) {
-                    // 👉 yahan existing session / auth call karo
                     alert("Mobile OTP Login Success ✅");
                 } else {
                     alert("Mobile OTP Failed ❌");
@@ -44,22 +51,37 @@ export default function MobileOtpLogin() {
     };
 
     return (
-        <button
-            type="button"
-            onClick={openMobileOtp}
-            style={{
-                width: "100%",
-                padding: "12px",
-                marginTop: "10px",
-                background: "#25D366",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                fontWeight: "600",
-                cursor: "pointer",
-            }}
-        >
-            Login with Mobile OTP
-        </button>
+        <>
+            <Script
+                src="https://control.msg91.com/app/assets/otp-provider/otp-provider.js"
+                strategy="afterInteractive"
+                onLoad={() => {
+                    console.log("MSG91 OTP Script Loaded");
+                    setIsScriptLoaded(true);
+                }}
+                onError={(e) => {
+                    console.error("MSG91 OTP Script Failed to Load", e);
+                }}
+            />
+            <button
+                type="button"
+                onClick={openMobileOtp}
+                disabled={!isScriptLoaded}
+                style={{
+                    width: "100%",
+                    padding: "12px",
+                    marginTop: "10px",
+                    background: isScriptLoaded ? "#25D366" : "#9ca3af",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontWeight: "600",
+                    cursor: isScriptLoaded ? "pointer" : "not-allowed",
+                    transition: "background 0.3s"
+                }}
+            >
+                {isScriptLoaded ? "Login with Mobile OTP" : "Loading OTP Widget..."}
+            </button>
+        </>
     );
 }
