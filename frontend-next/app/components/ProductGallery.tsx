@@ -153,7 +153,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                 onMouseMove={handleMouseMove}
                                 onMouseLeave={handleMouseLeave}
                             >
-                                <div className="relative w-full aspect-square md:h-[600px] max-h-[70vh]">
+                                <div className="relative w-full aspect-square max-h-[70vh]">
                                     <Image
                                         src={img}
                                         alt={`Product View ${idx + 1}`}
@@ -224,7 +224,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                     : 'border-gray-100 opacity-70 hover:opacity-100 hover:border-gray-300'
                                 }`}
                         >
-                            <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" unoptimized={true} />
+                            <Image src={img} alt={`Thumb ${idx}`} fill className="object-contain p-1" unoptimized={true} />
                         </button>
                     ))}
                 </div>

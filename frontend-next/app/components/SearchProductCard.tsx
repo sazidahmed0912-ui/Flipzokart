@@ -44,7 +44,7 @@ export const SearchProductCard: React.FC<SearchProductCardProps> = ({ product })
             className="group bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden flex flex-col md:flex-row relative"
         >
             {/* ──────── TOP/LEFT: IMAGE ──────── */}
-            <div className="w-full md:w-[240px] h-[180px] md:h-[240px] p-4 flex items-center justify-center bg-gray-50 md:bg-white relative shrink-0">
+            <div className="w-full md:w-[240px] aspect-square p-4 flex items-center justify-center bg-gray-50 md:bg-white relative shrink-0">
 
                 {/* Wishlist Button */}
                 <button

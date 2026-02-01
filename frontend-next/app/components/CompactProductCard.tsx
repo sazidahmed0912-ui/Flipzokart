@@ -32,7 +32,7 @@ export const CompactProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <img
             src={resolveProductImage(product)}
             alt={product.name}
-            className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full aspect-square object-contain group-hover:scale-105 transition-transform duration-300"
           />
         </Link>
       </div>
