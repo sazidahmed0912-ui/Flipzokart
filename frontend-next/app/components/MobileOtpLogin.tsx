@@ -149,13 +149,13 @@ export default function MobileOtpLogin() {
 
     const handleFailure = (err: any, source: string) => {
         console.error(`MSG91 Failure via [${source}]:`, err);
-        // 🟢 UX IMPROVEMENT: Suggest Dev Bypass
+        // 🟢 UX IMPROVEMENT: Suggest IP Fix
         const isIpBlocked = JSON.stringify(err).includes("408") || JSON.stringify(err).includes("IPBlocked");
 
         if (isIpBlocked) {
-            alert(`⚠️ IP BLOCKED BY MSG91 (Error 408)\n\nYou cannot use the real widget.\n\n👉 Please click the red "(Dev) Force Login" link below to skip verification and test the flow.`);
+            alert(`⚠️ IP BLOCKED BY MSG91 (Error 408)\n\nYou are temporarily blocked. Please change your Internet/Network and try again.`);
         } else {
-            alert(`OTP Verification Failed (${source})\n\nIf this persists, try the "(Dev) Force Login" link below.`);
+            alert(`OTP Verification Failed (${source})`);
         }
     };
 
@@ -190,15 +190,6 @@ export default function MobileOtpLogin() {
                 }}
             >
                 {isScriptLoaded ? "Login with Mobile OTP" : "Loading OTP Widget..."}
-            </button>
-
-            {/* 🔴 DEV BYPASS */}
-            <button
-                type="button"
-                onClick={() => handleSuccess({ mobile: "9876543210", message: "DEV_TOKEN" }, "dev_bypass")}
-                className="w-full text-[11px] text-red-500 underline mt-2 cursor-pointer hover:text-red-700 bg-transparent border-none"
-            >
-                (Dev) Force Login 9876543210
             </button>
         </>
     );
