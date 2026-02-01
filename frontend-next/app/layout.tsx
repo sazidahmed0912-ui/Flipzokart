@@ -33,6 +33,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-5PBFNG4P');`}
         </Script>
+        <Script
+          src="https://control.msg91.com/app/assets/otp-provider.js"
+          strategy="afterInteractive"
+        />
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5PBFNG4P" height="0" width="0" style={{ display: 'none', visibility: 'hidden' }}></iframe></noscript>
 
         <Providers>

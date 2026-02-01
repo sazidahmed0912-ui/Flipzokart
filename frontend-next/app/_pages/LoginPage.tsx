@@ -13,6 +13,8 @@ interface LoginPageProps {
   isAdmin?: boolean;
 }
 
+import MobileOtpLogin from '@/app/components/MobileOtpLogin';
+
 export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
   const { setUser } = useApp();
   const router = useRouter();
@@ -242,6 +244,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
                   >
                     {isLoading ? 'Processing...' : (otpSent ? 'Verify OTP' : 'Login')}
                   </button>
+
+                  <MobileOtpLogin />
 
                   <p className="text-[10px] md:text-[11px] text-[#878787] mb-2 text-center">
                     By continuing, you agree to Fzokart's <Link href="/terms-of-service" className="text-[#2874F0] cursor-pointer hover:underline">Terms of Use</Link> and <Link href="/privacy-policy" className="text-[#2874F0] cursor-pointer hover:underline">Privacy Policy</Link>.
