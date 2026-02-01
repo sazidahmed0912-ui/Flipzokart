@@ -11,6 +11,20 @@ export default function MobileOtpLogin() {
         if ((window as any).initSendOTP) {
             setIsScriptLoaded(true);
         }
+
+        // Global message listener debug
+        const messageHandler = (event: MessageEvent) => {
+            console.log("Global Window Message Received:", event.origin, event.data);
+            try {
+                if (typeof event.data === 'string' && event.data.includes('msg91')) {
+                    alert("Received MSG91 Message: " + event.data);
+                }
+            } catch (e) {
+                // ignore
+            }
+        };
+        window.addEventListener("message", messageHandler);
+        return () => window.removeEventListener("message", messageHandler);
     }, []);
 
     const openMobileOtp = () => {
@@ -19,44 +33,77 @@ export default function MobileOtpLogin() {
             return;
         }
 
-        console.log("Initializing MSG91 OTP Widget...");
+        console.log("Initializing MSG91 OTP Widget... (Attempt 2 - Debug Mode)");
+
         try {
-            (window as any).initSendOTP({
+            const config = {
                 widgetId: "3662616b7765363133313539",
                 tokenAuth: "491551TGhhpXBdgY1697f3ab8P1",
                 identifier: "mobile",
                 exposeMethods: true,
+                debug: true, // Try enabling debug mode if supported
 
-                success: async (data: any) => {
-                    console.log("MSG91 Success:", data);
-                    const res = await fetch("/api/mobile-otp-verify", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            access_token: data.access_token,
-                        }),
-                    });
+                // Try multiple callback names just in case
+                callback: (data: any) => handleSuccess(data, 'callback'),
+                success: (data: any) => handleSuccess(data, 'success'),
+                onSuccess: (data: any) => handleSuccess(data, 'onSuccess'),
 
-                    const result = await res.json();
-                    console.log("Backend verification result:", result);
+                failure: (err: any) => handleFailure(err, 'failure'),
+                onError: (err: any) => handleFailure(err, 'onError')
+            };
 
-                    if (result.success) {
-                        alert("Mobile OTP Login Success ✅");
-                    } else {
-                        alert("Mobile OTP Failed ❌");
+            console.log("Calling initSendOTP with config:", config);
+            (window as any).initSendOTP(config);
+
+            console.log("MSG91 initSendOTP called. Checking for iframe...");
+            setTimeout(() => {
+                const iframes = document.querySelectorAll('iframe');
+                console.log("Found iframes on page: " + iframes.length);
+                iframes.forEach((ifr, i) => {
+                    console.log(`Iframe ${i} src:`, ifr.src);
+                    if (ifr.src.includes('msg91')) {
+                        console.log("✅ MSG91 Iframe FOUND!");
+                        (ifr as HTMLElement).style.zIndex = "999999"; // Force visibility
+                        (ifr as HTMLElement).style.display = "block";
                     }
-                },
+                });
+            }, 2000);
 
-                failure: (err: any) => {
-                    console.error("MSG91 Failure:", err);
-                    alert("OTP verification failed");
-                },
-            });
-            console.log("MSG91 initSendOTP called successfully");
         } catch (error) {
             console.error("Error calling initSendOTP:", error);
             alert("Error initializing OTP widget. See console.");
         }
+    };
+
+    const handleSuccess = async (data: any, source: string) => {
+        console.log(`MSG91 Success via [${source}]:`, data);
+
+        try {
+            const res = await fetch("/api/mobile-otp-verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    access_token: data.access_token || data, // Handle different data shapes
+                }),
+            });
+
+            const result = await res.json();
+            console.log("Backend verification result:", result);
+
+            if (result.success) {
+                alert("Mobile OTP Login Success ✅");
+            } else {
+                alert("Mobile OTP Failed ❌");
+            }
+        } catch (e) {
+            console.error("Verification error:", e);
+            alert("Verification error (Check console)");
+        }
+    };
+
+    const handleFailure = (err: any, source: string) => {
+        console.error(`MSG91 Failure via [${source}]:`, err);
+        alert(`OTP Verification Failed (${source})`);
     };
 
     return (
