@@ -66,7 +66,30 @@ export default function MobileOtpLogin() {
 
         try {
             // Extract mobile if available
-            const mobile = data.mobile || data?.message?.mobile;
+            let mobile = data.mobile || data?.message?.mobile;
+
+            // 🟢 Fallback: Parsed JWT if mobile is missing
+            if (!mobile && (typeof data.message === 'string' || typeof data === 'string')) {
+                try {
+                    const token = data.message || data;
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+
+                    const parsed = JSON.parse(jsonPayload);
+                    console.log("Decoded MSG91 Token Payload:", parsed);
+
+                    mobile = parsed.mobile || parsed.phone || parsed.contact_number; // Adjust key based on MSG91 payload
+                } catch (e) {
+                    console.error("Failed to decode JWT token:", e);
+                }
+            }
+
+            // 🟢 If STILL no mobile, we cannot proceed with strict login.
+            // But we can prompt the user? No, that breaks the flow.
+            // Let's send what we have. If backend fails, we handle it.
 
             const payload = {
                 access_token: data.access_token || data?.message || data,
