@@ -5,21 +5,41 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { access_token, mobile } = body; // Expect mobile from client
 
-        // Verify with MSG91
-        const response = await fetch(
-            "https://control.msg91.com/api/v5/otp/verifyAccessToken",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    authkey: process.env.MSG91_AUTH_KEY!,
-                },
-                body: JSON.stringify({ access_token }),
-            }
-        );
+        // Primary Auth Key from Env
+        const primaryKey = process.env.MSG91_AUTH_KEY!;
+        // Fallback Key (The one used in Widget TokenAuth) - mostly for debugging if primary fails
+        const fallbackKey = "491551TGhhpXBdgY1697f3ab8P1";
 
-        const data = await response.json();
-        console.log("MSG91 Verify Response:", data);
+        // Helper to verify
+        const verifyWithKey = async (key: string) => {
+            const res = await fetch(
+                "https://control.msg91.com/api/v5/otp/verifyAccessToken",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        authkey: key,
+                    },
+                    body: JSON.stringify({ access_token }),
+                }
+            );
+            return await res.json();
+        };
+
+        // Try Primary Key
+        let data = await verifyWithKey(primaryKey);
+        console.log("MSG91 Verify (Primary) Result:", data);
+
+        // If Primary Check Failed, Try Fallback
+        if (data.type !== "success" && data.message !== "OTP verified successfully") {
+            console.warn("Primary Key Failed. Trying Fallback Key...");
+            const data2 = await verifyWithKey(fallbackKey);
+            console.log("MSG91 Verify (Fallback) Result:", data2);
+
+            if (data2.type === "success" || data2.message === "OTP verified successfully") {
+                data = data2; // switch to successful data
+            }
+        }
 
         // MSG91 v5/v4 success check
         if (data.type === "success" || data.message === "OTP verified successfully" || data.status === "success") {
