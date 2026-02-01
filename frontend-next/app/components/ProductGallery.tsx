@@ -170,7 +170,14 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                             if (swiperRef.current) swiperRef.current.update();
                                             if (idx === activeIndex) setIsLoading(false);
                                         }}
-                                        onError={() => {
+                                        onError={(e) => {
+                                            // Fallback: If image fails, replace entry in allImages with placeholder
+                                            // NOTE: Changing state inside loop might be aggressive but needed for fallback.
+                                            const newImages = [...allImages];
+                                            if (newImages[idx] !== '/placeholder.png') {
+                                                newImages[idx] = '/placeholder.png';
+                                                setAllImages(newImages);
+                                            }
                                             if (idx === activeIndex) setIsLoading(false);
                                         }}
                                         unoptimized={true}

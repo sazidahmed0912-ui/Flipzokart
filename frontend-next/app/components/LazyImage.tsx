@@ -26,28 +26,41 @@ const LazyImage: React.FC<LazyImageProps> = ({
 }) => {
     const [isLoaded, setIsLoaded] = useState(false);
 
+    const [imgSrc, setImgSrc] = useState(src);
+
+    // Update internal state if prop changes
+    React.useEffect(() => {
+        setImgSrc(src);
+    }, [src]);
+
     // If fill is true, we don't pass width/height
     const imageProps = fill ? { fill: true } : { width, height };
 
-    // Fallback if no width/height/fill provided? 
-    // We'll assume usage is correct. If standard <img src> was used without dimensions, 
-    // it was relying on natural size or CSS. next/image needs one or the other.
-    // However, to be safe for legacy usage where we might just have src/alt/className:
-    // We default to `fill={true}` if no width/height is passed, assuming likely usage in a wrapper.
-    // We apply className to BOTH wrapper and image to maintain backward compatibility 
-    // with previous usage where className contained both layout (w-full) and styling (object-cover).
+    // Fallback logic
+    const handleError = () => {
+        if (imgSrc !== '/placeholder.png') {
+            setImgSrc('/placeholder.png');
+        }
+        setIsLoaded(true);
+    };
+
     const effectiveFill = fill || (!width && !height);
     const finalProps = effectiveFill ? { fill: true } : { width, height };
+
     return (
         <div className={`relative overflow-hidden bg-gray-50 ${wrapperClassName} ${effectiveFill ? '' : 'inline-block'} ${className}`}>
             <Image
-                src={src}
+                src={imgSrc || '/placeholder.png'}
                 alt={alt}
                 priority={priority}
                 sizes={sizes}
                 onLoad={(e) => {
                     setIsLoaded(true);
                     if (onLoad) onLoad(e);
+                }}
+                onError={(e) => {
+                    handleError();
+                    if (props.onError) props.onError(e); // Call prop onError if exists
                 }}
                 className={`
                     transition-opacity duration-300 ease-in-out
