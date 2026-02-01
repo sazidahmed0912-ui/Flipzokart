@@ -272,7 +272,7 @@ const OrderSuccessPage = () => {
               <div className="space-y-4">
                 {order.items.map((item, idx) => (
                   <div key={idx} className="flex gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
-                    <div className="w-[72px] h-[72px] md:w-20 md:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 order-item-image-wrapper">
+                    <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 order-item-image-wrapper">
                       <img src={resolveProductImage(item)} alt={item.name} className="w-full h-full object-contain mix-blend-multiply order-item-image" />
                     </div>
                     <div className="flex-1">
