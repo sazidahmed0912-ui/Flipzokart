@@ -107,7 +107,7 @@ export const SignupPage: React.FC = () => {
         addToast("success", "Mobile Verified Successfully! ✅");
       },
       failure: (err: any) => {
-        console.error("Mobile Verify Code Error:", err);
+        console.error("Mobile Verify Code Error JSON:", JSON.stringify(err));
         addToast("error", "Verification Failed. Please try again.");
       }
     };

@@ -87,9 +87,18 @@ export default function MobileOtpLogin() {
                 }
             }
 
-            // 🟢 If STILL no mobile, we cannot proceed with strict login.
-            // But we can prompt the user? No, that breaks the flow.
-            // Let's send what we have. If backend fails, we handle it.
+            // 🟢 Fallback 2: Manual Entry (Last Resort)
+            // If we still don't have the mobile number, we can't do strict login.
+            // Ask the user to confirm their number.
+            if (!mobile) {
+                const manualMobile = window.prompt("We couldn't detect your mobile number automatically.\nPlease enter your registered mobile number to login:");
+                if (manualMobile) {
+                    mobile = manualMobile.trim();
+                } else {
+                    alert("Login Cancelled. Mobile number is required.");
+                    return;
+                }
+            }
 
             const payload = {
                 access_token: data.access_token || data?.message || data,
