@@ -19,7 +19,8 @@ const getCart = async (req, res) => {
                 name: item.productId.name,
                 price: item.productId.price,
                 originalPrice: item.productId.originalPrice,
-                image: item.productId.images?.[0] || '', // Assuming images array
+                image: item.productId.images?.[0] || item.productId.image || '',
+                images: item.productId.images || [],
                 stock: item.productId.countInStock,
                 category: item.productId.category,
                 rating: item.productId.rating,

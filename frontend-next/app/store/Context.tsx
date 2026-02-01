@@ -239,6 +239,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 
     setCart((prev: CartItem[]) => {
+      // Sanitize/Standardize Image Data
+      const images = product.images && product.images.length > 0 ? product.images : (product.image ? [product.image] : []);
+      const thumbnail = images[0] || product.thumbnail || product.image || '/placeholder.png';
+
+      const sanitizedProduct = {
+        ...product,
+        images,
+        thumbnail,
+        image: thumbnail // Force legacy 'image' to match thumbnail for consistency
+      };
+
       const existingIndex = prev.findIndex((item: CartItem) => getCartItemKey(item.id, item.selectedVariants) === itemKey);
 
       if (existingIndex > -1) {
@@ -250,7 +261,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return nextCart;
       }
 
-      return [...prev, { ...product, quantity, selectedVariants } as CartItem];
+      return [...prev, { ...sanitizedProduct, quantity, selectedVariants } as CartItem];
     });
   };
 

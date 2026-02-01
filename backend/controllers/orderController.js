@@ -94,7 +94,7 @@ const createOrder = async (req, res) => {
         productId: item.productId,
         quantity: item.quantity,
         name: product.name,
-        image: product.image,
+        image: product.thumbnail || product.images?.[0] || product.image || '', // Robust Image Snapshot
         price: product.price,
         selectedVariants: item.selectedVariants || {}
       });
@@ -452,7 +452,7 @@ const getMyOrders = async (req, res) => {
         return {
           id: productRef._id || 'deleted',
           name: item.name || productRef.name || 'Unknown Product',
-          image: item.image || productRef.image || '',
+          image: item.image || productRef.thumbnail || productRef.images?.[0] || productRef.image || '',
           price: item.price !== undefined ? item.price : (productRef.price || 0),
           quantity: item.quantity,
           selectedVariants: item.selectedVariants || {},
@@ -501,7 +501,7 @@ const getUserOrders = async (req, res) => {
         return {
           id: productRef._id || 'deleted',
           name: item.name || productRef.name || 'Unknown Product',
-          image: item.image || productRef.image || '',
+          image: item.image || productRef.thumbnail || productRef.images?.[0] || productRef.image || '',
           price: item.price !== undefined ? item.price : (productRef.price || 0),
           quantity: item.quantity,
           selectedVariants: item.selectedVariants || {},
