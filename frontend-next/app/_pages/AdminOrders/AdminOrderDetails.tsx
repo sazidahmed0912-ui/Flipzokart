@@ -30,6 +30,11 @@ interface OrderDetail {
         price: number;
         quantity: number;
         id: string;
+        colour?: string; // Snapshot
+        size?: string; // Snapshot
+        sku?: string; // Snapshot
+        totalPrice?: number; // Snapshot
+        selectedVariants?: Record<string, string>;
     }>;
     address: {
         street: string;
@@ -189,28 +194,71 @@ export const AdminOrderDetails: React.FC = () => {
                                 <h2 className="font-bold text-gray-800">Order Items</h2>
                                 <span className="ml-auto text-xs font-bold text-gray-400">{order.items.length} items</span>
                             </div>
+
+                            {/* Table Header */}
+                            <div className="px-6 py-3 bg-gray-50 flex text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                <div className="w-[40%]">Product</div>
+                                <div className="w-[15%] text-center">Color</div>
+                                <div className="w-[15%] text-center">Size</div>
+                                <div className="w-[15%] text-center">Qty</div>
+                                <div className="w-[15%] text-right">Total</div>
+                            </div>
+
                             <div className="divide-y divide-gray-50">
-                                {order.items.map((item, idx) => (
-                                    <div key={idx} className="p-6 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
-                                        <div className="w-16 h-16 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden shrink-0">
-                                            {item.image ? (
-                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                                    <Package size={20} />
+                                {order.items.map((item, idx) => {
+                                    const isDeleted = item.id === 'deleted' || !item.id;
+                                    // Robust fallback for variants
+                                    const color = item.colour || item.selectedVariants?.Color || item.selectedVariants?.color || '-';
+                                    const size = item.size || item.selectedVariants?.Size || item.selectedVariants?.size || '-';
+                                    const total = item.totalPrice || (item.price * item.quantity);
+
+                                    return (
+                                        <div key={idx} className="p-6 flex items-center hover:bg-gray-50/50 transition-colors">
+                                            {/* Product Column */}
+                                            <div className="w-[40%] flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden shrink-0 relative">
+                                                    {item.image ? (
+                                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                                            <Package size={16} />
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
+                                                <div className="min-w-0 pr-2">
+                                                    <h3 className="text-sm font-bold text-gray-800 line-clamp-2" title={item.name}>{item.name}</h3>
+                                                    {isDeleted && (
+                                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-800 mt-1">
+                                                            Product Deleted
+                                                        </span>
+                                                    )}
+                                                    <p className="text-xs text-gray-500 mt-0.5">SKU: {item.sku || 'N/A'}</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Color */}
+                                            <div className="w-[15%] text-center text-sm font-medium text-gray-700">
+                                                {color}
+                                            </div>
+
+                                            {/* Size */}
+                                            <div className="w-[15%] text-center text-sm font-medium text-gray-700">
+                                                {size}
+                                            </div>
+
+                                            {/* Qty */}
+                                            <div className="w-[15%] text-center text-sm font-medium text-gray-700">
+                                                {item.quantity}
+                                            </div>
+
+                                            {/* Total */}
+                                            <div className="w-[15%] text-right">
+                                                <p className="text-sm font-bold text-gray-800">₹{total.toLocaleString()}</p>
+                                                <p className="text-[10px] text-gray-400">@ ₹{item.price.toLocaleString()}</p>
+                                            </div>
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="text-sm font-bold text-gray-800 truncate">{item.name}</h3>
-                                            <p className="text-xs text-gray-500 mt-1">Quantity: {item.quantity}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-bold text-gray-800">₹{item.price.toLocaleString()}</p>
-                                            <p className="text-xs text-gray-400">Total: ₹{(item.price * item.quantity).toLocaleString()}</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    )
+                                })}
                             </div>
                             <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-between items-center">
                                 <span className="text-sm font-bold text-gray-600">Total Order Value</span>
