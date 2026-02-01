@@ -39,35 +39,21 @@ export default function MobileOtpLogin() {
             const config = {
                 widgetId: "3662616b7765363133313539",
                 tokenAuth: "491551TGhhpXBdgY1697f3ab8P1",
-                identifier: "mobile",
-                exposeMethods: true,
-                debug: true, // Try enabling debug mode if supported
+                // identifier: "mobile", // Try removing this to let widget decide
+                // exposeMethods: true,
 
-                // Try multiple callback names just in case
-                callback: (data: any) => handleSuccess(data, 'callback'),
-                success: (data: any) => handleSuccess(data, 'success'),
-                onSuccess: (data: any) => handleSuccess(data, 'onSuccess'),
-
-                failure: (err: any) => handleFailure(err, 'failure'),
-                onError: (err: any) => handleFailure(err, 'onError')
+                success: (data: any) => handleSuccess(data, 'direct_success'),
+                failure: (err: any) => handleFailure(err, 'direct_failure')
             };
 
-            console.log("Calling initSendOTP with config:", config);
+            console.log("Calling initSendOTP with SIMPLIFIED config:", config);
+
+            // Invoke
             (window as any).initSendOTP(config);
 
-            console.log("MSG91 initSendOTP called. Checking for iframe...");
-            setTimeout(() => {
-                const iframes = document.querySelectorAll('iframe');
-                console.log("Found iframes on page: " + iframes.length);
-                iframes.forEach((ifr, i) => {
-                    console.log(`Iframe ${i} src:`, ifr.src);
-                    if (ifr.src.includes('msg91')) {
-                        console.log("✅ MSG91 Iframe FOUND!");
-                        (ifr as HTMLElement).style.zIndex = "999999"; // Force visibility
-                        (ifr as HTMLElement).style.display = "block";
-                    }
-                });
-            }, 2000);
+            // Manual fallback measure: Check if a global variable 'OTPWidget' or similar was created
+            console.log("Window keys after init:", Object.keys(window).filter(k => k.toLowerCase().includes('otp')));
+
 
         } catch (error) {
             console.error("Error calling initSendOTP:", error);
