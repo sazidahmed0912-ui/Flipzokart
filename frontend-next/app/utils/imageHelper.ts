@@ -10,13 +10,18 @@ export const getProductImageUrl = (imagePath?: string): string => {
     }
 
     // Otherwise, prepend the API URL
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+    // Remove trailing slash from API URL if present
+    if (apiUrl.endsWith('/')) {
+        apiUrl = apiUrl.slice(0, -1);
+    }
 
     // Handle case where path might already have a leading slash or backslashes
     let cleanPath = imagePath.replace(/\\/g, '/');
     if (cleanPath.startsWith('/')) cleanPath = cleanPath.substring(1);
 
-    return `${API_URL}/${cleanPath}`;
+    return `${apiUrl}/${cleanPath}`;
 };
 
 /**

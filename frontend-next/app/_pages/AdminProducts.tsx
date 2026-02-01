@@ -907,7 +907,7 @@ export const AdminProducts: React.FC = () => {
                                     <tr key={idx}>
                                       <td className="px-3 py-2">
                                         <div className="w-8 h-8 bg-gray-100 border rounded flex items-center justify-center cursor-pointer hover:border-blue-500" onClick={() => triggerVariantUpload(idx)}>
-                                          {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <ImageIcon size={12} className="text-gray-400" />}
+                                          {item.image ? <img src={getProductImageUrl(item.image)} className="w-full h-full object-cover" /> : <ImageIcon size={12} className="text-gray-400" />}
                                         </div>
                                       </td>
                                       <td className="px-3 py-2 font-medium max-w-[100px] truncate">{Object.values(item.options).join('/')}</td>

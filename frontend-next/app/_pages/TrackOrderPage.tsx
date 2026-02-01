@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigat
 import API from '@/app/services/api';
 import { useSocket } from '@/app/hooks/useSocket';
 import { normalizeOrder } from '@/app/utils/orderHelper';
+import { resolveProductImage } from '@/app/utils/imageHelper';
 import {
     Check, MapPin, CreditCard, FileText,
     ChevronRight, HelpCircle, Package, Truck, AlertCircle,
@@ -290,7 +291,7 @@ export const TrackOrderPage: React.FC = () => {
                             <div key={idx} className={`p-4 md:p-6 flex flex-col md:flex-row gap-6 ${idx !== 0 ? 'border-t border-gray-100' : ''}`}>
                                 <div className="w-32 h-32 flex-shrink-0 border border-gray-200 p-2 flex items-center justify-center">
                                     <img
-                                        src={item.image || "https://via.placeholder.com/150"}
+                                        src={resolveProductImage(item)}
                                         alt={item.name}
                                         className="max-w-full max-h-full object-contain"
                                     />

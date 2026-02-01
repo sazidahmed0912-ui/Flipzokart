@@ -441,7 +441,7 @@ const getMyOrders = async (req, res) => {
       .populate({
         path: 'products.productId',
         model: 'Product',
-        select: 'name image'
+        select: 'name image images thumbnail'
       })
       .sort({ createdAt: -1 });
 
@@ -486,7 +486,7 @@ const getUserOrders = async (req, res) => {
       .populate({
         path: 'products.productId',
         model: 'Product',
-        select: 'name image'
+        select: 'name image images thumbnail'
       })
       .sort({ createdAt: -1 });
 
@@ -534,7 +534,7 @@ const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
       .populate('user', 'id name email')
-      .populate('products.productId', 'name image price') // Populate product details
+      .populate('products.productId', 'name image images thumbnail price') // Populate product details
       .sort({ createdAt: -1 });
 
     const formattedOrders = orders.map(order => ({
@@ -576,7 +576,7 @@ const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate('user', 'name email')
-      .populate('products.productId', 'name image price');
+      .populate('products.productId', 'name image images thumbnail price');
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
