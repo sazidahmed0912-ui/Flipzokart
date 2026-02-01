@@ -31,7 +31,7 @@ export const ContactUsPage: React.FC = () => {
           {/* Contact Information Cards */}
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50 space-y-8">
-              <h3 className="text-2xl font-bold tracking-tight text-dark">Contact Information</h3>
+              <h3 className="text-[16px] md:text-2xl font-bold tracking-tight text-dark">Contact Information</h3>
 
               <div className="space-y-6">
                 <div className="flex gap-5 group">
@@ -116,7 +116,7 @@ export const ContactUsPage: React.FC = () => {
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
               <div className="relative z-10">
-                <h4 className="font-bold text-xl">Chat with us on WhatsApp</h4>
+                <h4 className="font-bold text-[16px] md:text-xl">Chat with us on WhatsApp</h4>
                 <p className="text-white/70 text-sm">Instant response from our support team</p>
               </div>
               <MessageCircle className="group-hover:scale-110 transition-transform" size={32} fill="currentColor" />
@@ -145,7 +145,7 @@ export const ContactUsPage: React.FC = () => {
               ) : (
                 <>
                   <div className="mb-10">
-                    <h2 className="text-3xl font-bold tracking-tight text-dark mb-2">Send us a Message</h2>
+                    <h2 className="text-[16px] md:text-3xl font-bold tracking-tight text-dark mb-2">Send us a Message</h2>
                     <p className="text-gray-500">Fill out the form below and we'll respond as soon as possible.</p>
                   </div>
 

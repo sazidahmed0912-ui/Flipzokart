@@ -37,13 +37,13 @@ export const AboutUsPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div className="space-y-10">
               <div className="space-y-4">
-                <h2 className="text-3xl lg:text-5xl font-bold text-dark tracking-tight leading-tight">
+                <h2 className="text-[16px] md:text-3xl lg:text-5xl font-bold text-dark tracking-tight leading-tight">
                   Welcome — Your Trusted Online Shopping Destination
                 </h2>
                 <div className="w-20 h-1.5 bg-primary rounded-full"></div>
               </div>
 
-              <div className="space-y-6 text-gray-500 text-[13px] leading-[1.7] md:text-xl md:leading-relaxed">
+              <div className="space-y-6 text-gray-500 !text-[13px] !leading-[1.7] md:!text-xl md:!leading-relaxed">
                 <p className="font-medium text-dark">
                   This is a modern e-commerce platform built to provide customers with high-quality products, affordable prices, and a smooth online shopping experience.
                 </p>
@@ -96,7 +96,7 @@ export const AboutUsPage: React.FC = () => {
       <section className="bg-lightGray/50 py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 space-y-4">
-            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">Our Core Values</h2>
+            <h2 className="text-[16px] md:text-3xl lg:text-4xl font-bold tracking-tight">Our Core Values</h2>
             <p className="text-gray-500 max-w-xl mx-auto">The foundation of everything we do.</p>
           </div>
 
