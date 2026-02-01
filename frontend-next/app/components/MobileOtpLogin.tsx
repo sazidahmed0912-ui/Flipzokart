@@ -33,20 +33,20 @@ export default function MobileOtpLogin() {
             return;
         }
 
-        console.log("Initializing MSG91 OTP Widget... (Attempt 2 - Debug Mode)");
+        console.log("Initializing MSG91 OTP Widget... (Attempt 3 - Fixed Config)");
 
         try {
             const config = {
                 widgetId: "3662616b7765363133313539",
                 tokenAuth: "491551TGhhpXBdgY1697f3ab8P1",
-                // identifier: "mobile", // Try removing this to let widget decide
-                // exposeMethods: true,
+                identifier: "mobile",
+                exposeMethods: false,
 
-                success: (data: any) => handleSuccess(data, 'direct_success'),
-                failure: (err: any) => handleFailure(err, 'direct_failure')
+                success: (data: any) => handleSuccess(data, 'widget_success_v3'),
+                failure: (err: any) => handleFailure(err, 'widget_failure_v3')
             };
 
-            console.log("Calling initSendOTP with SIMPLIFIED config:", config);
+            console.log("Calling initSendOTP with STANDARD config v3:", config);
 
             // Invoke
             (window as any).initSendOTP(config);
@@ -79,7 +79,8 @@ export default function MobileOtpLogin() {
             if (result.success) {
                 alert("Mobile OTP Login Success ✅");
             } else {
-                alert("Mobile OTP Failed ❌");
+                // ALERT THE ACTUAL BACKEND ERROR
+                alert(`Mobile OTP Failed ❌\nReason: ${result.message || JSON.stringify(result.raw)}`);
             }
         } catch (e) {
             console.error("Verification error:", e);
