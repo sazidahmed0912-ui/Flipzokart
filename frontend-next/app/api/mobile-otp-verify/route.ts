@@ -18,13 +18,15 @@ export async function POST(req: NextRequest) {
         );
 
         const data = await response.json();
+        console.log("MSG91 Verify Response:", data);
 
         if (data.type === "success") {
             // 👉 Existing user login / create here
             return NextResponse.json({ success: true, data });
         }
 
-        return NextResponse.json({ success: false });
+        console.error("MSG91 Verification Failed:", data);
+        return NextResponse.json({ success: false, message: data.message || "Verification failed", raw: data });
     } catch (err) {
         return NextResponse.json({ success: false }, { status: 500 });
     }
