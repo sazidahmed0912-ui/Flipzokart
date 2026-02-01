@@ -394,13 +394,67 @@ const registerStore = async (req, res) => {
   }
 };
 
+// MOBILE LOGIN
+const mobileLogin = async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({ success: false, message: "Phone number is required" });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ phone });
+
+    // If user doesn't exist, create a new one
+    if (!user) {
+      // Create a dummy email if needed or just use phone as identifier if schema allows
+      // Schema requires email. We'll generate a placeholder.
+      const placeholderEmail = `${phone}@mobile.temp`;
+
+      user = await User.create({
+        name: "Mobile User",
+        email: placeholderEmail,
+        phone: phone,
+        password: await bcrypt.hash(Math.random().toString(36), 10), // Random password
+        role: "user",
+        status: "Active"
+      });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET || "secret_key_123",
+      { expiresIn: "30d" }
+    );
+
+    // Broadcast log
+    const broadcastLog = req.app.get("broadcastLog");
+    if (broadcastLog) {
+      broadcastLog("success", `Mobile User ${phone} logged in`, "Auth");
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
+    });
+
+  } catch (error) {
+    console.error("Mobile login error:", error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
-  register,
-  login,
-  logout,
-  forgotPassword,
-  resetPassword,
-  registerSeller,
-  registerBusiness,
-  registerStore
+  registerStore,
+  mobileLogin
 };

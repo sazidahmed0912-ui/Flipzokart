@@ -62,12 +62,11 @@ export default function MobileOtpLogin() {
     };
 
     const handleSuccess = async (data: any, source: string) => {
-        // FORCE STRING CONCATENATION because console.log(obj) shows [Object]
         console.log("MSG91 RAW DATA: " + JSON.stringify(data, null, 2));
 
         try {
             const payload = {
-                access_token: data.access_token || data?.message || data // Try to find the string token
+                access_token: data.access_token || data?.message || data
             };
             console.log("Sending Payload to Backend: " + JSON.stringify(payload));
 
@@ -81,11 +80,30 @@ export default function MobileOtpLogin() {
             console.log("Backend verification result RAW: " + JSON.stringify(result, null, 2));
 
             if (result.success) {
-                alert("Mobile OTP Login Success ✅");
+                // Login Success!
+                // 1. Store Token
+                const token = result.data.token;
+                const user = result.data.user;
+
+                if (token) {
+                    localStorage.setItem("token", token);
+                    localStorage.setItem("user", JSON.stringify(user));
+
+                    // Set cookie for middleware if needed (optional but good for server components)
+                    document.cookie = `token=${token}; path=/; max-age=2592000; SameSite=Lax`;
+
+                    alert(`Login Success! Welcome ${user.phone || "User"}`);
+
+                    // 2. Redirect
+                    window.location.href = "/";
+                } else {
+                    alert("Login successful but no token received?");
+                }
+
             } else {
                 const msg = result.message || JSON.stringify(result);
                 console.error("Backend Error Message: " + msg);
-                alert(`Mobile OTP Failed ❌\nReason: ${msg}`);
+                alert(`Login Failed ❌\nReason: ${msg}`);
             }
         } catch (e) {
             console.error("Verification error:", e);

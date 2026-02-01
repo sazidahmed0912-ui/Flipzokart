@@ -8,9 +8,9 @@ const {
   logout,
   forgotPassword,
   resetPassword,
-  registerSeller,
   registerBusiness,
-  registerStore
+  registerStore,
+  mobileLogin
 } = require("../controllers/authController");
 
 const {
@@ -20,6 +20,7 @@ const {
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/mobile-login", mobileLogin);
 router.post("/logout", logout);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
