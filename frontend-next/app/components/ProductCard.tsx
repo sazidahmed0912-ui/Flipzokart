@@ -43,7 +43,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <div className="group bg-white rounded-lg md:rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
-      <div className="relative w-full aspect-square overflow-hidden bg-white flex items-center justify-center p-4">
+      <div className="relative w-full h-36 md:h-48 overflow-hidden bg-white flex items-center justify-center p-4">
         <Link href={`/product/${product.id}`} className="block w-full h-full relative">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10 transition-opacity duration-300">
