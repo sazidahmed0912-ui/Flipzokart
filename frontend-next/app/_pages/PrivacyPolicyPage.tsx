@@ -13,7 +13,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                 <SmoothReveal>
                     <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 border-b pb-4">Privacy Policy for Fzokart</h1>
 
-                    <div className="prose prose-blue max-w-none text-sm md:text-base leading-relaxed text-gray-700 space-y-6 legal-content">
+                    <div className="prose prose-blue max-w-none text-[13px] leading-[1.7] md:text-base md:leading-relaxed text-gray-700 space-y-6 legal-content prose-p:text-[13px] md:prose-p:text-base prose-li:text-[13px] md:prose-li:text-base">
                         <p className="font-semibold">Effective Date: [24/01/2026]</p>
 
                         <p>
@@ -26,9 +26,9 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">1. Information We Collect</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">1. Information We Collect</h2>
 
-                            <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">1.1 Personal Information</h3>
+                            <h3 className="text-[15px] md:text-lg font-semibold text-gray-800 mt-4 mb-2">1.1 Personal Information</h3>
                             <p>We collect personal information only when necessary to provide our services, including:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Full Name</li>
@@ -38,7 +38,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                                 <li>Account Login Credentials (encrypted)</li>
                             </ul>
 
-                            <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">1.2 Payment Information (Razorpay)</h3>
+                            <h3 className="text-[15px] md:text-lg font-semibold text-gray-800 mt-4 mb-2">1.2 Payment Information (Razorpay)</h3>
                             <p>Fzokart does NOT collect, store, or process sensitive payment details such as:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Debit/Credit card numbers</li>
@@ -54,7 +54,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                                 <li>Payment method</li>
                             </ul>
 
-                            <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">1.3 Automatically Collected Information</h3>
+                            <h3 className="text-[15px] md:text-lg font-semibold text-gray-800 mt-4 mb-2">1.3 Automatically Collected Information</h3>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>IP address</li>
                                 <li>Device & browser information</li>
@@ -66,7 +66,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">2. Purpose of Data Collection</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">2. Purpose of Data Collection</h2>
                             <p>We use collected information strictly for:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>User account creation and authentication</li>
@@ -82,7 +82,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">3. Razorpay Payment Gateway Security</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">3. Razorpay Payment Gateway Security</h2>
                             <p>Fzokart integrates Razorpay using industry best practices:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>End-to-end SSL encryption</li>
@@ -97,7 +97,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">4. Data Sharing & Third Parties</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">4. Data Sharing & Third Parties</h2>
                             <p>Fzokart does not sell or misuse customer data.</p>
                             <p>Data may be shared only with:</p>
                             <ul className="list-disc pl-5 space-y-1">
@@ -112,7 +112,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">5. Cookies & Tracking</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">5. Cookies & Tracking</h2>
                             <p>Fzokart uses cookies to:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Maintain secure login sessions</li>
@@ -126,7 +126,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">6. Data Security Measures</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">6. Data Security Measures</h2>
                             <p>We implement robust security measures, including:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Encrypted databases</li>
@@ -141,7 +141,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">7. User Rights & Control</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">7. User Rights & Control</h2>
                             <p>Users have the right to:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Access personal data</li>
@@ -155,7 +155,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">8. Data Retention Policy</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">8. Data Retention Policy</h2>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>User data is retained only as long as necessary</li>
                                 <li>Order & transaction data may be retained for tax, audit, and legal compliance</li>
@@ -166,14 +166,14 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">9. Children’s Privacy</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">9. Children’s Privacy</h2>
                             <p>Fzokart does not knowingly collect personal data from individuals under 18 years of age.</p>
                         </section>
 
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">10. Fraud Monitoring & Abuse Prevention</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">10. Fraud Monitoring & Abuse Prevention</h2>
                             <p>To ensure platform safety, we actively monitor:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Payment abuse</li>
@@ -186,7 +186,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">11. Legal Compliance</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">11. Legal Compliance</h2>
                             <p>This Privacy Policy complies with:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Information Technology Act, 2000 (India)</li>
@@ -198,14 +198,14 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">12. Policy Updates</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">12. Policy Updates</h2>
                             <p>Fzokart reserves the right to update this policy at any time. Updates will be posted on this page.</p>
                         </section>
 
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">13. Contact & Grievance Officer</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">13. Contact & Grievance Officer</h2>
                             <p>For privacy concerns or grievances, contact:</p>
                             <div className="mt-2 bg-gray-50 p-4 rounded border border-gray-200">
                                 <p><strong>Fzokart Grievance Officer</strong></p>
@@ -218,7 +218,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">14. User Consent</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">14. User Consent</h2>
                             <p>By accessing or using Fzokart, you explicitly consent to the collection, use, and processing of your information as described in this Privacy Policy.</p>
                         </section>
 

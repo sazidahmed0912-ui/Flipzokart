@@ -7,7 +7,7 @@
     "projectName": "frontend-next",
     "projectPath": "d:\\Websites\\Flipzokart\\frontend-next",
     "testIds": [],
-    "additionalInstruction": "Verify two specific changes:\n1. On '/order-success' (or the page component OrderSuccessPage), verify that product images have class 'order-item-image' and 'order-item-image-wrapper'. In mobile view (viewport 375x667), verify (via computed style) that the wrapper has width 72px and height 72px.\n2. On '/terms-of-service', '/privacy-policy', '/about', '/contact', verify the mobile typography. In mobile view (viewport 375x667), paragraph text (p) should have font-size 13px and h2/h3 should have font-size 16px.\nDo not test login functionality. Use strict selectors.",
+    "additionalInstruction": "Navigate to '/order-success?orderId=12345' (mock order if needed). Verify that the element with class '.order-item-image-wrapper' has a computed width of 72px and height of 72px on a mobile viewport (375x667). Also verify '.order-item-image' has max-width 72px.",
     "envs": {
       "API_KEY": "sk-user-9bpwDiADBgTT_9Nmx7neRzSXSUT3vzD8lx_cY3b2QJMVOz86DK4ULALUqXEPvtxvdsQYIIzczgPSqjKb3xPqyiXf33yc_e8usGIJ5E3MNQyAHy5IzTt-VvC6NT2JcNV138s"
     }

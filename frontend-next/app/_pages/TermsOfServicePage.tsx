@@ -13,7 +13,7 @@ export const TermsOfServicePage: React.FC = () => {
                 <SmoothReveal>
                     <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 border-b pb-4">Terms and Conditions for Fzokart</h1>
 
-                    <div className="prose prose-blue max-w-none text-sm md:text-base leading-relaxed text-gray-700 space-y-6 legal-content">
+                    <div className="prose prose-blue max-w-none text-[13px] leading-[1.7] md:text-base md:leading-relaxed text-gray-700 space-y-6 legal-content prose-p:text-[13px] md:prose-p:text-base prose-li:text-[13px] md:prose-li:text-base">
                         <p className="font-semibold">Effective Date: [24/01/2026]</p>
 
                         <p>
@@ -26,7 +26,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">1. Definitions</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">1. Definitions</h2>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>"Fzokart", "we", "us", "our" refers to the Fzokart ecommerce platform.</li>
                                 <li>"User", "Customer" refers to any person accessing or purchasing from Fzokart.</li>
@@ -38,7 +38,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">2. Eligibility</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">2. Eligibility</h2>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Users must be 18 years or older to place an order.</li>
                                 <li>By using Fzokart, you confirm that the information provided is accurate and complete.</li>
@@ -48,7 +48,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">3. User Account & Responsibilities</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">3. User Account & Responsibilities</h2>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Users must maintain confidentiality of login credentials.</li>
                                 <li>Fzokart is not responsible for unauthorized access due to user negligence.</li>
@@ -59,7 +59,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">4. Product Information</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">4. Product Information</h2>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>We strive to display accurate product details, prices, and images.</li>
                                 <li>Minor variations may occur due to photography or display settings.</li>
@@ -70,7 +70,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">5. Pricing & Payments (Razorpay)</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">5. Pricing & Payments (Razorpay)</h2>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>All prices are listed in INR (₹) unless stated otherwise.</li>
                                 <li>Payments are processed securely via Razorpay, a PCI-DSS compliant gateway.</li>
@@ -82,7 +82,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">6. Order Confirmation & Cancellation</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">6. Order Confirmation & Cancellation</h2>
                             <p>Orders are confirmed only after successful payment.</p>
                             <p className="mt-2">Fzokart reserves the right to cancel orders due to:</p>
                             <ul className="list-disc pl-5 space-y-1">
@@ -97,7 +97,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">7. Shipping & Delivery</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">7. Shipping & Delivery</h2>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Estimated delivery timelines are provided for reference only.</li>
                                 <li>Delays caused by logistics partners, weather, or force majeure are not our responsibility.</li>
@@ -108,7 +108,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">8. Returns, Refunds & Cancellations</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">8. Returns, Refunds & Cancellations</h2>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Returns and refunds are governed by the Fzokart Refund & Cancellation Policy.</li>
                                 <li>Approved refunds are processed via the original payment method through Razorpay.</li>
@@ -118,7 +118,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">9. Use Restrictions</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">9. Use Restrictions</h2>
                             <p>Users agree not to:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Violate any applicable laws</li>
@@ -132,7 +132,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">10. Intellectual Property</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">10. Intellectual Property</h2>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>All website content, logos, designs, and software are the property of Fzokart.</li>
                                 <li>Unauthorized use is strictly prohibited.</li>
@@ -142,7 +142,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">11. Third-Party Services</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">11. Third-Party Services</h2>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Fzokart uses third-party services including Razorpay and logistics providers.</li>
                                 <li>We are not responsible for third-party service interruptions.</li>
@@ -152,7 +152,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">12. Limitation of Liability</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">12. Limitation of Liability</h2>
                             <p>Fzokart shall not be liable for:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Indirect or consequential damages</li>
@@ -165,14 +165,14 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">13. Termination</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">13. Termination</h2>
                             <p>Fzokart may terminate or suspend user accounts without prior notice if Terms are violated.</p>
                         </section>
 
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">14. Governing Law & Jurisdiction</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">14. Governing Law & Jurisdiction</h2>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>These Terms are governed by the laws of India.</li>
                                 <li>Any disputes shall be subject to the exclusive jurisdiction of courts in India.</li>
@@ -182,7 +182,7 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">15. Grievance Redressal</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">15. Grievance Redressal</h2>
                             <p>As per Indian law and Razorpay guidelines:</p>
                             <div className="mt-2 bg-gray-50 p-4 rounded border border-gray-200">
                                 <p><strong>Grievance Officer</strong></p>
@@ -195,14 +195,14 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">16. Updates to Terms</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">16. Updates to Terms</h2>
                             <p>Fzokart reserves the right to update these Terms at any time. Continued use of the platform constitutes acceptance of revised Terms.</p>
                         </section>
 
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-3">17. Acceptance of Terms</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">17. Acceptance of Terms</h2>
                             <p>By accessing or using Fzokart, you acknowledge that you have read, understood, and agreed to these Terms and Conditions.</p>
                         </section>
 

@@ -233,19 +233,19 @@
 
     /* Order Image Fix */
     .order-item-image-wrapper {
-        width: 72px;
-        height: 72px;
-        flex-shrink: 0;
-        overflow: hidden;
+        width: 72px !important;
+        height: 72px !important;
+        flex-shrink: 0 !important;
+        overflow: hidden !important;
     }
 
     .order-item-image {
-        width: 72px;
-        height: 72px;
-        max-width: 72px;
-        max-height: 72px;
-        object-fit: contain;
-        border-radius: 8px;
+        width: 72px !important;
+        height: 72px !important;
+        max-width: 72px !important;
+        max-height: 72px !important;
+        object-fit: contain !important;
+        border-radius: 8px !important;
     }
 
     /* Footer Pages Mobile Typography Fix */

@@ -43,7 +43,7 @@ export const AboutUsPage: React.FC = () => {
                 <div className="w-20 h-1.5 bg-primary rounded-full"></div>
               </div>
 
-              <div className="space-y-6 text-gray-500 text-lg lg:text-xl leading-relaxed">
+              <div className="space-y-6 text-gray-500 text-[13px] leading-[1.7] md:text-xl md:leading-relaxed">
                 <p className="font-medium text-dark">
                   This is a modern e-commerce platform built to provide customers with high-quality products, affordable prices, and a smooth online shopping experience.
                 </p>
