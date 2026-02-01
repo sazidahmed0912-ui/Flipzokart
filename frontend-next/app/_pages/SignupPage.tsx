@@ -45,9 +45,10 @@ export const SignupPage: React.FC = () => {
   const tokenAuth = "491551TGhhpXBdgY1697f3ab8P1";
 
   const handleMobileOtpClick = () => {
-    if (!scriptLoaded) {
-      addToast("error", "Mobile OTP Service not ready. refreshing...");
-      window.location.reload();
+    // Fallback: Check window object directly if state is lagging or script loaded from cache
+    // @ts-ignore
+    if (!scriptLoaded && !window.initSendOTP) {
+      addToast("error", "Mobile OTP Service not ready. Please wait or refresh.");
       return;
     }
 
@@ -161,8 +162,12 @@ export const SignupPage: React.FC = () => {
   return (
     <>
       <Script
-        src="https://control.msg91.com/app/assets/otp-provider.js"
-        onLoad={() => setScriptLoaded(true)}
+        src="https://control.msg91.com/app/assets/otp-provider/otp-provider.js"
+        strategy="afterInteractive"
+        onLoad={() => {
+          console.log("Signup MSG91 Script Loaded");
+          setScriptLoaded(true);
+        }}
       />
       <div
         className="min-h-[100dvh] h-auto flex items-center justify-center p-0 md:p-4 font-sans"

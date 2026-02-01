@@ -406,19 +406,11 @@ const mobileLogin = async (req, res) => {
     // Check if user exists
     let user = await User.findOne({ phone });
 
-    // If user doesn't exist, create a new one
+    // 🟢 STRICT LOGIN: If user doesn't exist, FAIL (Don't create)
     if (!user) {
-      // Create a dummy email if needed or just use phone as identifier if schema allows
-      // Schema requires email. We'll generate a placeholder.
-      const placeholderEmail = `${phone}@mobile.temp`;
-
-      user = await User.create({
-        name: "Mobile User",
-        email: placeholderEmail,
-        phone: phone,
-        password: await bcrypt.hash(Math.random().toString(36), 10), // Random password
-        role: "user",
-        status: "Active"
+      return res.status(404).json({
+        success: false,
+        message: "User not found. Please Sign Up first."
       });
     }
 
@@ -432,7 +424,7 @@ const mobileLogin = async (req, res) => {
     // Broadcast log
     const broadcastLog = req.app.get("broadcastLog");
     if (broadcastLog) {
-      broadcastLog("success", `Mobile User ${phone} logged in`, "Auth");
+      broadcastLog("success", `Mobile User ${phone} logged in (Strict Mode)`, "Auth");
     }
 
     res.status(200).json({

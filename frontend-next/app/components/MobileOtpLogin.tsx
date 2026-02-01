@@ -88,25 +88,22 @@ export default function MobileOtpLogin() {
                 if (token) {
                     localStorage.setItem("token", token);
                     localStorage.setItem("user", JSON.stringify(user));
-
                     document.cookie = `token=${token}; path=/; max-age=2592000; SameSite=Lax`;
-
                     alert(`Mobile OTP Login Success ✅\nWelcome ${user.phone || "User"}`);
-
-                    // 2. Redirect
                     window.location.href = "/";
                 } else {
-                    // Success (Verified) but Backend didn't return a token (Login skipped/failed)
-                    // likely because it couldn't extract the mobile number from the JWT.
-                    console.warn("OTP Verified but no backend session created (Phone extraction failed?)");
-                    alert("Mobile OTP Login Success ✅"); // Show success as requested
-                    window.location.href = "/"; // Redirect anyway (User might be confused if they aren't actually logged in, but this stops the crash)
+                    alert("Login Success (Verified) but no session created.");
                 }
 
             } else {
-                const msg = result.message || JSON.stringify(result);
-                console.error("Backend Error Message: " + msg);
-                alert(`Login Failed ❌\nReason: ${msg}`);
+                // If User Not Found (Strict Mode)
+                if (result.isUserNotFound || (result.message && result.message.includes("not found"))) {
+                    alert("⚠️ Mobile number not registered!\n\nPlease use 'Sign up with Mobile OTP' button on Signup page.");
+                } else {
+                    const msg = result.message || JSON.stringify(result);
+                    console.error("Backend Error Message: " + msg);
+                    alert(`Login Failed ❌\nReason: ${msg}`);
+                }
             }
         } catch (e) {
             console.error("Verification error:", e);

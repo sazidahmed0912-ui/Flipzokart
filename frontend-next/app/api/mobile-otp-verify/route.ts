@@ -45,13 +45,22 @@ export async function POST(req: NextRequest) {
 
             if (backendLoginRes.ok && backendData.success) {
                 return NextResponse.json({ success: true, data: backendData });
+            } else {
+                // If backend says "User not found" (Strict Login), we must return failure
+                // so the Frontend can show the "Alert: Please Sign Up"
+                return NextResponse.json({
+                    success: false,
+                    message: backendData.message || "Login failed",
+                    isUserNotFound: backendLoginRes.status === 404
+                });
             }
         }
 
-        // 🟢 Final Success Response (Even if backend login failed/skipped, return success as requested)
+        // 🟢 If NO Mobile number found in token/request, we can't login.
+        // And since we now enforce "Login only if registered", we can't just return success blindly.
         return NextResponse.json({
-            success: true,
-            message: "Mobile OTP Login Success"
+            success: false,
+            message: "Unable to verify user identity (No phone number found)"
         });
 
     } catch (err) {
