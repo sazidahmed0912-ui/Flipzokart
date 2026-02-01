@@ -25,7 +25,7 @@ export const ContactUsPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-20 -mt-16 relative z-20">
+      <section className="container mx-auto px-4 py-20 -mt-16 relative z-20 contact-us-content">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
           {/* Contact Information Cards */}

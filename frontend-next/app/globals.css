@@ -228,3 +228,47 @@
     border: 3px solid #EF4444;
     animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
 }
+
+@media (max-width: 768px) {
+
+    /* Order Image Fix */
+    .order-item-image-wrapper {
+        width: 72px;
+        height: 72px;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .order-item-image {
+        width: 72px;
+        height: 72px;
+        max-width: 72px;
+        max-height: 72px;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    /* Footer Pages Mobile Typography Fix */
+    .legal-content p,
+    .legal-content li,
+    .about-us-content p,
+    .contact-us-content p {
+        font-size: 13px !important;
+        line-height: 1.7 !important;
+        font-weight: 400 !important;
+    }
+
+    .legal-content h1,
+    .legal-content h2,
+    .legal-content h3,
+    .legal-content h4,
+    .about-us-content h2,
+    .about-us-content h3,
+    .contact-us-content h2,
+    .contact-us-content h3 {
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        letter-spacing: -0.01em !important;
+        margin-bottom: 0.5rem !important;
+    }
+}

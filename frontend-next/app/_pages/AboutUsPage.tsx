@@ -32,7 +32,7 @@ export const AboutUsPage: React.FC = () => {
       </section>
 
       {/* Main Content Section */}
-      <section className="container mx-auto px-4 py-24">
+      <section className="container mx-auto px-4 py-24 about-us-content">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div className="space-y-10">
@@ -131,7 +131,7 @@ export const AboutUsPage: React.FC = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="container mx-auto px-4 py-24">
+      <section className="container mx-auto px-4 py-24 about-us-content">
         <div className="bg-dark rounded-[4rem] p-12 lg:p-20 text-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2"></div>
 
