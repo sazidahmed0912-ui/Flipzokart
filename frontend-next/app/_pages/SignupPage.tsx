@@ -172,8 +172,8 @@ export const SignupPage: React.FC = () => {
       // If mobile was verified, we pass it.
       const user = await authService.verifyEmailOtp(email, otpCode, { name, phone, password });
       setUser(user);
-      addToast('success', '✅ Registration successful!');
-      router.push(user.role === 'admin' ? '/admin' : '/profile');
+      addToast('success', '✅ Registration successful! Please Login.');
+      router.push('/login'); // 🟢 Redirect to Login as requested
     } catch (err: any) {
       addToast('error', err.message || 'Invalid OTP');
     } finally {
@@ -290,20 +290,20 @@ export const SignupPage: React.FC = () => {
                           disabled={isLoading}
                         />
 
-                        {/* Mobile Number Input */}
-                        <div className="relative">
-                          <input
-                            type="tel"
-                            placeholder="Mobile Number"
-                            className={`w-full h-[42px] md:h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-[13px] md:text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all ${isMobileVerified ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
-                            value={phone}
-                            onChange={(e) => !isMobileVerified && setPhone(e.target.value)}
-                            disabled={isLoading || isMobileVerified}
-                          />
-                          {isMobileVerified && (
+                        {/* Mobile Number Input - ONLY SHOW IF VERIFIED (via Widget) */}
+                        {isMobileVerified && (
+                          <div className="relative">
+                            <input
+                              type="tel"
+                              placeholder="Mobile Number"
+                              className={`w-full h-[42px] md:h-11 rounded-[10px] border border-[#d1d5db] px-3.5 text-[13px] md:text-sm outline-none bg-white focus:border-[#2874F0] focus:ring-[3px] focus:ring-[rgba(40,116,240,0.15)] transition-all ${isMobileVerified ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
+                              value={phone}
+                              onChange={(e) => !isMobileVerified && setPhone(e.target.value)}
+                              disabled={isLoading || isMobileVerified}
+                            />
                             <CheckCircle size={18} className="absolute right-3 top-3 text-green-500" />
-                          )}
-                        </div>
+                          </div>
+                        )}
 
                         {/* Email Input */}
                         <input
