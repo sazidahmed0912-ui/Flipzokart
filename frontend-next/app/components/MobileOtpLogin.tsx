@@ -8,18 +8,18 @@ export default function MobileOtpLogin() {
 
     useEffect(() => {
         // Check if already loaded from cache or other navigations
-        if ((window as any).initOtp) {
+        if ((window as any).initSendOTP) {
             setIsScriptLoaded(true);
         }
     }, []);
 
     const openMobileOtp = () => {
-        if (!isScriptLoaded || !(window as any).initOtp) {
+        if (!isScriptLoaded || !(window as any).initSendOTP) {
             alert("OTP widget is still loading. Please wait...");
             return;
         }
 
-        (window as any).initOtp({
+        (window as any).initSendOTP({
             widgetId: "3662616b7765363133313539",
             tokenAuth: "491551TGhhpXBdgY1697f3ab8P1",
             identifier: "mobile",
