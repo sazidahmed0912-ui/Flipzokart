@@ -455,6 +455,13 @@ const mobileLogin = async (req, res) => {
 };
 
 module.exports = {
+  register,
+  login,
+  logout,
+  forgotPassword,
+  resetPassword,
+  registerSeller,
+  registerBusiness,
   registerStore,
   mobileLogin
 };
