@@ -22,15 +22,16 @@ export const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }
 };
 
 export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user } = useApp();
+    const { user, isInitialized } = useApp();
     const router = useRouter();
 
     useEffect(() => {
-        if (!user) {
+        if (isInitialized && !user) {
             router.push('/login');
         }
-    }, [user, router]);
+    }, [user, isInitialized, router]);
 
+    if (!isInitialized) return <div className="h-screen w-full flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>;
     if (!user) return null;
     return <>{children}</>;
 };
