@@ -1,138 +1,162 @@
 [
   {
     "id": "TC001",
-    "title": "Product Gallery Image Loading and Display",
-    "description": "Verify that product gallery images load correctly with all thumbnails displayed and the main image is visible.",
+    "title": "Product gallery loads images correctly",
+    "description": "Verify that the product gallery displays all images associated with a product and that images load without errors.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to a Product Details Page with a gallery."
+        "description": "Navigate to a Product Details Page containing a product gallery."
       },
       {
         "type": "assertion",
-        "description": "Check that all gallery images and thumbnails are loaded without errors."
+        "description": "Check that all the images associated with the product are displayed in the gallery thumbnails."
       },
       {
         "type": "assertion",
-        "description": "Verify the main product image is visible and correctly rendered."
+        "description": "Verify that the main gallery image loads correctly without visual errors."
       }
     ]
   },
   {
     "id": "TC002",
-    "title": "Product Gallery Swipe Functionality",
-    "description": "Ensure that swiping the product gallery navigates between images smoothly.",
+    "title": "Product gallery swipe functionality",
+    "description": "Ensure the swipe feature in the product gallery allows users to navigate through images smoothly.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "On the Product Details Page gallery, perform swipe gesture or use navigation controls to move to the next image."
-      },
-      {
-        "type": "assertion",
-        "description": "The next image in the gallery should be displayed correctly."
+        "description": "Open the Product Details Page with multiple product images."
       },
       {
         "type": "action",
-        "description": "Swipe back to the previous image."
+        "description": "Perform swipe action on the gallery to move to the next image."
       },
       {
         "type": "assertion",
-        "description": "The previous image in the gallery should be displayed correctly."
+        "description": "Confirm the displayed image changes to the next image in sequence."
+      },
+      {
+        "type": "action",
+        "description": "Swipe backwards on the gallery."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the displayed image changes to the previous image without errors."
       }
     ]
   },
   {
     "id": "TC003",
-    "title": "Product Gallery Zoom Feature",
-    "description": "Validate that zooming on a product image functions correctly and resets on demand.",
+    "title": "Product gallery zoom feature",
+    "description": "Validate that the zoom functionality in the product gallery works correctly on images.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the Product Details Page and trigger zoom on the main gallery image."
-      },
-      {
-        "type": "assertion",
-        "description": "The image should zoom in smoothly and display more detail without distortion."
+        "description": "Navigate to the product gallery on the Product Details Page."
       },
       {
         "type": "action",
-        "description": "Reset zoom to normal view."
+        "description": "Activate the zoom feature on a gallery image."
       },
       {
         "type": "assertion",
-        "description": "The image returns to its original scale and the UI remains stable."
+        "description": "Verify that the image zooms in smoothly and details are visible without distortion."
+      },
+      {
+        "type": "action",
+        "description": "Deactivate zoom and check the image returns to normal size."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm image size resets correctly after zoom is closed."
       }
     ]
   },
   {
     "id": "TC004",
-    "title": "Rendering Multiple Product Card Variants",
-    "description": "Confirm that all product card variants (search, listing, featured, compact) render correctly with appropriate layout and content.",
+    "title": "Product card variants render properly",
+    "description": "Verify all product card types (search, listing, featured) display correctly with accurate product information.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Load the product listing page and locate each type of product card variant."
+        "description": "Load product listing page to display product cards in search context."
       },
       {
         "type": "assertion",
-        "description": "Verify distinct layouts for search product cards, new product cards, compact product cards, and featured product cards."
+        "description": "Check SearchProductCard renders with correct product image, title, price, and description snippet."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to featured listing context where FeaturedProductCard is used."
       },
       {
         "type": "assertion",
-        "description": "Ensure product images, names, prices, and other relevant information appear correctly in each variant."
+        "description": "Ensure FeaturedProductCard displays with enhanced visuals and correct product data."
+      },
+      {
+        "type": "action",
+        "description": "Verify CompactProductCard in contexts requiring space-efficient display."
+      },
+      {
+        "type": "assertion",
+        "description": "Validate CompactProductCard presents product info clearly and links to details page."
       }
     ]
   },
   {
     "id": "TC005",
-    "title": "Product Card Navigation to Product Details",
-    "description": "Check that clicking or tapping on any product card navigates the user to the correct Product Details Page.",
+    "title": "Product cards link to Product Details Page",
+    "description": "Confirm that each product card navigates the user to the correct Product Details Page upon click.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "From the product listing page, click on various product cards across different variants."
+        "description": "On a page with multiple product cards, click on a product card."
       },
       {
         "type": "assertion",
-        "description": "Confirm that each click opens the correct Product Details Page corresponding to the clicked product."
+        "description": "Verify the application navigates to the corresponding Product Details Page."
+      },
+      {
+        "type": "assertion",
+        "description": "Check the Product Details Page displays information that matches the clicked product."
       }
     ]
   },
   {
     "id": "TC006",
-    "title": "Complete Product Details Page Information",
-    "description": "Verify that the Product Details Page displays all required information including product description, specifications, pricing, and availability.",
+    "title": "Product Details Page displays complete and accurate information",
+    "description": "Ensure the Product Details Page shows all relevant product details including descriptions, pricing, availability, and gallery integration.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the Product Details Page of a product."
+        "description": "Navigate to a Product Details Page."
       },
       {
         "type": "assertion",
-        "description": "Check presence and accuracy of product name, detailed description, price, specifications, and stock status."
+        "description": "Verify the product name, detailed description, price, availability, and any specifications are displayed accurately."
       },
       {
         "type": "assertion",
-        "description": "Ensure the integrated product gallery with thumbnails and zoom/swipe is functional on this page."
+        "description": "Confirm the embedded product gallery is present and functional."
       }
     ]
   },
   {
     "id": "TC007",
-    "title": "Add Product to Shopping Cart from Product Card",
-    "description": "Validate that users can add products to the shopping cart directly from product cards.",
+    "title": "Add products to Shopping Cart from product cards",
+    "description": "Validate users can add products to the shopping cart directly from product cards with correct quantity and reflect updated cart state.",
     "category": "functional",
     "priority": "High",
     "steps": [
@@ -142,31 +166,43 @@
       },
       {
         "type": "assertion",
-        "description": "Verify that the shopping cart count increases by one and the selected product is added with correct details."
+        "description": "Verify the cart count increments by one and the product is added with default quantity."
+      },
+      {
+        "type": "action",
+        "description": "Repeat adding the same product multiple times."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the product quantity in the cart updates accordingly."
       }
     ]
   },
   {
     "id": "TC008",
-    "title": "Add Product to Shopping Cart from Product Details Page",
-    "description": "Ensure that products can be added to the cart from the Product Details Page and updated cart reflects the addition.",
+    "title": "Add products to Shopping Cart from Product Details Page",
+    "description": "Ensure users can add desired quantities of a product to the cart from the Product Details Page.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to a Product Details Page and click the 'Add to Cart' button."
+        "description": "On the Product Details Page, set a specific product quantity."
+      },
+      {
+        "type": "action",
+        "description": "Click the 'Add to Cart' button."
       },
       {
         "type": "assertion",
-        "description": "Confirm the shopping cart count increments and the cart includes the correct product information and quantity."
+        "description": "Verify that the shopping cart reflects the correct product and quantity added."
       }
     ]
   },
   {
     "id": "TC009",
-    "title": "Shopping Cart Item Management",
-    "description": "Test that users can update item quantities and remove items in the Shopping Cart properly with UI reflecting changes.",
+    "title": "Shopping Cart page reflects product additions and removals",
+    "description": "Confirm the Shopping Cart page correctly shows added products, allows quantity changes, and supports removing products.",
     "category": "functional",
     "priority": "High",
     "steps": [
@@ -175,50 +211,67 @@
         "description": "Navigate to the Shopping Cart page with items already added."
       },
       {
-        "type": "action",
-        "description": "Increase the quantity of a cart item and verify the new quantity is shown."
-      },
-      {
         "type": "assertion",
-        "description": "Ensure the cart total price updates correctly according to the new quantity."
+        "description": "Check that all added products are listed with correct quantities and prices."
       },
       {
         "type": "action",
-        "description": "Remove an item from the cart."
+        "description": "Increase the quantity of one product and update the cart."
       },
       {
         "type": "assertion",
-        "description": "Verify the item is removed and the cart updates with the correct item count and total."
+        "description": "Verify the quantity changes and total price updates accordingly."
+      },
+      {
+        "type": "action",
+        "description": "Remove a product from the cart."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the product is removed and cart total adjusts properly."
       }
     ]
   },
   {
     "id": "TC010",
-    "title": "Checkout and Order Success Confirmation",
-    "description": "Verify that upon successful checkout, the user is redirected to the Order Success Page displaying correct order confirmation details.",
+    "title": "Proceed to checkout from Shopping Cart",
+    "description": "Validate that the user can successfully proceed from the Shopping Cart page to the checkout process.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Complete the checkout process from the Shopping Cart page."
+        "description": "On Shopping Cart page with valid items, click the 'Proceed to Checkout' button."
       },
       {
         "type": "assertion",
-        "description": "Ensure redirection to the Order Success Page occurs."
-      },
-      {
-        "type": "assertion",
-        "description": "Validate the displayed order confirmation details including order number, items purchased, and total amount."
+        "description": "Confirm that the navigation to checkout page or order confirmation process is initiated."
       }
     ]
   },
   {
     "id": "TC011",
-    "title": "Viewing Order History",
-    "description": "Confirm that the Orders Page accurately lists the user's past orders with details retrieved from state or backend.",
+    "title": "Order Success Page shows correct order details",
+    "description": "Ensure the Order Success Page displays accurate order confirmation and details immediately after purchase completion.",
     "category": "functional",
-    "priority": "Medium",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Complete an order from the checkout process."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the Order Success Page loads showing order number, summary of purchased items, total amount, and confirmation message."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Orders Page lists past orders accurately",
+    "description": "Verify that the Orders Page fetches and displays all historical orders with correct data and allows viewing detailed information per order.",
+    "category": "functional",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
@@ -226,111 +279,115 @@
       },
       {
         "type": "assertion",
-        "description": "Check that all past orders are listed with correct order numbers, dates, statuses, and totals."
+        "description": "Check that the page lists past orders with their respective dates, statuses, and totals."
       },
       {
         "type": "action",
-        "description": "Select an individual order to view order details."
+        "description": "Select an order from the list to view more details."
       },
       {
         "type": "assertion",
-        "description": "Verify detailed information of selected order including items, quantities, prices, and delivery status."
-      }
-    ]
-  },
-  {
-    "id": "TC012",
-    "title": "Global State Management Consistency",
-    "description": "Validate that global application state using React Context remains consistent across components under various user actions.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Add multiple products to cart from different product cards and product details pages."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the shopping cart state updates correctly in all components reflecting the same data."
-      },
-      {
-        "type": "action",
-        "description": "Navigate to Orders Page after placing orders."
-      },
-      {
-        "type": "assertion",
-        "description": "Confirm order data is updated and consistent between state and displayed information without race conditions or stale data."
+        "description": "Verify detailed information matches the selected order including items, quantities, prices, and status."
       }
     ]
   },
   {
     "id": "TC013",
-    "title": "Shopping Cart Quantity Edge Cases",
-    "description": "Test the shopping cart behavior for edge case quantities including zero, negative numbers, and large quantities.",
-    "category": "error handling",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Attempt to set the quantity of a cart item to zero."
-      },
-      {
-        "type": "assertion",
-        "description": "Validate if the item is removed or quantity reset according to requirements."
-      },
-      {
-        "type": "action",
-        "description": "Attempt to input negative quantities."
-      },
-      {
-        "type": "assertion",
-        "description": "Ensure the input is rejected or corrected to valid minimum quantity."
-      },
-      {
-        "type": "action",
-        "description": "Attempt to input a very large quantity."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify system handles it gracefully without crashing or errors, possibly with validation messages."
-      }
-    ]
-  },
-  {
-    "id": "TC014",
-    "title": "Product Details Navigation Back and State Preservation",
-    "description": "Ensure that navigating back from Product Details Page to product listings preserves previous scroll positions and state consistency.",
-    "category": "functional",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "From the product listing, navigate to a Product Details Page."
-      },
-      {
-        "type": "action",
-        "description": "Use browser back or application back navigation."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the previous product listing page scroll position and filters/selections remain unchanged."
-      }
-    ]
-  },
-  {
-    "id": "TC015",
-    "title": "Product Image Thumbnail Selection Updates Main Image",
-    "description": "Test that clicking on any thumbnail in the product gallery updates the main displayed image correctly.",
+    "title": "Global state management consistency",
+    "description": "Test that the global application state remains consistent across multiple components during user interactions without errors or race conditions.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "On the Product Details Page, click on a thumbnail image in the gallery."
+        "description": "Add a product to the cart from a product card."
       },
       {
         "type": "assertion",
-        "description": "Validate that the main product image updates to the selected thumbnail image."
+        "description": "Check that the cart count updates globally and reflects on Shopping Cart page."
+      },
+      {
+        "type": "action",
+        "description": "Modify product quantities in the Shopping Cart."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure updated quantity is reflected in global state and on all relevant components (e.g., cart icon, product card badges)."
+      },
+      {
+        "type": "action",
+        "description": "Navigate between Orders Page, Product Details Page, and Cart Page."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify application state remains stable and consistent with no data loss or duplication."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Handle zero and negative product quantity inputs gracefully",
+    "description": "Ensure the system handles edge cases where product quantity inputs are zero, negative, or invalid, preventing erroneous cart updates.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "On Product Details Page or Cart Page, input zero as product quantity."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the system prevents adding zero quantity or prompts user to correct input."
+      },
+      {
+        "type": "action",
+        "description": "Input negative number or invalid characters as quantity."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the input is sanitized or disallowed, and user is notified of invalid entry."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Product gallery handles missing or corrupted images",
+    "description": "Test that the product gallery gracefully handles cases where images fail to load due to missing or corrupted file sources.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to Product Details Page with a product that has missing or corrupted image files."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that placeholder images or error messages are displayed instead of broken images."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure gallery functions (swipe, zoom) do not crash or become unresponsive."
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Shopping Cart handles simultaneous updates without race conditions",
+    "description": "Verify that concurrent updates to the Shopping Cart (e.g., from multiple tabs or rapid user actions) maintain data integrity and consistent state.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open Shopping Cart page in two separate browser tabs."
+      },
+      {
+        "type": "action",
+        "description": "Simultaneously add or remove products from both tabs."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm that the application state remains synchronized and all changes are accurately reflected in both tabs."
       }
     ]
   }

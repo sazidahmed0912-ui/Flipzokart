@@ -2,57 +2,37 @@
     "tech_stack": [
         "TypeScript",
         "Next.js",
-        "TailwindCSS",
-        "React",
-        "Lucide React"
+        "Tailwind CSS",
+        "React"
     ],
     "features": [
         {
-            "name": "Product Gallery",
-            "description": "Handles product image display, thumbnails, swipe, and zoom.",
+            "name": "Order Success Page",
+            "description": "Order confirmation page displaying ordered items. Contains mobile-specific image styling.",
             "files": [
-                "app/components/ProductGallery.tsx",
-                "app/components/ProductImage.tsx",
-                "app/utils/imageHelper.ts"
-            ]
-        },
-        {
-            "name": "Product Cards",
-            "description": "Various product card components for search, listing, and featured views.",
-            "files": [
-                "app/components/ProductCard.tsx",
-                "app/components/SearchProductCard.tsx",
-                "app/components/NewProductCard.tsx",
-                "app/components/CompactProductCard.tsx"
-            ]
-        },
-        {
-            "name": "Product Details Page",
-            "description": "Main page for displaying detailed product information and gallery.",
-            "files": [
-                "app/_pages/ProductDetails.tsx"
-            ]
-        },
-        {
-            "name": "Shopping Cart",
-            "description": "Cart management and display.",
-            "files": [
-                "app/_pages/CartPage.tsx"
-            ]
-        },
-        {
-            "name": "Order Management",
-            "description": "Order history and success pages.",
-            "files": [
-                "app/_pages/OrdersPage.tsx",
+                "app/order-success/page.tsx",
                 "app/_pages/OrderSuccessPage.tsx"
             ]
         },
         {
-            "name": "State Management",
-            "description": "Global application state using React Context.",
+            "name": "Footer Pages",
+            "description": "Static content pages (About, Contact, Terms, Privacy) with specific mobile typography.",
             "files": [
-                "app/store/Context.tsx"
+                "app/about/page.tsx",
+                "app/_pages/AboutUsPage.tsx",
+                "app/contact/page.tsx",
+                "app/_pages/ContactUsPage.tsx",
+                "app/terms-of-service/page.tsx",
+                "app/_pages/TermsOfServicePage.tsx",
+                "app/privacy-policy/page.tsx",
+                "app/_pages/PrivacyPolicyPage.tsx"
+            ]
+        },
+        {
+            "name": "Global Styles",
+            "description": "Global CSS definitions including mobile typography overrides.",
+            "files": [
+                "app/globals.css"
             ]
         }
     ]

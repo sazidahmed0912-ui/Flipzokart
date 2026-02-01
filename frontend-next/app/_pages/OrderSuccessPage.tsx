@@ -244,6 +244,8 @@ const OrderSuccessPage = () => {
               transition={{ delay: 0.2 }}
               className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
             >
+              <h3 className="font-bold text-gray-900 text-lg">Order Successfully Placed! (v2.0)</h3>
+              <p className="text-gray-500 text-sm mt-1 mb-4">Order ID: #{orderId}</p>
               <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <MapPin size={20} className="text-[#2874F0]" /> Delivery Address
               </h3>

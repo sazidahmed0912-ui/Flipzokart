@@ -6,18 +6,11 @@
   "executionArgs": {
     "projectName": "frontend-next",
     "projectPath": "d:\\Websites\\Flipzokart\\frontend-next",
-    "testIds": [
-      "TC001",
-      "TC002",
-      "TC003",
-      "TC004",
-      "TC006",
-      "TC015"
-    ],
-    "additionalInstruction": "Focus on verifying that multiple images are displayed in the gallery and that fallback logic works correctly. Ensure no single image is shown if multiple are available.",
+    "testIds": [],
+    "additionalInstruction": "Verify two specific changes:\n1. On '/order-success' (or the page component OrderSuccessPage), verify that product images have class 'order-item-image' and 'order-item-image-wrapper'. In mobile view (viewport 375x667), verify (via computed style) that the wrapper has width 72px and height 72px.\n2. On '/terms-of-service', '/privacy-policy', '/about', '/contact', verify the mobile typography. In mobile view (viewport 375x667), paragraph text (p) should have font-size 13px and h2/h3 should have font-size 16px.\nDo not test login functionality. Use strict selectors.",
     "envs": {
       "API_KEY": "sk-user-9bpwDiADBgTT_9Nmx7neRzSXSUT3vzD8lx_cY3b2QJMVOz86DK4ULALUqXEPvtxvdsQYIIzczgPSqjKb3xPqyiXf33yc_e8usGIJ5E3MNQyAHy5IzTt-VvC6NT2JcNV138s"
     }
   },
-  "proxy": "http://4b2adeee-a1f4-4813-aee3-2b116255afe0:lgrVQE36ZWbCmkmMjMEB4rltWcVpX3f2@tun.testsprite.com:8080"
+  "proxy": "http://8cea8963-7030-42b9-a8ae-5a6970174eb4:dZTnHjmNuV1ddTZsAEdEr6t0hd8s3623@tun.testsprite.com:8080"
 }
