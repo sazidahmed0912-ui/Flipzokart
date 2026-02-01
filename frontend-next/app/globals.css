@@ -248,27 +248,44 @@
         border-radius: 8px !important;
     }
 
-    /* Footer Pages Mobile Typography Fix */
-    .legal-content p,
-    .legal-content li,
-    .about-us-content p,
-    .contact-us-content p {
+    /* Footer Pages Mobile Typography Fix - STRICT UNIFIED CLASS */
+    .mobile-legal-page p,
+    .mobile-legal-page li,
+    .mobile-legal-page span,
+    .mobile-legal-page div,
+    .mobile-legal-page ul,
+    .mobile-legal-page ol {
+        /* Scope enforcement */
+    }
+
+    .mobile-legal-page p,
+    .mobile-legal-page li,
+    .mobile-legal-page ul,
+    .mobile-legal-page ol {
         font-size: 13px !important;
         line-height: 1.7 !important;
         font-weight: 400 !important;
+        letter-spacing: normal !important;
     }
 
-    .legal-content h1,
-    .legal-content h2,
-    .legal-content h3,
-    .legal-content h4,
-    .about-us-content h2,
-    .about-us-content h3,
-    .contact-us-content h2,
-    .contact-us-content h3 {
+    .mobile-legal-page h1,
+    .mobile-legal-page h2,
+    .mobile-legal-page h3,
+    .mobile-legal-page h4,
+    .mobile-legal-page h5,
+    .mobile-legal-page h6 {
         font-size: 16px !important;
+        line-height: 1.4 !important;
         font-weight: 600 !important;
-        letter-spacing: -0.01em !important;
-        margin-bottom: 0.5rem !important;
+        margin-bottom: 0.75rem !important;
+        margin-top: 1.5rem !important;
+    }
+
+    .mobile-legal-page>*:first-child {
+        margin-top: 0 !important;
+    }
+
+    .mobile-legal-page strong {
+        font-weight: 600 !important;
     }
 }

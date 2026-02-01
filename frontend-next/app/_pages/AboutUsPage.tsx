@@ -32,7 +32,7 @@ export const AboutUsPage: React.FC = () => {
       </section>
 
       {/* Main Content Section */}
-      <section className="container mx-auto px-4 py-24 about-us-content">
+      <section className="container mx-auto px-4 py-24 about-us-content mobile-legal-page">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div className="space-y-10">

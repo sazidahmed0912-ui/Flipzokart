@@ -13,7 +13,7 @@ export const TermsOfServicePage: React.FC = () => {
                 <SmoothReveal>
                     <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 border-b pb-4">Terms and Conditions for Fzokart</h1>
 
-                    <div className="prose prose-blue max-w-none text-gray-700 space-y-6 legal-content [&_p]:!text-[13px] [&_p]:!leading-[1.7] md:[&_p]:!text-base md:[&_p]:!leading-relaxed [&_li]:!text-[13px] md:[&_li]:!text-base [&_h2]:!text-[16px] md:[&_h2]:!text-xl [&_h2]:!mb-2 [&_ul]:!pl-5">
+                    <div className="prose prose-blue max-w-none text-gray-700 space-y-6 legal-content mobile-legal-page [&_p]:!text-[13px] [&_p]:!leading-[1.7] md:[&_p]:!text-base md:[&_p]:!leading-relaxed [&_li]:!text-[13px] md:[&_li]:!text-base [&_h2]:!text-[16px] md:[&_h2]:!text-xl [&_h2]:!mb-2 [&_ul]:!pl-5">
                         <p className="font-semibold">Effective Date: [24/01/2026]</p>
 
                         <p>

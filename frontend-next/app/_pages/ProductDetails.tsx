@@ -13,7 +13,7 @@ import { useSocket } from '@/app/hooks/useSocket';
 import LazyImage from '@/app/components/LazyImage';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import ProductGallery from '@/app/components/ProductGallery';
-import { getProductImageUrl } from '@/app/utils/imageHelper';
+import { getProductImageUrl, getAllProductImages } from '@/app/utils/imageHelper';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -156,13 +156,13 @@ export const ProductDetails: React.FC = () => {
   const { activeImages, activeImage } = useMemo(() => {
     if (!product) return { activeImages: [], activeImage: '' };
 
-    // Default to main product images
-    let images = getProductImageUrl ? [getProductImageUrl(product.image), ...(product.images || []).map(getProductImageUrl)] : [];
-    // Deduplicate
-    images = Array.from(new Set(images.filter(Boolean)));
+    // Default to strict helper logic (avoids manual stitching errors)
+    let images = getAllProductImages(product);
 
-    // If no helper available (SSR/Initial), fallback
-    if (images.length === 0 && product.image) images = [product.image];
+    // Filter out placeholders if we have real images (optional, but helper handles it)
+    if (images.length > 1 && images[0] === '/placeholder.png') {
+      images.shift();
+    }
 
     // Find active color
     let selectedColor = '';
