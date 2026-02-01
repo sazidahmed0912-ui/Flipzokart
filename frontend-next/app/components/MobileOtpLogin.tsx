@@ -15,39 +15,48 @@ export default function MobileOtpLogin() {
 
     const openMobileOtp = () => {
         if (!isScriptLoaded || !(window as any).initSendOTP) {
-            alert("OTP widget is still loading. Please wait...");
+            console.warn("MSG91 Script not loaded yet");
             return;
         }
 
-        (window as any).initSendOTP({
-            widgetId: "3662616b7765363133313539",
-            tokenAuth: "491551TGhhpXBdgY1697f3ab8P1",
-            identifier: "mobile",
-            exposeMethods: true,
+        console.log("Initializing MSG91 OTP Widget...");
+        try {
+            (window as any).initSendOTP({
+                widgetId: "3662616b7765363133313539",
+                tokenAuth: "491551TGhhpXBdgY1697f3ab8P1",
+                identifier: "mobile",
+                exposeMethods: true,
 
-            success: async (data: any) => {
-                const res = await fetch("/api/mobile-otp-verify", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        access_token: data.access_token,
-                    }),
-                });
+                success: async (data: any) => {
+                    console.log("MSG91 Success:", data);
+                    const res = await fetch("/api/mobile-otp-verify", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            access_token: data.access_token,
+                        }),
+                    });
 
-                const result = await res.json();
+                    const result = await res.json();
+                    console.log("Backend verification result:", result);
 
-                if (result.success) {
-                    alert("Mobile OTP Login Success ✅");
-                } else {
-                    alert("Mobile OTP Failed ❌");
-                }
-            },
+                    if (result.success) {
+                        alert("Mobile OTP Login Success ✅");
+                    } else {
+                        alert("Mobile OTP Failed ❌");
+                    }
+                },
 
-            failure: (err: any) => {
-                console.error(err);
-                alert("OTP verification failed");
-            },
-        });
+                failure: (err: any) => {
+                    console.error("MSG91 Failure:", err);
+                    alert("OTP verification failed");
+                },
+            });
+            console.log("MSG91 initSendOTP called successfully");
+        } catch (error) {
+            console.error("Error calling initSendOTP:", error);
+            alert("Error initializing OTP widget. See console.");
+        }
     };
 
     return (
