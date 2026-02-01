@@ -1,1 +1,0 @@
-export { AdminNotifications } from './AdminNotifications';
