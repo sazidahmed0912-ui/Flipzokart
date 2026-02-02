@@ -91,8 +91,14 @@ export interface Order {
     fullName: string;
     street: string;
     city: string;
+    state?: string;
     zipCode: string;
+    mobileNumber?: string;
   };
+  itemsPrice?: number;
+  deliveryCharges?: number;
+  tax?: number;
+  finalAmount?: number;
 }
 
 export interface Coupon {
