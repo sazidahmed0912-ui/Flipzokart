@@ -28,6 +28,39 @@ export const HomePage: React.FC = () => {
     const topDeals = nonGroceryProducts.slice(0, 8);
     const featuredProducts = nonGroceryProducts.filter(p => p.isFeatured).slice(0, 8);
 
+    // --- Dynamic Section Logic ---
+    const getProductMetadata = (product: any) => {
+        if (!product.description || typeof product.description !== 'string' || !product.description.includes('<!-- METADATA:')) return null;
+        try {
+            const parts = product.description.split('<!-- METADATA:');
+            const jsonStr = parts[1].split('-->')[0];
+            return JSON.parse(jsonStr);
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const customSections = React.useMemo(() => {
+        const sections: Record<string, { title: string, color: string, size: string, products: any[] }> = {};
+
+        products.forEach(p => {
+            const meta = getProductMetadata(p);
+            if (meta?.section?.title) {
+                const title = meta.section.title;
+                if (!sections[title]) {
+                    sections[title] = {
+                        title,
+                        color: meta.section.color || '#111827',
+                        size: meta.section.size || 'text-xl',
+                        products: []
+                    };
+                }
+                sections[title].products.push(p);
+            }
+        });
+        return Object.values(sections);
+    }, [products]);
+
     const toggleFaq = (button: HTMLElement) => {
         const content = button.nextElementSibling as HTMLElement;
         const icon = button.querySelector('svg');
@@ -40,7 +73,6 @@ export const HomePage: React.FC = () => {
     return (
         <>
             <HeroSlider />
-
 
             <section className="py-4 md:py-8 px-4 md:px-8">
                 <SmoothReveal direction="up" delay={200}>
@@ -64,6 +96,24 @@ export const HomePage: React.FC = () => {
                     </div>
                 </SmoothReveal>
             </section>
+
+            {/* Dynamic Custom Sections from Admin */}
+            {customSections.map((section, idx) => (
+                <section key={section.title} className={`py-4 md:py-8 px-4 md:px-8 ${idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                    <SmoothReveal direction="up" delay={300}>
+                        <div className="max-w-7xl mx-auto">
+                            <div className="mb-4 md:mb-6 border-l-4 border-[#F28C28] pl-4">
+                                <h2 className={`${section.size || 'text-2xl'} font-bold`} style={{ color: section.color }}>{section.title}</h2>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6 auto-rows-fr">
+                                {section.products.map(product => (
+                                    <ProductCard key={product.id} product={product} />
+                                ))}
+                            </div>
+                        </div>
+                    </SmoothReveal>
+                </section>
+            ))}
 
             <section className="py-4 md:py-8 px-4 md:px-8 bg-gray-50">
                 <SmoothReveal direction="up" delay={400}>
