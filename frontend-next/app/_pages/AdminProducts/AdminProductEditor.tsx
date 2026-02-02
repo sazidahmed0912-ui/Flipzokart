@@ -128,25 +128,11 @@ export const AdminProductEditor: React.FC = () => {
                 isFeatured: data.isFeatured || false
             });
 
-            // Load Advanced Fields (Priority: Native -> Metadata -> Default)
+            // Load Advanced Fields (Priority: Top Level -> Metadata -> Default)
             setGallery((data.images && data.images.filter((img: string) => img !== (data.thumbnail || data.image))) || meta.gallery || []);
             setSpecifications(data.specifications || meta.specifications || '');
-
-            // NATIVE RICH DATA SUPPORT
-            // If variants have options as objects, use them directly.
-            // If they are strings (legacy), we might need to rely on metadata or defaults.
-            if (data.variants && data.variants.length > 0) {
-                const hasRichData = typeof data.variants[0]?.options[0] === 'object';
-                if (hasRichData) {
-                    setVariantGroups(data.variants);
-                } else {
-                    setVariantGroups(meta.variants || data.variants);
-                }
-            } else {
-                setVariantGroups([]);
-            }
-
-            setMatrix(data.inventory || meta.matrix || []);
+            setVariantGroups(data.variants || meta.variants || []);
+            setMatrix(data.inventory || meta.matrix || []); // key is 'inventory' in DB, 'matrix' in UI state
             setSkuBase(data.sku || meta.sku || 'FZK');
 
             if (meta.section) {
@@ -329,23 +315,15 @@ export const AdminProductEditor: React.FC = () => {
             const allImages = mainImage ? [mainImage, ...validGallery] : validGallery;
 
 
-            // 2. Prepare Variants (NATIVE SUPPORT for Objects)
-            // We now send the full variantGroups structure which contains { id, name, options: [{name, color, image}, ...] }
-            // The Backend Schema has been updated to accept [Mixed] for options.
-            const variantsPayload = variantGroups.map(g => ({
+            // 2. Prepare Simple Variants for Backend (Strict Schema Compliance: options: [String])
+            const simpleVariants = variantGroups.map(g => ({
                 name: g.name,
-                options: g.options.map(o => ({
-                    name: o.name,
-                    color: o.color,
-                    image: o.image
-                }))
+                options: g.options.map(o => o.name) // Send only names
             }));
 
-            // 3. Prepare Metadata (Only for UI prefs/extra stuff not in schema)
+            // 3. Prepare Rich Metadata (To persist Colors/Images/Hex)
             const richData = {
-                // Variants are now NATIVE, no need to duplicate in metadata
-                // We typically still store matrix in DB inventory field
-                sku: skuBase,
+                sku: skuBase, specifications, variants: variantGroups, matrix,
                 section: { title: sectionTitle, color: sectionColor, size: sectionSize }
             };
 
@@ -354,13 +332,13 @@ export const AdminProductEditor: React.FC = () => {
                 price: finalPrice,
                 originalPrice: finalOriginalPrice,
                 countInStock: totalStock,
-                images: allImages,
-                thumbnail: mainImage,
-                variants: variantsPayload, // SEND FULL OBJECTS
+                images: allImages, // SAVE ARRAY
+                thumbnail: mainImage, // SAVE THUMBNAIL
+                variants: simpleVariants, // COMPLIANT
                 inventory: matrix,
                 specifications: specifications,
                 sku: skuBase,
-                description: formData.description + `\n<!-- METADATA:${JSON.stringify(richData)}-->`
+                description: formData.description + `\n<!-- METADATA:${JSON.stringify(richData)}-->` // PERSIST RICH DATA
             };
 
             if (isEditMode) await updateProduct(id, payload);

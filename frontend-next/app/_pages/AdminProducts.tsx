@@ -66,9 +66,7 @@ export const AdminProducts: React.FC = () => {
   useEffect(() => {
     if (isModalOpen && formData.variants.length > 0) {
       // Check if inventory is actually out of sync
-      const activeVariants = formData.variants.filter(v =>
-        v.name.trim() && v.options.some(o => (typeof o === 'string' ? o : o.name).trim() !== '')
-      );
+      const activeVariants = formData.variants.filter(v => v.name.trim());
       if (activeVariants.length === 0) {
         setNeedsSync(false);
         return;
@@ -321,7 +319,7 @@ export const AdminProducts: React.FC = () => {
 
   const generateCombinations = () => {
     const activeVariants = formData.variants.filter(v =>
-      v.name.trim() !== '' && v.options.some(o => (typeof o === 'string' ? o : o.name).trim() !== '')
+      v.name.trim() !== '' && v.options.some(o => o.trim() !== '')
     );
 
     if (activeVariants.length === 0) {
@@ -333,14 +331,11 @@ export const AdminProducts: React.FC = () => {
     let combinations: Record<string, string>[] = [{}];
     activeVariants.forEach(group => {
       const nextCombos: Record<string, string>[] = [];
-      // Safely extract names
-      const validOptions = group.options
-        .map(o => (typeof o === 'string' ? o : o.name))
-        .filter(name => name.trim() !== '');
+      const validOptions = group.options.filter(o => o.trim() !== '');
 
       combinations.forEach(combo => {
-        validOptions.forEach(optionName => {
-          nextCombos.push({ ...combo, [group.name]: optionName });
+        validOptions.forEach(option => {
+          nextCombos.push({ ...combo, [group.name]: option });
         });
       });
       combinations = nextCombos;
@@ -427,9 +422,7 @@ export const AdminProducts: React.FC = () => {
     const cleanedVariants = formData.variants
       .map(v => ({
         name: v.name.trim(),
-        options: v.options
-          .map(opt => (typeof opt === 'string' ? opt : opt.name).trim())
-          .filter(opt => opt !== '')
+        options: v.options.map(opt => opt.trim()).filter(opt => opt !== '')
       }))
       .filter(v => v.name !== '' && v.options.length > 0);
 
@@ -853,7 +846,7 @@ export const AdminProducts: React.FC = () => {
                                   <div key={oIdx} className="flex items-center bg-gray-100 px-2 py-1 rounded border border-gray-200">
                                     <input
                                       className="bg-transparent w-20 text-xs font-medium outline-none"
-                                      value={typeof opt === 'string' ? opt : opt.name}
+                                      value={opt}
                                       onChange={e => updateVariantOption(gIdx, oIdx, e.target.value)}
                                     />
                                     <button type="button" onClick={() => removeVariantOption(gIdx, oIdx)} className="ml-1 text-gray-400 hover:text-red-500"><X size={12} /></button>
@@ -870,23 +863,20 @@ export const AdminProducts: React.FC = () => {
                           <div className="mt-4 pt-4 border-t border-gray-200">
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Default Product Color</label>
                             <div className="flex flex-wrap gap-2">
-                              {formData.variants.find(v => v.name.toLowerCase() === 'color')?.options.map((opt, i) => {
-                                const optName = typeof opt === 'string' ? opt : opt.name;
-                                return (
-                                  <button
-                                    key={i}
-                                    type="button"
-                                    onClick={() => setFormData(prev => ({ ...prev, defaultColor: prev.defaultColor === optName ? '' : optName }))}
-                                    className={`px-3 py-1.5 rounded border text-xs font-bold transition-all ${formData.defaultColor === optName
-                                      ? 'bg-blue-600 text-white border-blue-600'
-                                      : 'bg-white border-gray-300 text-gray-600 hover:border-blue-400'
-                                      }`}
-                                  >
-                                    {optName}
-                                    {formData.defaultColor === optName && <CheckCircle2 size={12} className="inline ml-1 mb-0.5" />}
-                                  </button>
-                                )
-                              })}
+                              {formData.variants.find(v => v.name.toLowerCase() === 'color')?.options.map((opt, i) => (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => setFormData(prev => ({ ...prev, defaultColor: prev.defaultColor === opt ? '' : opt }))}
+                                  className={`px-3 py-1.5 rounded border text-xs font-bold transition-all ${formData.defaultColor === opt
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white border-gray-300 text-gray-600 hover:border-blue-400'
+                                    }`}
+                                >
+                                  {opt}
+                                  {formData.defaultColor === opt && <CheckCircle2 size={12} className="inline ml-1 mb-0.5" />}
+                                </button>
+                              ))}
                             </div>
                             <p className="text-[10px] text-gray-400 mt-1">Select the color to be shown by default on the product details page.</p>
                           </div>
