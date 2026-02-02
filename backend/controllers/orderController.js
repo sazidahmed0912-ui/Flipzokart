@@ -452,7 +452,8 @@ const getMyOrders = async (req, res) => {
         return {
           id: productRef._id || 'deleted',
           name: item.name || productRef.name || 'Unknown Product',
-          image: item.image || productRef.thumbnail || productRef.images?.[0] || productRef.image || '',
+          image: item.image || productRef.mainImage || productRef.thumbnail || productRef.images?.[0] || productRef.image || '',
+          mainImage: productRef.mainImage || item.image || productRef.thumbnail || productRef.images?.[0] || productRef.image || '',
           price: item.price !== undefined ? item.price : (productRef.price || 0),
           quantity: item.quantity,
           selectedVariants: item.selectedVariants || {},
@@ -501,7 +502,8 @@ const getUserOrders = async (req, res) => {
         return {
           id: productRef._id || 'deleted',
           name: item.name || productRef.name || 'Unknown Product',
-          image: item.image || productRef.thumbnail || productRef.images?.[0] || productRef.image || '',
+          image: item.image || productRef.mainImage || productRef.thumbnail || productRef.images?.[0] || productRef.image || '',
+          mainImage: productRef.mainImage || item.image || productRef.thumbnail || productRef.images?.[0] || productRef.image || '',
           price: item.price !== undefined ? item.price : (productRef.price || 0),
           quantity: item.quantity,
           selectedVariants: item.selectedVariants || {},
@@ -534,7 +536,7 @@ const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
       .populate('user', 'id name email')
-      .populate('products.productId', 'name image images thumbnail price') // Populate product details
+      .populate('products.productId', 'name image images thumbnail price mainImage') // Populate product details including mainImage
       .sort({ createdAt: -1 });
 
     const formattedOrders = orders.map(order => ({
@@ -556,6 +558,7 @@ const getAllOrders = async (req, res) => {
         }
         return {
           ...p.productId.toObject(),
+          mainImage: p.productId.mainImage || p.productId.image || (p.productId.images && p.productId.images[0]) || '',
           quantity: p.quantity,
           id: p.productId._id
         };
@@ -604,7 +607,8 @@ const getOrderById = async (req, res) => {
           ...p.productId.toObject(),
           quantity: p.quantity,
           id: p.productId._id,
-          price: p.productId.price
+          price: p.productId.price,
+          mainImage: p.productId.mainImage || p.productId.image || (p.productId.images && p.productId.images[0]) || ''
         };
       }),
       address: order.shippingAddress

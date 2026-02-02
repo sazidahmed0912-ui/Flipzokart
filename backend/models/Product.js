@@ -77,8 +77,17 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+
 productSchema.virtual("id").get(function () {
   return this._id.toHexString();
+});
+
+// 🛠️ VIRTUAL: mainImage
+// Ensures a consistent image is always returned for Admin/Frontend
+productSchema.virtual("mainImage").get(function () {
+  if (this.image) return this.image;
+  if (this.images && this.images.length > 0) return this.images[0];
+  return "";
 });
 
 

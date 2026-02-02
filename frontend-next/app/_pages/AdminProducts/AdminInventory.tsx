@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 ;
 import {
     AlertTriangle, CheckCircle, Package, RefreshCw,
@@ -19,6 +20,7 @@ interface Product {
     countInStock: number;
     price: number;
     image: string;
+    mainImage?: string;
     category: string;
 }
 
@@ -145,10 +147,13 @@ export const AdminInventory: React.FC = () => {
                                             <tr key={product?._id || idx} className="hover:bg-gray-50/50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <img
-                                                            src={product?.image || 'https://via.placeholder.com/40'}
+                                                        <Image
+                                                            src={product?.mainImage || "/placeholder.png"}
                                                             alt={product?.name || 'Product'}
-                                                            className="w-10 h-10 rounded-lg object-contain bg-gray-50 border border-gray-100"
+                                                            width={60}
+                                                            height={60}
+                                                            style={{ objectFit: "cover", borderRadius: "6px" }}
+                                                            className="border border-gray-100 bg-gray-50"
                                                         />
                                                         <div className="min-w-0 max-w-[200px]">
                                                             <p className="text-sm font-bold text-gray-800 truncate">{product?.name || 'Unnamed Product'}</p>

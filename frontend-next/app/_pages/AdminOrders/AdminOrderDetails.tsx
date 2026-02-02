@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
     ChevronLeft, Clock, CheckCircle, Truck, XCircle, ShoppingBag,
     CreditCard, Banknote, User, MapPin, Package
@@ -79,8 +80,8 @@ export const AdminOrderDetails: React.FC = () => {
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-wrap gap-6 justify-between items-center">
                         <div className="flex items-center gap-4">
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center ${order.status === 'Delivered' ? 'bg-green-100 text-green-600' :
-                                    order.status === 'Cancelled' ? 'bg-red-100 text-red-600' :
-                                        'bg-blue-100 text-blue-600'
+                                order.status === 'Cancelled' ? 'bg-red-100 text-red-600' :
+                                    'bg-blue-100 text-blue-600'
                                 }`}>
                                 {order.status === 'Delivered' ? <CheckCircle size={24} /> :
                                     order.status === 'Cancelled' ? <XCircle size={24} /> :
@@ -114,7 +115,13 @@ export const AdminOrderDetails: React.FC = () => {
                                         <div key={idx} className="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
                                             <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
                                                 {item.image ? (
-                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                    <Image
+                                                        src={item.mainImage || "/placeholder.png"}
+                                                        alt={item.name}
+                                                        width={80}
+                                                        height={80}
+                                                        className="w-full h-full object-cover"
+                                                    />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-gray-400">
                                                         <ShoppingBag size={24} />

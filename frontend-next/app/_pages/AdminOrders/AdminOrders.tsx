@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 ;
 import {
     Search, Filter, ChevronDown, Download, Eye,
@@ -217,6 +218,7 @@ export const AdminOrders: React.FC = () => {
                                 <table className="w-full">
                                     <thead>
                                         <tr className="bg-gray-50/50 border-b border-gray-100">
+                                            <th className="py-4 px-6 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Product</th>
                                             <th className="py-4 px-6 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Order ID</th>
                                             <th className="py-4 px-6 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
                                             <th className="py-4 px-6 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
@@ -229,6 +231,23 @@ export const AdminOrders: React.FC = () => {
                                     <tbody className="divide-y divide-gray-50">
                                         {filteredOrders.map((order) => (
                                             <tr key={order._id} className="hover:bg-blue-50/30 transition-colors group">
+                                                <td className="py-4 px-6">
+                                                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 relative">
+                                                        {order.items && order.items.length > 0 ? (
+                                                            <Image
+                                                                src={order.items[0].mainImage || "/placeholder.png"}
+                                                                alt="Product"
+                                                                width={40}
+                                                                height={40}
+                                                                className="object-cover w-full h-full"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex items-center justify-center w-full h-full text-gray-400">
+                                                                <Package size={20} />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
                                                 <td className="py-4 px-6">
                                                     <span className="font-mono text-xs font-bold text-gray-600">#{order._id.substring(20)}</span>
                                                 </td>

@@ -130,6 +130,10 @@ router.get("/", async (req, res) => {
       if ((!pObj.images || pObj.images.length === 0) && pObj.image) {
         pObj.images = [pObj.image];
       }
+
+      // 3. 🛡️ MANDATORY FIX: Ensure mainImage is always present
+      pObj.mainImage = pObj.mainImage || pObj.image || (pObj.images && pObj.images[0]) || '/placeholder.png';
+
       return pObj;
     });
     res.status(200).json(hydratedProducts);
