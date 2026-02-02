@@ -28,14 +28,9 @@ export const ProductDetails: React.FC = () => {
   const [activeTab, setActiveTab] = useState('description');
 
   // Strict State Separation as per requirement
-  // Strict State Separation as per requirement
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [otherVariants, setOtherVariants] = useState<Record<string, string>>({});
-
-  // New Image State
-  const [activeImage, setActiveImage] = useState<string | null>(null);
-  const [imageLoading, setImageLoading] = useState(false);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
   const socket = useSocket(token);
@@ -86,35 +81,32 @@ export const ProductDetails: React.FC = () => {
         const productResponse = await fetchProductById(id);
         const productData = productResponse.data?.data?.product || productResponse.data;
 
-        // Metadata Parsing for Rich Variants (Hex Colors, etc.)
-        let richVariants = productData.variants;
-        if (productData.description && productData.description.includes('<!-- METADATA:')) {
-          try {
-            const parts = productData.description.split('<!-- METADATA:');
-            productData.description = parts[0].trim(); // Clean Description
-            const meta = JSON.parse(parts[1].split('-->')[0]);
-            if (meta.variants) richVariants = meta.variants; // Use Rich Variants
-          } catch (e) { console.error("Meta parse error", e); }
-        }
-
         // Apply Rich Variants to Product Object
-        const finalProduct = { ...productData, variants: richVariants };
+        // NATIVE SUPPORT: Variants are now rich objects in DB
+        const finalProduct = productData;
         setProduct(finalProduct);
 
         if (finalProduct.reviews) setReviews(finalProduct.reviews);
 
         // Default Variants Logic
-        // Default Variants Logic
         if (finalProduct.variants && finalProduct.variants.length > 0) {
           finalProduct.variants.forEach((v: any) => {
             const vName = v.name.toLowerCase();
+            // NATIVE: options are either objects {name, color, image} or strings
+            // Helper to get name from either
             const optionName = (opt: any) => typeof opt === 'object' ? opt.name : opt;
             const firstOption = v.options[0];
             let defaultVal = optionName(firstOption);
 
             if ((vName === 'color' || vName === 'colour') && finalProduct.defaultColor) {
-              const hasColor = v.options.some((o: any) => optionName(o) === finalProduct.defaultColor);
-              if (hasColor) defaultVal = finalProduct.defaultColor;
+              // Check if default color exists (matched by ID or Name)
+              const hasColor = v.options.some((o: any) =>
+                (typeof o === 'object' ? o.id === finalProduct.defaultColor || o.name === finalProduct.defaultColor : o === finalProduct.defaultColor)
+              );
+              if (hasColor) defaultVal = finalProduct.defaultColor; // This might need mapping if ID is used
+              // Fallback: If defaultColor is an ID, find the name
+              const matched = v.options.find((o: any) => typeof o === 'object' && o.id === finalProduct.defaultColor);
+              if (matched) defaultVal = matched.name;
             }
 
             // Set initial states based on variant type
@@ -179,57 +171,45 @@ export const ProductDetails: React.FC = () => {
 
   // Derived State for Variant Images
   // MANDATORY FIX: Depends ONLY on selectedColor, NOT size
-  // Variant Resolution Logic (CORE FIX)
-  useEffect(() => {
-    if (!product) return;
+  const { activeImages, activeImage } = useMemo(() => {
+    if (!product) return { activeImages: [], activeImage: '' };
 
-    // 1. If Color AND Size are selected, look for specific variant image
-    if (selectedColor && selectedSize && product.inventory) {
-      // Find matching combination in inventory
-      // We need to match the options. Accessing them flexibly.
-      const match = product.inventory.find(inv => {
-        const opts = inv.options || {};
-        // Find keys that represent Color and Size (case insensitive)
-        const colorKey = Object.keys(opts).find(k => k.toLowerCase() === 'color' || k.toLowerCase() === 'colour');
-        const sizeKey = Object.keys(opts).find(k => k.toLowerCase() === 'size');
+    // Default to strict helper logic
+    let images = getAllProductImages(product);
 
-        const colorMatch = colorKey ? opts[colorKey] === selectedColor : false;
-        const sizeMatch = sizeKey ? opts[sizeKey] === selectedSize : false;
-
-        return colorMatch && sizeMatch;
-      });
-
-      if (match?.image) {
-        setImageLoading(true);
-        setActiveImage(getProductImageUrl(match.image));
-        return;
-      }
+    // Filter out placeholders
+    if (images.length > 1 && images[0] === '/placeholder.png') {
+      images.shift();
     }
 
-    // 2. Fallback: If only Color is selected, try to find a representative image for that color
+    // Link: Active Image depends STRICTLY on Selected Color
     if (selectedColor && product.variants) {
-      const matchedVariant = product.variants.find((v: any) =>
-        v.color === selectedColor ||
-        (v.name === selectedColor) ||
-        (v.options && v.options.some((o: any) => (typeof o === 'object' ? o.name : o) === selectedColor) && (v as any).images?.length > 0)
-      );
-      if (matchedVariant && (matchedVariant as any).images && (matchedVariant as any).images.length > 0) {
-        setImageLoading(true);
-        setActiveImage(getProductImageUrl((matchedVariant as any).images[0]));
-        return;
+      const colorVariant = product.variants.find((v: any) => v.name.toLowerCase().includes('color'));
+      if (colorVariant) {
+        // Find the rich option object for the selected color name
+        const selectedOption = colorVariant.options.find((o: any) =>
+          (typeof o === 'object' ? o.name === selectedColor : o === selectedColor)
+        );
+
+        // If option has a specific image, PREPEND it (Amazon Style)
+        if (selectedOption && typeof selectedOption === 'object' && selectedOption.image) {
+          const specificUrl = getProductImageUrl(selectedOption.image);
+          // Check if already in list to avoid duplicates
+          if (!images.includes(specificUrl)) {
+            images = [specificUrl, ...images];
+          } else {
+            // Move to front
+            images = [specificUrl, ...images.filter(i => i !== specificUrl)];
+          }
+        }
       }
     }
 
-    // 3. Fallback: Default product image
-    if (!activeImage && product.image) {
-      setActiveImage(getProductImageUrl(product.image));
-    }
-
-  }, [selectedColor, selectedSize, product]);
-
-  const activeImagesDisplay = useMemo(() => {
-    return activeImage ? [activeImage] : [];
-  }, [activeImage]);
+    return {
+      activeImages: images,
+      activeImage: images[0] || getProductImageUrl(product.image)
+    };
+  }, [product, selectedColor]); // STRICT: No selectedSize dependency here
 
   if (isLoading) return <CircularGlassSpinner />;
 
@@ -261,7 +241,7 @@ export const ProductDetails: React.FC = () => {
     const productWithSelection = {
       ...product,
       price: currentPrice,
-      image: activeImage || product.image,
+      image: activeImage,
       selectedVariants: Object.keys(finalVariants).length > 0 ? finalVariants : undefined
     };
     addToCart(productWithSelection, quantity);
@@ -283,7 +263,7 @@ export const ProductDetails: React.FC = () => {
     const productWithSelection = {
       ...product,
       price: currentPrice,
-      image: activeImage || product.image,
+      image: activeImage,
       selectedVariants: Object.keys(finalVariants).length > 0 ? finalVariants : undefined
     };
     addToCart(productWithSelection, quantity);
@@ -293,33 +273,8 @@ export const ProductDetails: React.FC = () => {
 
   const handleVariantSelect = (name: string, value: string) => {
     const lowerName = name.toLowerCase();
-
     if (lowerName === 'color' || lowerName === 'colour') {
       setSelectedColor(value);
-
-      // Strict Logic: Reset size if needed
-      // Check if current selectedSize exists for this new color
-      if (selectedSize && product?.inventory) {
-        // Find all valid sizes for this color
-        const availableSizesForColor = product.inventory
-          .filter(inv => {
-            const opts = inv.options || {};
-            const colorKey = Object.keys(opts).find(k => k.toLowerCase() === 'color' || k.toLowerCase() === 'colour');
-            return colorKey ? opts[colorKey] === value : false;
-          })
-          .map(inv => {
-            const opts = inv.options || {};
-            const sizeKey = Object.keys(opts).find(k => k.toLowerCase() === 'size');
-            return sizeKey ? opts[sizeKey] : null;
-          })
-          .filter(Boolean);
-
-        // If currently selected size is not in available sizes, reset it
-        if (availableSizesForColor.length > 0 && !availableSizesForColor.includes(selectedSize)) {
-          setSelectedSize(''); // Reset size to force user to re-select
-        }
-      }
-
     } else if (lowerName === 'size') {
       setSelectedSize(value);
     } else {
@@ -341,11 +296,7 @@ export const ProductDetails: React.FC = () => {
       <div className="max-w-6xl mx-auto p-2 sm:p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <ProductGallery
-              product={product}
-              images={activeImagesDisplay}
-              onImageLoad={() => setImageLoading(false)}
-            />
+            <ProductGallery product={product} images={activeImages} />
           </div>
 
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
@@ -394,8 +345,23 @@ export const ProductDetails: React.FC = () => {
                     {variant.options.map((option: any, oIdx: number) => {
                       const optName = typeof option === 'object' ? option.name : option;
                       const optColor = typeof option === 'object' ? option.color : null;
+                      const isSelected = selectedValue === optName;
 
-                      const isActive = selectedValue === optName || (!selectedValue && oIdx === 0);
+                      // Availability Check
+                      let isAvailable = true;
+                      if (isSize && selectedColor && product.inventory) {
+                        // Check if this size + selected color exists in inventory with stock > 0
+                        const colorKey = product.variants?.find((v: any) => v.name.toLowerCase().includes('color'))?.name;
+                        if (colorKey) {
+                          const match = product.inventory.find(inv =>
+                            (inv.options as any)[variant.name] === optName &&
+                            (inv.options as any)[colorKey] === selectedColor &&
+                            inv.stock > 0
+                          );
+                          isAvailable = !!match;
+                        }
+                      }
+
 
                       if (matchesColor) {
                         return (
@@ -403,16 +369,26 @@ export const ProductDetails: React.FC = () => {
                             key={oIdx}
                             onClick={() => handleVariantSelect(variant.name, optName)}
                             style={{ backgroundColor: optColor && optColor !== 'bg-gray-200' ? optColor : undefined }} // Use Rich Color if available
-                            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${!optColor ? getColorClass(optName) : ''} border-2 ${isActive ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'} shadow-sm`}
+                            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${!optColor ? getColorClass(optName) : ''} border-2 ${(isSelected) ? 'border-orange-500 ring-2 ring-orange-200' : 'border-gray-200 hover:border-gray-400'} shadow-sm relative`}
                             title={optName}
-                          />
+                          >
+                            {isSelected && <span className="absolute inset-0 flex items-center justify-center text-white drop-shadow-md text-[10px]">✓</span>}
+                          </button>
                         );
                       }
                       return (
                         <button
                           key={oIdx}
                           onClick={() => handleVariantSelect(variant.name, optName)}
-                          className={`px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg border-2 text-xs sm:text-sm font-medium ${isActive ? 'border-gray-800 bg-gray-900 text-white' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}
+                          disabled={isSize && !isAvailable}
+                          className={`
+                            px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg border-2 text-xs sm:text-sm font-medium transition-all
+                            ${isSelected
+                              ? 'bg-orange-500 text-white border-orange-500 shadow-md'
+                              : isSize && !isAvailable
+                                ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed decoration-slice'
+                                : 'bg-white text-gray-700 border-gray-200 hover:border-orange-500 hover:text-orange-500'
+                            }`}
                         >
                           {optName}
                         </button>

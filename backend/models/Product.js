@@ -30,7 +30,7 @@ const productSchema = new mongoose.Schema(
     variants: [
       {
         name: String,
-        options: [String]
+        options: [mongoose.Schema.Types.Mixed] // Supports both Strings (Legacy) & Objects { name, color, image }
       }
     ],
     inventory: [

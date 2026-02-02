@@ -1,7 +1,7 @@
 
 export interface VariantGroup {
   name: string;
-  options: string[];
+  options: (string | { name: string; color?: string; image?: string; id?: string })[];
 }
 
 export interface VariantCombination {
