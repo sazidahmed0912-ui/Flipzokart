@@ -11,9 +11,10 @@ import { getAllProductImages } from '@/app/utils/imageHelper';
 interface ProductGalleryProps {
     product: any;
     images?: string[]; // Optional override for variant images
+    onImageLoad?: () => void;
 }
 
-export default function ProductGallery({ product, images }: ProductGalleryProps) {
+export default function ProductGallery({ product, images, onImageLoad }: ProductGalleryProps) {
     const [allImages, setAllImages] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -176,7 +177,10 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                         onLoad={() => {
                                             // Force swiper update to recalculate height after image load if needed
                                             if (swiperRef.current) swiperRef.current.update();
-                                            if (idx === activeIndex) setIsLoading(false);
+                                            if (idx === activeIndex) {
+                                                setIsLoading(false);
+                                                if (onImageLoad) onImageLoad();
+                                            }
                                         }}
                                         onError={(e) => {
                                             // Fallback: If image fails, replace entry in allImages with placeholder

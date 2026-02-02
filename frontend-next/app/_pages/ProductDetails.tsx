@@ -28,9 +28,14 @@ export const ProductDetails: React.FC = () => {
   const [activeTab, setActiveTab] = useState('description');
 
   // Strict State Separation as per requirement
+  // Strict State Separation as per requirement
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [otherVariants, setOtherVariants] = useState<Record<string, string>>({});
+
+  // New Image State
+  const [activeImage, setActiveImage] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
   const socket = useSocket(token);
@@ -174,35 +179,57 @@ export const ProductDetails: React.FC = () => {
 
   // Derived State for Variant Images
   // MANDATORY FIX: Depends ONLY on selectedColor, NOT size
-  const { activeImages, activeImage } = useMemo(() => {
-    if (!product) return { activeImages: [], activeImage: '' };
+  // Variant Resolution Logic (CORE FIX)
+  useEffect(() => {
+    if (!product) return;
 
-    // Default to strict helper logic
-    let images = getAllProductImages(product);
+    // 1. If Color AND Size are selected, look for specific variant image
+    if (selectedColor && selectedSize && product.inventory) {
+      // Find matching combination in inventory
+      // We need to match the options. Accessing them flexibly.
+      const match = product.inventory.find(inv => {
+        const opts = inv.options || {};
+        // Find keys that represent Color and Size (case insensitive)
+        const colorKey = Object.keys(opts).find(k => k.toLowerCase() === 'color' || k.toLowerCase() === 'colour');
+        const sizeKey = Object.keys(opts).find(k => k.toLowerCase() === 'size');
 
-    // Filter out placeholders
-    if (images.length > 1 && images[0] === '/placeholder.png') {
-      images.shift();
+        const colorMatch = colorKey ? opts[colorKey] === selectedColor : false;
+        const sizeMatch = sizeKey ? opts[sizeKey] === selectedSize : false;
+
+        return colorMatch && sizeMatch;
+      });
+
+      if (match?.image) {
+        setImageLoading(true);
+        setActiveImage(getProductImageUrl(match.image));
+        return;
+      }
     }
 
-    // Filter by color if available
+    // 2. Fallback: If only Color is selected, try to find a representative image for that color
     if (selectedColor && product.variants) {
       const matchedVariant = product.variants.find((v: any) =>
         v.color === selectedColor ||
         (v.name === selectedColor) ||
         (v.options && v.options.some((o: any) => (typeof o === 'object' ? o.name : o) === selectedColor) && (v as any).images?.length > 0)
       );
-
       if (matchedVariant && (matchedVariant as any).images && (matchedVariant as any).images.length > 0) {
-        images = (matchedVariant as any).images.map((img: string) => getProductImageUrl(img));
+        setImageLoading(true);
+        setActiveImage(getProductImageUrl((matchedVariant as any).images[0]));
+        return;
       }
     }
 
-    return {
-      activeImages: images,
-      activeImage: images[0] || getProductImageUrl(product.image)
-    };
-  }, [product, selectedColor]); // STRICT: No selectedSize dependency here
+    // 3. Fallback: Default product image
+    if (!activeImage && product.image) {
+      setActiveImage(getProductImageUrl(product.image));
+    }
+
+  }, [selectedColor, selectedSize, product]);
+
+  const activeImagesDisplay = useMemo(() => {
+    return activeImage ? [activeImage] : [];
+  }, [activeImage]);
 
   if (isLoading) return <CircularGlassSpinner />;
 
@@ -234,7 +261,7 @@ export const ProductDetails: React.FC = () => {
     const productWithSelection = {
       ...product,
       price: currentPrice,
-      image: activeImage,
+      image: activeImage || product.image,
       selectedVariants: Object.keys(finalVariants).length > 0 ? finalVariants : undefined
     };
     addToCart(productWithSelection, quantity);
@@ -256,7 +283,7 @@ export const ProductDetails: React.FC = () => {
     const productWithSelection = {
       ...product,
       price: currentPrice,
-      image: activeImage,
+      image: activeImage || product.image,
       selectedVariants: Object.keys(finalVariants).length > 0 ? finalVariants : undefined
     };
     addToCart(productWithSelection, quantity);
@@ -266,8 +293,33 @@ export const ProductDetails: React.FC = () => {
 
   const handleVariantSelect = (name: string, value: string) => {
     const lowerName = name.toLowerCase();
+
     if (lowerName === 'color' || lowerName === 'colour') {
       setSelectedColor(value);
+
+      // Strict Logic: Reset size if needed
+      // Check if current selectedSize exists for this new color
+      if (selectedSize && product?.inventory) {
+        // Find all valid sizes for this color
+        const availableSizesForColor = product.inventory
+          .filter(inv => {
+            const opts = inv.options || {};
+            const colorKey = Object.keys(opts).find(k => k.toLowerCase() === 'color' || k.toLowerCase() === 'colour');
+            return colorKey ? opts[colorKey] === value : false;
+          })
+          .map(inv => {
+            const opts = inv.options || {};
+            const sizeKey = Object.keys(opts).find(k => k.toLowerCase() === 'size');
+            return sizeKey ? opts[sizeKey] : null;
+          })
+          .filter(Boolean);
+
+        // If currently selected size is not in available sizes, reset it
+        if (availableSizesForColor.length > 0 && !availableSizesForColor.includes(selectedSize)) {
+          setSelectedSize(''); // Reset size to force user to re-select
+        }
+      }
+
     } else if (lowerName === 'size') {
       setSelectedSize(value);
     } else {
@@ -289,7 +341,11 @@ export const ProductDetails: React.FC = () => {
       <div className="max-w-6xl mx-auto p-2 sm:p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <ProductGallery product={product} images={activeImages} />
+            <ProductGallery
+              product={product}
+              images={activeImagesDisplay}
+              onImageLoad={() => setImageLoading(false)}
+            />
           </div>
 
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
