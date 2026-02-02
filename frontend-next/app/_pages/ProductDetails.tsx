@@ -26,7 +26,11 @@ export const ProductDetails: React.FC = () => {
   const [isReviewsLoading, setIsReviewsLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
-  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
+
+  // Strict State Separation as per requirement
+  const [selectedColor, setSelectedColor] = useState<string>('');
+  const [selectedSize, setSelectedSize] = useState<string>('');
+  const [otherVariants, setOtherVariants] = useState<Record<string, string>>({});
 
   const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
   const socket = useSocket(token);
@@ -95,24 +99,28 @@ export const ProductDetails: React.FC = () => {
         if (finalProduct.reviews) setReviews(finalProduct.reviews);
 
         // Default Variants Logic
+        // Default Variants Logic
         if (finalProduct.variants && finalProduct.variants.length > 0) {
-          const defaults: Record<string, string> = {};
           finalProduct.variants.forEach((v: any) => {
-            // Handle Object Options (Rich) or String Options (Legacy)
+            const vName = v.name.toLowerCase();
             const optionName = (opt: any) => typeof opt === 'object' ? opt.name : opt;
             const firstOption = v.options[0];
+            let defaultVal = optionName(firstOption);
 
-            if (v.name.toLowerCase() === 'color' && finalProduct.defaultColor) {
-              // Check if default color exists in options
+            if ((vName === 'color' || vName === 'colour') && finalProduct.defaultColor) {
               const hasColor = v.options.some((o: any) => optionName(o) === finalProduct.defaultColor);
-              if (hasColor) defaults[v.name] = finalProduct.defaultColor;
+              if (hasColor) defaultVal = finalProduct.defaultColor;
             }
 
-            if (v.options.length > 0 && !defaults[v.name]) {
-              defaults[v.name] = optionName(firstOption);
+            // Set initial states based on variant type
+            if (vName === 'color' || vName === 'colour') {
+              setSelectedColor(defaultVal);
+            } else if (vName === 'size') {
+              setSelectedSize(defaultVal);
+            } else {
+              setOtherVariants(prev => ({ ...prev, [v.name]: defaultVal }));
             }
           });
-          setSelectedVariants(defaults);
         }
       } catch (error) {
         console.error("Failed to fetch product:", error);
@@ -134,9 +142,21 @@ export const ProductDetails: React.FC = () => {
     let price = product.price;
     let originalPrice = product.originalPrice;
 
+    // Reconstruct selectedVariants for inventory lookup
+    const currentVariants: Record<string, string> = { ...otherVariants };
+    if (selectedColor) {
+      // Find exact key case from product variants
+      const colorVar = product.variants?.find((v: any) => v.name.toLowerCase() === 'color' || v.name.toLowerCase() === 'colour');
+      if (colorVar) currentVariants[colorVar.name] = selectedColor;
+    }
+    if (selectedSize) {
+      const sizeVar = product.variants?.find((v: any) => v.name.toLowerCase() === 'size');
+      if (sizeVar) currentVariants[sizeVar.name] = selectedSize;
+    }
+
     if (product.variants && product.variants.length > 0 && product.inventory) {
       const match = product.inventory.find(inv =>
-        inv.options && Object.entries(selectedVariants).every(([k, v]) => inv.options[k] === v)
+        inv.options && Object.entries(currentVariants).every(([k, v]) => inv.options[k] === v)
       );
       if (match) {
         stock = match.stock;
@@ -150,34 +170,26 @@ export const ProductDetails: React.FC = () => {
       currentPrice: price,
       currentOriginalPrice: originalPrice
     };
-  }, [product, selectedVariants]);
+  }, [product, selectedColor, selectedSize, otherVariants]);
 
   // Derived State for Variant Images
+  // MANDATORY FIX: Depends ONLY on selectedColor, NOT size
   const { activeImages, activeImage } = useMemo(() => {
     if (!product) return { activeImages: [], activeImage: '' };
 
-    // Default to strict helper logic (avoids manual stitching errors)
+    // Default to strict helper logic
     let images = getAllProductImages(product);
 
-    // Filter out placeholders if we have real images (optional, but helper handles it)
+    // Filter out placeholders
     if (images.length > 1 && images[0] === '/placeholder.png') {
       images.shift();
     }
 
-    // Find active color
-    let selectedColor = '';
-    if (product.variants) {
-      const colorVariant = product.variants.find((v: any) => v.name.toLowerCase() === 'color' || v.name.toLowerCase() === 'colour');
-      if (colorVariant) {
-        selectedColor = selectedVariants[colorVariant.name];
-      }
-    }
-
-    // Filter by color if available in Rich Variants
+    // Filter by color if available
     if (selectedColor && product.variants) {
       const matchedVariant = product.variants.find((v: any) =>
         v.color === selectedColor ||
-        (v.name === selectedColor) || // If structure is flat
+        (v.name === selectedColor) ||
         (v.options && v.options.some((o: any) => (typeof o === 'object' ? o.name : o) === selectedColor) && (v as any).images?.length > 0)
       );
 
@@ -190,7 +202,7 @@ export const ProductDetails: React.FC = () => {
       activeImages: images,
       activeImage: images[0] || getProductImageUrl(product.image)
     };
-  }, [product, selectedVariants]);
+  }, [product, selectedColor]); // STRICT: No selectedSize dependency here
 
   if (isLoading) return <CircularGlassSpinner />;
 
@@ -209,11 +221,21 @@ export const ProductDetails: React.FC = () => {
 
   const handleAddToCart = () => {
     if (isOutOfStock || !product) return;
+    const finalVariants = { ...otherVariants };
+    if (selectedColor) {
+      const k = product.variants?.find((v: any) => v.name.toLowerCase().includes('color'))?.name || 'Color';
+      finalVariants[k] = selectedColor;
+    }
+    if (selectedSize) {
+      const k = product.variants?.find((v: any) => v.name.toLowerCase() === 'size')?.name || 'Size';
+      finalVariants[k] = selectedSize;
+    }
+
     const productWithSelection = {
       ...product,
       price: currentPrice,
-      image: activeImage, // SNAPSHOT: Strict Image Link
-      selectedVariants: Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined
+      image: activeImage,
+      selectedVariants: Object.keys(finalVariants).length > 0 ? finalVariants : undefined
     };
     addToCart(productWithSelection, quantity);
     addToast('success', '✅ Product added to bag!');
@@ -221,11 +243,21 @@ export const ProductDetails: React.FC = () => {
 
   const handleBuyNow = () => {
     if (isOutOfStock || !product) return;
+    const finalVariants = { ...otherVariants };
+    if (selectedColor) {
+      const k = product.variants?.find((v: any) => v.name.toLowerCase().includes('color'))?.name || 'Color';
+      finalVariants[k] = selectedColor;
+    }
+    if (selectedSize) {
+      const k = product.variants?.find((v: any) => v.name.toLowerCase() === 'size')?.name || 'Size';
+      finalVariants[k] = selectedSize;
+    }
+
     const productWithSelection = {
       ...product,
       price: currentPrice,
-      image: activeImage, // SNAPSHOT: Strict Image Link
-      selectedVariants: Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined
+      image: activeImage,
+      selectedVariants: Object.keys(finalVariants).length > 0 ? finalVariants : undefined
     };
     addToCart(productWithSelection, quantity);
     addToast('success', '✅ Product added to bag!');
@@ -233,7 +265,14 @@ export const ProductDetails: React.FC = () => {
   };
 
   const handleVariantSelect = (name: string, value: string) => {
-    setSelectedVariants(prev => ({ ...prev, [name]: value }));
+    const lowerName = name.toLowerCase();
+    if (lowerName === 'color' || lowerName === 'colour') {
+      setSelectedColor(value);
+    } else if (lowerName === 'size') {
+      setSelectedSize(value);
+    } else {
+      setOtherVariants(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const getColorClass = (colorName: string) => {
@@ -284,7 +323,11 @@ export const ProductDetails: React.FC = () => {
 
             {product.variants && product.variants.length > 0 && product.variants.map((variant, vIdx) => {
               const matchesColor = variant.name.toLowerCase() === 'color' || variant.name.toLowerCase() === 'colour';
-              const selectedValue = selectedVariants[variant.name];
+              const isSize = variant.name.toLowerCase() === 'size';
+
+              let selectedValue = otherVariants[variant.name];
+              if (matchesColor) selectedValue = selectedColor;
+              if (isSize) selectedValue = selectedSize;
 
               return (
                 <div key={vIdx} className="mt-4 sm:mt-6">

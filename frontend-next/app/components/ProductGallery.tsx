@@ -41,13 +41,21 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
             validImages = getAllProductImages(product);
         }
 
-        setAllImages(validImages);
-        setActiveIndex(0);
-        setIsLoading(true);
-        setIsZoomed(false);
-        if (swiperRef.current) {
-            swiperRef.current.slideTo(0, 0);
-        }
+        // Optimization: Only update if images actually changed
+        // This prevents flicker/reset on re-renders where derived images are same
+        setAllImages(prev => {
+            const isSame = prev.length === validImages.length && prev.every((url, i) => url === validImages[i]);
+            if (isSame) return prev;
+
+            // Only reset these if images actually changed
+            setActiveIndex(0);
+            setIsLoading(true);
+            setIsZoomed(false);
+            if (swiperRef.current) {
+                swiperRef.current.slideTo(0, 0);
+            }
+            return validImages;
+        });
     }, [product, images]);
 
     // Zoom Handlers (Desktop Hover)
