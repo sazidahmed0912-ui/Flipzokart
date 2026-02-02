@@ -96,10 +96,6 @@ const createOrder = async (req, res) => {
         name: product.name,
         image: product.thumbnail || product.images?.[0] || product.image || '', // Robust Image Snapshot
         price: product.price,
-        colour: item.selectedVariants?.Color || item.selectedVariants?.color || '', // Snapshot Colour
-        size: item.selectedVariants?.Size || item.selectedVariants?.size || '', // Snapshot Size
-        sku: product.sku || '', // Snapshot SKU (if available on product)
-        totalPrice: product.price * item.quantity, // Snapshot Total Price
         selectedVariants: item.selectedVariants || {}
       });
     }
@@ -302,17 +298,9 @@ const verifyPayment = async (req, res) => {
       const p = await Product.findById(item.productId);
       if (p) {
         productsForCalc.push({
-          productId: item.productId,
           price: p.price,
           originalPrice: p.originalPrice || p.price,
-          quantity: item.quantity,
-          name: p.name,
-          image: p.thumbnail || p.images?.[0] || p.image || '', // Robust Image Snapshot
-          colour: item.selectedVariants?.Color || item.selectedVariants?.color || '', // Snapshot Colour
-          size: item.selectedVariants?.Size || item.selectedVariants?.size || '', // Snapshot Size
-          sku: p.sku || '', // Snapshot SKU
-          totalPrice: p.price * item.quantity, // Snapshot Total Price
-          selectedVariants: item.selectedVariants || {}
+          quantity: item.quantity
         });
       }
     }
@@ -323,7 +311,7 @@ const verifyPayment = async (req, res) => {
     // Create order after successful payment
     const order = new Order({
       user: req.user.id,
-      products: productsForCalc, // Use the fully populated snapshot array
+      products,
       shippingAddress: address,
       paymentMethod: 'RAZORPAY',
       paymentStatus: 'PAID',

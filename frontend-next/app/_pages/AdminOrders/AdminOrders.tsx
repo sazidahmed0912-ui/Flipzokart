@@ -5,12 +5,12 @@ import Link from 'next/link';
 import {
     Search, Filter, ChevronDown, Download, Eye,
     CheckCircle, Clock, XCircle, Truck, Package,
-    ChevronLeft, ChevronRight, Calendar
+    ChevronLeft, ChevronRight, Calendar, Trash2
 } from 'lucide-react';
 import { AdminSidebar } from '@/app/components/AdminSidebar';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
-import { fetchAllOrders } from '@/app/services/adminService';
+import { fetchAllOrders, deleteOrder } from '@/app/services/adminService';
 import { useApp } from '@/app/store/Context';
 
 interface Order {
@@ -54,6 +54,19 @@ export const AdminOrders: React.FC = () => {
             console.error("Failed to load orders", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (window.confirm("Are you sure you want to delete this order? This action cannot be undone.")) {
+            try {
+                await deleteOrder(id);
+                setOrders(prev => prev.filter(o => o._id !== id));
+                setFilteredOrders(prev => prev.filter(o => o._id !== id));
+            } catch (error) {
+                console.error("Delete failed", error);
+                alert("Failed to delete order");
+            }
         }
     };
 
@@ -254,6 +267,13 @@ export const AdminOrders: React.FC = () => {
                                                     >
                                                         <Eye size={16} />
                                                     </Link>
+                                                    <button
+                                                        onClick={() => handleDelete(order._id)}
+                                                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-600 transition-all shadow-sm group-hover:shadow-md ml-2"
+                                                        title="Delete Order"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))}

@@ -11,15 +11,11 @@ const orderSchema = new mongoose.Schema({
       productId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',
-        required: false, // Allow keeping history even if product reference is lost/problematic
+        required: true,
       },
       name: String, // Snapshot
       image: String, // Snapshot
       price: Number, // Snapshot
-      colour: String, // Snapshot
-      size: String, // Snapshot
-      sku: String, // Snapshot
-      totalPrice: Number, // Snapshot (price * quantity)
       quantity: {
         type: Number,
         required: true,

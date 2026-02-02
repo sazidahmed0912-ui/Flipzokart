@@ -17,6 +17,7 @@ export const deleteProduct = (id: string) => API.delete(`/api/products/${id}`);
 export const fetchAllOrders = () => API.get("/api/order/admin/all");
 export const fetchOrderById = (id: string) => API.get(`/api/order/${id}`);
 export const updateOrderAdminStatus = (id: string, status: string) => API.put(`/api/order/${id}/status`, { status });
+export const deleteOrder = (id: string) => API.delete(`/api/order/${id}`);
 
 export default API;
 
