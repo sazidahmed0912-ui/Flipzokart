@@ -179,11 +179,15 @@ const OrdersPage: React.FC = () => {
                                                 <div className="flex-1 flex flex-col justify-between">
                                                     <div>
                                                         <h3 className="font-bold text-gray-900 text-lg hover:text-[#2874F0] cursor-pointer line-clamp-2" onClick={() => router.push(`/product/${item.productId}`)}>
-                                                            {item.name}
+                                                            {item.productName || item.name}
                                                         </h3>
                                                         <div className="text-sm text-gray-500 mt-1 flex gap-3">
-                                                            {item.selectedVariants?.Color && <span>Color: <span className="text-gray-900 font-medium">{item.selectedVariants.Color}</span></span>}
-                                                            {item.selectedVariants?.Size && <span>Size: <span className="text-gray-900 font-medium">{item.selectedVariants.Size}</span></span>}
+                                                            {(item.color || item.selectedVariants?.Color || item.selectedVariants?.Colour) &&
+                                                                <span>Color: <span className="text-gray-900 font-medium">{item.color || item.selectedVariants?.Color || item.selectedVariants?.Colour}</span></span>
+                                                            }
+                                                            {(item.size || item.selectedVariants?.Size) &&
+                                                                <span>Size: <span className="text-gray-900 font-medium">{item.size || item.selectedVariants?.Size}</span></span>
+                                                            }
                                                             <span>Qty: <span className="text-gray-900 font-medium">{item.quantity}</span></span>
                                                         </div>
                                                     </div>

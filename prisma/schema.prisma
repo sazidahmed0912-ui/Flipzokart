@@ -150,6 +150,12 @@ model CartItem {
   productId String  @db.ObjectId
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
+  // Variant Snapshot
+  variantId String?
+  color     String?
+  size      String?
+  image     String?
+  price     Float // Snapshot price (variant price)
 }
 
 model Order {
@@ -178,6 +184,12 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
   price     Float
+  // Snapshot Data (Critical for Sync)
+  productName  String
+  productImage String
+  color        String?
+  size         String?
+  variantId    String?
 }
 
 model Chat {

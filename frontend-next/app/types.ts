@@ -71,6 +71,13 @@ export interface Address {
 export interface CartItem extends Product {
   quantity: number;
   selectedVariants?: Record<string, string>;
+  // Snapshot Fields
+  productId?: string;
+  variantId?: string;
+  color?: string;
+  size?: string;
+  productName?: string;
+  productImage?: string;
 }
 
 export interface Order {

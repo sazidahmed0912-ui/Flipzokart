@@ -36,6 +36,11 @@ export const getProductImageUrl = (imagePath?: string): string => {
 export const getProductImage = (product: any, index: number = 0): string => {
     if (!product) return "/placeholder.png";
 
+    // 0. Snapshot Image (Highest Priority for Orders)
+    if (product.productImage) {
+        return getProductImageUrl(product.productImage);
+    }
+
     // 1. Array Access (Primary Source of Truth)
     if (Array.isArray(product.images) && product.images.length > index && product.images[index]) {
         return getProductImageUrl(product.images[index]);

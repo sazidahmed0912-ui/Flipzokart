@@ -72,7 +72,13 @@ export class OrderService {
                     create: cart.items.map((item) => ({
                         productId: item.productId,
                         quantity: item.quantity,
-                        price: item.product.price,
+                        price: item.price || item.product.price, // Use snapshot price if available
+                        // Critical Snapshot Data
+                        productName: item.product.title,
+                        productImage: item.image || item.product.thumbnail || item.product.images[0] || '',
+                        color: item.color,
+                        size: item.size,
+                        variantId: item.variantId
                     })),
                 },
             },

@@ -14,8 +14,8 @@ export class CartController {
     });
 
     addToCart = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-        const { productId, quantity } = req.body;
-        const cart = await cartService.addToCart((req as any).user.id, productId, quantity);
+        const { productId, quantity, variantId, color, size, image, price } = req.body;
+        const cart = await cartService.addToCart((req as any).user.id, productId, quantity, { variantId, color, size, image, price });
         res.status(200).json({
             status: 'success',
             data: { cart },
@@ -36,6 +36,14 @@ export class CartController {
         res.status(200).json({
             status: 'success',
             data: { cart },
+        });
+    });
+    syncCart = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const { cart } = req.body; // Expecting { cart: [...] }
+        const updatedCart = await cartService.syncCart((req as any).user.id, cart || []);
+        res.status(200).json({
+            status: 'success',
+            data: { cart: updatedCart },
         });
     });
 }

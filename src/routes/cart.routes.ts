@@ -10,6 +10,7 @@ router.use(protect);
 router.get('/', cartController.getCart);
 router.post('/add', cartController.addToCart);
 router.put('/update/:itemId', cartController.updateCartItem);
+router.put('/', cartController.syncCart); // Full Sync Route
 router.delete('/remove/:itemId', cartController.removeFromCart);
 
 export default router;

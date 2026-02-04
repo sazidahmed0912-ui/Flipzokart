@@ -11,6 +11,7 @@ import { AdminSidebar } from '@/app/components/AdminSidebar';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import { fetchOrderById } from '@/app/services/api';
 import { Order } from '@/app/types';
+import { resolveProductImage } from '@/app/utils/imageHelper';
 
 export const AdminOrderDetails: React.FC = () => {
     const params = useParams();
@@ -116,8 +117,8 @@ export const AdminOrderDetails: React.FC = () => {
                                             <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
                                                 {item.image ? (
                                                     <Image
-                                                        src={item.mainImage || "/placeholder.png"}
-                                                        alt={item.name}
+                                                        src={resolveProductImage(item) || "/placeholder.png"}
+                                                        alt={item.productName || item.name}
                                                         width={80}
                                                         height={80}
                                                         className="w-full h-full object-cover"
@@ -129,14 +130,33 @@ export const AdminOrderDetails: React.FC = () => {
                                                 )}
                                             </div>
                                             <div className="flex-1">
-                                                <p className="font-bold text-gray-800 line-clamp-2">{item.name}</p>
-                                                {item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
+                                                <p className="font-bold text-gray-800 line-clamp-2">{item.productName || item.name}</p>
+
+                                                {/* Variant Display: Snapshot > selectedVariants */}
+                                                <div className="flex gap-2 mt-1">
+                                                    {(item.color || item.selectedVariants?.Color || item.selectedVariants?.Colour) && (
+                                                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                                            Color: {item.color || item.selectedVariants?.Color || item.selectedVariants?.Colour}
+                                                        </span>
+                                                    )}
+                                                    {(item.size || item.selectedVariants?.Size) && (
+                                                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                                            Size: {item.size || item.selectedVariants?.Size}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Legacy Variant Fallback (if snapshot missing and selectedVariants has other keys) */}
+                                                {!item.color && !item.size && item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
                                                     <div className="flex gap-2 mt-1">
-                                                        {Object.entries(item.selectedVariants).map(([key, val]: any) => (
-                                                            <span key={key} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                                                                {key}: {val}
-                                                            </span>
-                                                        ))}
+                                                        {Object.entries(item.selectedVariants).map(([key, val]: any) => {
+                                                            if (key === 'Color' || key === 'Size' || key === 'Colour') return null;
+                                                            return (
+                                                                <span key={key} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                                                    {key}: {val}
+                                                                </span>
+                                                            )
+                                                        })}
                                                     </div>
                                                 )}
                                                 <div className="mt-2 flex justify-between items-end">

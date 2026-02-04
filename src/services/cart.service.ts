@@ -26,10 +26,15 @@ export class CartService {
         return cart;
     }
 
-    async addToCart(userId: string, productId: string, quantity: number) {
+    async addToCart(userId: string, productId: string, quantity: number, variant?: { variantId?: string, color?: string, size?: string, image?: string, price?: number }) {
         let cart = await this.getCart(userId);
 
-        const existingItem = cart.items.find((item) => item.productId === productId);
+        // Check if item exists (Same Product AND Same Variant)
+        const existingItem = cart.items.find((item) => {
+            const sameProduct = item.productId === productId;
+            const sameVariant = variant?.variantId ? item.variantId === variant.variantId : (item.color === variant?.color && item.size === variant?.size);
+            return sameProduct && sameVariant;
+        });
 
         if (existingItem) {
             await prisma.cartItem.update({
@@ -42,6 +47,12 @@ export class CartService {
                     cartId: cart.id,
                     productId,
                     quantity,
+                    // Store Variant Snapshot
+                    variantId: variant?.variantId,
+                    color: variant?.color,
+                    size: variant?.size,
+                    image: variant?.image,
+                    price: variant?.price
                 },
             });
         }
@@ -74,6 +85,41 @@ export class CartService {
         if (!item) throw new AppError('Item not found in cart', 404);
 
         await prisma.cartItem.delete({ where: { id: itemId } });
+
+        return this.getCart(userId);
+    }
+
+    async syncCart(userId: string, items: any[]) {
+        let cart = await this.getCart(userId);
+
+        // Transaction: Clear existing items -> Create new items
+        await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+        for (const item of items) {
+            // Safe extraction of variant details
+            let color = null;
+            let size = null;
+            if (item.selectedVariants) {
+                const keys = Object.keys(item.selectedVariants);
+                const colorKey = keys.find(k => k.toLowerCase() === 'color' || k.toLowerCase() === 'colour');
+                const sizeKey = keys.find(k => k.toLowerCase() === 'size');
+                if (colorKey) color = item.selectedVariants[colorKey];
+                if (sizeKey) size = item.selectedVariants[sizeKey];
+            }
+
+            await prisma.cartItem.create({
+                data: {
+                    cartId: cart.id,
+                    productId: item.id || item.productId,
+                    quantity: item.quantity,
+                    price: item.price, // Snapshot
+                    image: item.image || item.thumbnail || (item.images && item.images[0]), // Snapshot
+                    color,
+                    size,
+                    // variantId: item.variantId // If frontend starts sending it
+                }
+            });
+        }
 
         return this.getCart(userId);
     }
