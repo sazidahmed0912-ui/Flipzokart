@@ -13,6 +13,7 @@ import { SmoothReveal } from '@/app/components/SmoothReveal';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import { fetchAllOrders, deleteOrder } from '@/app/services/adminService';
 import { useApp } from '@/app/store/Context';
+import { resolveProductImage } from '@/app/utils/imageHelper';
 
 interface Order {
     id: string;
@@ -235,7 +236,7 @@ export const AdminOrders: React.FC = () => {
                                                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 relative">
                                                         {order.items && order.items.length > 0 ? (
                                                             <Image
-                                                                src={order.items[0].mainImage || "/placeholder.png"}
+                                                                src={resolveProductImage(order.items[0])}
                                                                 alt="Product"
                                                                 width={40}
                                                                 height={40}

@@ -144,6 +144,11 @@ export const AdminOrderDetails: React.FC = () => {
                                                             Size: {item.size || item.selectedVariants?.Size}
                                                         </span>
                                                     )}
+                                                    {item.variantId && (
+                                                        <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-mono">
+                                                            Var ID: {item.variantId}
+                                                        </span>
+                                                    )}
                                                 </div>
 
                                                 {/* Legacy Variant Fallback (if snapshot missing and selectedVariants has other keys) */}

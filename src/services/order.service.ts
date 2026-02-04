@@ -70,17 +70,21 @@ export class OrderService {
                 addressId: address.id, // Canonical reference
                 address: address as any, // Storing address snapshot
                 items: {
-                    create: cart.items.map((item) => ({
-                        productId: item.productId,
-                        quantity: item.quantity,
-                        price: item.price || item.product.price, // Use snapshot price if available
-                        // Critical Snapshot Data
-                        productName: item.product.title,
-                        productImage: item.image || item.product.thumbnail || item.product.images[0] || '',
-                        color: item.color,
-                        size: item.size,
-                        variantId: item.variantId
-                    })),
+                    create: cart.items.map((item) => {
+                        const orderItemData = {
+                            productId: item.productId,
+                            quantity: item.quantity,
+                            price: item.price || item.product.price, // Use snapshot price if available
+                            // Critical Snapshot Data
+                            productName: item.product.title,
+                            productImage: item.image || item.product.thumbnail || item.product.images[0] || '',
+                            color: item.color,
+                            size: item.size,
+                            variantId: item.variantId
+                        };
+                        console.log("ORDER ITEM SNAPSHOT:", orderItemData);
+                        return orderItemData;
+                    }),
                 },
             },
         });
