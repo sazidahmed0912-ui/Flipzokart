@@ -9,7 +9,8 @@ import './CartPage.css';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
 import { getProductImage } from '@/app/utils/imageHelper';
 
-const getCartItemKey = (productId: string, variants?: Record<string, string>) => {
+const getCartItemKey = (productId: string, variants?: Record<string, string>, variantId?: string) => {
+  if (variantId) return variantId;
   if (!variants) return productId;
   const variantString = Object.entries(variants)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -23,13 +24,13 @@ const CartPage = () => {
   const router = useRouter();
 
   const updateQuantity = (item: CartItem, change: number) => {
-    const itemKey = getCartItemKey(item.id, item.selectedVariants);
+    const itemKey = getCartItemKey(item.id, item.selectedVariants, item.variantId);
     const newQuantity = Math.max(1, item.quantity + change);
     updateCartQuantity(itemKey, newQuantity);
   };
 
   const removeItem = (item: CartItem) => {
-    const itemKey = getCartItemKey(item.id, item.selectedVariants);
+    const itemKey = getCartItemKey(item.id, item.selectedVariants, item.variantId);
     removeFromCart(itemKey);
   };
 
@@ -162,6 +163,27 @@ const CartPage = () => {
                       {item.seller && (
                         <p className="item-seller">Seller: {item.seller}</p>
                       )}
+
+                      {/* STRICT VARIANT UI */}
+                      <div className="flex gap-3 my-2">
+                        {(item.color) && (
+                          <div className="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">
+                            Color: {item.color}
+                          </div>
+                        )}
+                        {(item.size) && (
+                          <div className="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">
+                            Size: {item.size}
+                          </div>
+                        )}
+                        {/* Legacy Fallback */}
+                        {!item.color && !item.size && item.selectedVariants && (
+                          <div className="text-xs text-gray-500">
+                            {Object.entries(item.selectedVariants).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                          </div>
+                        )}
+                      </div>
+
                       <div className="item-rating">
                         <span>{item.rating}</span>
                         <Star size={12} fill="white" />

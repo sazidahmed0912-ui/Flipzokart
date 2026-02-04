@@ -31,7 +31,8 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const getCartItemKey = (productId: string, variants?: Record<string, string>) => {
+const getCartItemKey = (productId: string, variants?: Record<string, string>, variantId?: string) => {
+  if (variantId) return variantId; // Strict Mode: Variant ID is the key
   if (!variants) return productId;
   const variantString = Object.entries(variants)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -235,7 +236,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addToCart = (product: Product, quantity: number = 1) => {
     const selectedVariants = product.selectedVariants;
-    const itemKey = getCartItemKey(product.id, selectedVariants);
+    // @ts-ignore - variantId check
+    const variantId = product.variantId;
+    const itemKey = getCartItemKey(product.id, selectedVariants, variantId);
 
 
     setCart((prev: CartItem[]) => {
@@ -251,7 +254,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         image: ('variantId' in product && product.variantId) ? product.image : thumbnail
       };
 
-      const existingIndex = prev.findIndex((item: CartItem) => getCartItemKey(item.id, item.selectedVariants) === itemKey);
+      const existingIndex = prev.findIndex((item: CartItem) => getCartItemKey(item.id, item.selectedVariants, item.variantId) === itemKey);
 
       if (existingIndex > -1) {
         const nextCart = [...prev];
@@ -267,7 +270,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const removeFromCart = (cartItemKey: string) => {
-    setCart((prev: CartItem[]) => prev.filter((item: CartItem) => getCartItemKey(item.id, item.selectedVariants) !== cartItemKey));
+    setCart((prev: CartItem[]) => prev.filter((item: CartItem) => getCartItemKey(item.id, item.selectedVariants, item.variantId) !== cartItemKey));
   };
 
   const removeProductFromCart = (productId: string) => {
@@ -280,7 +283,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
     setCart((prev: CartItem[]) => prev.map((item: CartItem) =>
-      getCartItemKey(item.id, item.selectedVariants) === cartItemKey
+      getCartItemKey(item.id, item.selectedVariants, item.variantId) === cartItemKey
         ? { ...item, quantity }
         : item
     ));
