@@ -3,6 +3,7 @@ import { CartItem } from '@/app/types';
 export const mockCartItems: CartItem[] = [
   {
     id: '1',
+    productId: '1',
     name: 'Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse',
     category: 'Electronics',
     price: 690,
@@ -21,6 +22,7 @@ export const mockCartItems: CartItem[] = [
   },
   {
     id: '2',
+    productId: '2',
     name: 'Men Regular Fit Solid Cut Away Collar Casual Shirt',
     category: 'Fashion',
     price: 449,
@@ -39,6 +41,7 @@ export const mockCartItems: CartItem[] = [
   },
   {
     id: '3',
+    productId: '3',
     name: 'APPLE iPhone 15 (Blue, 128 GB)',
     category: 'Electronics',
     price: 71999,
