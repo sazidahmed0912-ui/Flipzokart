@@ -127,6 +127,12 @@ const PaymentPage: React.FC = () => {
       const { data } = await createOrder({
         products: cart.map((i) => ({
           productId: i.id,
+          variantId: i.variantId,
+          productName: i.productName || i.name,
+          color: i.color || i.selectedVariants?.Color || i.selectedVariants?.color || i.selectedVariants?.Colour,
+          size: i.size || i.selectedVariants?.Size || i.selectedVariants?.size,
+          image: i.image || i.thumbnail || i.images?.[0] || '',
+          price: i.price,
           quantity: i.quantity,
           selectedVariants: i.selectedVariants
         })),
@@ -189,6 +195,12 @@ const PaymentPage: React.FC = () => {
               razorpay_signature: response.razorpay_signature,
               products: cart.map((i) => ({
                 productId: i.id,
+                variantId: i.variantId,
+                productName: i.productName || i.name,
+                color: i.color || i.selectedVariants?.Color || i.selectedVariants?.color || i.selectedVariants?.Colour,
+                size: i.size || i.selectedVariants?.Size || i.selectedVariants?.size,
+                image: i.image || i.thumbnail || i.images?.[0] || '',
+                price: i.price,
                 quantity: i.quantity,
                 selectedVariants: i.selectedVariants
               })),
