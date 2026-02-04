@@ -300,8 +300,23 @@ export const TrackOrderPage: React.FC = () => {
                                 <div className="flex-1">
                                     <div className="flex flex-col md:flex-row justify-between mb-4">
                                         <div className="space-y-1">
-                                            <h4 className="font-medium text-gray-900 text-lg hover:text-[#2874F0] cursor-pointer line-clamp-1">{item.name}</h4>
-                                            <p className="text-gray-500 text-xs">Ordered on {formatDate(order.createdAt)}</p>
+                                            <h4 className="font-medium text-gray-900 text-lg hover:text-[#2874F0] cursor-pointer line-clamp-1">{item.name || item.productName}</h4>
+
+                                            {/* STRICT VARIANT SNAPSHOTS */}
+                                            <div className="flex flex-wrap gap-3 mt-1 text-sm text-gray-600">
+                                                {item.color && (
+                                                    <span className="bg-gray-100 px-2 py-0.5 rounded text-xs border border-gray-200">
+                                                        Color: <span className="font-medium text-gray-800">{item.color}</span>
+                                                    </span>
+                                                )}
+                                                {item.size && (
+                                                    <span className="bg-gray-100 px-2 py-0.5 rounded text-xs border border-gray-200">
+                                                        Size: <span className="font-medium text-gray-800">{item.size}</span>
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <p className="text-gray-500 text-xs mt-2">Ordered on {formatDate(order.createdAt)}</p>
                                             <div className="flex items-center gap-4 mt-2">
                                                 <div className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium text-gray-700">
                                                     Qty: {item.quantity}

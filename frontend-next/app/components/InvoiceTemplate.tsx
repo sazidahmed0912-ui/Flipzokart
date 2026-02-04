@@ -133,7 +133,16 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({
                         {items.map((item: any, i: number) => (
                             <tr key={i} className="border-b border-gray-200">
                                 <td className="py-3 px-4 text-center text-sm text-gray-700">{i + 1}</td>
-                                <td className="py-3 px-4 text-left text-sm text-gray-700 font-medium">{item.product?.title || item.name || 'Product'}</td>
+                                <td className="py-3 px-4 text-left text-sm text-gray-700 font-medium">
+                                    {item.productName || item.name || item.product?.title || 'Product'}
+                                    {/* VARIANT DETAILS */}
+                                    {(item.color || item.size) && (
+                                        <div className="text-xs text-gray-500 mt-1 font-normal">
+                                            {item.color && <span>Color: {item.color} </span>}
+                                            {item.size && <span>Size: {item.size}</span>}
+                                        </div>
+                                    )}
+                                </td>
                                 <td className="py-3 px-4 text-center text-sm text-gray-700">{item.quantity}</td>
                                 <td className="py-3 px-4 text-right text-sm text-gray-700">₹{(item.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                 <td className="py-3 px-4 text-right text-sm font-bold text-gray-800">₹{((item.price || 0) * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
