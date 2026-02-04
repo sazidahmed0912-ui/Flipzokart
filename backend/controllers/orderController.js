@@ -93,12 +93,18 @@ const createOrder = async (req, res) => {
       finalOrderProducts.push({
         productId: item.productId,
         quantity: item.quantity,
-        name: product.name,
-        image: product.thumbnail || product.images?.[0] || product.image || '', // Robust Image Snapshot
-        price: product.price,
+        productName: item.productName || product.name, // Snapshot Name
+        // Fix: Use item.image (from variant) if available, else product thumbnail/image
+        image: item.image || product.thumbnail || product.images?.[0] || product.image || '',
+        price: item.price, // Snapshot Price (from cart/variant)
+        color: item.color, // Snapshot Color
+        size: item.size, // Snapshot Size
+        variantId: item.variantId, // Snapshot Variant ID
         selectedVariants: item.selectedVariants || {}
       });
     }
+
+    console.log("ORDER ITEMS SNAPSHOT", finalOrderProducts); // 🧪 DEBUG CONFIRMATION
 
     // -------------------------------------------------------------------------
     // 🛡️ UNIFIED PRICING ENGINE ENFORCEMENT
@@ -298,7 +304,7 @@ const verifyPayment = async (req, res) => {
       const p = await Product.findById(item.productId);
       if (p) {
         productsForCalc.push({
-          price: p.price,
+          price: item.price, // Use Snapshot Price
           originalPrice: p.originalPrice || p.price,
           quantity: item.quantity
         });
@@ -309,6 +315,7 @@ const verifyPayment = async (req, res) => {
     const priceDetails = calculateOrderTotals(productsForCalc, 'RAZORPAY');
 
     // Create order after successful payment
+    console.log("ORDER ITEMS SNAPSHOT (RAZORPAY)", products); // 🧪 DEBUG CONFIRMATION
     const order = new Order({
       user: req.user.id,
       products,
@@ -578,8 +585,8 @@ const getAllOrders = async (req, res) => {
 const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
-      .populate('user', 'name email')
-      .populate('products.productId', 'name image images thumbnail price');
+      .populate('user', 'name email');
+    // .populate('products.productId'); // ❌ FORBIDDEN: Do not populate product details, usage snapshot only
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
@@ -595,20 +602,18 @@ const getOrderById = async (req, res) => {
       id: order._id,
       userName: order.user ? order.user.name : 'Unknown',
       items: order.products.map(p => {
-        if (!p.productId) {
-          return {
-            quantity: p.quantity,
-            name: 'Unknown Product (Deleted)',
-            price: 0,
-            id: 'deleted'
-          };
-        }
+        // 🔒 STRICT SNAPSHOT: Use only stored data
         return {
-          ...p.productId.toObject(),
+          id: p.productId,
+          name: p.productName || p.name || 'Unknown Product',
+          productName: p.productName || p.name || 'Unknown Product',
+          image: p.image || '',
+          price: p.price,
           quantity: p.quantity,
-          id: p.productId._id,
-          price: p.productId.price,
-          mainImage: p.productId.mainImage || p.productId.image || (p.productId.images && p.productId.images[0]) || ''
+          color: p.color,
+          size: p.size,
+          variantId: p.variantId,
+          selectedVariants: p.selectedVariants
         };
       }),
       address: order.shippingAddress

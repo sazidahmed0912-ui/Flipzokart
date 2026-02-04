@@ -13,13 +13,17 @@ const orderSchema = new mongoose.Schema({
         ref: 'Product',
         required: true,
       },
-      name: String, // Snapshot
+      variantId: String, // Variant Snapshot
+      productName: String, // Snapshot
+      color: String, // Snapshot
+      size: String, // Snapshot
       image: String, // Snapshot
       price: Number, // Snapshot
       quantity: {
         type: Number,
         required: true,
       },
+      // Keep selectedVariants for backward compatibility if needed, but user wants specific fields
       selectedVariants: {
         type: Map,
         of: String

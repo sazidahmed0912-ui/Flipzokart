@@ -9,8 +9,8 @@ const getTrackingInfo = async (req, res) => {
 
         // Find order by ID
         const order = await Order.findById(orderId)
-            .populate('user', 'name email mobile')
-            .populate('products.productId', 'name image price description');
+            .populate('user', 'name email mobile');
+        // .populate('products.productId'); // ❌ FORBIDDEN: Snapshot only
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
@@ -79,17 +79,19 @@ const getTrackingInfo = async (req, res) => {
 
             // Items with exact keys requested
             items: order.products.map(p => {
-                const product = p.productId || {};
-                const price = p.price || product.price || 0;
+                const price = p.price || 0;
                 return {
-                    productId: product._id,
-                    productName: p.name || product.name || 'Product', // User requested 'productName'
-                    name: p.name || product.name || 'Product', // Keep 'name' for backward compat
+                    productId: p.productId,
+                    productName: p.productName || p.name || 'Product', // Snapshot name
+                    name: p.productName || p.name || 'Product', // Backward compat
                     quantity: p.quantity,
-                    price: price,
-                    subtotal: price * p.quantity, // User requested 'subtotal' per item
-                    total: price * p.quantity, // Backward compat
-                    image: p.image || product.image // Extra for UI
+                    price: price, // Snapshot price
+                    subtotal: price * p.quantity,
+                    total: price * p.quantity,
+                    image: p.image || '', // Snapshot Image
+                    color: p.color, // Snapshot Color
+                    size: p.size, // Snapshot Size
+                    variantId: p.variantId
                 };
             }),
 

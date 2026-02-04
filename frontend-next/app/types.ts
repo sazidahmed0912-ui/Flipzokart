@@ -85,13 +85,13 @@ export interface Address {
 export interface CartItem extends Product {
   quantity: number;
   selectedVariants?: Record<string, string>;
-  // Snapshot Fields
-  productId?: string;
+  // Snapshot Fields (Strict Sync)
+  productId: string;
   variantId?: string;
-  color?: string;
-  size?: string;
-  productName?: string;
-  productImage?: string;
+  color?: string; // Snapshot Color
+  size?: string; // Snapshot Size
+  productName?: string; // Snapshot Name (fallback to name)
+  // image property is inherited from Product interface
 }
 
 export interface Order {

@@ -202,7 +202,7 @@ model OrderItem {
   price     Float
   // Snapshot Data (Critical for Sync)
   productName  String
-  productImage String
+  image        String
   color        String?
   size         String?
   variantId    String?
