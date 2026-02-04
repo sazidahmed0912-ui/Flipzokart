@@ -23,7 +23,8 @@ export class OrderService {
         if (!address) throw new AppError('Address not found', 404);
 
         const totalAmount = cart.items.reduce((acc, item) => {
-            return acc + Number(item.product.price) * item.quantity;
+            const price = item.price || Number(item.product.price);
+            return acc + price * item.quantity;
         }, 0);
 
         // Generate dynamic IDs

@@ -239,7 +239,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 
     setCart((prev: CartItem[]) => {
-      // Sanitize/Standardize Image Data
+      // Sanitization: Ensure consistent structure but PROTECT variant snapshots
       const images = product.images && product.images.length > 0 ? product.images : (product.image ? [product.image] : []);
       const thumbnail = images[0] || product.thumbnail || product.image || '/placeholder.png';
 
@@ -247,7 +247,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ...product,
         images,
         thumbnail,
-        image: thumbnail // Force legacy 'image' to match thumbnail for consistency
+        // If variantId exists, trust the passed 'image' (Variant Image). Otherwise fallback to main thumbnail.
+        image: ('variantId' in product && product.variantId) ? product.image : thumbnail
       };
 
       const existingIndex = prev.findIndex((item: CartItem) => getCartItemKey(item.id, item.selectedVariants) === itemKey);
