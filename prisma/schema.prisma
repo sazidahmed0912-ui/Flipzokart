@@ -107,6 +107,22 @@ model Product {
   reviews    Review[]
   cartItems  CartItem[]
   orderItems OrderItem[]
+  variants   ProductVariant[]
+}
+
+model ProductVariant {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  color     String?
+  size      String?
+  price     Float
+  stock     Int      @default(0)
+  image     String?
+  sku       String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Category {

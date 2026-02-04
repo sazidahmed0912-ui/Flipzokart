@@ -113,7 +113,7 @@ export const AdminProducts: React.FC = () => {
       stock: (product.countInStock ?? product.stock ?? 0).toString(),
       image: product.image,
       images: product.images || [],
-      variants: product.variants || [],
+      variants: (product.variants as any[]) || [],
       inventory: product.inventory || [],
       defaultColor: product.defaultColor || ''
     });
@@ -440,7 +440,7 @@ export const AdminProducts: React.FC = () => {
       rating: editingProduct ? editingProduct.rating : 5,
       reviewsCount: editingProduct ? editingProduct.reviewsCount : 0,
       isFeatured: editingProduct ? editingProduct.isFeatured : false,
-      variants: cleanedVariants.length > 0 ? cleanedVariants : undefined,
+      variants: cleanedVariants.length > 0 ? (cleanedVariants as any) : undefined,
       inventory: cleanedVariants.length > 0 ? formData.inventory : undefined,
       defaultColor: formData.defaultColor
     };

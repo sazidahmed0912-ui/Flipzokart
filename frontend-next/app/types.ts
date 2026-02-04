@@ -31,13 +31,27 @@ export interface Product {
   stock: number;
   countInStock: number; // Added to match backend response
   isFeatured?: boolean;
-  variants?: VariantGroup[];
+  variants?: (VariantGroup | ProductVariant)[];
   inventory?: VariantCombination[];
   seller?: string;
   deliveryDate?: string;
   selectedVariants?: Record<string, string>;
   defaultColor?: string;
 }
+
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  color?: string;
+  size?: string;
+  price: number;
+  stock: number;
+  image?: string;
+  sku?: string;
+  name?: string; // Legacy support
+  options?: any; // Legacy support
+}
+
 
 export interface User {
   id: string;

@@ -165,6 +165,7 @@ export class ProductService {
             include: {
                 category: true,
                 reviews: true,
+                variants: true,
             },
         });
         if (!product) throw new AppError('Product not found', 404);
@@ -200,7 +201,7 @@ export class ProductService {
                 take: Number(limit),
                 skip,
                 orderBy: sort ? { price: sort === 'price-asc' ? 'asc' : 'desc' } : { createdAt: 'desc' },
-                include: { category: true },
+                include: { category: true, variants: true },
             }),
             prisma.product.count({ where }),
         ]);

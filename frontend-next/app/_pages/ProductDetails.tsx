@@ -140,55 +140,80 @@ export const ProductDetails: React.FC = () => {
     getProductAndReviews();
   }, [id]);
 
-  // CORE VARIANT RESOLUTION (THIS FIXES EVERYTHING)
+  // CORE VARIANT RESOLUTION (STRICT ENTITY FIRST)
   useEffect(() => {
-    if (!product || !product.inventory) return;
+    if (!product) return;
 
-    // Strict Rule: Image updates ONLY when BOTH color + size selected
-    if (!selectedColor || !selectedSize) {
-      // Optional: Reset to default/main image if selection is incomplete
-      // setActiveImage(null); 
-      return;
-    }
+    let foundVariant = null;
 
-    const vnColor = product.variants?.find((v: any) => v.name.toLowerCase().includes('color'))?.name || 'Color';
-    const vnSize = product.variants?.find((v: any) => v.name.toLowerCase() === 'size')?.name || 'Size';
-
-    const variant = product.inventory.find(v =>
-      v.options &&
-      v.options[vnColor] === selectedColor &&
-      v.options[vnSize] === selectedSize
-    );
-
-    if (variant) {
-      setActiveVariant(variant);
-      if (variant.image) {
-        setActiveImage(getProductImageUrl(variant.image));
+    // 1. Try finding in First-Class Variants (DB Table)
+    if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+      // Check if it's the new structure (has 'color', 'size' fields directly)
+      const newStructMatch = product.variants.find((v: any) =>
+        (v.color === selectedColor || (!v.color && !selectedColor)) &&
+        (v.size === selectedSize || (!v.size && !selectedSize))
+      );
+      if (newStructMatch) {
+        foundVariant = newStructMatch;
       }
     }
+
+    // 2. Fallback to Old Inventory Structure (if new struct didn't match or doesn't exist)
+    if (!foundVariant && product.inventory) {
+      const vnColor = product.variants?.find((v: any) => v.name && v.name.toLowerCase().includes('color'))?.name || 'Color';
+      const vnSize = product.variants?.find((v: any) => v.name && v.name.toLowerCase() === 'size')?.name || 'Size';
+
+      foundVariant = product.inventory.find(v =>
+        v.options &&
+        v.options[vnColor] === selectedColor &&
+        v.options[vnSize] === selectedSize
+      );
+    }
+
+    setActiveVariant(foundVariant);
+
+    if (foundVariant && (foundVariant as any).image) {
+      setActiveImage(getProductImageUrl((foundVariant as any).image));
+    }
+    // Note: If no match, we don't necessarily reset activeImage unless specific requirements say so.
+
   }, [product, selectedColor, selectedSize]);
 
   // Derived State for Inventory/Stock
   const { currentStock, isOutOfStock, currentPrice, currentOriginalPrice } = useMemo(() => {
     if (!product) return { currentStock: 0, isOutOfStock: true, currentPrice: 0, currentOriginalPrice: 0 };
 
+    // 1. Strict Entity Match (Highest Priority)
+    if (activeVariant) {
+      // activeVariant can be ProductVariant or VariantCombination. checking fields.
+      const vStock = (activeVariant as any).stock !== undefined ? (activeVariant as any).stock : (activeVariant as any).countInStock;
+      const vPrice = (activeVariant as any).price || product.price;
+      return {
+        currentStock: vStock,
+        isOutOfStock: vStock <= 0,
+        currentPrice: vPrice,
+        currentOriginalPrice: product.originalPrice
+      };
+    }
+
     let stock = product.countInStock;
     let price = product.price;
     let originalPrice = product.originalPrice;
 
-    // Reconstruct selectedVariants for inventory lookup
-    const currentVariants: Record<string, string> = { ...otherVariants };
-    if (selectedColor) {
-      // Find exact key case from product variants
-      const colorVar = product.variants?.find((v: any) => v.name.toLowerCase() === 'color' || v.name.toLowerCase() === 'colour');
-      if (colorVar) currentVariants[colorVar.name] = selectedColor;
-    }
-    if (selectedSize) {
-      const sizeVar = product.variants?.find((v: any) => v.name.toLowerCase() === 'size');
-      if (sizeVar) currentVariants[sizeVar.name] = selectedSize;
-    }
+    // ... Legacy Fallback (Simplified & Type-Safe) ...
+    // Only run if we actually have legacy inventory
+    if (product.inventory && product.inventory.length > 0) {
+      // Try to construct legacy lookup map safely
+      const currentVariants: Record<string, string> = { ...otherVariants };
+      if (selectedColor) {
+        const colorVar = product.variants?.find((v: any) => v.name && (v.name.toLowerCase() === 'color' || v.name.toLowerCase() === 'colour'));
+        if (colorVar && (colorVar as any).name) currentVariants[(colorVar as any).name] = selectedColor;
+      }
+      if (selectedSize) {
+        const sizeVar = product.variants?.find((v: any) => v.name && v.name.toLowerCase() === 'size');
+        if (sizeVar && (sizeVar as any).name) currentVariants[(sizeVar as any).name] = selectedSize;
+      }
 
-    if (product.variants && product.variants.length > 0 && product.inventory) {
       const match = product.inventory.find(inv =>
         inv.options && Object.entries(currentVariants).every(([k, v]) => inv.options[k] === v)
       );
@@ -204,7 +229,7 @@ export const ProductDetails: React.FC = () => {
       currentPrice: price,
       currentOriginalPrice: originalPrice
     };
-  }, [product, selectedColor, selectedSize, otherVariants]);
+  }, [product, activeVariant, selectedColor, selectedSize, otherVariants]);
 
   // Derived State for Variant Images
   // MANDATORY FIX: Depends ONLY on selectedColor, NOT size
@@ -235,43 +260,62 @@ export const ProductDetails: React.FC = () => {
 
   const handleAddToCart = () => {
     if (isOutOfStock || !product) return;
+
+    // Validate Selection if variants exist
+    if (product.variants && product.variants.length > 0 && (!selectedColor && !selectedSize)) {
+      addToast('error', 'Please select a variation');
+      return;
+    }
+
     const finalVariants = { ...otherVariants };
     if (selectedColor) {
-      const k = product.variants?.find((v: any) => v.name.toLowerCase().includes('color'))?.name || 'Color';
+      // Try to find the legacy variant logical name for "Color" if possible, or just default keys
+      const k = Array.isArray(product.variants) && product.variants.find((v: any) => v.name && v.name.toLowerCase().includes('color'))?.name || 'Color';
       finalVariants[k] = selectedColor;
     }
     if (selectedSize) {
-      const k = product.variants?.find((v: any) => v.name.toLowerCase() === 'size')?.name || 'Size';
+      const k = Array.isArray(product.variants) && product.variants.find((v: any) => v.name && v.name.toLowerCase() === 'size')?.name || 'Size';
       finalVariants[k] = selectedSize;
     }
 
     const productWithSelection = {
       ...product,
-      price: currentPrice,
-      image: activeImage || getProductImageUrl(product.image),
-      selectedVariants: Object.keys(finalVariants).length > 0 ? finalVariants : undefined
+      price: activeVariant?.price || currentPrice, // Prefer variant price
+      image: activeVariant?.image ? getProductImageUrl(activeVariant.image) : (activeImage || getProductImageUrl(product.image)),
+      selectedVariants: Object.keys(finalVariants).length > 0 ? finalVariants : undefined,
+
+      // CRITICAL: Send Strict Variant ID
+      variantId: activeVariant?.id || activeVariant?._id
     };
+
     addToCart(productWithSelection, quantity);
     addToast('success', '✅ Product added to bag!');
   };
 
   const handleBuyNow = () => {
     if (isOutOfStock || !product) return;
+
+    if (product.variants && product.variants.length > 0 && (!selectedColor && !selectedSize)) {
+      addToast('error', 'Please select a variation');
+      return;
+    }
+
     const finalVariants = { ...otherVariants };
     if (selectedColor) {
-      const k = product.variants?.find((v: any) => v.name.toLowerCase().includes('color'))?.name || 'Color';
+      const k = Array.isArray(product.variants) && product.variants.find((v: any) => v.name && v.name.toLowerCase().includes('color'))?.name || 'Color';
       finalVariants[k] = selectedColor;
     }
     if (selectedSize) {
-      const k = product.variants?.find((v: any) => v.name.toLowerCase() === 'size')?.name || 'Size';
+      const k = Array.isArray(product.variants) && product.variants.find((v: any) => v.name && v.name.toLowerCase() === 'size')?.name || 'Size';
       finalVariants[k] = selectedSize;
     }
 
     const productWithSelection = {
       ...product,
-      price: currentPrice,
-      image: activeImage || getProductImageUrl(product.image),
-      selectedVariants: Object.keys(finalVariants).length > 0 ? finalVariants : undefined
+      price: activeVariant?.price || currentPrice,
+      image: activeVariant?.image ? getProductImageUrl(activeVariant.image) : (activeImage || getProductImageUrl(product.image)),
+      selectedVariants: Object.keys(finalVariants).length > 0 ? finalVariants : undefined,
+      variantId: activeVariant?.id || activeVariant?._id
     };
     addToCart(productWithSelection, quantity);
     addToast('success', '✅ Product added to bag!');
@@ -341,10 +385,13 @@ export const ProductDetails: React.FC = () => {
             </div>
 
             {product.variants && product.variants.length > 0 && product.variants.map((variant, vIdx) => {
-              const matchesColor = variant.name.toLowerCase() === 'color' || variant.name.toLowerCase() === 'colour';
-              const isSize = variant.name.toLowerCase() === 'size';
+              const vName = (variant as any).name;
+              if (!vName) return null; // Skip strict ProductVariants here if they don't have legacy name property (they should use different UI logic if strict, but for now we fallback)
 
-              let selectedValue = otherVariants[variant.name];
+              const matchesColor = vName.toLowerCase() === 'color' || vName.toLowerCase() === 'colour';
+              const isSize = vName.toLowerCase() === 'size';
+
+              let selectedValue = otherVariants[vName];
               if (matchesColor) selectedValue = selectedColor;
               if (isSize) selectedValue = selectedSize;
 
@@ -364,7 +411,7 @@ export const ProductDetails: React.FC = () => {
                         return (
                           <button
                             key={oIdx}
-                            onClick={() => handleVariantSelect(variant.name, optName)}
+                            onClick={() => handleVariantSelect(vName, optName)}
                             style={{ backgroundColor: optColor && optColor !== 'bg-gray-200' ? optColor : undefined }} // Use Rich Color if available
                             className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${!optColor ? getColorClass(optName) : ''} border-2 ${isActive ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'} shadow-sm`}
                             title={optName}
@@ -374,7 +421,7 @@ export const ProductDetails: React.FC = () => {
                       return (
                         <button
                           key={oIdx}
-                          onClick={() => handleVariantSelect(variant.name, optName)}
+                          onClick={() => handleVariantSelect(vName, optName)}
                           className={`px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg border-2 text-xs sm:text-sm font-medium ${isActive ? 'border-gray-800 bg-gray-900 text-white' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}
                         >
                           {optName}

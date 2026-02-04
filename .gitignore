@@ -1,1 +1,6 @@
 node_modules
+
+trash_dist/
+trash_nm_1/
+frontend-next/.next/
+frontend-next/out/

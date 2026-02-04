@@ -96,15 +96,34 @@ export class CartService {
         await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
 
         for (const item of items) {
-            // Safe extraction of variant details
-            let color = null;
-            let size = null;
-            if (item.selectedVariants) {
+            let variantData = {
+                color: item.color,
+                size: item.size,
+                price: item.price,
+                image: item.image,
+                variantId: item.variantId
+            };
+
+            // STRICT LOOKUP: If variantId is provided, fetch AUTHENTIC data from DB
+            if (item.variantId) {
+                const dbVariant = await prisma.productVariant.findUnique({
+                    where: { id: item.variantId }
+                });
+
+                if (dbVariant) {
+                    variantData.color = dbVariant.color;
+                    variantData.size = dbVariant.size;
+                    variantData.price = dbVariant.price;
+                    variantData.image = dbVariant.image; // Use variant specific image
+                    // If dbVariant has no image, maybe fallback? User says "Variant ... image".
+                }
+            } else if (item.selectedVariants) {
+                // Fallback for Legacy/Frontend-only logic (if variantId missing)
                 const keys = Object.keys(item.selectedVariants);
                 const colorKey = keys.find(k => k.toLowerCase() === 'color' || k.toLowerCase() === 'colour');
                 const sizeKey = keys.find(k => k.toLowerCase() === 'size');
-                if (colorKey) color = item.selectedVariants[colorKey];
-                if (sizeKey) size = item.selectedVariants[sizeKey];
+                if (colorKey) variantData.color = item.selectedVariants[colorKey];
+                if (sizeKey) variantData.size = item.selectedVariants[sizeKey];
             }
 
             await prisma.cartItem.create({
@@ -112,11 +131,14 @@ export class CartService {
                     cartId: cart.id,
                     productId: item.id || item.productId,
                     quantity: item.quantity,
-                    price: item.price, // Snapshot
-                    image: item.image || item.thumbnail || (item.images && item.images[0]), // Snapshot
-                    color,
-                    size,
-                    // variantId: item.variantId // If frontend starts sending it
+
+                    // CRITICAL SNAPSHOTS
+                    price: variantData.price || item.price, // Trust DB variant price over payload if available
+                    image: variantData.image || item.image || item.thumbnail || (item.images && item.images[0]),
+
+                    color: variantData.color,
+                    size: variantData.size,
+                    variantId: variantData.variantId
                 }
             });
         }
