@@ -5,6 +5,7 @@ import { User, CartItem, Product, Order, Address } from '@/app/types';
 import { MOCK_PRODUCTS } from '@/app/constants';
 import authService from '@/app/services/authService';
 import { fetchProducts, updateOrderStatus as updateOrderStatusAPI } from '@/app/services/api';
+import { useSocket } from '@/app/hooks/useSocket';
 
 interface AppContextType {
   user: User | null;
@@ -142,9 +143,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     fetchCart();
+    fetchCart();
   }, [user, isInitialized]); // Run when user changes (Login)
 
-  // Real-Time Location Update (IP-based)
+  // Socket.IO for Real-Time Products
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const socket = useSocket(token);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    // Listen for New Products
+    socket.on('newProduct', (newProduct: Product) => {
+      setProducts(prev => [newProduct, ...prev]);
+    });
+
+    // Listen for Product Updates
+    socket.on('productUpdated', (updatedProduct: Product) => {
+      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+    });
+
+    // Listen for Product Deletion
+    socket.on('deleteProduct', (productId: string) => {
+      setProducts(prev => prev.filter(p => p.id !== productId));
+    });
+
+    return () => {
+      socket.off('newProduct');
+      socket.off('productUpdated');
+      socket.off('deleteProduct');
+    };
+  }, [socket]);
   useEffect(() => {
     if (!user) return;
     const updateLocation = async () => {

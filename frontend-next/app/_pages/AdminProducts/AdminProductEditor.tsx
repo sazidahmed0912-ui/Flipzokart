@@ -99,6 +99,16 @@ export const AdminProductEditor: React.FC = () => {
         }
     }, [id]);
 
+    // Auto-Sync Matrix when Variant Groups change (Debounced to prevent jitter)
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (variantGroups.length > 0) {
+                syncMatrix();
+            }
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [variantGroups]);
+
     // --- Load Data ---
     const loadProduct = async (productId: string) => {
         try {
