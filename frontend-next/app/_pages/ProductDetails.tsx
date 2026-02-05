@@ -62,6 +62,10 @@ export const ProductDetails: React.FC = () => {
       socket.on('productUpdated', (updatedProduct: Product) => {
         if (updatedProduct.id === id) {
           setProduct(updatedProduct);
+          // Rule 5: Reset invalid selected variant on update (Strict Reset)
+          setSelectedColor(null);
+          setSelectedSize(null);
+          setActiveVariant(null);
         }
       });
     }
@@ -108,6 +112,9 @@ export const ProductDetails: React.FC = () => {
   // ================================================
   // STEP 4 — CORE VARIANT RESOLUTION (CRITICAL)
   // ================================================
+  // ================================================
+  // STEP 4 — CORE VARIANT RESOLUTION (STRICT RULE 6)
+  // ================================================
   useEffect(() => {
     if (!product?.variants?.length) {
       setActiveVariant(null);
@@ -116,25 +123,12 @@ export const ProductDetails: React.FC = () => {
 
     const variants = product.variants as ProductVariant[];
 
-    // Exact match first
-    let found = variants.find(
+    // Rule 6: STRICT MATCH ONLY.
+    // find(v => v.color === selectedColor AND v.size === selectedSize)
+    // ELSE null
+    const found = variants.find(
       v => v.color === selectedColor && v.size === selectedSize
     );
-
-    // If only color selected → pick first matching color
-    if (!found && selectedColor) {
-      found = variants.find(v => v.color === selectedColor);
-    }
-
-    // If only size selected → pick first matching size
-    if (!found && selectedSize) {
-      found = variants.find(v => v.size === selectedSize);
-    }
-
-    // If nothing selected → pick first variant
-    if (!found) {
-      found = variants[0];
-    }
 
     setActiveVariant(found || null);
   }, [product, selectedColor, selectedSize]);
@@ -161,20 +155,9 @@ export const ProductDetails: React.FC = () => {
   // ================================================
   const handleColor = (color: string) => {
     setSelectedColor(color);
-
-    if (product && product.variants) {
-      // Reset size to first available of this color
-      const firstSizeVariant = (product.variants as any[]).find(v => v.color === color);
-      if (firstSizeVariant) {
-        setSelectedSize(firstSizeVariant.size);
-        // We set activeVariant here immediately as per user snippet step 6
-        // But Step 4 effect will also fire. That is fine. 
-        setActiveVariant(firstSizeVariant);
-      } else {
-        setSelectedSize(null); // No size found for this color
-        setActiveVariant(null);
-      }
-    }
+    // Strict Rule: DO NOT auto-select size.
+    // If the new color + existing size combination doesn't exist, activeVariant becomes null.
+    // User must explicitly select a valid size.
   };
 
   // ================================================
