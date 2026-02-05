@@ -446,7 +446,7 @@ export const ProductDetails: React.FC = () => {
           <div className="p-4 sm:p-6">
             {activeTab === 'description' && (
               <div className="text-sm sm:text-base text-gray-700">
-                <p className="mb-3 sm:mb-4 whitespace-pre-wrap">{product.description}</p>
+                <p className="mb-3 sm:mb-4 whitespace-pre-wrap">{product.description?.replace(/<!-- METADATA:.*?-->/g, '').trim()}</p>
 
               </div>
             )}
