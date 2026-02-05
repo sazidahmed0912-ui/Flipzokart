@@ -262,6 +262,39 @@ router.get("/:id", async (req, res) => {
       productObj.images = [productObj.image];
     }
 
+    // 3. 🛡️ MANDATORY FIX: STRICT VARIANT SHAPE (User Requirement)
+    // The 'variants' field MUST be the flat list (SKUs), NOT the dimensions.
+    // We map 'inventory' -> 'variants'
+    if (productObj.inventory && productObj.inventory.length > 0) {
+      productObj.variants = productObj.inventory.map(inv => {
+        let color = "";
+        let size = "";
+        // Handle Map or Object options
+        const opts = inv.options ? (inv.options instanceof Map ? Object.fromEntries(inv.options) : inv.options) : {};
+
+        Object.keys(opts).forEach(key => {
+          const k = key.toLowerCase();
+          if (k.includes('color') || k.includes('colour')) color = opts[key];
+          if (k === 'size') size = opts[key];
+        });
+
+        return {
+          id: inv.sku || inv._id?.toString() || Math.random().toString(36).substr(2, 9),
+          color: color,
+          size: size,
+          image: inv.image,
+          price: inv.price || productObj.price,
+          stock: inv.stock
+        };
+      });
+      // Filter out invalid variants (must have color/size/image as per strict rule? user said "variant without size -> FORBIDDEN")
+      productObj.variants = productObj.variants.filter(v => v.color && v.size);
+    } else {
+      // If no inventory, ensure variants is empty array, OR if strict requirements say fix backend...
+      // We can't fix data here, but we can ensure structure.
+      productObj.variants = [];
+    }
+
     res.status(200).json(productObj);
   } catch (error) {
     if (error.kind === 'ObjectId') {
