@@ -694,12 +694,20 @@ const updateOrderStatus = async (req, res) => {
         });
 
         // Emit
-        const io = req.app.get('socketio');
         if (io) {
           io.to(order.user.toString()).emit('notification', {
             type: 'orderStatusUpdate',
             message,
             orderId: order._id,
+            status: 'info'
+          });
+
+          // Notify Admin Dashboard (Real-time refresh)
+          io.to('admin').emit('notification', {
+            type: 'orderStatusUpdate',
+            message: `Order #${order._id.toString().slice(-6)} updated to ${status}`,
+            orderId: order._id,
+            newStatus: status,
             status: 'info'
           });
         }

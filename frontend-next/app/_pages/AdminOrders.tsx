@@ -12,12 +12,12 @@ import { useApp } from '@/app/store/Context';
 import { Order } from '@/app/types';
 import { AdminSidebar } from '@/app/components/AdminSidebar';
 
-import { fetchAllOrders, deleteOrder } from '@/app/services/api';
+import { fetchAllOrders, deleteOrder, updateOrderStatus } from '@/app/services/api';
 
 import { useSocket } from '@/app/hooks/useSocket';
 
 export const AdminOrders: React.FC = () => {
-  const { updateOrderStatus, user, logout } = useApp();
+  const { user, logout } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Order['status'] | 'All'>('All');
   const [activeTab, setActiveTab] = useState('status'); // status | tracking | refunds | history
@@ -100,6 +100,24 @@ export const AdminOrders: React.FC = () => {
   const handlePreview = (order: Order) => {
     setSelectedOrder(order);
     setIsPreviewOpen(true);
+  };
+
+  // Optimistic Update Handler
+  const handleStatusUpdate = async (id: string, newStatus: Order['status']) => {
+    // 1. Optimistic UI Update
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
+    setOpenDropdownId(null);
+
+    // 2. API Call (Background)
+    try {
+      await updateOrderStatus(id, newStatus);
+    } catch (e) {
+      console.error("Status update failed", e);
+      // Revert or Fetch on error
+      const { data } = await fetchAllOrders();
+      setOrders(data);
+      alert("Failed to update status");
+    }
   };
 
   const getStatusColor = (status: Order['status']) => {
@@ -335,10 +353,7 @@ export const AdminOrders: React.FC = () => {
                               {(['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'] as Order['status'][]).map(s => (
                                 <button
                                   key={s}
-                                  onClick={() => {
-                                    updateOrderStatus(order.id, s);
-                                    setOpenDropdownId(null);
-                                  }}
+                                  onClick={() => handleStatusUpdate(order.id, s)}
                                   className={`w-full text-left px-4 py-2.5 text-[10px] font-bold uppercase hover:bg-gray-50 transition-colors flex items-center gap-2 ${order.status === s ? 'text-[#2874F0] bg-blue-50' : 'text-gray-500'}`}
                                 >
                                   {order.status === s && <CheckCircle size={10} />}
