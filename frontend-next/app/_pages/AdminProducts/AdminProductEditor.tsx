@@ -37,6 +37,7 @@ interface MatrixRow {
     isDefault: boolean;
     image: string;
     variantIds: string[]; // IDs of options making this combo
+    options?: Record<string, string>; // <--- Add this
 }
 
 export const AdminProductEditor: React.FC = () => {
@@ -248,6 +249,17 @@ export const AdminProductEditor: React.FC = () => {
             const colorOpt = comboOpts.find(o => variantGroups.find(g => g.name.toLowerCase() === 'color')?.options.find(co => co.id === o.id));
             const comboImage = colorOpt?.image || existing?.image || formData.image || '';
 
+            // Construct Options Map strictly for Backend Hydration
+            const optionsMap: Record<string, string> = {};
+            comboOpts.forEach(o => {
+                // Find which group this option belongs to
+                const group = variantGroups.find(g => g.options.some(opt => opt.id === o.id));
+                if (group) {
+                    optionsMap[group.name] = o.name;
+                    // Also handle case-insensitive or specific keys if needed, but backend is robust now.
+                }
+            });
+
             return {
                 id: existing?.id || Date.now() + idx + '',
                 combination: comboNames,
@@ -256,7 +268,8 @@ export const AdminProductEditor: React.FC = () => {
                 price: existing ? existing.price : (Number(formData.price) || 0),
                 isDefault: existing ? existing.isDefault : (idx === 0),
                 image: comboImage,
-                variantIds: comboIds
+                variantIds: comboIds,
+                options: optionsMap // <--- CRITICAL FIX: Add this
             };
         });
 
