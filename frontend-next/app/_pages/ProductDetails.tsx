@@ -123,6 +123,9 @@ export const ProductDetails: React.FC = () => {
 
     const variants = product.variants as ProductVariant[];
 
+    console.log("PRODUCT VARIANTS:", variants);
+    console.log("SELECTED:", selectedColor, selectedSize);
+
     // Rule 6: STRICT MATCH ONLY.
     // find(v => v.color === selectedColor AND v.size === selectedSize)
     // ELSE null
@@ -130,23 +133,23 @@ export const ProductDetails: React.FC = () => {
       v => v.color === selectedColor && v.size === selectedSize
     );
 
+    console.log("ACTIVE VARIANT:", found);
     setActiveVariant(found || null);
   }, [product, selectedColor, selectedSize]);
 
   // Derived Options for UI
   const { uniqueColors, uniqueSizes, colorMap } = useMemo(() => {
     if (!product || !product.variants) return { uniqueColors: [], uniqueSizes: [], colorMap: {} };
-    const colors = new Set<string>();
-    const sizes = new Set<string>();
+
+    // STRICT SOURCE: product.variants
+    const variants = product.variants as ProductVariant[];
+    const colors = Array.from(new Set(variants.map(v => v.color).filter(c => !!c))) as string[];
+    const sizes = Array.from(new Set(variants.map(v => v.size).filter(s => !!s))) as string[];
+
     // For mapping hex if available (not in strict shape but helpful)
     const cMap: Record<string, string> = {};
 
-    (product.variants as any[]).forEach(v => {
-      if (v.color) colors.add(v.color);
-      if (v.size) sizes.add(v.size);
-    });
-
-    return { uniqueColors: Array.from(colors), uniqueSizes: Array.from(sizes), colorMap: cMap };
+    return { uniqueColors: colors, uniqueSizes: sizes, colorMap: cMap };
   }, [product]);
 
 
@@ -209,9 +212,13 @@ export const ProductDetails: React.FC = () => {
   </div>;
 
   // Price & Stock Display
-  const currentPrice = activeVariant?.price || product.price; // Fallback only for price if variant missing price field? User said "price syncs".
-  const currentStock = activeVariant?.stock ?? 0;
-  const isOutOfStock = currentStock <= 0;
+  const currentPrice = activeVariant?.price || product.price;
+  // Stock MUST come from activeVariant.stock. 
+  // If no variant active, we don't say out of stock unless product global stock is 0? 
+  // User Rule: "if activeVariant.stock <= 0 -> show Out of Stock"
+  // If activeVariant is null, we can't determine specific stock, so we don't show "Out of Stock" blindly.
+  const currentStock = activeVariant ? activeVariant.stock : (product.countInStock || 0);
+  const isOutOfStock = activeVariant ? (activeVariant.stock <= 0) : false; // Only show OOS if variant selected and OOS.
 
   const discount = product.originalPrice > currentPrice
     ? Math.round(((product.originalPrice - currentPrice) / product.originalPrice) * 100)

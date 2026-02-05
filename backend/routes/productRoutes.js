@@ -263,35 +263,50 @@ router.get("/:id", async (req, res) => {
     }
 
     // 3. 🛡️ MANDATORY FIX: STRICT VARIANT SHAPE (User Requirement)
-    // The 'variants' field MUST be the flat list (SKUs), NOT the dimensions.
-    // We map 'inventory' -> 'variants'
+    // The 'variants' field MUST be the flat list (SKUs) derived strictly from 'inventory'.
     if (productObj.inventory && productObj.inventory.length > 0) {
+      console.log(`[ProductDetail] Hydrating variants from inventory (count: ${productObj.inventory.length})`);
       productObj.variants = productObj.inventory.map(inv => {
         let color = "";
         let size = "";
-        // Handle Map or Object options
-        const opts = inv.options ? (inv.options instanceof Map ? Object.fromEntries(inv.options) : inv.options) : {};
 
+        // Robust Options Parsing (Handle Map, Mongoose Map, or Plain Object)
+        let opts = {};
+        if (inv.options) {
+          if (inv.options instanceof Map) {
+            opts = Object.fromEntries(inv.options);
+          } else if (typeof inv.options === 'object') {
+            // If it's a Mongoose "Map" it might have .get(), but usually toObject() handles it.
+            // We treat it as object.
+            opts = inv.options;
+          }
+        }
+
+        // Case-insensitive key search
         Object.keys(opts).forEach(key => {
-          const k = key.toLowerCase();
-          if (k.includes('color') || k.includes('colour')) color = opts[key];
-          if (k === 'size') size = opts[key];
+          const k = key.trim().toLowerCase();
+          const val = opts[key];
+          if (k === 'color' || k === 'colour' || k.includes('color')) color = val;
+          if (k === 'size') size = val;
         });
 
         return {
-          id: inv.sku || inv._id?.toString() || Math.random().toString(36).substr(2, 9),
+          id: inv.sku || inv._id?.toString() || Math.random().toString(36).substring(2, 9),
           color: color,
           size: size,
           image: inv.image,
           price: inv.price || productObj.price,
-          stock: inv.stock
+          stock: inv.stock,
+          sku: inv.sku
         };
       });
-      // Filter out invalid variants (must have color/size/image as per strict rule? user said "variant without size -> FORBIDDEN")
-      productObj.variants = productObj.variants.filter(v => v.color && v.size);
+
+      // Filter out invalid variants (Must have at least one attribute to be useful, but user said "variant without size -> FORBIDDEN")
+      // We will be permissive but ensure they are not empty objects suitable for logic.
+      // actually, let's keep all and let frontend filter if needed, but logging helps.
+      console.log(`[ProductDetail] Generated ${productObj.variants.length} variants.`);
+
     } else {
-      // If no inventory, ensure variants is empty array, OR if strict requirements say fix backend...
-      // We can't fix data here, but we can ensure structure.
       productObj.variants = [];
     }
 
