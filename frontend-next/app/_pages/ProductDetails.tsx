@@ -6,7 +6,7 @@ import { useApp } from '@/app/store/Context';
 import { ProductCard } from '@/app/components/ProductCard';
 import { useToast } from '@/app/components/toast';
 import API, { fetchProductById } from '@/app/services/api';
-import { Product, Review, ProductVariant } from '@/app/types';
+import { Product, ProductVariant, CartItem, Review } from '@/app/types';
 import { ReviewList } from './ProductDetails/components/ReviewList';
 import { ReviewForm } from './ProductDetails/components/ReviewForm';
 import { useSocket } from '@/app/hooks/useSocket';
@@ -99,50 +99,45 @@ export const ProductDetails: React.FC = () => {
   useEffect(() => {
     if (!product?.variants?.length) return;
 
-    // Backend ensures variants[0] is valid if variants exist
-    // Cast to any because our Types.ts definition is a Union (VariantGroup | ProductVariant)
-    // but we know backend is sending strictly ProductVariant (flat) now.
-    const variants = product.variants as any[];
-    const first = variants[0];
+    const first = product.variants[0] as ProductVariant;
 
-    // We add a check to prevent loop/override if user already selected
-    // specific logic: if activeVariant is null, or if it belongs to different product
-    if (!activeVariant || activeVariant.productId !== product.id) {
-      if (first.color && first.size) {
-        setSelectedColor(first.color);
-        setSelectedSize(first.size);
-        setActiveVariant(first);
-        console.log("DEFAULT LOADED", first.color, first.size);
-      }
-    }
-  }, [product]); // Dependency: product (id check inside)
+    if (!selectedColor && first.color) setSelectedColor(first.color);
+    if (!selectedSize && first.size) setSelectedSize(first.size);
+  }, [product]);
 
   // ================================================
   // STEP 4 — CORE VARIANT RESOLUTION (CRITICAL)
   // ================================================
   useEffect(() => {
-    if (!product || !product.variants) return;
-    if (!selectedColor || !selectedSize) return;
+    if (!product?.variants?.length) {
+      setActiveVariant(null);
+      return;
+    }
 
-    // Strict find
-    const found = (product.variants as any[]).find(
+    const variants = product.variants as ProductVariant[];
+
+    // Exact match first
+    let found = variants.find(
       v => v.color === selectedColor && v.size === selectedSize
     );
 
-    if (found) {
-      setActiveVariant(found);
-    } else {
-      setActiveVariant(null);
+    // If only color selected → pick first matching color
+    if (!found && selectedColor) {
+      found = variants.find(v => v.color === selectedColor);
     }
 
-    // ================================================
-    // STEP 8 — DEBUG GUARANTEE (MANDATORY)
-    // ================================================
-    console.log("COLOR", selectedColor);
-    console.log("SIZE", selectedSize);
-    console.log("ACTIVE VARIANT", found ? found : "NULL (No Match)");
+    // If only size selected → pick first matching size
+    if (!found && selectedSize) {
+      found = variants.find(v => v.size === selectedSize);
+    }
 
-  }, [selectedColor, selectedSize, product]);
+    // If nothing selected → pick first variant
+    if (!found) {
+      found = variants[0];
+    }
+
+    setActiveVariant(found || null);
+  }, [product, selectedColor, selectedSize]);
 
   // Derived Options for UI
   const { uniqueColors, uniqueSizes, colorMap } = useMemo(() => {
@@ -197,11 +192,20 @@ export const ProductDetails: React.FC = () => {
   // Passed to gallery. strict.
   // "Use activeVariant?.image || /placeholder.png"
   const galleryImages = useMemo(() => {
-    // User requirement: "activeVariant.image ?? placeholder". 
-    // We pass this array to gallery.
-    if (activeVariant?.image) return [getProductImageUrl(activeVariant.image)];
-    return ["/placeholder.png"];
-  }, [activeVariant]);
+    if (activeVariant?.image) {
+      return [getProductImageUrl(activeVariant.image)];
+    }
+
+    if (product?.images?.length) {
+      return product.images.map(getProductImageUrl);
+    }
+
+    if (product?.image) {
+      return [getProductImageUrl(product.image)];
+    }
+
+    return [];
+  }, [activeVariant, product]);
 
   const getColorClass = (colorName: string) => {
     // Basic color mapping
@@ -231,25 +235,63 @@ export const ProductDetails: React.FC = () => {
     : 0;
 
 
-  const handleAddToCart = () => {
-    if (isOutOfStock) { addToast('error', 'Product is out of stock'); return; }
-    if (!activeVariant) { addToast('error', 'Please select a valid variant'); return; }
+  const buildCartItem = (): CartItem | null => {
+    if (!product) return null;
 
-    const item = {
-      ...product,
-      price: activeVariant.price,
-      image: getProductImageUrl(activeVariant.image),
-      selectedVariants: { Color: selectedColor, Size: selectedSize } as any,
-      variantId: activeVariant.id
-    };
+    return {
+      id: product.id,
+      productId: product.id,
+      variantId: activeVariant?.id,
+
+      productName: product.name,
+      name: product.name,
+
+      price: activeVariant?.price ?? product.price,
+      image: activeVariant?.image ?? product.image,
+
+      color: selectedColor ?? undefined,
+      size: selectedSize ?? undefined,
+
+      images: activeVariant?.image
+        ? [activeVariant.image]
+        : product.images ?? [],
+
+      originalPrice: product.originalPrice,
+      category: product.category,
+      description: product.description,
+      rating: product.rating,
+      reviewsCount: product.reviewsCount,
+      stock: activeVariant?.stock ?? product.stock,
+      countInStock: activeVariant?.stock ?? product.countInStock,
+
+      selectedVariants: {
+        Color: selectedColor ?? '',
+        Size: selectedSize ?? ''
+      },
+
+      quantity
+    } as CartItem;
+  };
+
+  const handleAddToCart = () => {
+    if (isOutOfStock) return;
+
+    const item = buildCartItem();
+    if (!item) return;
+
+    // @ts-ignore
     addToCart(item, quantity);
-    addToast('success', 'Added to Bag');
+    addToast('success', 'Product added to cart');
   };
 
   const handleBuyNow = () => {
-    if (isOutOfStock) { addToast('error', 'Product is out of stock'); return; }
-    if (!activeVariant) { addToast('error', 'Please select a valid variant'); return; }
-    handleAddToCart();
+    if (isOutOfStock) return;
+
+    const item = buildCartItem();
+    if (!item) return;
+
+    // @ts-ignore
+    addToCart(item, quantity);
     router.push('/checkout');
   };
 

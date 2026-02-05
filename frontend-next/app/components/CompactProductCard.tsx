@@ -16,7 +16,7 @@ export const CompactProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToast } = useToast();
 
   const handleAddToCart = () => {
-    addToCart(product);
+    addToCart({ ...product, productId: product.id, quantity: 1, productName: product.name } as any);
     addToast('success', '✅ Product added to bag!');
   };
 

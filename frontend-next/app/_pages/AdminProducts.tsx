@@ -102,6 +102,29 @@ export const AdminProducts: React.FC = () => {
   const openEditModal = async (product: Product) => {
     setEditingProduct(product);
     setNeedsSync(false);
+
+    // Reconstruct UI Groups from strict Variants
+    const reconstructedVariants: VariantGroup[] = [];
+    const validVariants = product.variants || [];
+
+    const uniqueColors = Array.from(new Set(validVariants.map(v => v.color).filter(Boolean))) as string[];
+    const uniqueSizes = Array.from(new Set(validVariants.map(v => v.size).filter(Boolean))) as string[];
+
+    if (uniqueColors.length > 0) reconstructedVariants.push({ name: 'Color', options: uniqueColors });
+    if (uniqueSizes.length > 0) reconstructedVariants.push({ name: 'Size', options: uniqueSizes });
+
+    // Reconstruct matches
+    const reconstructedInventory: VariantCombination[] = validVariants.map(v => ({
+      options: {
+        ...(v.color ? { Color: v.color } : {}),
+        ...(v.size ? { Size: v.size } : {})
+      },
+      stock: v.stock,
+      price: v.price,
+      sku: v.sku,
+      image: v.image
+    }));
+
     setFormData({
       name: product.name,
       sku: product.sku || '',
@@ -113,31 +136,11 @@ export const AdminProducts: React.FC = () => {
       stock: (product.countInStock ?? product.stock ?? 0).toString(),
       image: product.image,
       images: product.images || [],
-      variants: (product.variants as any[]) || [],
-      inventory: product.inventory || [],
+      variants: reconstructedVariants,
+      inventory: reconstructedInventory,
       defaultColor: product.defaultColor || ''
     });
     setIsModalOpen(true);
-
-    // Fetch full details to ensure variants/inventory are complete
-    try {
-      const { data } = await fetchProductById(product.id);
-      const fullProduct = data.data?.product || data; // Handle different response structures
-
-      if (fullProduct) {
-        console.log('Fetched Full Product Details:', fullProduct);
-        setFormData(prev => ({
-          ...prev,
-          variants: fullProduct.variants || [],
-          inventory: fullProduct.inventory || [],
-          images: fullProduct.images || prev.images,
-          defaultColor: fullProduct.defaultColor || prev.defaultColor,
-          stock: (fullProduct.countInStock ?? fullProduct.stock ?? prev.stock).toString()
-        }));
-      }
-    } catch (error) {
-      console.error("Failed to fetch full details:", error);
-    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'main' | 'gallery' | 'variant' = 'main') => {
@@ -419,12 +422,19 @@ export const AdminProducts: React.FC = () => {
       return;
     }
 
-    const cleanedVariants = formData.variants
-      .map(v => ({
-        name: v.name.trim(),
-        options: v.options.map(opt => opt.trim()).filter(opt => opt !== '')
-      }))
-      .filter(v => v.name !== '' && v.options.length > 0);
+    // Map Inventory (UI State) -> Strict ProductVariant[]
+    // "ULTRA-LOCK": Only strictly defined variants are sent.
+    const strictVariants = formData.inventory.map((item, idx) => ({
+      id: `v-${Date.now()}-${idx}`, // Temp ID, backend handles persistence
+      productId: editingProduct?.id || '',
+      color: item.options['Color'] || item.options['color'],
+      size: item.options['Size'] || item.options['size'],
+      price: item.price ?? numericPrice,
+      stock: item.stock,
+      image: item.image,
+      sku: item.sku,
+      name: `${formData.name} - ${Object.values(item.options).join('/')}`
+    }));
 
     const productPayload = {
       sku: formData.sku || `FZK-${Math.floor(Math.random() * 10000)}`,
@@ -434,19 +444,22 @@ export const AdminProducts: React.FC = () => {
       price: numericPrice,
       originalPrice: parseFloat(formData.originalPrice) || numericPrice,
       category: formData.category,
-      countInStock: currentTotalStock, // Use countInStock to match backend
+      countInStock: currentTotalStock,
       image: formData.image || `https://picsum.photos/seed/${formData.name.length}/600/600`,
       images: formData.images.length > 0 ? formData.images : [],
       rating: editingProduct ? editingProduct.rating : 5,
       reviewsCount: editingProduct ? editingProduct.reviewsCount : 0,
       isFeatured: editingProduct ? editingProduct.isFeatured : false,
-      variants: cleanedVariants.length > 0 ? (cleanedVariants as any) : undefined,
-      inventory: cleanedVariants.length > 0 ? formData.inventory : undefined,
+
+      // STRICT VARIANT MAPPING
+      variants: strictVariants.length > 0 ? strictVariants : undefined,
+
+      // No 'inventory' field sent to backend
       defaultColor: formData.defaultColor
     };
 
     console.log('Submitting Product Payload:', productPayload);
-    console.log('Cleaned Variants:', cleanedVariants);
+    console.log('Strict Variants:', strictVariants);
     console.log('Form Inventory:', formData.inventory);
 
     try {

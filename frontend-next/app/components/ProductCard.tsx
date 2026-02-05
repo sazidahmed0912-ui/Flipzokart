@@ -32,7 +32,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation if clicked on button
-    addToCart(product);
+    addToCart({ ...product, productId: product.id, quantity: 1, productName: product.name } as any);
     addToast('success', '✅ Product added to bag!');
   };
 

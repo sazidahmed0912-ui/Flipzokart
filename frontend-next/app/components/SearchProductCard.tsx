@@ -24,7 +24,7 @@ export const SearchProductCard: React.FC<SearchProductCardProps> = ({ product })
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        addToCart(product);
+        addToCart({ ...product, productId: product.id, quantity: 1, productName: product.name } as any);
         addToast('success', 'Added to Cart');
     };
 

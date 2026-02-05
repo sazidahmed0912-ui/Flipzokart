@@ -31,8 +31,7 @@ export interface Product {
   stock: number;
   countInStock: number; // Added to match backend response
   isFeatured?: boolean;
-  variants?: (VariantGroup | ProductVariant)[];
-  inventory?: VariantCombination[];
+  variants?: ProductVariant[]; // ONLY SOURCE OF TRUTH
   seller?: string;
   deliveryDate?: string;
   selectedVariants?: Record<string, string>;

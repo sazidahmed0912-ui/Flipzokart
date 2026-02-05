@@ -10,10 +10,10 @@ interface AppContextType {
   user: User | null;
   setUser: (user: User | null) => void;
   cart: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (cartItemId: string) => void;
-  removeProductFromCart: (productId: string) => void;
-  updateCartQuantity: (cartItemId: string, quantity: number) => void;
+  addToCart: (item: CartItem, quantity?: number) => void;
+  removeFromCart: (key: string) => void;
+  removeProductFromCart: (key: string) => void;
+  updateCartQuantity: (key: string, qty: number) => void;
   clearCart: () => void;
   wishlist: string[];
   toggleWishlist: (productId: string) => void;
@@ -234,57 +234,54 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [selectedAddress, isInitialized]);
 
-  const addToCart = (product: Product, quantity: number = 1) => {
-    const selectedVariants = product.selectedVariants;
-    // @ts-ignore - variantId check
-    const variantId = product.variantId;
-    const itemKey = getCartItemKey(product.id, selectedVariants, variantId);
+  const addToCart = (item: CartItem, quantity: number = 1) => {
+    // Generate key based on snapshot data
+    const itemKey = getCartItemKey(item.productId, item.selectedVariants, item.variantId);
 
+    setCart((prev) => {
+      const existingIndex = prev.findIndex(
+        (p) => getCartItemKey(p.productId, p.selectedVariants, p.variantId) === itemKey
+      );
 
-    setCart((prev: CartItem[]) => {
-      // Sanitization: Ensure consistent structure but PROTECT variant snapshots
-      const images = product.images && product.images.length > 0 ? product.images : (product.image ? [product.image] : []);
-      const thumbnail = images[0] || product.thumbnail || product.image || '/placeholder.png';
-
-      const sanitizedProduct = {
-        ...product,
-        images,
-        thumbnail,
-        // If variantId exists, trust the passed 'image' (Variant Image). Otherwise fallback to main thumbnail.
-        image: ('variantId' in product && product.variantId) ? product.image : thumbnail
-      };
-
-      const existingIndex = prev.findIndex((item: CartItem) => getCartItemKey(item.id, item.selectedVariants, item.variantId) === itemKey);
-
+      // If already exists → increase qty
       if (existingIndex > -1) {
-        const nextCart = [...prev];
-        nextCart[existingIndex] = {
-          ...nextCart[existingIndex],
-          quantity: nextCart[existingIndex].quantity + quantity
+        const next = [...prev];
+        next[existingIndex] = {
+          ...next[existingIndex],
+          quantity: next[existingIndex].quantity + quantity
         };
-        return nextCart;
+        return next;
       }
 
-      return [...prev, { ...sanitizedProduct, quantity, selectedVariants } as CartItem];
+      // 🔒 IMPORTANT: store EXACT snapshot (no mutation)
+      // Ensure we treat the incoming item AS the snapshot (CartItem)
+      const snapshot: CartItem = {
+        ...item,
+        quantity
+      };
+
+      return [...prev, snapshot];
     });
+
+    // Toast handled in UI components to return void here as per interface
   };
 
-  const removeFromCart = (cartItemKey: string) => {
-    setCart((prev: CartItem[]) => prev.filter((item: CartItem) => getCartItemKey(item.id, item.selectedVariants, item.variantId) !== cartItemKey));
+  const removeFromCart = (key: string) => {
+    setCart((prev: CartItem[]) => prev.filter((item: CartItem) => getCartItemKey(item.productId, item.selectedVariants, item.variantId) !== key));
   };
 
-  const removeProductFromCart = (productId: string) => {
-    setCart((prev: CartItem[]) => prev.filter((item: CartItem) => item.id !== productId));
+  const removeProductFromCart = (key: string) => {
+    setCart((prev: CartItem[]) => prev.filter((item: CartItem) => item.productId !== key));
   };
 
-  const updateCartQuantity = (cartItemKey: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(cartItemKey);
+  const updateCartQuantity = (key: string, qty: number) => {
+    if (qty <= 0) {
+      removeFromCart(key);
       return;
     }
     setCart((prev: CartItem[]) => prev.map((item: CartItem) =>
-      getCartItemKey(item.id, item.selectedVariants, item.variantId) === cartItemKey
-        ? { ...item, quantity }
+      getCartItemKey(item.productId, item.selectedVariants, item.variantId) === key
+        ? { ...item, quantity: qty }
         : item
     ));
   };

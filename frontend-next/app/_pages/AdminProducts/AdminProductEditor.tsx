@@ -128,14 +128,50 @@ export const AdminProductEditor: React.FC = () => {
                 isFeatured: data.isFeatured || false
             });
 
-            // Load Advanced Fields (Priority: Top Level -> Metadata -> Default)
-            setGallery((data.images && data.images.filter((img: string) => img !== (data.thumbnail || data.image))) || meta.gallery || []);
-            setSpecifications(data.specifications || meta.specifications || '');
-            setVariantGroups(data.variants || meta.variants || []);
-            setMatrix(data.inventory || meta.matrix || []); // key is 'inventory' in DB, 'matrix' in UI state
+            // Load Advanced Fields
+            // Priority: Metadata (Rich Editor State) -> Strict Variants (Reconstructed) -> Legacy
+            let loadedGroups = meta.variants || [];
+            let loadedMatrix = meta.matrix || [];
+
+            // If no metadata but we have strict variants (Migration/Interoperability)
+            if (loadedGroups.length === 0 && data.variants && data.variants.length > 0) {
+                const pVariants = data.variants as any[]; // Strict ProductVariant[]
+                const uniqueColors = Array.from(new Set(pVariants.map(v => v.color).filter(Boolean))) as string[];
+                const uniqueSizes = Array.from(new Set(pVariants.map(v => v.size).filter(Boolean))) as string[];
+
+                // Reconstruct Strings -> Option Objects
+                const colorOptions: VariantOption[] = uniqueColors.map((c, i) => ({ id: `opt-c-${i}`, name: c, color: '#000000' }));
+                const sizeOptions: VariantOption[] = uniqueSizes.map((s, i) => ({ id: `opt-s-${i}`, name: s }));
+
+                if (colorOptions.length) loadedGroups.push({ id: 'grp-c', name: 'Color', options: colorOptions });
+                if (sizeOptions.length) loadedGroups.push({ id: 'grp-s', name: 'Size', options: sizeOptions });
+
+                // Reconstruct Matrix
+                loadedMatrix = pVariants.map((v, idx) => {
+                    // Find matching option IDs
+                    const cOpt = colorOptions.find(o => o.name === v.color);
+                    const sOpt = sizeOptions.find(o => o.name === v.size);
+                    const vIds = [cOpt?.id, sOpt?.id].filter(Boolean) as string[];
+                    const comboName = [v.color, v.size].filter(Boolean).join(' / ');
+
+                    return {
+                        id: v.id || `mat-${idx}`,
+                        combination: comboName,
+                        sku: v.sku || '',
+                        stock: v.stock || 0,
+                        price: v.price || v.originalPrice || 0,
+                        isDefault: false,
+                        image: v.image || '',
+                        variantIds: vIds
+                    };
+                });
+            }
+
+            setVariantGroups(loadedGroups);
+            setMatrix(loadedMatrix);
             setSkuBase(data.sku || meta.sku || 'FZK');
 
-            if (meta.section) {
+            if (Object.keys(meta).length > 0 && meta.section) {
                 setSectionTitle(meta.section.title || '');
                 setSectionColor(meta.section.color || '#111827');
                 setSectionSize(meta.section.size || 'text-xl');
@@ -315,15 +351,31 @@ export const AdminProductEditor: React.FC = () => {
             const allImages = mainImage ? [mainImage, ...validGallery] : validGallery;
 
 
-            // 2. Prepare Simple Variants for Backend (Strict Schema Compliance: options: [String])
-            const simpleVariants = variantGroups.map(g => ({
-                name: g.name,
-                options: g.options.map(o => o.name) // Send only names
-            }));
+            // 2. Prepare STRICT ProductVariant[] for Backend
+            // We map the UI Matrix logic to the flattened strict structure
+            const strictVariants: any[] = matrix.map((row, idx) => {
+                // Resolve options from IDs to Names
+                const cOption = variantGroups.find(g => g.name.toLowerCase() === 'color')?.options.find(o => row.variantIds.includes(o.id));
+                const sOption = variantGroups.find(g => g.name.toLowerCase() === 'size')?.options.find(o => row.variantIds.includes(o.id));
 
-            // 3. Prepare Rich Metadata (To persist Colors/Images/Hex)
+                return {
+                    id: row.id,
+                    color: cOption?.name || undefined,
+                    size: sOption?.name || undefined,
+                    price: row.price,
+                    stock: row.stock,
+                    sku: row.sku,
+                    image: row.image,
+                    productId: id || '',
+                    name: `${formData.name} - ${row.combination}`
+                };
+            });
+
+            // 3. Prepare Rich Metadata (To persist Colors/Images/Hex/UI Groups)
             const richData = {
-                sku: skuBase, specifications, variants: variantGroups, matrix,
+                sku: skuBase, specifications,
+                variants: variantGroups, // Preserves Ids, Hex Codes
+                matrix, // Preserves Matrix Rows references
                 section: { title: sectionTitle, color: sectionColor, size: sectionSize }
             };
 
@@ -332,13 +384,13 @@ export const AdminProductEditor: React.FC = () => {
                 price: finalPrice,
                 originalPrice: finalOriginalPrice,
                 countInStock: totalStock,
-                images: allImages, // SAVE ARRAY
-                thumbnail: mainImage, // SAVE THUMBNAIL
-                variants: simpleVariants, // COMPLIANT
-                inventory: matrix,
+                images: allImages,
+                thumbnail: mainImage,
+                variants: strictVariants, // STRICT TYPES SOURCE OF TRUTH
+                // inventory: undefined,  // REMOVED legacy field
                 specifications: specifications,
                 sku: skuBase,
-                description: formData.description + `\n<!-- METADATA:${JSON.stringify(richData)}-->` // PERSIST RICH DATA
+                description: formData.description + `\n<!-- METADATA:${JSON.stringify(richData)}-->`
             };
 
             if (isEditMode) await updateProduct(id, payload);

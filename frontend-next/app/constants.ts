@@ -20,8 +20,8 @@ export const MOCK_PRODUCTS: Product[] = [
     countInStock: 15,
     isFeatured: true,
     variants: [
-      { name: 'Storage', options: ['128GB', '256GB', '512GB', '1TB'] },
-      { name: 'Color', options: ['Natural Titanium', 'Blue Titanium', 'White Titanium', 'Black Titanium'] }
+      { id: 'v1', productId: '65f6170d4f3b7d1e8c7c9f1a', color: 'Natural Titanium', size: '256GB', price: 159900, stock: 5 },
+      { id: 'v2', productId: '65f6170d4f3b7d1e8c7c9f1a', color: 'Blue Titanium', size: '512GB', price: 179900, stock: 3 }
     ],
     images: ['https://picsum.photos/seed/iphone/600/600'],
     thumbnail: 'https://picsum.photos/seed/iphone/600/600'
@@ -39,9 +39,7 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 25,
     countInStock: 25,
     isFeatured: true,
-    variants: [
-      { name: 'Color', options: ['Black', 'Silver', 'Midnight Blue'] }
-    ],
+    // variants: Removed legacy, use strict ProductVariant[] if needed
     images: ['https://picsum.photos/seed/headphones/600/600'],
     thumbnail: 'https://picsum.photos/seed/headphones/600/600'
   },
@@ -57,10 +55,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewsCount: 430,
     stock: 40,
     countInStock: 40,
-    variants: [
-      { name: 'Size', options: ['UK 7', 'UK 8', 'UK 9', 'UK 10', 'UK 11'] },
-      { name: 'Color', options: ['Triple Black', 'White/Blue', 'Red/White'] }
-    ],
+    // variants: Removed legacy, use strict ProductVariant[] if needed
     images: ['https://picsum.photos/seed/nike/600/600'],
     thumbnail: 'https://picsum.photos/seed/nike/600/600'
   },
@@ -77,10 +72,7 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 10,
     countInStock: 10,
     isFeatured: true,
-    variants: [
-      { name: 'RAM', options: ['8GB', '16GB', '24GB'] },
-      { name: 'Storage', options: ['256GB', '512GB', '1TB'] }
-    ],
+    // variants: Removed legacy, use strict ProductVariant[] if needed
     images: ['https://picsum.photos/seed/macbook/600/600'],
     thumbnail: 'https://picsum.photos/seed/macbook/600/600'
   },
