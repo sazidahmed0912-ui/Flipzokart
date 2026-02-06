@@ -318,3 +318,92 @@
     display: none;
   }
 }
+
+/* MAX ULTRA LOCK - STRICT MOBILE DENSITY (640px) */
+@media (max-width: 640px) {
+
+  /* Payment Cards */
+  .payment-options-section {
+    gap: 12px !important;
+    margin-top: 0 !important;
+  }
+
+  .payment-option-card {
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+    gap: 12px !important;
+  }
+
+  .icon-wrapper {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+  }
+
+  .icon-wrapper svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .option-content h3 {
+    font-size: 15px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .option-description {
+    font-size: 12px !important;
+    margin-top: 0 !important;
+  }
+
+  /* Order Summary */
+  .order-summary-card {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .order-summary-card h3 {
+    font-size: 16px !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .price-item {
+    margin-bottom: 8px !important;
+    font-size: 14px !important;
+  }
+
+  .price-total {
+    margin-top: 12px !important;
+    padding-top: 12px !important;
+    font-size: 16px !important;
+  }
+
+  /* Sticky Footer */
+  .sticky-mobile-footer {
+    padding: 8px 16px !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .mobile-total-info span:first-child {
+    font-size: 11px !important;
+  }
+
+  .mobile-total-info span:last-child {
+    font-size: 17px !important;
+  }
+
+  .mobile-pay-btn {
+    padding: 10px 24px !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .payment-main {
+    margin: 16px auto !important;
+    gap: 20px !important;
+  }
+}
