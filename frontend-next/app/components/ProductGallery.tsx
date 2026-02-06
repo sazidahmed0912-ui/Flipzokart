@@ -169,6 +169,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                         alt={`Product View ${idx + 1}`}
                                         fill
                                         priority={idx === 0}
+                                        draggable={false} // Prevent browser native drag
                                         className={`object-contain p-2 md:p-4 transition-transform duration-200 ease-out`}
                                         style={{
                                             transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
@@ -197,29 +198,35 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                         </SwiperSlide>
                     ))}
                 </Swiper>
-            </div>
 
-            {/* Custom Dot Indicator */}
-            {allImages.length > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-2 z-10 relative">
-                    {allImages.map((_, index) => {
-                        const isActive = index === activeIndex;
-                        return (
-                            <button
-                                key={index}
-                                onClick={() => handleDotClick(index)}
-                                className={`rounded-full transition-all duration-300 ease-out focus:outline-none
-                                    ${isActive
-                                        ? 'w-3 h-3 bg-orange-500 scale-110 shadow-sm'
-                                        : 'w-2 h-2 bg-gray-400 hover:bg-gray-500'
-                                    }
-                                `}
-                                aria-label={`View image ${index + 1}`}
-                            />
-                        );
-                    })}
-                </div>
-            )}
+                {/* Custom Dot Indicator (Overlay) */}
+                {
+                    allImages.length > 1 && (
+                        <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2 z-10 pointer-events-none">
+                            {allImages.map((_, index) => {
+                                const isActive = index === activeIndex;
+                                return (
+                                    <button
+                                        key={index}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation(); // Ensure button click doesn't trigger other things
+                                            handleDotClick(index);
+                                        }}
+                                        className={`rounded-full transition-all duration-300 ease-out focus:outline-none pointer-events-auto
+                                        ${isActive
+                                                ? 'w-2.5 h-2.5 bg-orange-500 scale-110 shadow-sm'
+                                                : 'w-2 h-2 bg-gray-300/80 hover:bg-white backdrop-blur-sm'
+                                            }
+                                    `}
+                                        aria-label={`View image ${index + 1}`}
+                                    />
+                                );
+                            })}
+                        </div>
+                    )
+                }
+            </div>
 
             {/* Thumbnails (Desktop) */}
             {allImages.length > 1 && (
@@ -234,7 +241,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                     : 'border-gray-100 opacity-70 hover:opacity-100 hover:border-gray-300'
                                 }`}
                         >
-                            <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" unoptimized={true} />
+                            <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" unoptimized={true} draggable={false} />
                         </button>
                     ))}
                 </div>
