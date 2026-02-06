@@ -1,232 +1,144 @@
-import React from 'react';
-import { numberToWords } from '@/app/utils/numberToWords';
+import React, { forwardRef } from 'react';
 
-interface InvoiceProps {
+interface InvoiceTemplateProps {
     order: any;
-    ref?: React.Ref<HTMLDivElement>;
 }
 
-export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order }, ref) => {
+export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ order }, ref) => {
     if (!order) return null;
 
-    // Use normalized address if available, else fallback
-    const address = order.address || order.shippingAddress || {};
-
-    // Use normalized items
-    const items = order.items || [];
-
-    // Calculations: Prefer Stored Values
-    console.log("INVOICE - Order Summary:", order.orderSummary);
-
-    const s = order.orderSummary || {};
-
-    // Use nullish coalescing (??) to allow 0 but fallback if undefined
-    const itemsPrice = s.itemsPrice ?? order.itemsPrice ?? (order.subtotal || 0);
-    const taxAmount = s.tax ?? order.tax ?? 0;
-    const shipping = s.deliveryCharges ?? order.deliveryCharges ?? (order.shippingFee || 0);
-    const platformFee = s.platformFee ?? order.platformFee ?? 0;
-    const discount = s.discount ?? order.discount ?? 0;
-
-    // Fallback calculation: Grand Total = itemsPrice + tax + deliveryCharges - discount + platformFee
-    const calculatedTotal = itemsPrice + taxAmount + shipping - discount + platformFee;
-
-    // Use finalAmount from summary, or top-level, or calculated fallback. Prevent silent 0.
-    const grandTotal = s.finalAmount ?? order.finalAmount ?? order.total ?? calculatedTotal;
-
-    // Alias subtotal to itemsPrice for display
-    const subtotal = itemsPrice;
-
-    const amountInWords = numberToWords(Math.round(grandTotal));
-
-    const formatDate = (dateString: string) => {
-        if (!dateString) return new Date().toLocaleDateString('en-IN');
-        return new Date(dateString).toLocaleDateString('en-IN', {
-            year: 'numeric', month: 'short', day: 'numeric'
-        });
-    };
-
-    const renderAddress = () => {
-        if (!address) return null;
-        // Normalized address has 'fullName', 'street', 'city', etc.
-        // But legacy might have 'name', 'address'.
-        // Helper 'getSafeAddress' aligns to 'fullName', 'street' etc.
-        // Let's support both.
-        return (
-            <>
-                <p className="font-bold text-gray-900 text-base">{address.fullName || address.name || order.userName || 'Customer'}</p>
-                <div>{address.street || address.address}</div>
-                {(address.addressLine2 || address.locality) && <div>{address.addressLine2 || address.locality}</div>}
-                <div>
-                    {address.city}{address.city && address.state ? ', ' : ''}{address.state}
-                    {(address.zip || address.pincode || address.zipCode) ? ` - ${address.zip || address.pincode || address.zipCode}` : ''}
-                </div>
-                {address.phone && <div className="mt-1">Phone: {address.phone}</div>}
-            </>
-        );
-    };
-
     return (
-        <div ref={ref} className="max-w-[210mm] mx-auto p-12 bg-white text-[#1F2937] font-sans h-full relative" id="invoice-component">
+        <div ref={ref} className="bg-white p-8 max-w-[800px] mx-auto min-h-[1000px] text-gray-800 font-sans">
             {/* Header */}
-            <div className="flex justify-between items-start border-b border-gray-300 pb-6 mb-8">
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 bg-[#f97316] rounded-md flex items-center justify-center text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
-                        </div>
-                        <span className="text-3xl font-bold text-[#f97316]">Fzokart</span>
-                    </div>
-
-                    <div>
-                        <h2 className="font-bold text-lg text-gray-900">Fzokart Pvt. Ltd.</h2>
-                        <p className="text-sm text-gray-600">Registered Office: Morigaon, Assam, India</p>
-                        <p className="text-sm text-gray-600">GSTIN: <span className="text-gray-900">18ABCDE1234F1Z5</span></p>
-                        <p className="text-sm text-gray-600 mt-2">Customer Care: <span className="text-gray-900 font-medium">fzokart@gmail.com</span></p>
-                        <p className="text-sm text-gray-600">Phone: <span className="text-gray-900 font-medium">6033394539</span></p>
+            <div className="flex justify-between items-start mb-8 border-b-2 border-gray-100 pb-6">
+                <div className="flex flex-col">
+                    <h1 className="text-4xl font-bold text-[#2874F0] mb-2 uppercase tracking-wide">Tax Invoice</h1>
+                    <div className="text-sm text-gray-500">
+                        <p>Invoice No: <span className="font-semibold text-gray-800">{order.id || 'N/A'}</span></p>
+                        <p>Date: <span className="font-semibold text-gray-800">{new Date(order.createdAt).toLocaleDateString()}</span></p>
+                        <p>Order ID: <span className="font-semibold text-gray-800">{order.orderId || order._id}</span></p>
                     </div>
                 </div>
                 <div className="text-right">
-                    <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-wide">TAX INVOICE</h1>
+                    <div className="text-2xl font-bold text-gray-800 mb-1">Flipzokart</div>
+                    <p className="text-xs text-gray-500 max-w-[200px] leading-relaxed">
+                        Flipzokart Retails Pvt Ltd.<br />
+                        Building 4, Tech Park,<br />
+                        Bengaluru, Karnataka - 560103<br />
+                        GSTIN: 29ABCDE1234F1Z5
+                    </p>
                 </div>
             </div>
 
-            {/* Invoice & Billing Details */}
-            <div className="grid grid-cols-2 gap-12 mb-8">
-                <div className="space-y-3">
-                    <div className="flex">
-                        <span className="w-32 font-bold text-gray-800 text-sm">Invoice No:</span>
-                        <span className="text-sm font-medium text-gray-900">INV-{(order.orderNumber || order.id || order._id || 'UNKNOWN').slice(-6).toUpperCase()}</span>
-                    </div>
-                    <div className="flex">
-                        <span className="w-32 font-bold text-gray-800 text-sm">Order Date:</span>
-                        <span className="text-sm font-medium text-gray-900">{formatDate(order.createdAt)}</span>
-                    </div>
-                    <div className="flex">
-                        <span className="w-32 font-bold text-gray-800 text-sm">Invoice Date:</span>
-                        <span className="text-sm font-medium text-gray-900">{new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                    </div>
-                    <div className="flex">
-                        <span className="w-32 font-bold text-gray-800 text-sm">Payment Method:</span>
-                        <span className="text-sm font-medium text-gray-900 uppercase">{order.paymentMethod || order.payment?.method || 'Prepaid'}</span>
+            {/* Addresses */}
+            <div className="grid grid-cols-2 gap-8 mb-8">
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Billing Address</h3>
+                    <p className="font-bold text-gray-800 text-lg mb-1">{order.address?.name || order.userName}</p>
+                    <div className="text-sm text-gray-600 space-y-1">
+                        <p>{order.address?.street}</p>
+                        <p>{order.address?.city}, {order.address?.state} - {order.address?.postalCode}</p>
+                        <p>Phone: {order.address?.phone || 'N/A'}</p>
+                        <p>Email: {order.email || order.user?.email || 'N/A'}</p>
                     </div>
                 </div>
-
-                <div className="space-y-1">
-                    <h3 className="font-bold text-gray-900 text-sm border-b border-gray-200 pb-1 mb-2">Billing Address</h3>
-                    {renderAddress()}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Shipping Address</h3>
+                    <p className="font-bold text-gray-800 text-lg mb-1">{order.address?.name || order.userName}</p>
+                    <div className="text-sm text-gray-600 space-y-1">
+                        <p>{order.address?.street}</p>
+                        <p>{order.address?.city}, {order.address?.state} - {order.address?.postalCode}</p>
+                        <p>Phone: {order.address?.phone || 'N/A'}</p>
+                    </div>
                 </div>
             </div>
 
             {/* Items Table */}
-            <div className="mb-0">
-                <table className="w-full border-collapse">
-                    <thead>
-                        <tr className="bg-[#F5F1E8]">
-                            <th className="border-y border-gray-300 py-2.5 px-4 text-center text-sm font-bold text-gray-800 w-16">S.No</th>
-                            <th className="border-y border-gray-300 py-2.5 px-4 text-left text-sm font-bold text-gray-800">Item Description</th>
-                            <th className="border-y border-gray-300 py-2.5 px-4 text-center text-sm font-bold text-gray-800 w-24">Qty</th>
-                            <th className="border-y border-gray-300 py-2.5 px-4 text-right text-sm font-bold text-gray-800 w-32">Unit Price</th>
-                            <th className="border-y border-gray-300 py-2.5 px-4 text-right text-sm font-bold text-gray-800 w-32">Total</th>
+            <div className="mb-8">
+                <table className="w-full mb-4 border-collapse">
+                    <thead className="bg-[#F0F5FF]">
+                        <tr>
+                            <th className="py-3 px-4 text-left text-xs font-bold text-gray-600 uppercase w-12">#</th>
+                            <th className="py-3 px-4 text-left text-xs font-bold text-gray-600 uppercase">Product Description</th>
+                            <th className="py-3 px-4 text-right text-xs font-bold text-gray-600 uppercase w-24">HSN</th>
+                            <th className="py-3 px-4 text-right text-xs font-bold text-gray-600 uppercase w-20">Qty</th>
+                            <th className="py-3 px-4 text-right text-xs font-bold text-gray-600 uppercase w-32">Rate</th>
+                            <th className="py-3 px-4 text-right text-xs font-bold text-gray-600 uppercase w-32">Total</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {items.map((item: any, i: number) => (
-                            <tr key={i} className="border-b border-gray-200">
-                                <td className="py-3 px-4 text-center text-sm text-gray-700">{i + 1}</td>
-                                <td className="py-3 px-4 text-left text-sm text-gray-700 font-medium">
-                                    {item.productName || item.name || item.product?.title || 'Product'}
-                                    {/* VARIANT DETAILS */}
-                                    {(item.color || item.size) && (
-                                        <div className="text-xs text-gray-500 mt-1 font-normal">
-                                            {item.color && <span>Color: {item.color} </span>}
-                                            {item.size && <span>Size: {item.size}</span>}
-                                        </div>
-                                    )}
+                    <tbody className="divide-y divide-gray-200 border-b border-gray-200">
+                        {order.items.map((item: any, index: number) => (
+                            <tr key={index}>
+                                <td className="py-3 px-4 text-sm text-gray-500 text-center">{index + 1}</td>
+                                <td className="py-3 px-4">
+                                    <p className="text-sm font-semibold text-gray-800">{item.name}</p>
+                                    <p className="text-xs text-gray-400">Variant: {item.color || 'Standard'} {item.size ? `| ${item.size}` : ''}</p>
                                 </td>
-                                <td className="py-3 px-4 text-center text-sm text-gray-700">{item.quantity}</td>
-                                <td className="py-3 px-4 text-right text-sm text-gray-700">₹{(item.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                <td className="py-3 px-4 text-right text-sm font-bold text-gray-800">₹{((item.price || 0) * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                <td className="py-3 px-4 text-right text-sm text-gray-500">8517</td>
+                                <td className="py-3 px-4 text-right text-sm text-gray-800 font-medium">{item.quantity}</td>
+                                <td className="py-3 px-4 text-right text-sm text-gray-800">₹{item.price?.toLocaleString()}</td>
+                                <td className="py-3 px-4 text-right text-sm font-bold text-gray-800">₹{(item.quantity * item.price).toLocaleString()}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
 
-            {/* Calculations */}
-            <div className="flex justify-end mt-4">
-                <div className="w-1/2 space-y-2">
-                    <div className="flex justify-between py-1 border-b border-gray-100">
-                        <span className="text-sm font-medium text-gray-600">Subtotal:</span>
-                        <span className="text-sm font-bold text-gray-900">₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            {/* Total Summary */}
+            <div className="flex justify-end mb-12">
+                <div className="w-72 bg-gray-50 rounded-lg p-6 border border-gray-100">
+                    <div className="flex justify-between mb-2 text-sm text-gray-600">
+                        <span>Subtotal:</span>
+                        <span>₹{order.totals?.subtotal?.toLocaleString() || 0}</span>
                     </div>
-                    {taxAmount > 0 && (
-                        <div className="flex justify-between py-1 border-b border-gray-100">
-                            <span className="text-sm font-medium text-gray-600">GST / Tax:</span>
-                            <span className="text-sm font-bold text-gray-900">
-                                ₹{taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </span>
+                    <div className="flex justify-between mb-2 text-sm text-gray-600">
+                        <span>Shipping Charges:</span>
+                        <span>₹{order.totals?.shipping?.toLocaleString() || 0}</span>
+                    </div>
+                    <div className="flex justify-between mb-2 text-sm text-gray-600">
+                        <span>Tax (GST 18%):</span>
+                        <span>₹{order.totals?.tax?.toLocaleString() || 0}</span>
+                    </div>
+                    {/* Discount */}
+                    {order.totals?.discount > 0 && (
+                        <div className="flex justify-between mb-2 text-sm text-green-600">
+                            <span>Discount:</span>
+                            <span>-₹{order.totals?.discount?.toLocaleString()}</span>
                         </div>
                     )}
-                    {platformFee > 0 && (
-                        <div className="flex justify-between py-1 border-b border-gray-100">
-                            <span className="text-sm font-medium text-gray-600">Platform Fee:</span>
-                            <span className="text-sm font-bold text-gray-900">
-                                ₹{platformFee.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </span>
-                        </div>
-                    )}
-                    <div className="flex justify-between py-1 border-b border-gray-100">
-                        <span className="text-sm font-medium text-gray-600">Shipping Charges:</span>
-                        <span className="text-sm font-bold text-gray-900">
-                            {shipping === 0 ? 'Free' : `₹${shipping.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
-                        </span>
+                    <div className="border-t-2 border-dashed border-gray-200 my-3 pt-3 flex justify-between items-center">
+                        <span className="text-base font-bold text-gray-900">Grand Total:</span>
+                        <span className="text-xl font-bold text-[#2874F0]">₹{order.totals?.total?.toLocaleString() || 0}</span>
                     </div>
-                    <div className="flex justify-between py-2 px-4 bg-[#FCECD8] mt-2 rounded-[2px] items-center">
-                        <span className="text-sm font-bold text-gray-800">Grand Total:</span>
-                        <span className="text-lg font-bold text-gray-900">₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </div>
-                    <div className="text-right px-4">
-                        <span className="text-sm font-medium text-gray-600">Amount in Words:</span>
-                        <span className="block text-sm font-bold text-gray-800 italic capitalize">{amountInWords} Only</span>
-                    </div>
+                    <p className="text-xs text-gray-400 text-right italic">(Inclusive of all taxes)</p>
                 </div>
             </div>
 
-            <div className="mt-12 border-t border-gray-300 pt-6 text-center space-y-4">
-                <p className="font-bold text-gray-800 text-base text-center w-full">Thank you for shopping with us!</p>
-                <p className="text-xs text-gray-400 italic mt-8">* This is a computer-generated invoice and does not require a signature.</p>
+            {/* Footer */}
+            <div className="border-t border-gray-200 pt-8 mt-auto">
+                <div className="flex justify-between items-end">
+                    <div className="text-xs text-gray-400">
+                        <p className="font-semibold text-gray-600 mb-1">Terms & Conditions:</p>
+                        <ul className="list-disc pl-4 space-y-1">
+                            <li>Goods once sold will not be taken back.</li>
+                            <li>Subject to Bengaluru jurisdiction only.</li>
+                            <li>Interest @ 18% p.a. will be charged if payment is not made within the due date.</li>
+                        </ul>
+                    </div>
+                    <div className="text-center">
+                        <div className="h-16 mb-2">
+                            {/* Placeholder for Signature Image */}
+                            <div className="w-32 h-12 border-b border-gray-300"></div>
+                        </div>
+                        <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">Authorized Signatory</p>
+                    </div>
+                </div>
+                <div className="text-center mt-8 text-[10px] text-gray-400 uppercase tracking-widest">
+                    This is a computer generated invoice.
+                </div>
             </div>
-
-            <div className="absolute bottom-4 left-0 w-full text-center text-[10px] text-gray-300">Generated by Fzokart System</div>
-
-            <style>
-                {`
-                    @media print {
-                        body * {
-                            visibility: hidden;
-                        }
-                        #invoice-component, #invoice-component * {
-                            visibility: visible;
-                        }
-                        #invoice-component {
-                            position: fixed;
-                            left: 0;
-                            top: 0;
-                            width: 100%;
-                            height: 100%;
-                            z-index: 9999;
-                            background: white;
-                            margin: 0;
-                            padding: 20px;
-                        }
-                        /* Ensure background colors print */
-                        * {
-                            -webkit-print-color-adjust: exact !important;
-                            print-color-adjust: exact !important;
-                        }
-                    }
-                `}
-            </style>
         </div>
     );
 });
+
+InvoiceTemplate.displayName = 'InvoiceTemplate';
