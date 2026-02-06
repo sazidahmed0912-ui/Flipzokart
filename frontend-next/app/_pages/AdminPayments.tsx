@@ -1,32 +1,15 @@
 "use client";
-import React, { useState } from 'react';
-import { AdminSidebar } from '@/app/components/AdminSidebar';
-import { SmoothReveal } from '@/app/components/SmoothReveal';
-import {
-    Search, Bell, User, LogOut, ChevronDown,
-    IndianRupee, ArrowDownLeft, ArrowUpRight,
-    Filter, Download, MoreHorizontal, CheckCircle,
-    Clock, XCircle
-} from 'lucide-react';
-import { useApp } from '@/app/store/Context';
-
-// Mock Data for Payments
-const mockTransactions = [
-    { id: 'TRX-9871', orderId: 'ORD-1024', customer: 'Rahul Sharma', amount: 2499, date: '2024-03-10', status: 'Success', method: 'UPI' },
-    { id: 'TRX-9872', orderId: 'ORD-1025', customer: 'Priya Patel', amount: 850, date: '2024-03-10', status: 'Pending', method: 'Card' },
-    { id: 'TRX-9873', orderId: 'ORD-1026', customer: 'Amit Singh', amount: 12999, date: '2024-03-09', status: 'Success', method: 'NetBanking' },
 import React, { useState, useEffect } from 'react';
 import { AdminSidebar } from '@/app/components/AdminSidebar';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import {
-    Search, Bell, User, LogOut, ChevronDown,
-    IndianRupee, ArrowDownLeft, ArrowUpRight,
+    Search, Bell, LogOut, ChevronDown,
+    ArrowDownLeft, ArrowUpRight,
     Filter, Download, MoreHorizontal, CheckCircle,
     Clock, XCircle
 } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
-import { useSocket } from '@/app/store/SocketContext';
-
+import { useSocket } from '@/app/hooks/useSocket'; // Correct Import Path
 
 export const AdminPayments: React.FC = () => {
     const { user, logout } = useApp();
@@ -48,13 +31,13 @@ export const AdminPayments: React.FC = () => {
 
                 const formatted = orders.map((order: any) => ({
                     id: order.razorpayPaymentId || `TRX-${order._id.slice(-6)}`,
-                    orderId: order._id, // Keeping full ID for link, display can slice
+                    orderId: order._id,
                     rawDate: new Date(order.createdAt),
                     date: new Date(order.createdAt).toLocaleDateString(),
                     customer: order.userName || 'Unknown',
                     amount: order.total,
                     status: order.paymentStatus === 'PAID' ? 'Success' :
-                        order.paymentStatus === 'FAILED' ? 'Failed' : 'Pending', // Default
+                        order.paymentStatus === 'FAILED' ? 'Failed' : 'Pending',
                     method: order.paymentMethod
                 }));
                 setTransactions(formatted);
@@ -75,9 +58,8 @@ export const AdminPayments: React.FC = () => {
             console.log("💰 New Payment Received:", data);
             setTransactions(prev => [{
                 ...data,
-                rawDate: new Date(), // For sorting
+                rawDate: new Date(),
                 date: new Date().toLocaleDateString(),
-                // Ensure status consistency
                 status: data.status === 'PAID' ? 'Success' : data.status
             }, ...prev]);
         };
@@ -93,7 +75,7 @@ export const AdminPayments: React.FC = () => {
     const stats = {
         revenue: transactions.filter(t => t.status === 'Success').reduce((acc, t) => acc + t.amount, 0),
         pendingCount: transactions.filter(t => t.status === 'Pending').length,
-        refunds: 0 // Logic to be added if refund status exists
+        refunds: transactions.filter(t => t.status === 'Failed' || t.status === 'Refunded').reduce((acc, t) => acc + t.amount, 0)
     };
 
     const getStatusColor = (status: string) => {
@@ -107,8 +89,8 @@ export const AdminPayments: React.FC = () => {
     };
 
     const filteredTransactions = transactions.filter(t =>
-        t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.customer.toLowerCase().includes(searchTerm.toLowerCase())
+        t.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.customer?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -247,7 +229,7 @@ export const AdminPayments: React.FC = () => {
                                             <tr><td colSpan={7} className="text-center py-10 text-gray-400">No transactions found</td></tr>
                                         ) : (
                                             filteredTransactions.map((trx, index) => (
-                                                <tr key={trx.id} className="hover:bg-gray-50/50 transition-colors">
+                                                <tr key={trx.id || index} className="hover:bg-gray-50/50 transition-colors">
                                                     <td className="px-6 py-4">
                                                         <div className="flex flex-col">
                                                             <span className="font-semibold text-gray-800 text-sm">{trx.id}</span>
