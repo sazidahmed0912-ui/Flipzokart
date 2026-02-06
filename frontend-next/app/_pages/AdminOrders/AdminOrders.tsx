@@ -14,6 +14,12 @@ import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import { fetchAllOrders, deleteOrder, updateOrderStatus, updateOrderLocation } from '@/app/services/adminService';
 import { useApp } from '@/app/store/Context';
 import { resolveProductImage } from '@/app/utils/imageHelper';
+import dynamic from 'next/dynamic';
+
+const LocationPickerMap = dynamic(() => import('@/app/components/LocationPickerMap'), {
+    ssr: false,
+    loading: () => <div className="h-64 w-full bg-gray-100 animate-pulse rounded-xl flex items-center justify-center text-gray-400 text-xs">Loading Interactive Map...</div>
+});
 
 interface Order {
     id: string;
@@ -550,6 +556,16 @@ export const AdminOrders: React.FC = () => {
                                 >
                                     <Search size={14} /> Fetch Coords
                                 </button>
+                            </div>
+
+                            {/* Interactive Map */}
+                            <div className="mb-4">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Fine-tune Location (Drag Marker)</label>
+                                <LocationPickerMap
+                                    lat={locationData.lat}
+                                    lng={locationData.lng}
+                                    onLocationSelect={(lat, lng) => setLocationData({ ...locationData, lat, lng })}
+                                />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
