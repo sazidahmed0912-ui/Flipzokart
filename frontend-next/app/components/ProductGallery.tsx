@@ -213,10 +213,10 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                     ))}
                 </Swiper>
 
-                {/* Custom Dot Indicator (Overlay) */}
+                {/* Custom Dot Indicator (Below Image) */}
                 {
                     allImages.length > 1 && (
-                        <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2 z-10 pointer-events-none">
+                        <div className="flex justify-center items-center gap-2 mt-4 pb-2">
                             {allImages.map((_, index) => {
                                 const isActive = index === activeIndex;
                                 return (
@@ -227,7 +227,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                             e.stopPropagation();
                                             handleDotClick(index);
                                         }}
-                                        className={`rounded-full transition-all duration-300 ease-out focus:outline-none pointer-events-auto
+                                        className={`rounded-full transition-all duration-300 ease-out focus:outline-none cursor-pointer
                                         ${isActive
                                                 ? 'w-2 h-2 bg-[#2874F0] shadow-sm scale-110'
                                                 : 'w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400'

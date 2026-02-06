@@ -198,15 +198,32 @@ export const ProductDetails: React.FC = () => {
   // ================================================
   // Passed to gallery. strict.
   // "Use activeVariant?.image || /placeholder.png"
+  // "Use activeVariant?.image || /placeholder.png"
   const galleryImages = useMemo(() => {
+    // Priority 1: Full Product Gallery (if multiple images exist)
+    // This ensures swipe/dots work even if a variant is active
+    if (product?.images?.length) {
+      const imgs = product.images.map(getProductImageUrl);
+
+      // Optional: If activeVariant has a specific image NOT in gallery, prepend it? 
+      // For now, adhere to Master Gallery as Source of Truth for "Swipeable" experience.
+      if (activeVariant?.image) {
+        // If you want to ensure the variant image is the FIRST one shown, logic should handle "scrollTo"
+        // But for data source, we return the full list.
+        const variantImg = getProductImageUrl(activeVariant.image);
+        if (!imgs.includes(variantImg)) {
+          return [variantImg, ...imgs];
+        }
+      }
+      return imgs;
+    }
+
+    // Priority 2: Fallback to single variant image if no gallery
     if (activeVariant?.image) {
       return [getProductImageUrl(activeVariant.image)];
     }
 
-    if (product?.images?.length) {
-      return product.images.map(getProductImageUrl);
-    }
-
+    // Priority 3: Main Product Image
     if (product?.image) {
       return [getProductImageUrl(product.image)];
     }
