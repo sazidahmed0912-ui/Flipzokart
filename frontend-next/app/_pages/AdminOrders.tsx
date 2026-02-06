@@ -350,7 +350,7 @@ export const AdminOrders: React.FC = () => {
                               style={{ top: dropdownPosition.top - window.scrollY, left: dropdownPosition.left - window.scrollX }}
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {(['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'] as Order['status'][]).map(s => (
+                              {(['Pending', 'Processing', 'Ready to Ship', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'] as Order['status'][]).map(s => (
                                 <button
                                   key={s}
                                   onClick={() => handleStatusUpdate(order.id, s)}

@@ -640,7 +640,7 @@ const updateOrderStatus = async (req, res) => {
     console.log(`Updating order ${id} to status: ${status}`);
 
     // Validate status - must match Order model enum
-    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
+    const validStatuses = ['Pending', 'Processing', 'Ready to Ship', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
     if (!validStatuses.includes(status)) {
       console.warn(`Invalid status attempt: ${status}`);
       return res.status(400).json({ message: 'Invalid status value' });
