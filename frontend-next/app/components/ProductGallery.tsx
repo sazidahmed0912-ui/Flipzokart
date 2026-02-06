@@ -149,6 +149,8 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                         setIsZoomed(false);
                     }}
                     allowTouchMove={!isZoomed}
+                    touchStartPreventDefault={false}
+                    simulateTouch={true}
                 >
                     {allImages.map((img, idx) => (
                         <SwiperSlide key={idx}>
@@ -157,7 +159,9 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                     ${isZoomed ? 'cursor-zoom-out touch-none' : 'cursor-zoom-in touch-pan-y'}
                                 `}
                                 onTouchStart={handleTouchStart}
-                                onTouchMove={handleTouchMove}
+                                onTouchMove={(e) => {
+                                    if (isZoomed) handleTouchMove(e);
+                                }}
                                 onMouseMove={handleMouseMove}
                                 onMouseLeave={handleMouseLeave}
                             >
