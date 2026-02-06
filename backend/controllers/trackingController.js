@@ -110,9 +110,16 @@ const getTrackingInfo = async (req, res) => {
                 trackingId: order._id,
                 status: order.status,
                 events: statusToEvents(order.status, order.createdAt, order.updatedAt),
-                shippingTo: shippingAddress.name,
                 shippingFrom: 'Flipzokart Warehouse'
-            }
+            },
+
+            // Real-Time Fields (Critical for Map)
+            currentLocation: order.currentLocation,
+            statusHistory: order.statusHistory || [],
+
+            // Real-Time Fields (Critical for Map)
+            currentLocation: order.currentLocation,
+            statusHistory: order.statusHistory || []
         });
 
     } catch (error) {

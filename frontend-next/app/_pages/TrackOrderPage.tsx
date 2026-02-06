@@ -68,15 +68,20 @@ export const TrackOrderPage: React.FC = () => {
             // Try Tracking API first
             const { data } = await API.get(`/api/tracking/${trackingId}`);
             processOrderData(data);
-        } catch (trackingError) {
-            console.warn("Tracking API failed, falling back to Order API...", trackingError);
+            if (isPolling) console.log("Tracking poll success");
+        } catch (trackingError: any) {
+            // Silence 404s during polling to avoid console spam
+            if (!isPolling) console.warn("Tracking API failed, falling back to Order API...", trackingError);
+
             try {
                 // Fallback to Order API
                 const { data } = await API.get(`/api/order/${trackingId}`);
                 processOrderData(data);
             } catch (orderError) {
-                console.error("Both Tracking and Order APIs failed:", orderError);
-                if (!order) setError('Order not found or access denied.');
+                if (!isPolling) {
+                    console.error("Both Tracking and Order APIs failed:", orderError);
+                    if (!order) setError('Order not found or access denied.');
+                }
             }
         } finally {
             if (!isPolling) setLoading(false);
