@@ -334,15 +334,15 @@
 
   /* Compact Cart Item Card */
   .cart-item-card {
-    padding: 16px;
-    margin-bottom: 8px;
+    padding: 12px;
+    margin-bottom: 4px;
     background: white;
     border-bottom: none;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
   .cart-item-content {
-    gap: 16px;
+    gap: 12px;
     align-items: flex-start;
   }
 
@@ -355,7 +355,7 @@
 
   .item-title {
     font-size: 14px;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     /* Clamp to 2 lines */
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -369,11 +369,11 @@
   .item-seller {
     font-size: 11px;
     /* Smaller metadata */
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
 
   .item-rating {
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     transform: scale(0.9);
     transform-origin: left;
   }
@@ -381,7 +381,7 @@
   .item-price-block {
     flex-wrap: wrap;
     gap: 6px;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
 
   .current-price {
@@ -395,7 +395,7 @@
 
   /* Actions & Quantity */
   .item-actions-row {
-    margin-top: 12px;
+    margin-top: 8px;
     justify-content: space-between;
     gap: 12px;
   }
@@ -456,6 +456,35 @@
     /* Padding bottom on container handles spacing */
   }
 
+  /* Compact Price Details for Mobile */
+  .price-header {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .price-breakdown {
+    padding: 0 16px;
+  }
+
+  .price-row {
+    margin: 10px 0;
+    font-size: 14px;
+  }
+
+  .total-row {
+    padding: 12px 0;
+  }
+
+  .savings-message {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .security-badge {
+    margin-bottom: 10px;
+    padding: 0 16px;
+  }
+
   .desktop-only {
     display: none;
   }
@@ -469,7 +498,7 @@
     left: 0;
     right: 0;
     background: white;
-    padding: 12px 16px;
+    padding: 8px 16px;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     z-index: 900;
     /* Below BottomNav (z-999) but above content */
