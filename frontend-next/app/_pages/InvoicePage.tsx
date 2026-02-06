@@ -63,12 +63,14 @@ const MobileInvoiceLayout = ({ order }: { order: any }) => {
                     <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">Billing Address</h3>
                     {/* Name: Bold & Block */}
                     <p className="font-bold text-gray-800 text-sm">
-                        {order.billingName || order.userName || order.address?.name || 'Guest'}
+                        {order.billingName}
                     </p>
                     {/* Email: Normal & Break-all */}
-                    <p className="text-xs text-gray-600 break-all mb-1">
-                        {order.billingEmail || order.email || order.user?.email || 'N/A'}
-                    </p>
+                    {(order.billingEmail && order.billingEmail !== 'N/A') && (
+                        <p className="text-xs text-gray-600 break-all mb-1">
+                            {order.billingEmail}
+                        </p>
+                    )}
 
                     {/* Address: Multi-line & Break-words */}
                     <div className="text-xs text-gray-600 mt-1 space-y-0.5">
@@ -88,11 +90,36 @@ const MobileInvoiceLayout = ({ order }: { order: any }) => {
                 <h3 className="text-xs font-bold text-gray-400 uppercase border-b pb-1">Items</h3>
                 {order.items.map((item: any, idx: number) => (
                     <div key={idx} className="flex flex-col gap-2 border-b border-gray-50 pb-3 last:border-0">
-                        <div className="flex flex-col">
-                            <span className="font-semibold text-gray-900 leading-tight">{item.name}</span>
-                            <span className="text-[10px] text-gray-400 mt-0.5">HSN: 8517 • 18% GST</span>
+                        <div className="flex gap-3">
+                            {/* Product Image */}
+                            <div className="w-16 h-16 shrink-0 bg-gray-100 rounded border border-gray-200 overflow-hidden">
+                                {item.image ? (
+                                    <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">No Img</div>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col flex-1">
+                                <span className="font-semibold text-gray-900 leading-tight text-xs">{item.name}</span>
+                                {/* Product Attributes (Size & Color) - Mobile Optimized */}
+                                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-500">
+                                    {(item.size) && (
+                                        <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-700 font-medium">
+                                            Size: {item.size}
+                                        </span>
+                                    )}
+                                    {(item.color) && (
+                                        <span className="flex items-center gap-1">
+                                            Color: {item.color}
+                                        </span>
+                                    )}
+                                </div>
+                                <span className="text-[10px] text-gray-400 mt-1">HSN: 8517 • 18% GST</span>
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center text-sm">
+
+                        <div className="flex justify-between items-center text-sm pl-1">
                             <span className="text-gray-600">{item.quantity} x ₹{item.price?.toLocaleString()}</span>
                             <span className="font-bold">₹{(item.quantity * item.price).toLocaleString()}</span>
                         </div>
@@ -120,6 +147,24 @@ const MobileInvoiceLayout = ({ order }: { order: any }) => {
                 </div>
                 <div className="text-[10px] text-gray-400 mt-1 italic text-center">
                     Inclusive of all taxes
+                </div>
+            </div>
+
+            {/* Terms & Signatory */}
+            <div className="border-t border-gray-100 pt-4 mt-4">
+                <div className="flex justify-between items-end gap-4">
+                    <div className="text-[10px] text-gray-500 flex-1">
+                        <p className="font-bold text-gray-600 mb-1">Terms & Conditions:</p>
+                        <ul className="list-disc pl-3 space-y-0.5 leading-tight">
+                            <li>Goods once sold will not be taken back.</li>
+                            <li>Subject to Bengaluru jurisdiction only.</li>
+                            <li>Interest @ 18% p.a. will be charged.</li>
+                        </ul>
+                    </div>
+                    <div className="text-center w-32 shrink-0">
+                        <div className="h-8 mb-1 w-full border-b border-gray-400"></div>
+                        <p className="text-[9px] font-bold text-gray-800 uppercase whitespace-nowrap">Authorized Signatory</p>
+                    </div>
                 </div>
             </div>
 

@@ -20,11 +20,11 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                     </div>
                 </div>
                 <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-800 mb-1">Flipzokart</div>
+                    <div className="text-2xl font-bold text-gray-800 mb-1">Fzokart</div>
                     <p className="text-xs text-gray-500 max-w-[200px] leading-relaxed">
-                        Flipzokart Retails Pvt Ltd.<br />
-                        Building 4, Tech Park,<br />
-                        Bengaluru, Karnataka - 560103<br />
+                        Fzokart Retails Pvt Ltd.<br />
+                        Barthal Doloigaon, Moirabari<br />
+                        Morigaon, Assam - 782126<br />
                         GSTIN: 29ABCDE1234F1Z5
                     </p>
                 </div>
@@ -37,13 +37,15 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
 
                     {/* Name */}
                     <p className="font-bold text-gray-800 text-lg mb-1">
-                        {order.billingName || order.userName || order.address?.name || 'Guest'}
+                        {order.billingName}
                     </p>
 
                     {/* Email */}
-                    <p className="text-sm text-gray-600 mb-2 break-all">
-                        {order.billingEmail || order.email || order.user?.email || 'N/A'}
-                    </p>
+                    {(order.billingEmail && order.billingEmail !== 'N/A') && (
+                        <p className="text-sm text-gray-600 mb-2 break-all">
+                            {order.billingEmail}
+                        </p>
+                    )}
 
                     {/* Address */}
                     <div className="text-sm text-gray-600 space-y-1">
@@ -69,6 +71,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                     <thead className="bg-[#F0F5FF]">
                         <tr>
                             <th className="py-3 px-4 text-left text-xs font-bold text-gray-600 uppercase w-12">#</th>
+                            <th className="py-3 px-4 text-left text-xs font-bold text-gray-600 uppercase w-20">Image</th>
                             <th className="py-3 px-4 text-left text-xs font-bold text-gray-600 uppercase">Product Description</th>
                             <th className="py-3 px-4 text-right text-xs font-bold text-gray-600 uppercase w-24">HSN</th>
                             <th className="py-3 px-4 text-right text-xs font-bold text-gray-600 uppercase w-20">Qty</th>
@@ -80,6 +83,15 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                         {order.items.map((item: any, index: number) => (
                             <tr key={index}>
                                 <td className="py-3 px-4 text-sm text-gray-500 text-center">{index + 1}</td>
+                                <td className="py-3 px-4">
+                                    <div className="w-12 h-12 bg-gray-50 border border-gray-100 rounded overflow-hidden">
+                                        {item.image ? (
+                                            <img src={item.image} alt="" className="w-full h-full object-contain" />
+                                        ) : (
+                                            <span className="block w-full h-full bg-gray-100"></span>
+                                        )}
+                                    </div>
+                                </td>
                                 <td className="py-3 px-4">
                                     <p className="text-sm font-semibold text-gray-800">{item.name}</p>
                                     <p className="text-xs text-gray-400">Variant: {item.color || 'Standard'} {item.size ? `| ${item.size}` : ''}</p>
