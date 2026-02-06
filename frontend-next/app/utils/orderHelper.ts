@@ -49,6 +49,26 @@ export const normalizeOrder = (order: any) => {
         grandTotal = order.total !== undefined ? order.total : (order.totalAmount || order.totalPrice || order.grandTotal || 0);
     }
 
+    // 4. Strict Billing Data Resolution (Max Ultra Lock)
+    // Name Priority: Billing Address -> Shipping Address -> Customer -> User
+    const billingName =
+        address?.fullName ||
+        order.billingAddress?.fullName ||
+        order.billingAddress?.name ||
+        order.shippingAddress?.fullName ||
+        order.shippingAddress?.name ||
+        order.customer?.name ||
+        order.user?.name ||
+        'Guest'; // Only fallback if completely empty
+
+    // Email Priority: Billing Address -> Customer -> User -> Order Root
+    const billingEmail =
+        order.billingAddress?.email ||
+        order.customer?.email ||
+        order.user?.email ||
+        order.email ||
+        'N/A';
+
     return {
         ...order,
         id: order._id || order.id,
@@ -65,6 +85,8 @@ export const normalizeOrder = (order: any) => {
             grandTotal,
             total: grandTotal // Alias
         },
+        billingName,  // Normalized strict name
+        billingEmail, // Normalized strict email
         payment: {
             method: order.paymentMethod || order.paymentInfo?.method || 'N/A',
             status: order.paymentStatus || order.paymentInfo?.status || 'Pending',
