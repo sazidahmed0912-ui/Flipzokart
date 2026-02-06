@@ -229,8 +229,8 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                         }}
                                         className={`rounded-full transition-all duration-300 ease-out focus:outline-none pointer-events-auto
                                         ${isActive
-                                                ? 'w-2.5 h-2.5 bg-orange-500 scale-110 shadow-sm'
-                                                : 'w-2 h-2 bg-gray-300/80 hover:bg-white backdrop-blur-sm'
+                                                ? 'w-2 h-2 bg-[#2874F0] shadow-sm scale-110'
+                                                : 'w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400'
                                             }
                                     `}
                                         aria-label={`View image ${index + 1}`}
