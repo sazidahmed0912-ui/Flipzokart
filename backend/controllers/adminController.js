@@ -358,8 +358,13 @@ const updateOrderStatus = async (req, res) => {
         message: `Your order #${order._id.toString().slice(-6)} is now ${status}`
       };
 
-      // Emit to specific Order Room
+      // Emit to specific Order Room (Mongo ID)
       io.to(`order_${order._id}`).emit('ORDER_LIVE_UPDATE', payload);
+
+      // Emit to Order ID alias (e.g. ORD12345)
+      if (order.orderId) {
+        io.to(`order_${order.orderId}`).emit('ORDER_LIVE_UPDATE', payload);
+      }
 
       // Also support legacy user room for notifications list if needed
       io.to(order.user.toString()).emit('notification', { type: 'orderStatusUpdate', ...payload });
@@ -409,8 +414,19 @@ const updateOrderLocation = async (req, res) => {
         updatedAt: new Date()
       };
 
+      // Emit to specific Order Room (Mongo ID)
       io.to(`order_${order._id}`).emit('ORDER_LIVE_UPDATE', payload);
-      io.to('admin-monitor').emit('ORDER_LIVE_UPDATE', payload);
+
+      // Emit to Order ID alias (e.g. ORD12345) to ensure frontend receives it regardless of connection method
+      if (order.orderId) {
+        io.to(`order_${order.orderId}`).emit('ORDER_LIVE_UPDATE', payload);
+      }
+
+      // Also support legacy user room for notifications list if needed
+      io.to(order.user.toString()).emit('notification', { type: 'orderStatusUpdate', ...payload });
+
+      // Admin Monitor
+      io.to('admin-monitor').emit('ORDER_LIVE_UPDATE', { ...payload, updatedBy: 'Admin' });
     }
 
     res.json({ success: true, data: updatedOrder });

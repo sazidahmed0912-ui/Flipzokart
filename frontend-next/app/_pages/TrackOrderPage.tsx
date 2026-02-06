@@ -138,7 +138,8 @@ export const TrackOrderPage: React.FC = () => {
     useEffect(() => {
         if (!socket) return;
         // Ensure we have a tracking ID to join the room
-        const roomTargetId = trackingId || (order && (order.orderId || order._id));
+        // Ensure we have a tracking ID to join the room. Prefer Mongo ID if order is loaded.
+        const roomTargetId = (order && order._id) || trackingId || (order && order.orderId);
         if (!roomTargetId) return;
 
         console.log("🔌 Joining Order Room:", roomTargetId);
