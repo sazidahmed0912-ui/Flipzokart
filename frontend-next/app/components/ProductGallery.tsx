@@ -159,9 +159,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                     ${isZoomed ? 'cursor-zoom-out touch-none' : 'cursor-zoom-in touch-pan-y'}
                                 `}
                                 onTouchStart={handleTouchStart}
-                                onTouchMove={(e) => {
-                                    if (isZoomed) handleTouchMove(e);
-                                }}
+                                onTouchMove={isZoomed ? handleTouchMove : undefined}
                                 onMouseMove={handleMouseMove}
                                 onMouseLeave={handleMouseLeave}
                             >
@@ -203,7 +201,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
 
             {/* Custom Dot Indicator */}
             {allImages.length > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-1">
+                <div className="flex justify-center items-center gap-2 mt-2 z-10 relative">
                     {allImages.map((_, index) => {
                         const isActive = index === activeIndex;
                         return (
@@ -212,8 +210,8 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                 onClick={() => handleDotClick(index)}
                                 className={`rounded-full transition-all duration-300 ease-out focus:outline-none
                                     ${isActive
-                                        ? 'w-3 h-3 bg-orange-500 scale-110'
-                                        : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'
+                                        ? 'w-3 h-3 bg-orange-500 scale-110 shadow-sm'
+                                        : 'w-2 h-2 bg-gray-400 hover:bg-gray-500'
                                     }
                                 `}
                                 aria-label={`View image ${index + 1}`}
