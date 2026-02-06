@@ -428,7 +428,7 @@ body {
 
     .address-section {
         box-shadow: none;
-        padding: 0.5rem 0;
+        padding: 1rem 0;
         /* Reduced padding for address section */
         border-radius: 0;
         flex: initial;
@@ -450,20 +450,34 @@ body {
         padding: 0 1rem;
         /* Add horizontal padding to address list */
         gap: 0.75rem;
-        /* Reduce gap between address cards */
+        /* Compact gap between address cards */
     }
 
     .address-card {
-        padding: 0.75rem;
-        /* Reduced padding for address cards */
+        padding: 12px;
+        /* Ultra compact padding */
         flex-direction: column;
-        /* Stack radio and details */
         align-items: flex-start;
         gap: 0.5rem;
     }
 
+    /* Mobile Text Density Overrides */
+    .address-card-details p {
+        margin: 0 0 0.5rem 0;
+        line-height: 1.35;
+        font-size: 0.9rem;
+    }
+
+    .address-card-details h3 {
+        font-size: 0.95rem;
+    }
+
+    .address-card-header {
+        margin-bottom: 0.25rem;
+    }
+
     .address-card.selected {
-        padding: calc(0.75rem - 1px);
+        padding: calc(1rem - 1px);
         /* Adjust padding for thicker border */
     }
 
@@ -482,8 +496,8 @@ body {
         gap: 0.5rem;
         /* Reduce gap between action buttons */
         justify-content: flex-start;
-        margin-top: 0.75rem;
-        /* Adjust top margin */
+        margin-top: 0.5rem;
+        /* Compact top margin */
     }
 
     .address-btn {
@@ -492,16 +506,17 @@ body {
         min-width: unset;
         /* Remove min-width to allow shrinking */
         width: auto;
-        padding: 8px 12px;
-        /* Adjust padding for smaller buttons */
+        padding: 6px 10px;
+        /* Compact button padding */
         font-size: 12px;
+        height: 30px;
     }
 
     .add-new-address-card {
         margin: 0.75rem 1rem 0 1rem;
-        /* Adjust margins */
         padding: 0.75rem;
-        /* Reduced padding */
+        /* Ultra compact padding */
+        border-width: 1px;
     }
 
     .add-address-btn {
@@ -558,6 +573,7 @@ body {
         /* Center the button */
         align-items: center;
         padding: 0.5rem 1rem;
+        border-top: 1px solid #e0e0e0;
     }
 
     .place-order-sticky-mobile .place-order-btn {
