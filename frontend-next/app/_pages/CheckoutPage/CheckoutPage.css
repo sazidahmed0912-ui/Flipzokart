@@ -605,11 +605,15 @@ body {
     .address-card-details h3 {
         margin-bottom: 0 !important;
         line-height: normal !important;
+        font-size: 0.9rem !important;
+        /* Scale down 5% */
     }
 
     .address-card-details p {
-        margin-bottom: 6px !important;
-        line-height: 1.3 !important;
+        margin-bottom: 4px !important;
+        line-height: 1.25 !important;
+        font-size: 0.85rem !important;
+        /* Scale down */
     }
 
     .address-card-actions {
@@ -618,11 +622,13 @@ body {
     }
 
     .address-btn {
-        height: 28px !important;
-        padding: 0 10px !important;
+        height: 26px !important;
+        /* Micro reduction */
+        padding: 0 8px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        font-size: 11px !important;
     }
 
     .add-new-address-card {
