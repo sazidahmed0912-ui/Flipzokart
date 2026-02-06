@@ -483,6 +483,16 @@ export const AdminOrders: React.FC = () => {
                                             navigator.geolocation.getCurrentPosition(
                                                 async (position) => {
                                                     const { latitude, longitude, accuracy } = position.coords;
+
+                                                    // 0. Accuracy Warning for Desktop/IP Geolocation
+                                                    if (accuracy > 5000) {
+                                                        const proceed = window.confirm(`⚠️ Weak GPS Signal!\n\nAccuracy is very low (~${Math.round(accuracy / 1000)}km off). This usually happens on desktops without real GPS.\n\nType your address (e.g., "782126") and use 'Fetch Coords' instead?\n\nClick Cancel to keep these approximate coordinates.`);
+                                                        if (proceed) {
+                                                            if (btn) btn.innerText = "Use Search Instead";
+                                                            return;
+                                                        }
+                                                    }
+
                                                     // 1. Set Coords
                                                     setLocationData(prev => ({
                                                         ...prev,
