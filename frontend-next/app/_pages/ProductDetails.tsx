@@ -196,11 +196,29 @@ export const ProductDetails: React.FC = () => {
   const getColorClass = (colorName: string) => {
     // Basic color mapping
     const map: Record<string, string> = {
-      'Blue': 'bg-blue-500', 'Red': 'bg-red-500', 'Green': 'bg-green-500',
-      'Black': 'bg-gray-900', 'White': 'bg-white', 'Yellow': 'bg-yellow-400',
-      'Orange': 'bg-orange-500', 'Purple': 'bg-purple-500', 'Pink': 'bg-pink-500', 'Gray': 'bg-gray-500',
+      'Blue': 'bg-blue-500',
+      'Red': 'bg-red-500',
+      'Green': 'bg-green-500',
+      'Black': 'bg-gray-900',
+      'White': 'bg-white',
+      'Yellow': 'bg-yellow-400',
+      'Orange': 'bg-orange-500',
+      'Purple': 'bg-purple-500',
+      'Pink': 'bg-pink-500',
+      'Gray': 'bg-gray-500',
+      // Extended Colors
+      'Royal Blue': 'bg-blue-700',
+      'Navy': 'bg-blue-900',
+      'Gold': 'bg-yellow-500',
+      'Maroon': 'bg-red-900',
+      'Teal': 'bg-teal-500',
+      'Cyan': 'bg-cyan-500',
+      'Magenta': 'bg-fuchsia-500',
+      'Olive': 'bg-lime-700',
+      'Beige': 'bg-[#f5f5dc]',
+      'Brown': 'bg-amber-800',
     };
-    return map[colorName] || 'bg-gray-200';
+    return map[colorName];
   };
 
 
@@ -330,15 +348,21 @@ export const ProductDetails: React.FC = () => {
                   Color: <span className="text-blue-600">{selectedColor}</span>
                 </h3>
                 <div className="flex gap-2 sm:gap-3 flex-wrap">
-                  {uniqueColors.map(c => (
-                    <button
-                      key={c}
-                      onClick={() => handleColor(c)}
-                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 ${selectedColor === c ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'} ${getColorClass(c)}`}
-                      title={c}
-                      style={colorMap[c] ? { backgroundColor: colorMap[c] } : undefined}
-                    />
-                  ))}
+                  {uniqueColors.map(c => {
+                    const tailwindClass = getColorClass(c);
+                    // Fallback: try to construct a valid CSS color name (e.g. "Royal Blue" -> "royalblue")
+                    const cssFallback = !tailwindClass ? c.replace(/\s+/g, '').toLowerCase() : undefined;
+
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => handleColor(c)}
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 ${selectedColor === c ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'} ${tailwindClass || ''}`}
+                        title={c}
+                        style={{ backgroundColor: tailwindClass ? undefined : (colorMap[c] || cssFallback || '#ccc') }}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             )}
