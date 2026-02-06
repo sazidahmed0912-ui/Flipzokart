@@ -74,6 +74,12 @@ io.on("connection", (socket) => {
     socket.join('admin-monitor');
   });
 
+  // ✅ Ultra Lock Protocol: User Join Order Room
+  socket.on('JOIN_ORDER_ROOM', (orderId) => {
+    console.log(`🔌 User ${socket.user.email} joined order room: order_${orderId}`);
+    socket.join(`order_${orderId}`);
+  });
+
   socket.on("disconnect", () => {
     // console.log("❌ Socket disconnected:", socket.user.email);
     userSocketMap.delete(socket.user.id);

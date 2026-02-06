@@ -349,20 +349,23 @@ const updateOrderStatus = async (req, res) => {
     // Socket.IO
     const io = req.app.get('socketio');
     if (io) {
-      // Emit to User Room
-      // Protocol: ORDER_STATUS_UPDATED
+      // Protocol: ORDER_LIVE_UPDATE (Unified)
       const payload = {
         orderId: order._id,
         status: status,
-        location: order.currentLocation, // Send latest location too
-        time: new Date(),
+        location: order.currentLocation,
+        updatedAt: new Date(),
         message: `Your order #${order._id.toString().slice(-6)} is now ${status}`
       };
 
-      io.to(order.user.toString()).emit('ORDER_STATUS_UPDATED', payload);
+      // Emit to specific Order Room
+      io.to(`order_${order._id}`).emit('ORDER_LIVE_UPDATE', payload);
+
+      // Also support legacy user room for notifications list if needed
+      io.to(order.user.toString()).emit('notification', { type: 'orderStatusUpdate', ...payload });
 
       // Admin Monitor
-      io.to('admin-monitor').emit('ORDER_STATUS_UPDATED', { ...payload, updatedBy: 'Admin' });
+      io.to('admin-monitor').emit('ORDER_LIVE_UPDATE', { ...payload, updatedBy: 'Admin' });
     }
 
     res.json({ success: true, data: updatedOrder });
@@ -398,16 +401,16 @@ const updateOrderLocation = async (req, res) => {
     // Socket.IO
     const io = req.app.get('socketio');
     if (io) {
-      // Protocol: ORDER_LOCATION_UPDATED
+      // Protocol: ORDER_LIVE_UPDATE (Unified)
       const payload = {
         orderId: order._id,
         status: order.status,
         location: locationData,
-        time: new Date()
+        updatedAt: new Date()
       };
 
-      io.to(order.user.toString()).emit('ORDER_LOCATION_UPDATED', payload);
-      io.to('admin-monitor').emit('ORDER_LOCATION_UPDATED', payload);
+      io.to(`order_${order._id}`).emit('ORDER_LIVE_UPDATE', payload);
+      io.to('admin-monitor').emit('ORDER_LIVE_UPDATE', payload);
     }
 
     res.json({ success: true, data: updatedOrder });
