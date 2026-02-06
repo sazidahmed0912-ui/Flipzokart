@@ -18,6 +18,7 @@ import { SmoothReveal } from '@/app/components/SmoothReveal';
 import API from '@/app/services/api';
 import ProfileSidebar from '@/app/components/Profile/ProfileSidebar';
 import { resolveProductImage } from '@/app/utils/imageHelper';
+import { useSocket } from '@/app/hooks/useSocket';
 
 const OrdersPage: React.FC = () => {
     const router = useRouter();
@@ -26,18 +27,19 @@ const OrdersPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const socket = useSocket(token);
 
     // Fetch orders
     useEffect(() => {
         const fetchOrders = async () => {
+            // ... existing fetch logic
             try {
                 setLoading(true);
-                // Assuming API endpoint
                 const { data } = await API.get('/api/order/my-orders');
                 setOrders(data.orders || []);
             } catch (error) {
                 console.error("Failed to fetch orders", error);
-                // Fallback or empty state
             } finally {
                 setLoading(false);
             }
@@ -47,6 +49,30 @@ const OrdersPage: React.FC = () => {
             fetchOrders();
         }
     }, [user]);
+
+    // Real-Time Socket Updates
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleUpdate = (data: any) => {
+            if (data.type === 'orderStatusUpdate' && data.orderId) {
+                // Optimistically update the specific order in the list
+                setOrders(prevOrders =>
+                    prevOrders.map(order =>
+                        (order._id === data.orderId || order.id === data.orderId)
+                            ? { ...order, status: data.status, updatedAt: new Date().toISOString() }
+                            : order
+                    )
+                );
+            }
+        };
+
+        socket.on('notification', handleUpdate);
+
+        return () => {
+            socket.off('notification', handleUpdate);
+        };
+    }, [socket]);
 
     const filteredOrders = orders.filter(order => {
         const matchesTab = activeTab === 'All' || order.status === activeTab || (activeTab === 'In Progress' && ['Pending', 'Shipped', 'Out for Delivery'].includes(order.status));

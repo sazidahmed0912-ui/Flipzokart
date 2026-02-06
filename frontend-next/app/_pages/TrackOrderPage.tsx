@@ -132,11 +132,28 @@ export const TrackOrderPage: React.FC = () => {
 
         const handleUpdate = (data: any) => {
             console.log("Socket Update Received:", data);
-            // Optimally, check if data.orderId matches trackingId
-            if (data.type === 'orderStatusUpdate') {
-                fetchTrackingInfo(true);
-                // Optional: Toast limited to once per meaningful update?
-                // addToast('info', 'Order update received'); 
+
+            // Check if update implies this order
+            const isRelevant = data.orderId && (data.orderId === trackingId || (order && (order.orderId === data.orderId || order._id === data.orderId)));
+
+            if (isRelevant) {
+                if (data.type === 'orderStatusUpdate') {
+                    // Optimistic update
+                    setOrder((prev: any) => ({
+                        ...prev,
+                        status: data.status,
+                        // If we had history in UI, we'd update it too
+                    }));
+
+                    fetchTrackingInfo(true);
+                    addToast('info', `Order status updated to ${data.status}`);
+                }
+
+                if (data.type === 'orderLocationUpdate') {
+                    // If we show live location here later, update it
+                    // Currently only 'Arriving By' might change if backend recalc happens, so fetch is good
+                    fetchTrackingInfo(true);
+                }
             }
         };
 
@@ -145,7 +162,7 @@ export const TrackOrderPage: React.FC = () => {
         return () => {
             socket.off('notification', handleUpdate);
         };
-    }, [socket, fetchTrackingInfo]);
+    }, [socket, fetchTrackingInfo, trackingId, order, addToast]);
 
     if (loading) return <div className="min-h-screen bg-gray-100 flex items-center justify-center">Loading...</div>;
     if (error || !order) return <div className="min-h-screen bg-gray-100 flex items-center justify-center text-red-500">{error || 'Order not found'}</div>;
