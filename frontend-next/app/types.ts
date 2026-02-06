@@ -114,6 +114,7 @@ export interface Order {
     city: string;
     state?: string;
     zipCode: string;
+    country?: string;
     mobileNumber?: string;
   };
   itemsPrice?: number;
