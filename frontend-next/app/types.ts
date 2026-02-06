@@ -75,11 +75,9 @@ export interface Address {
   addressLine2?: string;
   city: string;
   state: string;
-  pincode?: string;
-  zipCode?: string;
-  postalCode?: string;
-  country?: string;
-  type?: 'Home' | 'Work' | 'Other';
+  pincode: string;
+  country: string;
+  type: 'Home' | 'Work' | 'Other';
   isDefault?: boolean;
 }
 
@@ -116,7 +114,6 @@ export interface Order {
     city: string;
     state?: string;
     zipCode: string;
-    country?: string;
     mobileNumber?: string;
   };
   itemsPrice?: number;

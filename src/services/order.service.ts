@@ -74,7 +74,7 @@ export class OrderService {
                         const orderItemData = {
                             product: { connect: { id: item.productId } },
                             quantity: item.quantity,
-                            price: item.price || item.product.price,
+                            price: item.price || item.product.price, // Use snapshot price if available
                             // Critical Snapshot Data
                             productName: item.product.title,
                             image: item.image || item.product.thumbnail || item.product.images[0] || '',
@@ -83,7 +83,7 @@ export class OrderService {
                             variantId: item.variantId
                         };
                         console.log("ORDER ITEM SNAPSHOT:", orderItemData);
-                        return orderItemData as any;
+                        return orderItemData;
                     }),
                 },
             },
