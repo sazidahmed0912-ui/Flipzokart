@@ -497,7 +497,9 @@ export const AdminOrders: React.FC = () => {
                                                     if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> GPS Updated';
                                                 },
                                                 (error) => {
-                                                    alert("Error fetching location: " + error.message);
+                                                    let msg = "Error fetching location.";
+                                                    if (error.code === 1) msg = "Location Access Denied. Please enable Location in your browser settings (Lock icon in address bar).";
+                                                    alert(msg);
                                                     if (btn) btn.innerText = "Retry GPS";
                                                 },
                                                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -524,12 +526,22 @@ export const AdminOrders: React.FC = () => {
                                             let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
                                             let data = await res.json();
 
-                                            // Strategy 2: Fallback (Remove house numbers/specifics) if no result
+                                            // Strategy 2: Fallback (Remove house numbers/specifics)
                                             if (!data || data.length === 0) {
-                                                const parts = query.split(',').slice(1).join(',').trim(); // Try removing first part (e.g. flat no)
+                                                const parts = query.split(',').slice(1).join(',').trim();
                                                 if (parts.length > 5) {
                                                     console.log("Retrying with:", parts);
                                                     res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parts)}&limit=1`);
+                                                    data = await res.json();
+                                                }
+                                            }
+
+                                            // Strategy 3: Try ZIP Code only if present
+                                            if (!data || data.length === 0) {
+                                                const zipMatch = query.match(/\b\d{6}\b/); // Indian 6-digit PIN
+                                                if (zipMatch) {
+                                                    console.log("Retrying with ZIP:", zipMatch[0]);
+                                                    res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${zipMatch[0]}&country=India&limit=1`);
                                                     data = await res.json();
                                                 }
                                             }
@@ -540,9 +552,9 @@ export const AdminOrders: React.FC = () => {
                                                     lat: parseFloat(data[0].lat),
                                                     lng: parseFloat(data[0].lon)
                                                 });
-                                                if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Found!';
+                                                if (btn) btn.innerHTML = '<span class="text-green-700 flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Found!</span>';
                                             } else {
-                                                alert("Address not found! Try entering just City, State or Zipcode.");
+                                                alert("Address not found! Try entering just 'City, State' or 'Zipcode'.");
                                                 if (btn) btn.innerText = "Not Found";
                                             }
                                         } catch (e) {
@@ -566,6 +578,7 @@ export const AdminOrders: React.FC = () => {
                                     lng={locationData.lng}
                                     onLocationSelect={(lat, lng) => setLocationData({ ...locationData, lat, lng })}
                                 />
+                                <p className="text-[10px] text-gray-400 mt-1 italic">* Use GPS or Search first, then drag marker for exact spot.</p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
