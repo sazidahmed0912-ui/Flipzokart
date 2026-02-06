@@ -83,7 +83,7 @@ export class OrderService {
                             variantId: item.variantId
                         };
                         console.log("ORDER ITEM SNAPSHOT:", orderItemData);
-                        return orderItemData;
+                        return orderItemData as any;
                     }),
                 },
             },
