@@ -466,9 +466,20 @@ export const AdminOrders: React.FC = () => {
                             <div className="flex gap-2 mb-2">
                                 <button
                                     onClick={() => {
+                                        const btn = document.getElementById('gps-btn');
+
+                                        // 0. Permission Pre-Check (Optional but helpful)
+                                        if (navigator.permissions && navigator.permissions.query) {
+                                            navigator.permissions.query({ name: 'geolocation' }).then(result => {
+                                                if (result.state === 'denied') {
+                                                    alert("⚠️ Geo-Location is BLOCKED.\n\nPlease click the 'Lock' icon 🔒 in your browser address bar and set Location to 'Allow'.");
+                                                    return;
+                                                }
+                                            });
+                                        }
+
                                         if (navigator.geolocation) {
-                                            const btn = document.getElementById('gps-btn');
-                                            if (btn) btn.innerText = "Locating...";
+                                            if (btn) btn.innerText = "Requesting Access...";
                                             navigator.geolocation.getCurrentPosition(
                                                 async (position) => {
                                                     const { latitude, longitude } = position.coords;
@@ -480,6 +491,7 @@ export const AdminOrders: React.FC = () => {
                                                     }));
 
                                                     // 2. Reverse Geocode (Get Address from GPS)
+                                                    if (btn) btn.innerText = "Fetching Address...";
                                                     try {
                                                         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
                                                         const data = await res.json();
@@ -488,21 +500,21 @@ export const AdminOrders: React.FC = () => {
                                                                 ...prev,
                                                                 lat: latitude,
                                                                 lng: longitude,
-                                                                address: data.display_name // Auto-fill Address
+                                                                address: data.display_name
                                                             }));
                                                         }
                                                     } catch (err) {
                                                         console.error("Reverse geocode failed", err);
                                                     }
-                                                    if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> GPS Updated';
+                                                    if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> GPS Acquired';
                                                 },
                                                 (error) => {
                                                     let msg = "Error fetching location.";
-                                                    if (error.code === 1) msg = "Location Access Denied. Please enable Location in your browser settings (Lock icon in address bar).";
+                                                    if (error.code === 1) msg = "Location Permission Denied. \n\n1. Click the Lock icon 🔒 in URL bar.\n2. Turn on 'Location'.\n3. Refresh page.";
                                                     alert(msg);
-                                                    if (btn) btn.innerText = "Retry GPS";
+                                                    if (btn) btn.innerText = "Permission Denied";
                                                 },
-                                                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                                                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
                                             );
                                         } else {
                                             alert("Geolocation is not supported by this browser.");
