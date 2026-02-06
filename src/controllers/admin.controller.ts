@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { catchAsync } from '../utils/catchAsync';
+import { OrderService } from '../services/order.service';
+import { AppError } from '../utils/AppError';
+import { OrderStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -27,6 +30,35 @@ export class AdminController {
                 activeUsers,
                 lowStockProducts,
             },
+        });
+    });
+
+    updateOrderStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        // Validate Status
+        const allowedStatuses = [
+            'PENDING',
+            'CONFIRMED',
+            'PACKED',
+            'SHIPPED',
+            'OUT_FOR_DELIVERY',
+            'DELIVERED',
+            'CANCELLED',
+            'RETURNED'
+        ];
+
+        if (!allowedStatuses.includes(status)) {
+            return next(new AppError(`Invalid status. Allowed: ${allowedStatuses.join(', ')}`, 400));
+        }
+
+        const orderService = new OrderService();
+        const order = await orderService.updateOrderStatus(id as string, status as OrderStatus);
+
+        res.status(200).json({
+            status: 'success',
+            data: { order }
         });
     });
 }

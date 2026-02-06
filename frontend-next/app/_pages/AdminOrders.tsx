@@ -52,35 +52,34 @@ const parseAddress = (addr: string | object | undefined): Address => {
 
 const StatusBadge = ({ status }: { status: string }) => {
   const STATUS_CONFIG: Record<string, { color: string, icon: any }> = {
-    'Pending': { color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
-    'Processing': { color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Package },
-    'Ready to Ship': { color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: CheckCircle },
-    'Shipped': { color: 'bg-purple-100 text-purple-700 border-purple-200', icon: Truck },
-    'Out for Delivery': { color: 'bg-orange-100 text-orange-700 border-orange-200', icon: Truck },
-    'Delivered': { color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
-    'Cancelled': { color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle },
-    'Refunded': { color: 'bg-gray-100 text-gray-700 border-gray-200', icon: Banknote },
+    'PENDING': { color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
+    'CONFIRMED': { color: 'bg-blue-100 text-blue-700 border-blue-200', icon: CheckCircle },
+    'PACKED': { color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: Package },
+    'SHIPPED': { color: 'bg-purple-100 text-purple-700 border-purple-200', icon: Truck },
+    'OUT_FOR_DELIVERY': { color: 'bg-orange-100 text-orange-700 border-orange-200', icon: Truck },
+    'DELIVERED': { color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
+    'CANCELLED': { color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle },
+    'RETURNED': { color: 'bg-gray-100 text-gray-700 border-gray-200', icon: Banknote },
   };
 
-  const conf = STATUS_CONFIG[status] || STATUS_CONFIG['Pending'];
+  const conf = STATUS_CONFIG[status] || STATUS_CONFIG['PENDING'];
   const Icon = conf.icon;
 
   return (
     <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${conf.color} uppercase tracking-wide`}>
       <Icon size={12} strokeWidth={2.5} />
-      {status}
+      {status.replace(/_/g, ' ')}
     </span>
   );
 };
 
 const StatusStepper = ({ currentStatus }: { currentStatus: string }) => {
-  const steps = ['Pending', 'Processing', 'Shipped', 'Delivered'];
+  const steps = ['PENDING', 'CONFIRMED', 'PACKED', 'SHIPPED', 'DELIVERED'];
 
   let activeIndex = steps.indexOf(currentStatus);
-  if (currentStatus === 'Ready to Ship') activeIndex = 1;
-  if (currentStatus === 'Out for Delivery') activeIndex = 2;
+  if (currentStatus === 'OUT_FOR_DELIVERY') activeIndex = 3; // Treat as Shipping phase or close to Delivered
 
-  const isCancelled = currentStatus === 'Cancelled';
+  const isCancelled = currentStatus === 'CANCELLED';
 
   return (
     <div className="flex items-center justify-between w-full max-w-lg mx-auto mb-8 relative">
@@ -267,9 +266,9 @@ export const AdminOrders: React.FC = () => {
 
       if (!matchesSearch) return false;
 
-      if (activeTab === 'refunds') return ['Cancelled', 'Refunded'].includes(o.status);
-      if (activeTab === 'history') return o.status === 'Delivered';
-      return !['Delivered', 'Cancelled', 'Refunded'].includes(o.status);
+      if (activeTab === 'refunds') return ['CANCELLED', 'RETURNED'].includes(o.status);
+      if (activeTab === 'history') return o.status === 'DELIVERED';
+      return !['DELIVERED', 'CANCELLED', 'RETURNED'].includes(o.status);
     });
   };
 
@@ -421,16 +420,17 @@ export const AdminOrders: React.FC = () => {
             <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 border-b">
               Update Status
             </div>
-            {['Pending', 'Processing', 'Ready to Ship', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(status => (
+            {['PENDING', 'CONFIRMED', 'PACKED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'RETURNED'].map(status => (
               <button
                 key={status}
                 onClick={() => handleStatusUpdate(activeDropdownId, status)}
                 className="w-full text-left px-4 py-3 text-xs font-semibold text-gray-600 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3 transition-colors border-l-2 border-transparent hover:border-blue-500"
               >
-                {status === 'Ready to Ship' ? <CheckCircle size={14} /> :
-                  status === 'Cancelled' ? <XCircle size={14} /> :
-                    <div className="w-3.5 h-3.5 rounded-full border border-gray-300" />}
-                {status}
+                {status === 'PACKED' ? <Package size={14} /> :
+                  status === 'CANCELLED' ? <XCircle size={14} /> :
+                    status === 'CONFIRMED' ? <CheckCircle size={14} /> :
+                      <div className="w-3.5 h-3.5 rounded-full border border-gray-300" />}
+                {status.replace(/_/g, ' ')}
               </button>
             ))}
           </div>
@@ -462,14 +462,14 @@ export const AdminOrders: React.FC = () => {
 
               <div className="flex-1 overflow-y-auto p-8 bg-white">
 
-                {!['Cancelled', 'Refunded'].includes(selectedOrder.status) && (
+                {!['CANCELLED', 'RETURNED'].includes(selectedOrder.status) && (
                   <div className="mb-10 p-8 bg-white rounded-2xl border border-gray-100 shadow-sm">
                     <StatusStepper currentStatus={selectedOrder.status} />
 
                     <div className="mt-8 pt-6 border-t border-gray-100">
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider text-center mb-4">Update Order Status</p>
                       <div className="flex flex-wrap justify-center gap-3">
-                        {['Processing', 'Ready to Ship', 'Shipped', 'Delivered'].map(step => (
+                        {['CONFIRMED', 'PACKED', 'SHIPPED', 'DELIVERED'].map(step => (
                           <button
                             key={step}
                             onClick={() => handleStatusUpdate(selectedOrder.id, step)}
@@ -485,7 +485,7 @@ export const AdminOrders: React.FC = () => {
                         ))}
                         <div className="w-px h-8 bg-gray-200 mx-2 hidden md:block"></div>
                         <button
-                          onClick={() => handleStatusUpdate(selectedOrder.id, 'Cancelled')}
+                          onClick={() => handleStatusUpdate(selectedOrder.id, 'CANCELLED')}
                           className="px-5 py-2.5 rounded-xl text-xs font-bold border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all hover:shadow-sm"
                         >
                           Cancel
@@ -495,7 +495,7 @@ export const AdminOrders: React.FC = () => {
                   </div>
                 )}
 
-                {selectedOrder.status === 'Cancelled' && (
+                {selectedOrder.status === 'CANCELLED' && (
                   <div className="mb-8 p-6 bg-red-50 text-red-700 rounded-2xl border border-red-100 flex items-center justify-center gap-3 shadow-inner">
                     <AlertCircle size={24} />
                     <span className="font-bold text-base">This order has been cancelled.</span>

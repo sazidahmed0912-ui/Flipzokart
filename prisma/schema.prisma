@@ -15,11 +15,12 @@ enum Role {
 
 enum OrderStatus {
   PENDING
-  PAID
+  CONFIRMED
   PACKED
   SHIPPED
   OUT_FOR_DELIVERY
   DELIVERED
+  CANCELLED
   RETURNED
 }
 
