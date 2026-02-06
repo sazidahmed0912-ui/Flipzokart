@@ -6,7 +6,7 @@ import Image from 'next/image';
 import {
     Search, Filter, ChevronDown, Download, Eye,
     CheckCircle, Clock, XCircle, Truck, Package,
-    ChevronLeft, ChevronRight, Calendar, Trash2, Edit2, MapPin, Loader2
+    ChevronLeft, ChevronRight, Calendar, Trash2, Edit2, MapPin, Loader2, ExternalLink
 } from 'lucide-react';
 import { AdminSidebar } from '@/app/components/AdminSidebar';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
@@ -482,7 +482,7 @@ export const AdminOrders: React.FC = () => {
                                             if (btn) btn.innerText = "Requesting Access...";
                                             navigator.geolocation.getCurrentPosition(
                                                 async (position) => {
-                                                    const { latitude, longitude } = position.coords;
+                                                    const { latitude, longitude, accuracy } = position.coords;
                                                     // 1. Set Coords
                                                     setLocationData(prev => ({
                                                         ...prev,
@@ -492,10 +492,30 @@ export const AdminOrders: React.FC = () => {
 
                                                     // 2. Reverse Geocode (Get Address from GPS)
                                                     if (btn) btn.innerText = "Fetching Address...";
+                                                    let addressText = "";
                                                     try {
                                                         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
                                                         const data = await res.json();
-                                                        if (data && data.display_name) {
+                                                        if (data && data.address) {
+                                                            // Construct specific address with PIN Code priority
+                                                            const addr = data.address;
+                                                            const parts = [
+                                                                addr.road || addr.pedestrian,
+                                                                addr.suburb || addr.neighbourhood,
+                                                                addr.city || addr.town || addr.village,
+                                                                addr.state,
+                                                                addr.postcode
+                                                            ].filter(Boolean);
+                                                            addressText = parts.join(', ');
+
+                                                            setLocationData(prev => ({
+                                                                ...prev,
+                                                                lat: latitude,
+                                                                lng: longitude,
+                                                                address: addressText || data.display_name
+                                                            }));
+                                                        } else if (data && data.display_name) {
+                                                            addressText = data.display_name;
                                                             setLocationData(prev => ({
                                                                 ...prev,
                                                                 lat: latitude,
@@ -506,7 +526,11 @@ export const AdminOrders: React.FC = () => {
                                                     } catch (err) {
                                                         console.error("Reverse geocode failed", err);
                                                     }
-                                                    if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> GPS Acquired';
+
+                                                    const accuracyMsg = accuracy < 20 ? "High Accuracy" : `Accuracy: ~${Math.round(accuracy)}m`;
+                                                    const colorClass = accuracy < 20 ? "text-green-600" : "text-amber-600";
+
+                                                    if (btn) btn.innerHTML = `<div class="flex flex-col items-center leading-none"><span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> GPS Acquired</span><span class="text-[10px] ${colorClass}">${accuracyMsg}</span></div>`;
                                                 },
                                                 (error) => {
                                                     let msg = "Error fetching location.";
@@ -617,6 +641,21 @@ export const AdminOrders: React.FC = () => {
                                     />
                                 </div>
                             </div>
+
+                            {/* Verify Link */}
+                            {locationData.lat !== 0 && (
+                                <div className="text-right">
+                                    <a
+                                        href={`https://www.google.com/maps/search/?api=1&query=${locationData.lat},${locationData.lng}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[10px] font-bold text-blue-600 hover:text-blue-800 underline flex items-center justify-end gap-1"
+                                    >
+                                        Verify on Google Maps <ExternalLink size={10} />
+                                    </a>
+                                </div>
+                            )}
+
                             <div>
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Current Address</label>
                                 <textarea
