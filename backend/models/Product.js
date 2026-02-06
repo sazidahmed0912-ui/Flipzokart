@@ -27,12 +27,20 @@ const productSchema = new mongoose.Schema(
       type: String,
     },
     // New Fields for Enhanced Product Details
+    // Updated for Flat Variant Architecture
     variants: [
       {
+        color: String,
+        size: String,
         name: String,
-        options: [String]
+        price: Number,
+        stock: Number,
+        image: String,
+        sku: String,
+        productId: String
       }
     ],
+    // Maintain inventory if needed for legacy/backup, though variants is strict source now
     inventory: [
       {
         options: { type: Map, of: String },
