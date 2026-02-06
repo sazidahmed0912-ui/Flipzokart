@@ -22,7 +22,12 @@ export const TrackOrderPage: React.FC = () => {
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const token = localStorage.getItem('token');
+    const [token, setToken] = useState<string | null>(null);
+
+    useEffect(() => {
+        setToken(localStorage.getItem('token'));
+    }, []);
+
     const socket = useSocket(token);
 
     const processOrderData = (data: any) => {
