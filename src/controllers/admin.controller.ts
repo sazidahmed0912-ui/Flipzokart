@@ -40,6 +40,7 @@ export class AdminController {
         // Validate Status
         const allowedStatuses = [
             'PENDING',
+            'PAID',
             'CONFIRMED',
             'PACKED',
             'SHIPPED',

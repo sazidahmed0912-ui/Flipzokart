@@ -53,6 +53,7 @@ const parseAddress = (addr: string | object | undefined): Address => {
 const StatusBadge = ({ status }: { status: string }) => {
   const STATUS_CONFIG: Record<string, { color: string, icon: any }> = {
     'PENDING': { color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
+    'PAID': { color: 'bg-green-100 text-green-700 border-green-200', icon: Banknote },
     'CONFIRMED': { color: 'bg-blue-100 text-blue-700 border-blue-200', icon: CheckCircle },
     'PACKED': { color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: Package },
     'SHIPPED': { color: 'bg-purple-100 text-purple-700 border-purple-200', icon: Truck },
@@ -420,16 +421,17 @@ export const AdminOrders: React.FC = () => {
             <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 border-b">
               Update Status
             </div>
-            {['PENDING', 'CONFIRMED', 'PACKED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'RETURNED'].map(status => (
+            {['PENDING', 'PAID', 'CONFIRMED', 'PACKED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'RETURNED'].map(status => (
               <button
                 key={status}
                 onClick={() => handleStatusUpdate(activeDropdownId, status)}
                 className="w-full text-left px-4 py-3 text-xs font-semibold text-gray-600 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3 transition-colors border-l-2 border-transparent hover:border-blue-500"
               >
                 {status === 'PACKED' ? <Package size={14} /> :
-                  status === 'CANCELLED' ? <XCircle size={14} /> :
-                    status === 'CONFIRMED' ? <CheckCircle size={14} /> :
-                      <div className="w-3.5 h-3.5 rounded-full border border-gray-300" />}
+                  status === 'PAID' ? <Banknote size={14} /> :
+                    status === 'CANCELLED' ? <XCircle size={14} /> :
+                      status === 'CONFIRMED' ? <CheckCircle size={14} /> :
+                        <div className="w-3.5 h-3.5 rounded-full border border-gray-300" />}
                 {status.replace(/_/g, ' ')}
               </button>
             ))}
