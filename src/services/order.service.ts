@@ -72,9 +72,9 @@ export class OrderService {
                 items: {
                     create: cart.items.map((item) => {
                         const orderItemData = {
-                            productId: item.productId,
+                            product: { connect: { id: item.productId } },
                             quantity: item.quantity,
-                            price: item.price || item.product.price, // Use snapshot price if available
+                            price: item.price || item.product.price,
                             // Critical Snapshot Data
                             productName: item.product.title,
                             image: item.image || item.product.thumbnail || item.product.images[0] || '',
