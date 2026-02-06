@@ -217,6 +217,10 @@ export const ProductDetails: React.FC = () => {
       'Olive': 'bg-lime-700',
       'Beige': 'bg-[#f5f5dc]',
       'Brown': 'bg-amber-800',
+      // Admin Presets
+      'Jet Black': 'bg-gray-900',
+      'Arctic White': 'bg-white',
+      'Deep Red': 'bg-red-900',
     };
     return map[colorName];
   };
