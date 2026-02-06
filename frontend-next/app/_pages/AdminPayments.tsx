@@ -15,16 +15,86 @@ const mockTransactions = [
     { id: 'TRX-9871', orderId: 'ORD-1024', customer: 'Rahul Sharma', amount: 2499, date: '2024-03-10', status: 'Success', method: 'UPI' },
     { id: 'TRX-9872', orderId: 'ORD-1025', customer: 'Priya Patel', amount: 850, date: '2024-03-10', status: 'Pending', method: 'Card' },
     { id: 'TRX-9873', orderId: 'ORD-1026', customer: 'Amit Singh', amount: 12999, date: '2024-03-09', status: 'Success', method: 'NetBanking' },
-    { id: 'TRX-9874', orderId: 'ORD-1027', customer: 'Sneha Gupta', amount: 450, date: '2024-03-09', status: 'Failed', method: 'UPI' },
-    { id: 'TRX-9875', orderId: 'ORD-1028', customer: 'Vikram Malhotra', amount: 5999, date: '2024-03-08', status: 'Success', method: 'COD' },
-    { id: 'TRX-9876', orderId: 'ORD-1029', customer: 'Anjali Verma', amount: 1200, date: '2024-03-08', status: 'Refunded', method: 'Card' },
-    { id: 'TRX-9877', orderId: 'ORD-1030', customer: 'Rohit Kumar', amount: 3499, date: '2024-03-07', status: 'Success', method: 'UPI' },
-];
+import React, { useState, useEffect } from 'react';
+import { AdminSidebar } from '@/app/components/AdminSidebar';
+import { SmoothReveal } from '@/app/components/SmoothReveal';
+import {
+    Search, Bell, User, LogOut, ChevronDown,
+    IndianRupee, ArrowDownLeft, ArrowUpRight,
+    Filter, Download, MoreHorizontal, CheckCircle,
+    Clock, XCircle
+} from 'lucide-react';
+import { useApp } from '@/app/store/Context';
+import { useSocket } from '@/app/store/SocketContext';
+
 
 export const AdminPayments: React.FC = () => {
     const { user, logout } = useApp();
+    const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+    const socket = useSocket(token);
+
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [transactions, setTransactions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    // Initial Data Fetch
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                // We use orders as the source of truth for payments
+                const res = await import('@/app/services/api').then(mod => mod.fetchAllOrders());
+                const orders = res.data;
+
+                const formatted = orders.map((order: any) => ({
+                    id: order.razorpayPaymentId || `TRX-${order._id.slice(-6)}`,
+                    orderId: order._id, // Keeping full ID for link, display can slice
+                    rawDate: new Date(order.createdAt),
+                    date: new Date(order.createdAt).toLocaleDateString(),
+                    customer: order.userName || 'Unknown',
+                    amount: order.total,
+                    status: order.paymentStatus === 'PAID' ? 'Success' :
+                        order.paymentStatus === 'FAILED' ? 'Failed' : 'Pending', // Default
+                    method: order.paymentMethod
+                }));
+                setTransactions(formatted);
+            } catch (error) {
+                console.error("Failed to fetch payments:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    // Real-Time Listener
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleNewPayment = (data: any) => {
+            console.log("💰 New Payment Received:", data);
+            setTransactions(prev => [{
+                ...data,
+                rawDate: new Date(), // For sorting
+                date: new Date().toLocaleDateString(),
+                // Ensure status consistency
+                status: data.status === 'PAID' ? 'Success' : data.status
+            }, ...prev]);
+        };
+
+        socket.on('payment:new', handleNewPayment);
+
+        return () => {
+            socket.off('payment:new', handleNewPayment);
+        };
+    }, [socket]);
+
+    // Stats Calculation
+    const stats = {
+        revenue: transactions.filter(t => t.status === 'Success').reduce((acc, t) => acc + t.amount, 0),
+        pendingCount: transactions.filter(t => t.status === 'Pending').length,
+        refunds: 0 // Logic to be added if refund status exists
+    };
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -35,6 +105,11 @@ export const AdminPayments: React.FC = () => {
             default: return 'bg-gray-50 text-gray-600';
         }
     };
+
+    const filteredTransactions = transactions.filter(t =>
+        t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.customer.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
@@ -112,7 +187,7 @@ export const AdminPayments: React.FC = () => {
                                     </div>
                                     <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">+12.5%</span>
                                 </div>
-                                <h3 className="text-2xl font-bold text-gray-800">₹4,25,900</h3>
+                                <h3 className="text-2xl font-bold text-gray-800">₹{stats.revenue.toLocaleString()}</h3>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Total Revenue</p>
                             </div>
                         </SmoothReveal>
@@ -123,10 +198,10 @@ export const AdminPayments: React.FC = () => {
                                     <div className="p-3 rounded-xl bg-yellow-100 text-yellow-600">
                                         <Clock size={22} />
                                     </div>
-                                    <span className="text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full">8 Pending</span>
+                                    <span className="text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full">{stats.pendingCount} Pending</span>
                                 </div>
-                                <h3 className="text-2xl font-bold text-gray-800">₹12,450</h3>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Pending Settlements</p>
+                                <h3 className="text-2xl font-bold text-gray-800">₹{stats.revenue > 0 ? (stats.revenue * 0.1).toLocaleString() : 0}</h3>
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Pending Settlements (Est)</p>
                             </div>
                         </SmoothReveal>
 
@@ -138,7 +213,7 @@ export const AdminPayments: React.FC = () => {
                                     </div>
                                     <span className="text-xs font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded-full">Last 30 Days</span>
                                 </div>
-                                <h3 className="text-2xl font-bold text-gray-800">₹2,100</h3>
+                                <h3 className="text-2xl font-bold text-gray-800">₹{stats.refunds.toLocaleString()}</h3>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Total Refunds</p>
                             </div>
                         </SmoothReveal>
@@ -166,46 +241,52 @@ export const AdminPayments: React.FC = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
-                                        {mockTransactions.map((trx, index) => (
-                                            <tr key={trx.id} className="hover:bg-gray-50/50 transition-colors">
-                                                <td className="px-6 py-4">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-semibold text-gray-800 text-sm">{trx.id}</span>
-                                                        <span className="text-xs text-gray-400">{trx.orderId}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
-                                                            {trx.customer.charAt(0)}
+                                        {loading ? (
+                                            <tr><td colSpan={7} className="text-center py-10">Loading transactions...</td></tr>
+                                        ) : filteredTransactions.length === 0 ? (
+                                            <tr><td colSpan={7} className="text-center py-10 text-gray-400">No transactions found</td></tr>
+                                        ) : (
+                                            filteredTransactions.map((trx, index) => (
+                                                <tr key={trx.id} className="hover:bg-gray-50/50 transition-colors">
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-semibold text-gray-800 text-sm">{trx.id}</span>
+                                                            <span className="text-xs text-gray-400">#{trx.orderId.slice ? trx.orderId.slice(-6).toUpperCase() : trx.orderId}</span>
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700">{trx.customer}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-600">
-                                                    {trx.date}
-                                                </td>
-                                                <td className="px-6 py-4 font-bold text-gray-800">
-                                                    ₹{trx.amount.toLocaleString()}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-600">
-                                                    {trx.method}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${getStatusColor(trx.status)}`}>
-                                                        {trx.status === 'Success' && <CheckCircle size={12} className="mr-1" />}
-                                                        {trx.status === 'Pending' && <Clock size={12} className="mr-1" />}
-                                                        {trx.status === 'Failed' && <XCircle size={12} className="mr-1" />}
-                                                        {trx.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
-                                                        <MoreHorizontal size={18} />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                                                                {trx.customer.charAt(0)}
+                                                            </div>
+                                                            <span className="text-sm font-medium text-gray-700">{trx.customer}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                                        {trx.date}
+                                                    </td>
+                                                    <td className="px-6 py-4 font-bold text-gray-800">
+                                                        ₹{trx.amount?.toLocaleString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                                        {trx.method}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${getStatusColor(trx.status)}`}>
+                                                            {trx.status === 'Success' && <CheckCircle size={12} className="mr-1" />}
+                                                            {trx.status === 'Pending' && <Clock size={12} className="mr-1" />}
+                                                            {trx.status === 'Failed' && <XCircle size={12} className="mr-1" />}
+                                                            {trx.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
+                                                            <MoreHorizontal size={18} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>

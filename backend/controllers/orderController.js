@@ -375,6 +375,28 @@ const verifyPayment = async (req, res) => {
       status: 'info'
     });
 
+    // 💰 BROADCAST REAL-TIME PAYMENT EVENT (PREPAID) 💰
+    io.to('admin').emit('payment:new', {
+      id: razorpay_payment_id || `TRX-${order._id.toString().slice(-6)}`,
+      orderId: order._id,
+      customer: req.user.name,
+      amount: order.total,
+      date: order.createdAt,
+      status: 'Success', // Verified payments are always success
+      method: 'RAZORPAY' // Or order.paymentMethod
+    });
+
+    // 💰 BROADCAST REAL-TIME PAYMENT EVENT 💰
+    io.to('admin').emit('payment:new', {
+      id: order.paymentMethod === 'CDO' ? `TRX-${order._id.toString().slice(-6)}` : `TRX-${order._id.toString().slice(-6)}`,
+      orderId: order._id,
+      customer: req.user.name,
+      amount: order.total,
+      date: order.createdAt,
+      status: order.paymentStatus === 'PAID' ? 'Success' : 'Pending',
+      method: order.paymentMethod
+    });
+
     // Broadcast Real-time Monitor Log
     const broadcastLog = req.app.get("broadcastLog");
     if (broadcastLog) {
