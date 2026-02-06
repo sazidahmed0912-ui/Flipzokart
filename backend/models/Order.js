@@ -93,12 +93,26 @@ const orderSchema = new mongoose.Schema({
     finalAmount: { type: Number, default: 0 },
     mrp: { type: Number, default: 0 }
   },
-  razorpayOrderId: {
-    type: String,
-  },
   razorpayPaymentId: {
     type: String,
   },
+  // Real-Time Tracking Fields
+  statusHistory: [{
+    status: String,
+    timestamp: Date,
+    note: String
+  }],
+  currentLocation: {
+    lat: Number,
+    lng: Number,
+    address: String,
+    updatedAt: Date
+  },
+  deliveryAgent: {
+    name: String,
+    phone: String,
+    vehicle: String
+  }
 }, {
   timestamps: true,
 });

@@ -320,6 +320,106 @@ const createUser = async (req, res) => {
   }
 };
 
+// @desc    Update Order Status
+// @route   PATCH /api/admin/orders/:id/status
+// @access  Private/Admin
+const updateOrderStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status, note } = req.body;
+
+  try {
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const historyEntry = {
+      status,
+      timestamp: new Date(),
+      note: note || `Status updated to ${status} by Admin`
+    };
+
+    // Update fields
+    order.status = status;
+    if (!order.statusHistory) order.statusHistory = [];
+    order.statusHistory.push(historyEntry);
+
+    const updatedOrder = await order.save();
+
+    // Socket.IO
+    const io = req.app.get('socketio');
+    if (io) {
+      // Emit to User Room
+      io.to(order.user.toString()).emit('notification', {
+        type: 'orderStatusUpdate',
+        message: `Your order #${order._id.toString().slice(-6)} is now ${status}`,
+        orderId: order._id,
+        status: status,
+        timestamp: new Date()
+      });
+
+      // Emit to Admin Monitor
+      io.to('admin-monitor').emit('notification', {
+        type: 'orderStatusUpdate',
+        orderId: order._id,
+        status: status,
+        updatedBy: 'Admin'
+      });
+    }
+
+    res.json({ success: true, data: updatedOrder });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Update Order Location
+// @route   PATCH /api/admin/orders/:id/location
+// @access  Private/Admin
+const updateOrderLocation = async (req, res) => {
+  const { id } = req.params;
+  const { lat, lng, address } = req.body;
+
+  try {
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const locationData = {
+      lat,
+      lng,
+      address,
+      updatedAt: new Date()
+    };
+
+    order.currentLocation = locationData;
+    const updatedOrder = await order.save();
+
+    // Socket.IO
+    const io = req.app.get('socketio');
+    if (io) {
+      io.to(order.user.toString()).emit('notification', {
+        type: 'orderLocationUpdate',
+        orderId: order._id,
+        location: locationData
+      });
+
+      io.to('admin-monitor').emit('notification', {
+        type: 'orderLocationUpdate',
+        orderId: order._id,
+        location: locationData
+      });
+    }
+
+    res.json({ success: true, data: updatedOrder });
+  } catch (error) {
+    console.error('Error updating order location:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAllUsers,
@@ -327,5 +427,7 @@ module.exports = {
   sendUserNotice,
   updateUserRole,
   deleteUser,
-  createUser
+  createUser,
+  updateOrderStatus,
+  updateOrderLocation
 };

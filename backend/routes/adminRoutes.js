@@ -23,4 +23,11 @@ router.route('/users/:id/role')
 router.route('/users/:id')
   .delete(protect, authorize(['admin']), require('../controllers/adminController').deleteUser);
 
+// Order Status & Location
+router.route('/orders/:id/status')
+  .patch(protect, authorize(['admin']), require('../controllers/adminController').updateOrderStatus);
+
+router.route('/orders/:id/location')
+  .patch(protect, authorize(['admin']), require('../controllers/adminController').updateOrderLocation);
+
 module.exports = router;
