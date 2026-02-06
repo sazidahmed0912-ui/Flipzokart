@@ -76,6 +76,7 @@ export interface Address {
   city: string;
   state: string;
   pincode: string;
+  zipCode?: string;
   country: string;
   type: 'Home' | 'Work' | 'Other';
   isDefault?: boolean;
