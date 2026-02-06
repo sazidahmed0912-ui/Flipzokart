@@ -1,8 +1,6 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-;
 import {
   ChevronLeft, Search, Filter,
   Clock, CheckCircle, Truck, XCircle, CreditCard, Banknote,
@@ -11,480 +9,309 @@ import {
 import { useApp } from '@/app/store/Context';
 import { Order } from '@/app/types';
 import { AdminSidebar } from '@/app/components/AdminSidebar';
-
 import { fetchAllOrders, deleteOrder, updateOrderStatus } from '@/app/services/api';
-
 import { useSocket } from '@/app/hooks/useSocket';
+import { useToast } from '@/app/components/toast';
 
 export const AdminOrders: React.FC = () => {
   const { user, logout } = useApp();
+  const { addToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<Order['status'] | 'All'>('All');
-  const [activeTab, setActiveTab] = useState('status'); // status | tracking | refunds | history
+  const [activeTab, setActiveTab] = useState('orders'); // orders | refunds | history
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  // Real-time Order State
+  // Data State
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Actions
+  // UI State
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => setOpenDropdownId(null);
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
+  // Status Dropdown State - Simple ID tracking
+  const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
 
-  // Socket Connection
-  const token = localStorage.getItem('token');
-  const socket = useSocket(token);
+  // Socket
+  const socket = useSocket(typeof window !== 'undefined' ? localStorage.getItem('token') : null);
 
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     REAL-TIME ORDERS LOGIC
-     Mode: Socket + Polling Fallback
-     Interval: 10000ms
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  useEffect(() => {
-    let interval: any;
-
-    const loadOrders = async () => {
-      try {
-        const { data } = await fetchAllOrders();
-        setOrders(data);
-      } catch (error) {
-        console.error("Failed to fetch orders", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadOrders(); // Initial load
-    interval = setInterval(loadOrders, 10000); // Poll every 10s as fallback
-
-    // Socket Listener
-    if (socket) {
-      socket.on('notification', (data: any) => {
-        // Refresh orders on new order or status change
-        if (data.type === 'adminNewOrder' || data.type === 'orderStatusUpdate') {
-          console.log('⚡ Live Update: New Order/Status Change Detected');
-          loadOrders();
-        }
-      });
-    }
-
-    return () => {
-      clearInterval(interval);
-      if (socket) {
-        socket.off('notification');
-      }
-    };
-  }, [socket]); // Re-run if socket connects/reconnects
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this order? This action cannot be undone.")) {
-      try {
-        await deleteOrder(id);
-        setOrders(prev => prev.filter(o => o.id !== id));
-      } catch (error) {
-        console.error("Delete failed", error);
-        alert("Failed to delete order");
-      }
-    }
-  };
-
-  const handlePreview = (order: Order) => {
-    setSelectedOrder(order);
-    setIsPreviewOpen(true);
-  };
-
-  // Optimistic Update Handler
-  const handleStatusUpdate = async (id: string, newStatus: Order['status']) => {
-    // 1. Optimistic UI Update
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
-    setOpenDropdownId(null);
-
-    // 2. API Call (Background)
+  // Initial Load
+  const loadOrders = async () => {
     try {
-      await updateOrderStatus(id, newStatus);
-    } catch (e) {
-      console.error("Status update failed", e);
-      // Revert or Fetch on error
       const { data } = await fetchAllOrders();
       setOrders(data);
-      alert("Failed to update status");
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch orders", error);
     }
   };
 
-  const getStatusColor = (status: Order['status']) => {
-    switch (status) {
-      case 'Delivered': return 'bg-green-100 text-green-700';
-      case 'Shipped': return 'bg-blue-100 text-blue-700';
+  useEffect(() => {
+    loadOrders();
 
-      case 'Cancelled': return 'bg-red-100 text-red-700';
-      default: return 'bg-orange-100 text-orange-700';
+    // Polling Backup (10s)
+    const interval = setInterval(loadOrders, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Socket Listener
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNotification = (data: any) => {
+      if (data.type === 'adminNewOrder' || data.type === 'orderStatusUpdate') {
+        // Immediate refresh on signal
+        loadOrders();
+      }
+    };
+
+    socket.on('notification', handleNotification);
+    return () => {
+      socket.off('notification', handleNotification);
+    };
+  }, [socket]);
+
+  // Close dropdowns on global click
+  useEffect(() => {
+    const closeDropdown = () => setActiveDropdownId(null);
+    document.addEventListener('click', closeDropdown);
+    return () => document.removeEventListener('click', closeDropdown);
+  }, []);
+
+
+  const handleStatusUpdate = async (id: string, newStatus: string) => {
+    // Optimistic Update
+    const oldOrders = [...orders];
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus as any } : o));
+    setActiveDropdownId(null); // Close immediately
+
+    try {
+      await updateOrderStatus(id, newStatus);
+      addToast('success', `Order status updated to ${newStatus}`);
+    } catch (error) {
+      console.error("Update failed", error);
+      setOrders(oldOrders); // Revert
+      addToast('error', 'Failed to update status');
     }
   };
 
-  const getStatusIcon = (status: Order['status']) => {
-    switch (status) {
-      case 'Delivered': return <CheckCircle size={14} />;
-      case 'Shipped': return <Truck size={14} />;
-
-      case 'Cancelled': return <XCircle size={14} />;
-      default: return <Clock size={14} />;
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Delete this order?")) return;
+    try {
+      await deleteOrder(id);
+      setOrders(prev => prev.filter(o => o.id !== id));
+      addToast('success', 'Order deleted');
+    } catch (err) {
+      addToast('error', 'Failed to delete');
     }
   };
 
-  const filteredOrders = orders.filter(o => {
-    const displayId = o.id.length > 10 ? o.id.slice(-6) : o.id;
-
-    const matchesSearch = displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      o.userName.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // Tab Logic
-    let matchesTab = false;
-    if (activeTab === 'status') matchesTab = ['Pending', 'Processing'].includes(o.status);
-    if (activeTab === 'tracking') matchesTab = o.status === 'Shipped';
-    if (activeTab === 'out-delivery') matchesTab = o.status === 'Out for Delivery' as any;
-    if (activeTab === 'refunds') matchesTab = ['Cancelled', 'Refunded'].includes(o.status);
-    if (activeTab === 'history') matchesTab = o.status === 'Delivered';
-
-    return matchesSearch && matchesTab;
-  });
-
-  const handleExportCSV = () => {
-    const headers = ["Order ID", "Date", "Customer Name", "Email", "Items", "Total", "Status", "Payment Method", "Address"];
-
-    const rows = orders.map(o => [
-      o.id,
-      new Date(o.createdAt).toLocaleString(),
-      o.userName,
-      o.email || "N/A",
-      o.items.map(i => `${i.name} (x${i.quantity})`).join("; "),
-      o.total,
-      o.status,
-      o.paymentMethod,
-      typeof o.address === 'string'
-        ? o.address.replace(/,/g, ' ')
-        : o.address
-          ? `${o.address.street} ${o.address.city} ${o.address.zipCode}`.replace(/,/g, ' ')
-          : 'N/A'
-    ]);
-
-    const csvContent = "data:text/csv;charset=utf-8,"
-      + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `orders_export_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // Status Helpers
+  const STATUS_CONFIG: Record<string, { color: string, icon: any }> = {
+    'Pending': { color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
+    'Processing': { color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Clock },
+    'Ready to Ship': { color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: PackageIcon },
+    'Shipped': { color: 'bg-purple-100 text-purple-700 border-purple-200', icon: Truck },
+    'Out for Delivery': { color: 'bg-orange-100 text-orange-700 border-orange-200', icon: Truck },
+    'Delivered': { color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
+    'Cancelled': { color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle },
   };
+
+  // Helper Icon Component
+  function PackageIcon({ size }: { size: number }) { return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16.5 9.4L7.5 4.21"></path><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>; }
+
+
+  // Filter Logic
+  const getTabOrders = () => {
+    return orders.filter(o => {
+      const matchesSearch = o.id.toLowerCase().includes(searchTerm.toLowerCase()) || o.userName.toLowerCase().includes(searchTerm.toLowerCase());
+      if (!matchesSearch) return false;
+
+      if (activeTab === 'refunds') return ['Cancelled', 'Refunded'].includes(o.status);
+      if (activeTab === 'history') return o.status === 'Delivered';
+      // Default "Active Orders"
+      return !['Delivered', 'Cancelled', 'Refunded'].includes(o.status);
+    });
+  };
+
+  const finalOrders = getTabOrders();
+
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
+    <div className="flex min-h-screen bg-[#F5F7FA]">
       <AdminSidebar />
+      <div className="flex-1 max-h-screen overflow-y-auto">
 
-      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
-        {/* Top Navbar */}
-        <header className="bg-white border-b border-gray-100 px-8 py-4 sticky top-0 z-30 flex items-center justify-between shadow-sm">
-          <div className="flex items-center w-full max-w-xl bg-[#F0F5FF] rounded-lg px-4 py-2.5 transition-all focus-within:ring-2 focus-within:ring-[#2874F0]/20">
-            <Search size={18} className="text-[#2874F0]" />
+        {/* Header */}
+        <header className="sticky top-0 z-20 bg-white border-b px-8 py-4 flex justify-between items-center shadow-sm">
+          <div className="flex items-center gap-4 w-1/3">
+            <Search size={18} className="text-gray-400" />
             <input
-              type="text"
-              placeholder="Search orders..."
-              className="w-full bg-transparent border-none outline-none text-sm ml-3 text-gray-700 placeholder-gray-400 font-medium"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Search Order ID, Customer..."
+              className="w-full outline-none text-sm font-medium text-gray-700 bg-transparent"
             />
           </div>
-
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              <span className="text-[10px] font-bold text-green-700 uppercase tracking-wide">Live (5s)</span>
+          <div className="flex items-center gap-4">
+            <div className="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-100 flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> Live
             </div>
-
-            <button className="relative p-2 text-gray-500 hover:text-[#2874F0] transition-colors">
-              <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FF6161] rounded-full ring-2 ring-white"></span>
-            </button>
-
-            <div className="relative">
-              <button
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center gap-2 hover:bg-gray-50 p-1.5 rounded-lg transition-colors"
-              >
-                <div className="w-8 h-8 rounded-full bg-[#2874F0] text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                  {user?.name?.charAt(0) || 'A'}
-                </div>
-                <span className="text-xs font-semibold text-gray-700">{user?.name?.split(' ')[0] || 'Admin'}</span>
-                <ChevronDown size={14} className="text-gray-400" />
-              </button>
-
-              {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl py-1 z-50">
-                  <button onClick={logout} className="w-full text-left px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2">
-                    <LogOut size={14} /> Logout
-                  </button>
-                </div>
-              )}
-            </div>
+            <div className="w-8 h-8 bg-blue-600 rounded-full text-white flex items-center justify-center font-bold text-xs">{user?.name?.[0]}</div>
           </div>
         </header>
 
-        <div className="p-8 space-y-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">Order Management</h1>
-              <p className="text-xs text-gray-500 font-medium mt-1">Track and manage customer orders.</p>
-            </div>
-            <button onClick={handleExportCSV} className="bg-white border border-gray-200 text-gray-700 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm">
-              <ExternalLink size={16} /> Export CSV
-            </button>
-          </div>
+        <div className="p-8">
+          <h1 className="text-2xl font-bold text-gray-800 mb-6">Order Management</h1>
 
-          {/* Tab Navigation */}
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-full md:w-auto self-start overflow-x-auto">
-            {[
-              { id: 'status', label: 'Order Status', icon: Clock },
-              { id: 'tracking', label: 'Shipments', icon: Truck },
-              { id: 'out-delivery', label: 'Out for Delivery', icon: Truck },
-              { id: 'refunds', label: 'Refunds', icon: Banknote },
-              { id: 'history', label: 'Order History', icon: FileText },
-            ].map(tab => (
+          {/* Tabs */}
+          <div className="flex gap-4 mb-6 border-b border-gray-200 pb-1">
+            {['orders', 'refunds', 'history'].map(tab => (
               <button
-                key={tab.id}
-                onClick={() => { setActiveTab(tab.id); setStatusFilter('All'); }}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id
-                  ? 'bg-white text-[#2874F0] shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-                  }`}
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 font-bold text-sm capitalize ${activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
-                <tab.icon size={16} />
-                {tab.label}
+                {tab === 'orders' ? 'Active Orders' : tab}
               </button>
             ))}
           </div>
 
-          {/* Dynamic Content Based on Tab */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            {/* Header for Specific Tab */}
-            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-              <h2 className="font-bold text-gray-700 flex items-center gap-2">
-                {activeTab === 'status' && <><Clock size={16} className="text-blue-500" /> Active Orders</>}
-                {activeTab === 'tracking' && <><Truck size={16} className="text-indigo-500" /> Shipments in Transit</>}
-                {activeTab === 'out-delivery' && <><Truck size={16} className="text-purple-500" /> Orders Out for Delivery</>}
-                {activeTab === 'refunds' && <><Banknote size={16} className="text-red-500" /> Refund Requests & Cancelled</>}
-                {activeTab === 'history' && <><FileText size={16} className="text-green-500" /> Completed Order History</>}
-              </h2>
-              <span className="text-xs font-bold bg-gray-200 text-gray-600 px-2 py-1 rounded-md">
-                {filteredOrders.length} Records
-              </span>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-white border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+          {/* Table */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-visible">
+            {/* Overflow-visible is CRITICAL for dropdowns to pop out if using relative positioning, 
+                but standard table overflow-x-auto clips it. 
+                Fix: We will use a fixed 'actions' column or reliable relative dropdown. 
+            */}
+            <div className="overflow-x-auto min-h-[400px]">
+              <table className="w-full text-left">
+                <thead className="bg-gray-50 text-xs text-gray-500 uppercase font-bold sticky top-0">
+                  <tr>
                     <th className="px-6 py-4">Order ID</th>
-                    <th className="px-6 py-4">Date & Time</th>
+                    <th className="px-6 py-4">Date</th>
                     <th className="px-6 py-4">Customer</th>
-                    <th className="px-6 py-4">Total Value</th>
-                    <th className="px-6 py-4">Current Status</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Amount</th>
+                    <th className="px-6 py-4">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {filteredOrders.map((order, idx) => (
-                    <tr key={order.id} className={`group transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                      <td className="px-6 py-4">
-                        <span className="font-mono text-xs font-bold text-[#2874F0]">#{order.id.slice(-6)}</span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-500 text-xs font-medium">{new Date(order.createdAt).toLocaleDateString()}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-[10px] font-bold">
-                            {order.userName.charAt(0)}
-                          </div>
-                          <p className="font-semibold text-gray-800 text-sm">{order.userName}</p>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 font-bold text-gray-800 text-sm">₹{order.total.toLocaleString('en-IN')}</td>
-                      <td className="px-6 py-4">
-                        <div className="relative inline-block">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (openDropdownId === order.id) {
-                                setOpenDropdownId(null);
-                              } else {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                setDropdownPosition({
-                                  top: rect.bottom + window.scrollY + 8,
-                                  left: rect.left + window.scrollX
-                                });
-                                setOpenDropdownId(order.id);
-                              }
-                            }}
-                            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(order.status)} border border-current/20`}
-                          >
-                            {getStatusIcon(order.status)} {order.status} <ChevronDown size={10} className={`transform transition-transform ${openDropdownId === order.id ? 'rotate-180' : ''}`} />
-                          </button>
-
-                          {/* Portal Status Dropdown */}
-                          {openDropdownId === order.id && createPortal(
-                            <div
-                              className="fixed z-[9999] bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden min-w-[150px] animate-in fade-in zoom-in-95 duration-200"
-                              style={{ top: dropdownPosition.top - window.scrollY, left: dropdownPosition.left - window.scrollX }}
-                              onClick={(e) => e.stopPropagation()}
+                <tbody className="divide-y divide-gray-100">
+                  {finalOrders.map(order => {
+                    const conf = STATUS_CONFIG[order.status] || STATUS_CONFIG['Pending'];
+                    return (
+                      <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group">
+                        <td className="px-6 py-4 font-mono text-xs font-bold text-blue-600">#{order.id.slice(-6)}</td>
+                        <td className="px-6 py-4 text-xs text-gray-500 font-medium">{new Date(order.createdAt).toLocaleDateString()}</td>
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-bold text-gray-800">{order.userName}</p>
+                          <p className="text-xs text-gray-400">{order.email}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="relative">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Toggle
+                                setActiveDropdownId(activeDropdownId === order.id ? null : order.id);
+                              }}
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border ${conf.color} transition-all active:scale-95`}
                             >
-                              {(['Pending', 'Processing', 'Ready to Ship', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'] as Order['status'][]).map(s => (
-                                <button
-                                  key={s}
-                                  onClick={() => handleStatusUpdate(order.id, s)}
-                                  className={`w-full text-left px-4 py-2.5 text-[10px] font-bold uppercase hover:bg-gray-50 transition-colors flex items-center gap-2 ${order.status === s ? 'text-[#2874F0] bg-blue-50' : 'text-gray-500'}`}
-                                >
-                                  {order.status === s && <CheckCircle size={10} />}
-                                  {s}
-                                </button>
-                              ))}
-                            </div>,
-                            document.body
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handlePreview(order)}
-                            className="p-2 text-gray-400 hover:text-[#2874F0] hover:bg-blue-50 rounded-lg transition-all"
-                            title="View Details"
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(order.id)}
-                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                            title="Delete Order"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                              <conf.icon size={14} />
+                              <span className="uppercase">{order.status}</span>
+                              <ChevronDown size={12} className="opacity-50" />
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {activeDropdownId === order.id && (
+                              <div
+                                className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-left"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {['Pending', 'Processing', 'Ready to Ship', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(status => (
+                                  <button
+                                    key={status}
+                                    onClick={() => handleStatusUpdate(order.id, status)}
+                                    className={`w-full text-left px-4 py-3 text-xs font-bold uppercase hover:bg-gray-50 flex items-center gap-2 ${order.status === status ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+                                  >
+                                    {order.status === status && <CheckCircle size={12} className="text-blue-500" />}
+                                    {status}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm font-bold text-gray-900">₹{order.total.toLocaleString()}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            <button onClick={() => { setSelectedOrder(order); setIsPreviewOpen(true); }} className="p-2 text-gray-400 hover:text-blue-600 bg-white border border-gray-200 shadow-sm rounded-lg hover:border-blue-200 transition-colors"><Eye size={16} /></button>
+                            <button onClick={() => handleDelete(order.id)} className="p-2 text-gray-400 hover:text-red-600 bg-white border border-gray-200 shadow-sm rounded-lg hover:border-red-200 transition-colors"><Trash2 size={16} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
+              {finalOrders.length === 0 && <div className="p-12 text-center text-gray-400 font-medium">No orders found in this category.</div>}
             </div>
-            {filteredOrders.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-400 font-medium">No orders found.</p>
-              </div>
-            )}
           </div>
         </div>
-      </div>
 
-      {/* Preview Modal */}
-      {isPreviewOpen && selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <div>
-                <h2 className="text-xl font-bold text-gray-800">Order #{selectedOrder.id.slice(-6)}</h2>
-                <p className="text-sm text-gray-500">{new Date(selectedOrder.createdAt).toLocaleString()}</p>
+        {/* Modal Preview */}
+        {isPreviewOpen && selectedOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
+            <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+              <div className="p-6 border-b flex justify-between items-center">
+                <h2 className="text-lg font-bold">Order Details #{selectedOrder.id.slice(-6)}</h2>
+                <button onClick={() => setIsPreviewOpen(false)}><XCircle className="text-gray-400 hover:text-gray-600" /></button>
               </div>
-              <button onClick={() => setIsPreviewOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <XCircle size={24} className="text-gray-400" />
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto space-y-6">
-              {/* Product List */}
-              <div>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Items ({selectedOrder.items?.length || 0})</h3>
-                <div className="space-y-4">
-                  {selectedOrder.items?.map((item, idx) => (
-                    <div key={idx} className="flex gap-4">
-                      <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                        {item.image ? (
-                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400"><ShoppingBag size={20} /></div>
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-800 text-sm line-clamp-1">{item.name}</p>
-                        <p className="text-xs text-gray-500 mt-1">Qty: {item.quantity} × <span className="font-bold text-gray-700">₹{item.price.toLocaleString()}</span></p>
-                      </div>
-                      <div className="ml-auto font-bold text-gray-800 text-sm">
-                        ₹{(item.price * item.quantity).toLocaleString()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-gray-100">
-                {/* Shipping */}
+              <div className="p-6 overflow-y-auto space-y-6">
+                {/* Order Items */}
                 <div>
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Shipping Details</h3>
-                  <div className="bg-gray-50 p-4 rounded-xl text-sm text-gray-700">
-                    <p className="font-semibold mb-1">{selectedOrder.userName}</p>
-                    <p className="whitespace-pre-wrap leading-relaxed text-gray-600">
-                      {typeof selectedOrder.address === 'string'
-                        ? selectedOrder.address
-                        : `${selectedOrder.address?.fullName || ''}, ${selectedOrder.address?.street}, ${selectedOrder.address?.city} - ${selectedOrder.address?.zipCode}`}
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Items</h3>
+                  <div className="space-y-3">
+                    {selectedOrder.items.map((item, i) => (
+                      <div key={i} className="flex gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="w-12 h-12 bg-white rounded-lg border border-gray-200 overflow-hidden">
+                          {item.image && <img src={item.image} className="w-full h-full object-cover" />}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-gray-800">{item.name}</p>
+                          <p className="text-xs text-gray-500">Qty: {item.quantity} x ₹{item.price}</p>
+                        </div>
+                        <div className="ml-auto font-bold text-sm">₹{item.price * item.quantity}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl border border-gray-100">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Shipping</h3>
+                    <p className="text-sm font-medium">{selectedOrder.userName}</p>
+                    <p className="text-xs text-gray-500 mt-1 whitespace-pre-wrap">
+                      {typeof selectedOrder.address === 'string' ? selectedOrder.address : `${selectedOrder.address?.fullName}\n${selectedOrder.address?.street}\n${selectedOrder.address?.city} - ${selectedOrder.address?.zipCode}`}
                     </p>
                   </div>
-                </div>
-
-                {/* Payment */}
-                <div>
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Payment Info</h3>
-                  <div className="bg-gray-50 p-4 rounded-xl space-y-2 text-sm">
-                    <div className="flex justify-between">
+                  <div className="p-4 rounded-xl border border-gray-100">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Payment</h3>
+                    <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-500">Method</span>
-                      <span className="font-bold text-gray-800">{selectedOrder.paymentMethod}</span>
+                      <span className="font-bold">{selectedOrder.paymentMethod}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-sm">
                       <span className="text-gray-500">Status</span>
-                      <span className={`font-bold ${selectedOrder.paymentStatus === 'PAID' ? 'text-green-600' : 'text-orange-600'}`}>
-                        {selectedOrder.paymentStatus || 'PENDING'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between pt-2 border-t border-gray-200 mt-2">
-                      <span className="font-bold text-gray-800">Total Amount</span>
-                      <span className="font-bold text-[#2874F0] text-lg">₹{selectedOrder.total.toLocaleString()}</span>
+                      <span className={`font-bold ${selectedOrder.paymentStatus === 'PAID' ? 'text-green-600' : 'text-orange-600'}`}>{selectedOrder.paymentStatus}</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
-              <button
-                onClick={() => setIsPreviewOpen(false)}
-                className="px-6 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                Close
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+
+      </div>
     </div>
   );
 };
