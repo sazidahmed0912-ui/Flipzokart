@@ -119,6 +119,10 @@ const getTrackingInfo = async (req, res) => {
 
             // Real-Time Fields (Critical for Map)
             currentLocation: order.currentLocation,
+            statusHistory: order.statusHistory || [],
+
+            // Real-Time Fields (Critical for Map)
+            currentLocation: order.currentLocation,
             statusHistory: order.statusHistory || []
         });
 
