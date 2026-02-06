@@ -590,3 +590,54 @@ body {
         /* Hide desktop button */
     }
 }
+
+/* MAX ULTRA LOCK - STRICT MOBILE DENSITY (640px) */
+@media (max-width: 640px) {
+    .address-card {
+        padding: 10px 12px !important;
+        gap: 4px !important;
+    }
+
+    .address-card-header {
+        margin-bottom: 2px !important;
+    }
+
+    .address-card-details h3 {
+        margin-bottom: 0 !important;
+        line-height: normal !important;
+    }
+
+    .address-card-details p {
+        margin-bottom: 6px !important;
+        line-height: 1.3 !important;
+    }
+
+    .address-card-actions {
+        margin-top: 4px !important;
+        gap: 8px !important;
+    }
+
+    .address-btn {
+        height: 28px !important;
+        padding: 0 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .add-new-address-card {
+        padding: 10px !important;
+        margin-top: 8px !important;
+        margin-bottom: 0 !important;
+    }
+
+    .place-order-sticky-mobile {
+        padding: 8px 12px !important;
+        bottom: 0 !important;
+    }
+
+    .checkout-container {
+        padding-bottom: 80px !important;
+        /* Reduce safe space */
+    }
+}
