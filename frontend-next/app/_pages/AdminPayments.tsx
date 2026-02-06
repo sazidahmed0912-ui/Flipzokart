@@ -6,10 +6,11 @@ import {
     Search, Bell, LogOut, ChevronDown,
     ArrowDownLeft, ArrowUpRight,
     Filter, Download, MoreHorizontal, CheckCircle,
-    Clock, XCircle
+    Clock, XCircle, Eye
 } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
-import { useSocket } from '@/app/hooks/useSocket'; // Correct Import Path
+import { useSocket } from '@/app/hooks/useSocket';
+import Link from 'next/link';
 
 export const AdminPayments: React.FC = () => {
     const { user, logout } = useApp();
@@ -21,17 +22,22 @@ export const AdminPayments: React.FC = () => {
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Interactive States
+    const [showFilter, setShowFilter] = useState(false);
+    const [statusFilter, setStatusFilter] = useState('All');
+    const [activeActionId, setActiveActionId] = useState<string | null>(null);
+
     // Initial Data Fetch
     useEffect(() => {
         const loadData = async () => {
             try {
-                // We use orders as the source of truth for payments
                 const res = await import('@/app/services/api').then(mod => mod.fetchAllOrders());
                 const orders = res.data;
 
                 const formatted = orders.map((order: any) => ({
                     id: order.razorpayPaymentId || `TRX-${order._id.slice(-6)}`,
-                    orderId: order._id,
+                    orderId: order._id, // Full ID for linking
+                    displayOrderId: `ORD-${order._id.slice(-6).toUpperCase()}`,
                     rawDate: new Date(order.createdAt),
                     date: new Date(order.createdAt).toLocaleDateString(),
                     customer: order.userName || 'Unknown',
@@ -58,6 +64,7 @@ export const AdminPayments: React.FC = () => {
             console.log("💰 New Payment Received:", data);
             setTransactions(prev => [{
                 ...data,
+                displayOrderId: `ORD-${data.orderId.slice(-6).toUpperCase()}`,
                 rawDate: new Date(),
                 date: new Date().toLocaleDateString(),
                 status: data.status === 'PAID' ? 'Success' : data.status
@@ -70,6 +77,46 @@ export const AdminPayments: React.FC = () => {
             socket.off('payment:new', handleNewPayment);
         };
     }, [socket]);
+
+    // Export Handler
+    const handleExport = () => {
+        const headers = ['Transaction ID', 'Order ID', 'Customer', 'Date', 'Amount', 'Method', 'Status'];
+        const csvRows = [headers.join(',')];
+
+        filteredTransactions.forEach(t => {
+            const row = [
+                t.id,
+                t.displayOrderId,
+                `"${t.customer}"`,
+                t.date,
+                t.amount,
+                t.method,
+                t.status
+            ];
+            csvRows.push(row.join(','));
+        });
+
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `transactions_report_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
+
+    // Filter Logic
+    const filteredTransactions = transactions.filter(t => {
+        const matchesSearch = t.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            t.customer?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'All' || t.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+
+    const handleViewAll = () => {
+        setSearchTerm('');
+        setStatusFilter('All');
+    };
 
     // Stats Calculation
     const stats = {
@@ -88,13 +135,12 @@ export const AdminPayments: React.FC = () => {
         }
     };
 
-    const filteredTransactions = transactions.filter(t =>
-        t.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.customer?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
     return (
-        <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]">
+        <div className="flex flex-col lg:flex-row min-h-screen bg-[#F5F7FA]" onClick={() => {
+            setShowFilter(false);
+            setActiveActionId(null);
+            setIsProfileOpen(false);
+        }}>
             <AdminSidebar />
 
             <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
@@ -109,16 +155,19 @@ export const AdminPayments: React.FC = () => {
                                 className="w-full bg-transparent border-none outline-none text-sm ml-3 text-gray-700 placeholder-gray-400 font-medium"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
                             />
                         </div>
 
                         <div className="flex items-center gap-6">
-                            <button className="relative p-2 text-gray-500 hover:text-[#2874F0] transition-colors">
-                                <Bell size={20} />
-                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FF6161] rounded-full ring-2 ring-white"></span>
-                            </button>
+                            <Link href="/admin/notifications">
+                                <button className="relative p-2 text-gray-500 hover:text-[#2874F0] transition-colors">
+                                    <Bell size={20} />
+                                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FF6161] rounded-full ring-2 ring-white"></span>
+                                </button>
+                            </Link>
 
-                            <div className="relative">
+                            <div className="relative" onClick={(e) => e.stopPropagation()}>
                                 <button
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                                     className="flex items-center gap-2 hover:bg-gray-50 p-1.5 rounded-lg transition-colors"
@@ -150,10 +199,33 @@ export const AdminPayments: React.FC = () => {
                             <p className="text-sm text-gray-500 mt-1">Manage and monitor all financial transactions.</p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
-                                <Filter size={16} /> Filter
-                            </button>
-                            <button className="flex items-center gap-2 px-4 py-2 bg-[#2874F0] text-white rounded-xl text-sm font-semibold hover:bg-[#1a60d6] transition-colors shadow-lg shadow-blue-500/20">
+                            <div className="relative" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                    onClick={() => setShowFilter(!showFilter)}
+                                    className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-semibold transition-colors ${statusFilter !== 'All' ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    <Filter size={16} /> {statusFilter === 'All' ? 'Filter' : statusFilter}
+                                </button>
+                                {showFilter && (
+                                    <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-xl shadow-xl py-1 z-20">
+                                        {['All', 'Success', 'Pending', 'Failed'].map(status => (
+                                            <button
+                                                key={status}
+                                                onClick={() => { setStatusFilter(status); setShowFilter(false); }}
+                                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${statusFilter === status ? 'font-bold text-blue-600' : 'text-gray-700'}`}
+                                            >
+                                                {status}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={handleExport}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#2874F0] text-white rounded-xl text-sm font-semibold hover:bg-[#1a60d6] transition-colors shadow-lg shadow-blue-500/20"
+                            >
                                 <Download size={16} /> Export Report
                             </button>
                         </div>
@@ -203,13 +275,20 @@ export const AdminPayments: React.FC = () => {
 
                     {/* Transactions Table */}
                     <SmoothReveal direction="up" delay={500}>
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+                            style={{ minHeight: '400px' }} // Min height to prevent cutoff
+                        >
                             <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                                 <h3 className="font-bold text-gray-800">Recent Transactions</h3>
-                                <button className="text-sm font-semibold text-[#2874F0] hover:underline">View All</button>
+                                <button
+                                    onClick={handleViewAll}
+                                    className="text-sm font-semibold text-[#2874F0] hover:underline"
+                                >
+                                    View All
+                                </button>
                             </div>
 
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto" style={{ minHeight: '300px' }}>
                                 <table className="w-full">
                                     <thead className="bg-gray-50/50">
                                         <tr>
@@ -233,7 +312,7 @@ export const AdminPayments: React.FC = () => {
                                                     <td className="px-6 py-4">
                                                         <div className="flex flex-col">
                                                             <span className="font-semibold text-gray-800 text-sm">{trx.id}</span>
-                                                            <span className="text-xs text-gray-400">#{trx.orderId.slice ? trx.orderId.slice(-6).toUpperCase() : trx.orderId}</span>
+                                                            <span className="text-xs text-gray-400">{trx.displayOrderId || trx.orderId}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
@@ -261,10 +340,27 @@ export const AdminPayments: React.FC = () => {
                                                             {trx.status}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
+                                                    <td className="px-6 py-4 text-right relative">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setActiveActionId(activeActionId === trx.id ? null : trx.id);
+                                                            }}
+                                                            className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
+                                                        >
                                                             <MoreHorizontal size={18} />
                                                         </button>
+                                                        {/* Action Menu */}
+                                                        {activeActionId === trx.id && (
+                                                            <div className="absolute right-0 top-10 z-50 w-32 bg-white border border-gray-100 rounded-xl shadow-xl py-1">
+                                                                <Link
+                                                                    href={`/admin/orders/${trx.orderId}`}
+                                                                    className="block w-full text-left px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-[#2874F0] flex items-center gap-2"
+                                                                >
+                                                                    <Eye size={14} /> View Order
+                                                                </Link>
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))
