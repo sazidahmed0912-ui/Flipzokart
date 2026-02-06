@@ -47,7 +47,8 @@ export const TrackOrderPage: React.FC = () => {
                 shippingFee: normalizedOrder.totals?.shipping || 0,
                 shippingAddress: normalizedOrder.address, // UI uses shippingAddress
                 paymentMethod: normalizedOrder.payment?.method,
-                orderId: normalizedOrder.id, // UI uses order.orderId
+                orderId: normalizedOrder.id || rawOrder.orderId || rawOrder._id, // UI uses order.orderId
+                _id: rawOrder._id || normalizedOrder.id, // Critical for Socket Matching
                 // Real-Time Fields
                 currentLocation: rawOrder.currentLocation || normalizedOrder.currentLocation,
                 statusHistory: rawOrder.statusHistory || normalizedOrder.statusHistory

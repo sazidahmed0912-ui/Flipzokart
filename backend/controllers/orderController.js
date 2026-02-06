@@ -616,7 +616,9 @@ const getOrderById = async (req, res) => {
           selectedVariants: p.selectedVariants
         };
       }),
-      address: order.shippingAddress
+      address: order.shippingAddress,
+      currentLocation: order.currentLocation, // Explicitly expose for tracking
+      statusHistory: order.statusHistory || []
     };
 
     res.status(200).json(formattedOrder);
