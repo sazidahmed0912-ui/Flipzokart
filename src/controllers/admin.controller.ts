@@ -29,4 +29,109 @@ export class AdminController {
             },
         });
     });
+
+    updateOrderStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const id = req.params.id as string;
+        const { status, note } = req.body;
+
+        const order = await prisma.order.findUnique({ where: { id } });
+        if (!order) {
+            return res.status(404).json({ status: 'fail', message: 'Order not found' });
+        }
+
+        // Prepare Status History Entry
+        const historyEntry = {
+            status,
+            timestamp: new Date(),
+            note: note || `Status updated to ${status} by Admin`
+        };
+
+        // Update Order
+        const updatedOrder = await prisma.order.update({
+            where: { id },
+            data: {
+                // @ts-ignore
+                orderStatus: status, // Update both if schema uses different names, but trying to standardize
+                // @ts-ignore
+                status: status,      // Prisma might have one or the other, strictly updating mapped field
+                statusHistory: [
+                    // @ts-ignore
+                    ...(Array.isArray(order.statusHistory) ? order.statusHistory : []),
+                    historyEntry
+                ] as any
+            }
+        });
+
+        // Emit Socket Event
+        const io = req.app.get('socketio');
+        if (io) {
+            io.to(order.userId).emit('notification', {
+                type: 'orderStatusUpdate',
+                message: `Your order #${order.orderNumber || order.id.slice(-6)} is now ${status}`,
+                orderId: order.id,
+                status: status,
+                timestamp: new Date()
+            });
+
+            // Also emit to Admin Monitor
+            io.to('admin-monitor').emit('notification', {
+                type: 'orderStatusUpdate',
+                orderId: order.id,
+                status: status,
+                updatedBy: 'Admin'
+            });
+        }
+
+        res.status(200).json({
+            status: 'success',
+            data: updatedOrder
+        });
+    });
+
+    updateOrderLocation = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const id = req.params.id as string;
+        const { lat, lng, address } = req.body;
+
+        const order = await prisma.order.findUnique({ where: { id } });
+        if (!order) {
+            return res.status(404).json({ status: 'fail', message: 'Order not found' });
+        }
+
+        const locationData = {
+            lat,
+            lng,
+            address,
+            updatedAt: new Date()
+        };
+
+        const updatedOrder = await prisma.order.update({
+            where: { id },
+            data: {
+                currentLocation: locationData
+            }
+        });
+
+        // Emit Socket Event
+        const io = req.app.get('socketio');
+        if (io) {
+            // Emit to User Room
+            io.to(order.userId).emit('notification', {
+                type: 'orderLocationUpdate',
+                orderId: order.id,
+                location: locationData
+            });
+
+            // Emit to Admin Monitor
+            io.to('admin-monitor').emit('notification', {
+                type: 'orderLocationUpdate',
+                orderId: order.id,
+                location: locationData
+            });
+        }
+
+        res.status(200).json({
+            status: 'success',
+            data: updatedOrder
+        });
+    });
 }

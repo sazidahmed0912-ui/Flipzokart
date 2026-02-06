@@ -186,6 +186,12 @@ model Order {
   orderNumber   String?       @unique // e.g. FZK123456
   addressId     String        @db.ObjectId
   address       Json // Snapshot of address
+  
+  // Real-Time Tracking Fields
+  statusHistory Json? // List of { status, timestamp, note }
+  currentLocation Json? // { lat, lng, address, updatedAt }
+  deliveryAgent Json? // { name, phone, vehicle }
+  
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 

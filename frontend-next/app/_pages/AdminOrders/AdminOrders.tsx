@@ -6,12 +6,12 @@ import Image from 'next/image';
 import {
     Search, Filter, ChevronDown, Download, Eye,
     CheckCircle, Clock, XCircle, Truck, Package,
-    ChevronLeft, ChevronRight, Calendar, Trash2
+    ChevronLeft, ChevronRight, Calendar, Trash2, Edit2, MapPin, Loader2
 } from 'lucide-react';
 import { AdminSidebar } from '@/app/components/AdminSidebar';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
-import { fetchAllOrders, deleteOrder } from '@/app/services/adminService';
+import { fetchAllOrders, deleteOrder, updateOrderStatus, updateOrderLocation } from '@/app/services/adminService';
 import { useApp } from '@/app/store/Context';
 import { resolveProductImage } from '@/app/utils/imageHelper';
 
@@ -26,6 +26,7 @@ interface Order {
     createdAt: string;
     items: any[];
     paymentMethod: string;
+    currentLocation?: { lat: number; lng: number; address: string };
 }
 
 export const AdminOrders: React.FC = () => {
@@ -37,10 +38,68 @@ export const AdminOrders: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState('All');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [dateFilter, setDateFilter] = useState('All');
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    // Modal State
+    const [isStatusOpen, setIsStatusOpen] = useState(false);
+    const [isLocationOpen, setIsLocationOpen] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+    const [statusData, setStatusData] = useState({ status: '', note: '' });
+    const [locationData, setLocationData] = useState({ lat: 0, lng: 0, address: '' });
 
     useEffect(() => {
         loadOrders();
     }, []);
+
+    // ... existing loadOrders ...
+
+    const openStatusModal = (order: Order) => {
+        setSelectedOrder(order);
+        setStatusData({ status: order.status, note: '' });
+        setIsStatusOpen(true);
+    };
+
+    const openLocationModal = (order: Order) => {
+        setSelectedOrder(order);
+        setLocationData(order.currentLocation || { lat: 0, lng: 0, address: '' });
+        setIsLocationOpen(true);
+    };
+
+    const handleStatusSubmit = async () => {
+        if (!selectedOrder) return;
+        setIsUpdating(true);
+        try {
+            await updateOrderStatus(selectedOrder._id, statusData.status, statusData.note);
+            // Optimistic update
+            const updatedOrders = orders.map(o => o._id === selectedOrder._id ? { ...o, status: statusData.status } : o);
+            setOrders(updatedOrders);
+            setFilteredOrders(updatedOrders); // Re-apply filters if needed
+            setIsStatusOpen(false);
+        } catch (error) {
+            console.error("Status Update Failed", error);
+            alert("Failed to update status");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleLocationSubmit = async () => {
+        if (!selectedOrder) return;
+        setIsUpdating(true);
+        try {
+            await updateOrderLocation(selectedOrder._id, locationData);
+            // Optimistic update (optional deep update)
+            const updatedOrders = orders.map(o => o._id === selectedOrder._id ? { ...o, currentLocation: locationData } : o);
+            setOrders(updatedOrders);
+            setIsLocationOpen(false);
+        } catch (error) {
+            console.error("Location Update Failed", error);
+            alert("Failed to update location");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
 
     const loadOrders = async () => {
         try {
@@ -282,24 +341,44 @@ export const AdminOrders: React.FC = () => {
                                                     </span>
                                                 </td>
                                                 <td className="py-4 px-6 text-right">
-                                                    <Link href={`/admin/orders/${order._id}`}
-                                                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-[#2874F0] hover:border-[#2874F0] transition-all shadow-sm group-hover:shadow-md"
-                                                    >
-                                                        <Eye size={16} />
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDelete(order._id)}
-                                                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-600 transition-all shadow-sm group-hover:shadow-md ml-2"
-                                                        title="Delete Order"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        {/* Status Update Button */}
+                                                        <button
+                                                            onClick={() => openStatusModal(order)}
+                                                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 hover:bg-blue-100 transition-all shadow-sm"
+                                                            title="Update Status"
+                                                        >
+                                                            <Edit2 size={14} />
+                                                        </button>
+
+                                                        {/* Location Update Button */}
+                                                        <button
+                                                            onClick={() => openLocationModal(order)}
+                                                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 hover:bg-indigo-100 transition-all shadow-sm"
+                                                            title="Update Location"
+                                                        >
+                                                            <MapPin size={14} />
+                                                        </button>
+
+                                                        <Link href={`/admin/orders/${order._id}`}
+                                                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-[#2874F0] hover:border-[#2874F0] transition-all shadow-sm group-hover:shadow-md"
+                                                        >
+                                                            <Eye size={16} />
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => handleDelete(order._id)}
+                                                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-600 transition-all shadow-sm group-hover:shadow-md"
+                                                            title="Delete Order"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
                                         {filteredOrders.length === 0 && (
                                             <tr>
-                                                <td colSpan={7} className="py-12 text-center">
+                                                <td colSpan={8} className="py-12 text-center">
                                                     <Package size={48} className="mx-auto text-gray-200 mb-3" />
                                                     <p className="text-gray-400 font-medium">No orders found matching your filters.</p>
                                                 </td>
@@ -321,6 +400,106 @@ export const AdminOrders: React.FC = () => {
                     </SmoothReveal>
                 </div>
             </div>
+
+            {/* Status Update Modal */}
+            {isStatusOpen && selectedOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <h3 className="font-bold text-lg text-gray-800">Update Order Status</h3>
+                            <button onClick={() => setIsStatusOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                <XCircle size={20} className="text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">New Status</label>
+                                <select
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    value={statusData.status}
+                                    onChange={(e) => setStatusData({ ...statusData, status: e.target.value })}
+                                >
+                                    {['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(s => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Note (Optional)</label>
+                                <textarea
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none h-24"
+                                    placeholder="Add a note about this status update..."
+                                    value={statusData.note}
+                                    onChange={(e) => setStatusData({ ...statusData, note: e.target.value })}
+                                />
+                            </div>
+                            <button
+                                onClick={handleStatusSubmit}
+                                disabled={isUpdating}
+                                className="w-full bg-[#2874F0] text-white font-bold py-3 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-blue-200 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                            >
+                                {isUpdating ? <Loader2 size={16} className="animate-spin" /> : 'Update Status'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Location Update Modal */}
+            {isLocationOpen && selectedOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <h3 className="font-bold text-lg text-gray-800">Update Live Location</h3>
+                            <button onClick={() => setIsLocationOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                <XCircle size={20} className="text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Latitude</label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                        placeholder="28.7041"
+                                        value={locationData.lat}
+                                        onChange={(e) => setLocationData({ ...locationData, lat: parseFloat(e.target.value) || 0 })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Longitude</label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                        placeholder="77.1025"
+                                        value={locationData.lng}
+                                        onChange={(e) => setLocationData({ ...locationData, lng: parseFloat(e.target.value) || 0 })}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Current Address</label>
+                                <textarea
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none h-20"
+                                    placeholder="e.g. Near City Center, New Delhi"
+                                    value={locationData.address}
+                                    onChange={(e) => setLocationData({ ...locationData, address: e.target.value })}
+                                />
+                            </div>
+                            <button
+                                onClick={handleLocationSubmit}
+                                disabled={isUpdating}
+                                className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                            >
+                                {isUpdating ? <Loader2 size={16} className="animate-spin" /> : <><MapPin size={18} /> Update Location</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

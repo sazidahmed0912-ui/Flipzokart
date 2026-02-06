@@ -10,4 +10,7 @@ router.use(protect, restrictTo('ADMIN'));
 router.get('/dashboard', adminController.getDashboardStats);
 router.get('/dashboard-stats', adminController.getDashboardStats);
 
+router.patch('/orders/:id/status', adminController.updateOrderStatus);
+router.patch('/orders/:id/location', adminController.updateOrderLocation);
+
 export default router;
