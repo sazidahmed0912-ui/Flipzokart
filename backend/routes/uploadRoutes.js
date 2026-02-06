@@ -39,26 +39,28 @@ const upload = multer({
     },
 });
 
+// Single Upload (Legacy/Profile)
 router.post('/', upload.single('image'), (req, res) => {
     if (req.file) {
-        // Return relative path or full URL depending on how you serve static files
-        // Here we return a path that needs to be served. 
-        // We will mount '/uploads' in server.js to serve these statically.
-        // Assuming server is at root, result is "/uploads/filename.jpg"
         const filePath = `/uploads/${req.file.filename}`;
+        // Standardize response for single upload too if possible, but keep string for backward compat if needed
+        // For now, keeping legacy string response for existing parts, but recommended to switch to JSON
         res.send(filePath);
     } else {
         res.status(400).send('No file uploaded');
     }
 });
 
-// Also support multiple files if needed later
-router.post('/multiple', upload.array('images', 10), (req, res) => {
+// Multiple Uploads (Product Gallery) - STRICT JSON RESPONSE
+router.post('/multiple', upload.array('image', 10), (req, res) => {
     if (req.files && req.files.length > 0) {
-        const filePaths = req.files.map(file => `/uploads/${file.filename}`);
-        res.send(filePaths);
+        const fileUrls = req.files.map(file => `/uploads/${file.filename}`);
+        res.json({
+            success: true,
+            urls: fileUrls
+        });
     } else {
-        res.status(400).send('No files uploaded');
+        res.status(400).json({ success: false, message: 'No files uploaded' });
     }
 });
 

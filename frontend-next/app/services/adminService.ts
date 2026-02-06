@@ -29,3 +29,7 @@ export const deleteReview = (id: string) => API.delete(`/api/reviews/${id}`);
 export const uploadFile = (formData: FormData) => API.post("/api/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" }
 });
+
+export const uploadMultipleFiles = (formData: FormData) => API.post("/api/upload/multiple", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+});

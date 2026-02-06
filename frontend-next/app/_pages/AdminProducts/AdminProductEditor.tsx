@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { AdminSidebar } from '@/app/components/AdminSidebar';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
-import { fetchProductById, createProduct, updateProduct, uploadFile } from '@/app/services/adminService';
+import { fetchProductById, createProduct, updateProduct, uploadFile, uploadMultipleFiles } from '@/app/services/adminService';
 import { useToast } from '@/app/components/toast';
 import { CATEGORIES } from '@/app/constants';
 import { getProductImageUrl } from '@/app/utils/imageHelper';
@@ -139,6 +139,12 @@ export const AdminProductEditor: React.FC = () => {
                 isFeatured: data.isFeatured || false
             });
 
+            // Load Gallery Images (Exclude Main Image to avoid duplicate)
+            if (data.images && Array.isArray(data.images)) {
+                const galleryImages = data.images.filter((img: string) => img !== data.image);
+                setGallery(galleryImages);
+            }
+
             // Load Advanced Fields
             // Priority: Metadata (Rich Editor State) -> Strict Variants (Reconstructed) -> Legacy
             let loadedGroups = meta.variants || [];
@@ -207,7 +213,7 @@ export const AdminProductEditor: React.FC = () => {
         }));
     };
 
-    // --- File Upload Handler ---
+    // --- File Upload Handlers ---
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, onSuccess: (url: string) => void) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -218,9 +224,6 @@ export const AdminProductEditor: React.FC = () => {
 
         try {
             const { data } = await uploadFile(uploadData);
-            // Assuming the backend returns the path directly or in an object
-            // Adjust based on your actual backend response. 
-            // My previous implementation returns the plain path string e.g. "/uploads/file.jpg"
             onSuccess(data);
             addToast('success', 'Image uploaded successfully');
         } catch (error) {
@@ -229,6 +232,46 @@ export const AdminProductEditor: React.FC = () => {
         } finally {
             setUploading(false);
         }
+    };
+
+    const handleMultiImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = extractFiles(e.target.files);
+        if (files.length === 0) return;
+
+        setUploading(true);
+        const uploadData = new FormData();
+        files.forEach(file => {
+            uploadData.append('image', file);
+        });
+
+        try {
+            const { data } = await uploadMultipleFiles(uploadData);
+            // Expecting { success: true, urls: string[] }
+            if (data.urls && Array.isArray(data.urls)) {
+                setGallery(prev => [...prev, ...data.urls]);
+                addToast('success', `${data.urls.length} images uploaded`);
+            } else {
+                throw new Error("Invalid response format");
+            }
+        } catch (error) {
+            console.error("Multi-upload failed", error);
+            addToast('error', 'Batch upload failed');
+        } finally {
+            setUploading(false);
+            // Reset input
+            e.target.value = '';
+        }
+    };
+
+    // Helper to safely get array from FileList
+    const extractFiles = (fileList: FileList | null): File[] => {
+        if (!fileList) return [];
+        const files: File[] = [];
+        for (let i = 0; i < fileList.length; i++) {
+            const file = fileList.item(i);
+            if (file) files.push(file);
+        }
+        return files;
     };
 
     // --- Matrix Generation & Sync Logic ---
@@ -331,7 +374,8 @@ export const AdminProductEditor: React.FC = () => {
     };
 
     // --- Gallery ---
-    const handleGalleryChange = (idx: number, val: string) => { const newG = [...gallery]; newG[idx] = val; setGallery(newG); };
+    // handleGalleryChange replaced by handleMultiImageUpload logic
+
 
     // --- Matrix Updates ---
     const handleMatrixUpdate = (id: string, field: keyof MatrixRow, value: any) => {
@@ -681,23 +725,57 @@ export const AdminProductEditor: React.FC = () => {
                         {/* Media Section */}
                         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                             <h2 className="text-sm font-bold text-gray-800 mb-4">Product Images</h2>
-                            <div className="mb-4">
-                                <label className="text-xs font-bold text-gray-500 mb-2 block">Main Image</label>
-                                <div className="aspect-square bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative cursor-pointer hover:border-blue-500 transition-colors group">
-                                    {formData.image ? <img src={getProductImageUrl(formData.image)} className="w-full h-full object-cover" /> : <div className="flex flex-col items-center justify-center text-gray-400"><UploadCloud className="mb-2 group-hover:text-blue-500 transition-colors" /><span className="text-xs">Click to Upload</span></div>}
+
+                            {/* Main Image (Thumbnail) */}
+                            <div className="mb-6">
+                                <label className="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wider">Main Thumbnail</label>
+                                <div className="aspect-square w-full md:w-1/2 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative cursor-pointer hover:border-blue-500 transition-colors group">
+                                    {formData.image ? <img src={getProductImageUrl(formData.image)} className="w-full h-full object-cover" /> : <div className="flex flex-col items-center justify-center text-gray-400"><UploadCloud className="mb-2 group-hover:text-blue-500 transition-colors" /><span className="text-xs">Upload Main</span></div>}
                                     <input type="file" onChange={(e) => handleFileUpload(e, (url) => setFormData(prev => ({ ...prev, image: url })))} className="absolute inset-0 opacity-0 cursor-pointer" />
-                                    {/* URL Fallback */}
-                                    <input type="text" value={formData.image} onChange={handleChange} onClick={(e) => e.stopPropagation()} className="absolute bottom-0 w-full text-[10px] p-1 bg-white/90 border-t" placeholder="Or enter URL..." name="image" />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-2">
-                                {[0, 1, 2, 3, 4, 5].map(i => (
-                                    <div key={i} className="aspect-square bg-gray-50 rounded-lg border border-gray-200 relative overflow-hidden group cursor-pointer hover:border-blue-400">
-                                        {gallery[i] ? <img src={getProductImageUrl(gallery[i])} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Plus size={16} className="text-gray-300" /></div>}
-                                        <input type="file" onChange={(e) => handleFileUpload(e, (url) => handleGalleryChange(i, url))} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
-                                        <input type="text" value={gallery[i] || ''} onChange={(e) => handleGalleryChange(i, e.target.value)} onClick={(e) => e.stopPropagation()} className="absolute bottom-0 w-full text-[10px] p-0.5 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity z-20" placeholder="URL..." />
+
+                            {/* Gallery Section */}
+                            <div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Gallery Images</label>
+                                    <span className="text-[10px] text-gray-400">{gallery.length} Images</span>
+                                </div>
+
+                                {/* Multi-Upload Button */}
+                                <div className="relative w-full py-3 bg-blue-50 border border-dashed border-blue-200 rounded-xl flex items-center justify-center gap-2 cursor-pointer hover:bg-blue-100 transition-colors group mb-4">
+                                    <ImageIcon size={16} className="text-blue-500" />
+                                    <span className="text-xs font-bold text-blue-600">Select Multiple Images</span>
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        onChange={handleMultiImageUpload}
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                    />
+                                </div>
+
+                                {/* Dynamic Preview Grid */}
+                                {gallery.length > 0 ? (
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {gallery.map((img, idx) => (
+                                            <div key={idx} className="aspect-square rounded-lg border border-gray-200 relative overflow-hidden group">
+                                                <img src={getProductImageUrl(img)} className="w-full h-full object-cover" />
+                                                <button
+                                                    onClick={() => setGallery(prev => prev.filter((_, i) => i !== idx))}
+                                                    className="absolute top-1 right-1 p-1 bg-white/90 rounded-full text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                                    title="Remove Image"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                ) : (
+                                    <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-100">
+                                        <p className="text-[10px] text-gray-400">No gallery images added.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
