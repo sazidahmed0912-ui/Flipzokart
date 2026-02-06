@@ -75,10 +75,11 @@ export interface Address {
   addressLine2?: string;
   city: string;
   state: string;
-  pincode: string;
+  pincode?: string;
   zipCode?: string;
-  country: string;
-  type: 'Home' | 'Work' | 'Other';
+  postalCode?: string;
+  country?: string;
+  type?: 'Home' | 'Work' | 'Other';
   isDefault?: boolean;
 }
 

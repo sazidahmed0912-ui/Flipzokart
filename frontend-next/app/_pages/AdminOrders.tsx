@@ -7,51 +7,46 @@ import {
   AlertCircle, CloudLightning, MapPin, Package, Calendar, User, RefreshCw
 } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
-import { Order, Address } from '@/app/types'; // Import Address type for strict checking
+import { Order, Address } from '@/app/types';
 import { AdminSidebar } from '@/app/components/AdminSidebar';
 import { fetchAllOrders, deleteOrder, updateOrderStatus } from '@/app/services/api';
 import { useSocket } from '@/app/hooks/useSocket';
 import { useToast } from '@/app/components/toast';
 
-// --- DATA TYPES & HELPERS ---
+// --- HELPERS ---
 
-// Helper to safely parse address which might be a JSON string or an Object or a simple String
-const parseAddress = (addr: string | object | undefined): Address | null => {
-  if (!addr) return null;
+// Robust Address Parser
+const parseAddress = (addr: string | object | undefined): Address => {
+  // Default Empty Address
+  const emptyAddr: Address = {
+    id: 'fallback',
+    fullName: 'N/A',
+    phone: 'N/A',
+    street: 'N/A',
+    city: '',
+    state: ''
+  };
+
+  if (!addr) return emptyAddr;
+
   if (typeof addr === 'string') {
+    // Try JSON parse
     try {
-      // Try parsing as JSON first
       if (addr.trim().startsWith('{')) {
-        return JSON.parse(addr) as Address;
+        return { ...emptyAddr, ...JSON.parse(addr) };
       }
-      // If simple string, return a dummy Address object wrapper
+      // Simple string treatment
       return {
-        id: 'legacy',
-        fullName: 'N/A',
-        phone: 'N/A',
-        street: addr,
-        city: '',
-        state: '',
-        pincode: '',
-        country: '',
-        type: 'Home'
+        ...emptyAddr,
+        street: addr
       };
     } catch (e) {
-      // Fallback for non-JSON string
-      return {
-        id: 'legacy',
-        fullName: 'N/A',
-        phone: 'N/A',
-        street: addr,
-        city: '',
-        state: '',
-        pincode: '',
-        country: '',
-        type: 'Home'
-      };
+      return { ...emptyAddr, street: addr };
     }
   }
-  return addr as Address;
+
+  // It's already an object, assume it matches Partial<Address>
+  return { ...emptyAddr, ...addr } as Address;
 };
 
 
@@ -80,7 +75,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 const StatusStepper = ({ currentStatus }: { currentStatus: string }) => {
   const steps = ['Pending', 'Processing', 'Shipped', 'Delivered'];
-  // Mapping logic
+
   let activeIndex = steps.indexOf(currentStatus);
   if (currentStatus === 'Ready to Ship') activeIndex = 1;
   if (currentStatus === 'Out for Delivery') activeIndex = 2;
@@ -89,10 +84,8 @@ const StatusStepper = ({ currentStatus }: { currentStatus: string }) => {
 
   return (
     <div className="flex items-center justify-between w-full max-w-lg mx-auto mb-8 relative">
-      {/* Background Line */}
       <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 z-0" />
 
-      {/* Active Line */}
       {!isCancelled && (
         <div
           className="absolute top-1/2 left-0 h-1 -translate-y-1/2 z-0 transition-all duration-500 ease-out bg-green-500"
@@ -136,56 +129,46 @@ export const AdminOrders: React.FC = () => {
   const { user } = useApp();
   const { addToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('orders'); // orders | refunds | history
+  const [activeTab, setActiveTab] = useState('orders');
 
-  // Data State
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // UI State
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  // Dropdown Logic (Fixed Positioning)
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
 
-  // Socket
   const socket = useSocket(typeof window !== 'undefined' ? localStorage.getItem('token') : null);
   const [isConnected, setIsConnected] = useState(false);
 
-  // Fetch Logic
   const loadOrders = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const { data } = await fetchAllOrders(); // Ensure this returns array directly or inside data key
-      // Handle different response structures for robustness
+      const { data } = await fetchAllOrders();
       const orderList = Array.isArray(data) ? data : (data.orders || data.data || []);
-
       setOrders(orderList);
 
-      // Update selected order if open (Real-time Sync)
-      // We use a REF check or just basic ID check
+      // Real-time sync for modal
       if (selectedOrder) {
         const updated = orderList.find((o: Order) => o.id === selectedOrder.id);
         if (updated) setSelectedOrder(updated);
       }
     } catch (error) {
       console.error("Failed to fetch orders", error);
-      addToast('error', 'Could not load orders');
+      if (!silent) addToast('error', 'Could not load orders');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadOrders();
-    // Safety Polling every 15s in case socket fails
     const interval = setInterval(() => loadOrders(true), 15000);
     return () => clearInterval(interval);
   }, []);
 
-  // Socket Listener
   useEffect(() => {
     if (!socket) return;
 
@@ -193,10 +176,9 @@ export const AdminOrders: React.FC = () => {
     const onDisconnect = () => setIsConnected(false);
 
     const handleNotification = (data: any) => {
-      // Listen for ANY admin order event
+      // Refresh on ANY order-related event
       if (['adminNewOrder', 'orderStatusUpdate', 'paymentUpdate'].includes(data.type)) {
-        console.log("Socket Event Received:", data);
-        loadOrders(true); // Silent reload
+        loadOrders(true);
         if (data.type === 'adminNewOrder') addToast('info', 'New Order Received!');
       }
     };
@@ -205,7 +187,6 @@ export const AdminOrders: React.FC = () => {
     socket.on('disconnect', onDisconnect);
     socket.on('notification', handleNotification);
 
-    // Initial state check
     setIsConnected(socket.connected);
 
     return () => {
@@ -213,24 +194,22 @@ export const AdminOrders: React.FC = () => {
       socket.off('disconnect', onDisconnect);
       socket.off('notification', handleNotification);
     };
-  }, [socket, selectedOrder]); // React to selectedOrder specifically to ensure we sync it
+  }, [socket, selectedOrder]);
 
-  // Global Click Listener to close popups
   useEffect(() => {
     const handleClick = () => setActiveDropdownId(null);
     window.addEventListener('click', handleClick);
     return () => window.removeEventListener('click', handleClick);
   }, []);
 
-  // Handler for Positioned Dropdown
   const handleDropdownClick = (e: React.MouseEvent, orderId: string) => {
     e.stopPropagation();
-    e.preventDefault();
+    e.preventDefault(); // Prevent bubbling
+
     if (activeDropdownId === orderId) {
       setActiveDropdownId(null);
     } else {
       const rect = e.currentTarget.getBoundingClientRect();
-      // Calculate position: Just below the button
       setDropdownPos({
         top: rect.bottom + window.scrollY + 4,
         left: rect.left + window.scrollX
@@ -247,7 +226,6 @@ export const AdminOrders: React.FC = () => {
     const optimisticUpdatedOrders = orders.map(o => o.id === id ? { ...o, status: newStatus as any } : o);
     setOrders(optimisticUpdatedOrders);
 
-    // Also update selected order if it's open
     if (selectedOrder && selectedOrder.id === id) {
       setSelectedOrder({ ...selectedOrder, status: newStatus as any });
     }
@@ -257,11 +235,8 @@ export const AdminOrders: React.FC = () => {
     try {
       await updateOrderStatus(id, newStatus);
       addToast('success', `Status updated to ${newStatus}`);
-      // No need to reload, socket will trigger it, but for safety:
-      // loadOrders(true); 
     } catch (error) {
       console.error("Update failed", error);
-      // Revert
       setOrders(oldOrders);
       if (selectedOrder && selectedOrder.id === id) {
         const original = oldOrders.find(o => o.id === id);
@@ -283,7 +258,6 @@ export const AdminOrders: React.FC = () => {
     }
   };
 
-  // Filter Logic
   const getTabOrders = () => {
     return orders.filter(o => {
       const t = searchTerm.toLowerCase();
@@ -295,7 +269,6 @@ export const AdminOrders: React.FC = () => {
 
       if (activeTab === 'refunds') return ['Cancelled', 'Refunded'].includes(o.status);
       if (activeTab === 'history') return o.status === 'Delivered';
-      // Default "Active Orders"
       return !['Delivered', 'Cancelled', 'Refunded'].includes(o.status);
     });
   };
@@ -307,7 +280,7 @@ export const AdminOrders: React.FC = () => {
     setIsDetailsOpen(true);
   };
 
-  // Safe Address Accessor
+  // Safe Address Accessor using robust helper
   const currentOrderAddress = selectedOrder ? parseAddress(selectedOrder.address) : null;
 
   return (
@@ -315,7 +288,6 @@ export const AdminOrders: React.FC = () => {
       <AdminSidebar />
       <div className="flex-1 max-h-screen overflow-y-auto">
 
-        {/* Header */}
         <header className="sticky top-0 z-20 bg-white border-b px-8 py-4 flex justify-between items-center shadow-sm">
           <div className="flex items-center gap-4 w-1/3">
             <Search size={18} className="text-gray-400" />
@@ -328,12 +300,10 @@ export const AdminOrders: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Manual Refresh Button */}
             <button onClick={() => loadOrders(false)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="Refresh Orders">
               <RefreshCw size={18} />
             </button>
 
-            {/* Connection Indicator */}
             <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-2 transition-colors duration-500
                  ${isConnected ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
               <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
@@ -349,7 +319,6 @@ export const AdminOrders: React.FC = () => {
         <div className="p-8">
           <h1 className="text-2xl font-bold text-gray-800 mb-6 font-display">Order Management</h1>
 
-          {/* Tabs */}
           <div className="flex gap-4 mb-6 border-b border-gray-200 pb-1">
             {['orders', 'refunds', 'history'].map(tab => (
               <button
@@ -365,7 +334,6 @@ export const AdminOrders: React.FC = () => {
             ))}
           </div>
 
-          {/* Table */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto min-h-[400px]">
               {loading && orders.length === 0 ? (
@@ -403,7 +371,6 @@ export const AdminOrders: React.FC = () => {
                           <p className="text-xs text-gray-400">{order.email}</p>
                         </td>
                         <td className="px-6 py-4">
-                          {/* Dropdown Trigger */}
                           <button
                             onClick={(e) => handleDropdownClick(e, order.id)}
                             className="hover:scale-105 transition-transform focus:outline-none"
@@ -445,7 +412,6 @@ export const AdminOrders: React.FC = () => {
           </div>
         </div>
 
-        {/* Floating Dropdown (FIXED POSITION) */}
         {activeDropdownId && (
           <div
             className="fixed bg-white rounded-xl shadow-xl border border-gray-100 z-[9999] w-52 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-left ring-1 ring-black/5"
@@ -470,12 +436,10 @@ export const AdminOrders: React.FC = () => {
           </div>
         )}
 
-        {/* --- DETAILS MODAL --- */}
         {isDetailsOpen && selectedOrder && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-5 duration-300">
 
-              {/* Modal Header */}
               <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
@@ -487,7 +451,6 @@ export const AdminOrders: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  {/* Optional print button space */}
                   <button onClick={() => handleDelete(selectedOrder.id)} className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-xl text-xs font-bold hover:bg-red-50 transition-colors flex items-center gap-2">
                     <Trash2 size={14} /> Delete
                   </button>
@@ -497,10 +460,8 @@ export const AdminOrders: React.FC = () => {
                 </div>
               </div>
 
-              {/* Modal Content */}
               <div className="flex-1 overflow-y-auto p-8 bg-white">
 
-                {/* Status Stepper - Only if not cancelled/refunded */}
                 {!['Cancelled', 'Refunded'].includes(selectedOrder.status) && (
                   <div className="mb-10 p-8 bg-white rounded-2xl border border-gray-100 shadow-sm">
                     <StatusStepper currentStatus={selectedOrder.status} />
@@ -543,7 +504,6 @@ export const AdminOrders: React.FC = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                  {/* Left Column: Items */}
                   <div className="lg:col-span-2 space-y-8">
                     <div>
                       <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -562,7 +522,6 @@ export const AdminOrders: React.FC = () => {
                             <div className="flex-1 py-1">
                               <p className="font-bold text-base text-gray-900 line-clamp-2 leading-tight">{item.name}</p>
 
-                              {/* Variant Badges */}
                               <div className="flex flex-wrap gap-2 mt-3">
                                 {item.color && (
                                   <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded-md uppercase tracking-wide border border-gray-200">
@@ -585,7 +544,6 @@ export const AdminOrders: React.FC = () => {
                         ))}
                       </div>
 
-                      {/* Order Summary Block */}
                       <div className="mt-6 bg-gray-50 rounded-2xl p-6 border border-gray-100">
                         <div className="space-y-2 text-sm text-gray-600">
                           <div className="flex justify-between">
@@ -609,10 +567,8 @@ export const AdminOrders: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Right Column: Details */}
                   <div className="space-y-6">
 
-                    {/* Customer Card */}
                     <div className="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden group">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110" />
                       <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2 relative z-10">
@@ -632,7 +588,6 @@ export const AdminOrders: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Shipping Address Card */}
                     <div className="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
                       <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <MapPin size={14} /> Shipping Destination
@@ -646,7 +601,7 @@ export const AdminOrders: React.FC = () => {
                           </p>
                           <div className="flex gap-2 mt-3">
                             <span className="bg-gray-100 px-2 py-1 rounded text-xs font-mono font-bold text-gray-600">
-                              {currentOrderAddress.pincode || currentOrderAddress.zipCode}
+                              {currentOrderAddress.pincode || currentOrderAddress.zipCode || currentOrderAddress.postalCode}
                             </span>
                             {currentOrderAddress.country && (
                               <span className="bg-blue-50 px-2 py-1 rounded text-xs font-bold text-blue-600">
@@ -663,7 +618,6 @@ export const AdminOrders: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Payment Card */}
                     <div className="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
                       <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <Banknote size={14} /> Payment Details
