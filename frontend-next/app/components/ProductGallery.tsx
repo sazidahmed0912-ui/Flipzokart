@@ -187,11 +187,15 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                         fill
                                         priority={idx === 0}
                                         draggable={false}
-                                        className={`object-contain p-2 md:p-4 transition-transform duration-200 ease-out`}
+                                        className={`object-contain p-2 md:p-4 transition-transform duration-200 ease-out pointer-events-none`}
                                         style={{
                                             transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
                                             transform: isZoomed && !isLoading ? 'scale(2.5)' : 'scale(1)',
-                                            opacity: 1
+                                            opacity: 1,
+                                            willChange: 'transform',
+                                            backfaceVisibility: 'hidden',
+                                            WebkitBackfaceVisibility: 'hidden',
+                                            transformStyle: 'preserve-3d'
                                         }}
                                         onLoad={() => {
                                             if (swiperRef.current) swiperRef.current.update();
