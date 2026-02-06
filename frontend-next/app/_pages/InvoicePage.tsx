@@ -50,10 +50,10 @@ const MobileInvoiceLayout = ({ order }: { order: any }) => {
                 {/* Sold By */}
                 <div className="bg-white border rounded-lg p-3 shadow-sm">
                     <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">Sold By</h3>
-                    <p className="font-bold text-gray-800">Flipzokart Retails Pvt Ltd.</p>
+                    <p className="font-bold text-gray-800">Fzokart Retails Pvt Ltd.</p>
                     <p className="text-xs text-gray-600 mt-1">
-                        Building 4, Tech Park,<br />
-                        Bengaluru, Karnataka - 560103
+                        Barthal Doloigaon, Moirabari<br />
+                        Morigaon, Assam - 782126
                     </p>
                     {/* <p className="text-xs mt-1"><span className="font-semibold">GSTIN:</span> 29ABCDE1234F1Z5</p> */}
                 </div>
@@ -61,15 +61,24 @@ const MobileInvoiceLayout = ({ order }: { order: any }) => {
                 {/* Billing Address */}
                 <div className="bg-white border rounded-lg p-3 shadow-sm">
                     <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">Billing Address</h3>
-                    <p className="font-bold text-gray-800">{order.address?.name || order.userName}</p>
-                    <p className="text-xs text-gray-600 mt-1 break-words">
-                        {order.address?.street}, {order.address?.city}
+                    {/* Name: Bold & Block */}
+                    <p className="font-bold text-gray-800 text-sm">
+                        {order.billingName || order.userName || order.address?.name || 'Guest'}
                     </p>
-                    <p className="text-xs text-gray-600">
-                        {order.address?.state} - {order.address?.postalCode}
+                    {/* Email: Normal & Break-all */}
+                    <p className="text-xs text-gray-600 break-all mb-1">
+                        {order.billingEmail || order.email || order.user?.email || 'N/A'}
                     </p>
+
+                    {/* Address: Multi-line & Break-words */}
+                    <div className="text-xs text-gray-600 mt-1 space-y-0.5">
+                        <p className="break-words leading-tight">{order.address?.street}</p>
+                        <p>{order.address?.city}, {order.address?.state} - {order.address?.postalCode}</p>
+                    </div>
+
+                    {/* Phone */}
                     <p className="text-xs mt-2 flex items-center gap-1 text-gray-500">
-                        <Phone size={12} /> {order.address?.phone || 'N/A'}
+                        <Phone size={12} /> {order.billingPhone || order.address?.phone || 'N/A'}
                     </p>
                 </div>
             </div>

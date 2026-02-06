@@ -34,12 +34,22 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
             <div className="grid grid-cols-2 gap-8 mb-8">
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Billing Address</h3>
-                    <p className="font-bold text-gray-800 text-lg mb-1">{order.address?.name || order.userName}</p>
+
+                    {/* Name */}
+                    <p className="font-bold text-gray-800 text-lg mb-1">
+                        {order.billingName || order.userName || order.address?.name || 'Guest'}
+                    </p>
+
+                    {/* Email */}
+                    <p className="text-sm text-gray-600 mb-2 break-all">
+                        {order.billingEmail || order.email || order.user?.email || 'N/A'}
+                    </p>
+
+                    {/* Address */}
                     <div className="text-sm text-gray-600 space-y-1">
-                        <p>{order.address?.street}</p>
+                        <p className="break-words">{order.address?.street}</p>
                         <p>{order.address?.city}, {order.address?.state} - {order.address?.postalCode}</p>
-                        <p>Phone: {order.address?.phone || 'N/A'}</p>
-                        <p>Email: {order.email || order.user?.email || 'N/A'}</p>
+                        <p>Phone: {order.billingPhone || order.address?.phone || 'N/A'}</p>
                     </div>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
