@@ -461,21 +461,46 @@ export const AdminOrders: React.FC = () => {
                                 <button
                                     onClick={() => {
                                         if (navigator.geolocation) {
+                                            const btn = document.getElementById('gps-btn');
+                                            if (btn) btn.innerText = "Locating...";
                                             navigator.geolocation.getCurrentPosition(
-                                                (position) => {
-                                                    setLocationData({
-                                                        ...locationData,
-                                                        lat: position.coords.latitude,
-                                                        lng: position.coords.longitude
-                                                    });
-                                                    // Reverse geocode optional here
+                                                async (position) => {
+                                                    const { latitude, longitude } = position.coords;
+                                                    // 1. Set Coords
+                                                    setLocationData(prev => ({
+                                                        ...prev,
+                                                        lat: latitude,
+                                                        lng: longitude
+                                                    }));
+
+                                                    // 2. Reverse Geocode (Get Address from GPS)
+                                                    try {
+                                                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                                                        const data = await res.json();
+                                                        if (data && data.display_name) {
+                                                            setLocationData(prev => ({
+                                                                ...prev,
+                                                                lat: latitude,
+                                                                lng: longitude,
+                                                                address: data.display_name // Auto-fill Address
+                                                            }));
+                                                        }
+                                                    } catch (err) {
+                                                        console.error("Reverse geocode failed", err);
+                                                    }
+                                                    if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> GPS Updated';
                                                 },
-                                                (error) => alert("Error fetching location: " + error.message)
+                                                (error) => {
+                                                    alert("Error fetching location: " + error.message);
+                                                    if (btn) btn.innerText = "Retry GPS";
+                                                },
+                                                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                                             );
                                         } else {
                                             alert("Geolocation is not supported by this browser.");
                                         }
                                     }}
+                                    id="gps-btn"
                                     className="flex-1 bg-green-50 text-green-700 text-xs font-bold py-2 rounded-lg hover:bg-green-100 transition-colors flex items-center justify-center gap-1 border border-green-100"
                                 >
                                     <MapPin size={14} /> Get Current GPS
@@ -483,27 +508,47 @@ export const AdminOrders: React.FC = () => {
                                 <button
                                     onClick={async () => {
                                         if (!locationData.address) return alert("Please enter an address first");
+                                        const btn = document.getElementById('geo-btn');
+                                        if (btn) btn.innerText = "Searching...";
+
                                         try {
                                             // Nominatim OpenStreetMap (Free, no key)
-                                            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationData.address)}`);
-                                            const data = await res.json();
+                                            // Strategy 1: Full Address
+                                            let query = locationData.address;
+                                            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                                            let data = await res.json();
+
+                                            // Strategy 2: Fallback (Remove house numbers/specifics) if no result
+                                            if (!data || data.length === 0) {
+                                                const parts = query.split(',').slice(1).join(',').trim(); // Try removing first part (e.g. flat no)
+                                                if (parts.length > 5) {
+                                                    console.log("Retrying with:", parts);
+                                                    res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parts)}&limit=1`);
+                                                    data = await res.json();
+                                                }
+                                            }
+
                                             if (data && data.length > 0) {
                                                 setLocationData({
                                                     ...locationData,
                                                     lat: parseFloat(data[0].lat),
                                                     lng: parseFloat(data[0].lon)
                                                 });
+                                                if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Found!';
                                             } else {
-                                                alert("Address not found!");
+                                                alert("Address not found! Try entering just City, State or Zipcode.");
+                                                if (btn) btn.innerText = "Not Found";
                                             }
                                         } catch (e) {
                                             console.error(e);
                                             alert("Failed to geocode address");
+                                            if (btn) btn.innerText = "Error";
                                         }
                                     }}
+                                    id="geo-btn"
                                     className="flex-1 bg-orange-50 text-orange-700 text-xs font-bold py-2 rounded-lg hover:bg-orange-100 transition-colors flex items-center justify-center gap-1 border border-orange-100"
                                 >
-                                    <Search size={14} /> Fetch Coords from Addr
+                                    <Search size={14} /> Fetch Coords
                                 </button>
                             </div>
 
