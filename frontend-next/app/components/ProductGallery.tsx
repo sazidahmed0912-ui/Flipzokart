@@ -2,16 +2,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from "next/image";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import type { Swiper as SwiperType } from 'swiper'; // Import type safely
-// Import Swiper styles
+import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
-
 import { getAllProductImages } from '@/app/utils/imageHelper';
 
 interface ProductGalleryProps {
     product: any;
-    images?: string[]; // Optional override for variant images
+    images?: string[];
 }
+
+// 2. DEVICE DETECTION (MANDATORY)
+// Placed outside component to avoid re-evaluation on every render, 
+// but inside a check for window to support SSR.
+const isTouchDevice = typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
 export default function ProductGallery({ product, images }: ProductGalleryProps) {
     const [allImages, setAllImages] = useState<string[]>([]);
@@ -24,8 +27,9 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
     // Zoom State
     const [isZoomed, setIsZoomed] = useState<boolean>(false);
     const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+
+    // 5. MOBILE DOUBLE-TAP ZOOM (SAFE)
     const lastTap = useRef<number>(0);
-    const isTouchDevice = useRef<boolean>(false);
 
     // Initialize Images
     useEffect(() => {
@@ -42,13 +46,10 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
             validImages = getAllProductImages(product);
         }
 
-        // Optimization: Only update if images actually changed
-        // This prevents flicker/reset on re-renders where derived images are same
         setAllImages(prev => {
             const isSame = prev.length === validImages.length && prev.every((url, i) => url === validImages[i]);
             if (isSame) return prev;
 
-            // Only reset these if images actually changed
             setActiveIndex(0);
             setIsLoading(true);
             setIsZoomed(false);
@@ -59,9 +60,10 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
         });
     }, [product, images]);
 
-    // Zoom Handlers (Desktop Hover)
+    // 4. DESKTOP HOVER ZOOM ONLY
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isLoading || isTouchDevice.current) return;
+        if (isLoading || isTouchDevice) return; // disable on mobile
+
         const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
         const x = ((e.clientX - left) / width) * 100;
         const y = ((e.clientY - top) / height) * 100;
@@ -70,53 +72,37 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
     };
 
     const handleMouseLeave = () => {
-        if (isTouchDevice.current) return;
+        if (isTouchDevice) return;
         setIsZoomed(false);
     };
 
-    // Mobile Touch & Zoom Handlers
-    // Mobile Touch & Zoom Handlers
+    // 5. MOBILE DOUBLE-TAP ZOOM (SAFE)
     const handleTouchStart = (e: React.TouchEvent) => {
-        isTouchDevice.current = true; // Mark as touch interaction
-        if (isZoomed) {
-            e.stopPropagation(); // prevent swipe when zoomed
-        }
-    };
+        const now = Date.now();
+        const diff = now - lastTap.current;
 
-    const handleDoubleTap = (swiper: SwiperType, e: any) => {
-        // e is the event (touch or mouse)
-        // Ensure we toggle zoom
-        const newZoomState = !isZoomed;
-        setIsZoomed(newZoomState);
+        if (diff < 300 && diff > 0) {
+            e.preventDefault(); // Prevent default double-tap zoom behavior of browser if any
 
-        if (newZoomState) {
-            // Calculate zoom position from the event
-            // Swiper event might be a wrapper event, so we need to find the image container or use coordinates relative to window
-            // and map to the slide.
-            // Simplified: Center zoom if complex, or try to get coordinates.
-            // Let's try to get coordinates from the event target (the image container hopefully)
-            // Note: e might be a native event.
-            let clientX, clientY, target;
-
-            if (e.changedTouches && e.changedTouches.length > 0) {
-                clientX = e.changedTouches[0].clientX;
-                clientY = e.changedTouches[0].clientY;
-                target = e.target;
-            } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
-                target = e.target;
+            // Calculate zoom position on double tap
+            if (!isZoomed) {
+                // If we are zooming in, try to center on the tap if possible, or just default center
+                // Finding exact tap coordinates relative to image can be tricky here without the event persisting
+                // But we can try using the changedTouches if available
+                if (e.changedTouches && e.changedTouches.length > 0) {
+                    const touch = e.changedTouches[0];
+                    const target = e.currentTarget as HTMLElement; // The wrapper div
+                    const rect = target.getBoundingClientRect();
+                    const x = ((touch.clientX - rect.left) / rect.width) * 100;
+                    const y = ((touch.clientY - rect.top) / rect.height) * 100;
+                    setZoomPos({ x, y });
+                }
             }
 
-            // We need the bounding rect of the image container. 
-            // The target might be the Image or the div.
-            if (target && target.getBoundingClientRect) {
-                const rect = target.getBoundingClientRect();
-                const x = ((clientX - rect.left) / rect.width) * 100;
-                const y = ((clientY - rect.top) / rect.height) * 100;
-                setZoomPos({ x, y });
-            }
+            setIsZoomed((z) => !z);
         }
+
+        lastTap.current = now;
     };
 
     const handleTouchMove = (e: React.TouchEvent) => {
@@ -130,7 +116,10 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
             // Allow full pan
             setZoomPos({ x, y });
 
-            // Stop propagation to lock swiper
+            // Critical: Don't stop propagation aggressively unless necessary, 
+            // but for panning inside a zoomed image we usually want to prevent swiping the slide.
+            // However, the requirements say "Swiper allowTouchMove must stay true on mobile".
+            // So we let the user control it. If they hit the edge, Swiper might take over.
             e.stopPropagation();
         }
     };
@@ -160,28 +149,32 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                     </div>
                 )}
 
+                {/* 3. SWIPER CONFIG (FLIPKART STYLE) */}
                 <Swiper
-                    onSwiper={(swiper) => swiperRef.current = swiper}
-                    spaceBetween={0}
+                    onSwiper={(swiper) => (swiperRef.current = swiper)}
                     slidesPerView={1}
-                    autoHeight={true} // Enable auto height adjustment
+                    spaceBetween={0}
                     speed={300}
-                    className="w-full"
+                    allowTouchMove={true}   // NEVER disable on mobile
+                    resistanceRatio={0.85}
+                    autoHeight={true}
                     onSlideChange={(swiper) => {
                         setActiveIndex(swiper.activeIndex);
                         setIsZoomed(false);
                     }}
-                    allowTouchMove={!isZoomed}
-                    touchStartPreventDefault={false}
-                    simulateTouch={true}
-                    onDoubleTap={handleDoubleTap}
+                    className="w-full"
                 >
                     {allImages.map((img, idx) => (
                         <SwiperSlide key={idx}>
+                            {/* 6. CSS FIX FOR SWIPE CONFLICT */}
                             <div
                                 className={`relative w-full flex items-center justify-center select-none
-                                    ${isZoomed ? 'cursor-zoom-out touch-none' : 'cursor-zoom-in touch-pan-y'}
+                                    ${isZoomed ? 'touch-none cursor-grab' : 'touch-pan-y cursor-zoom-in'}
+                                    ${!isTouchDevice && isZoomed ? 'cursor-zoom-out' : ''}
                                 `}
+                                style={{
+                                    touchAction: isZoomed ? 'none' : 'pan-y'
+                                }}
                                 onTouchStart={handleTouchStart}
                                 onTouchMove={isZoomed ? handleTouchMove : undefined}
                                 onMouseMove={handleMouseMove}
@@ -193,7 +186,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                         alt={`Product View ${idx + 1}`}
                                         fill
                                         priority={idx === 0}
-                                        draggable={false} // Prevent browser native drag
+                                        draggable={false}
                                         className={`object-contain p-2 md:p-4 transition-transform duration-200 ease-out`}
                                         style={{
                                             transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
@@ -201,13 +194,10 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                             opacity: 1
                                         }}
                                         onLoad={() => {
-                                            // Force swiper update to recalculate height after image load if needed
                                             if (swiperRef.current) swiperRef.current.update();
                                             if (idx === activeIndex) setIsLoading(false);
                                         }}
                                         onError={(e) => {
-                                            // Fallback: If image fails, replace entry in allImages with placeholder
-                                            // NOTE: Changing state inside loop might be aggressive but needed for fallback.
                                             const newImages = [...allImages];
                                             if (newImages[idx] !== '/placeholder.png') {
                                                 newImages[idx] = '/placeholder.png';
@@ -234,7 +224,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                         key={index}
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            e.stopPropagation(); // Ensure button click doesn't trigger other things
+                                            e.stopPropagation();
                                             handleDotClick(index);
                                         }}
                                         className={`rounded-full transition-all duration-300 ease-out focus:outline-none pointer-events-auto

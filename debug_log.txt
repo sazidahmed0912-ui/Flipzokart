@@ -1,0 +1,66 @@
+=== LATEST PRODUCT ===
+Name: Fashion
+ID: 698566ffa9b05660cc00245b
+Updated At: Fri Feb 06 2026 09:28:55 GMT+0530 (India Standard Time)
+
+=== VARIANTS (Raw) ===
+Variant 0:
+  Color: 'undefined' (Type: undefined)
+  Size: 'undefined'
+  Stock: undefined
+Variant 1:
+  Color: 'undefined' (Type: undefined)
+  Size: 'undefined'
+  Stock: undefined
+
+=== INVENTORY (Raw) ===
+[
+  {
+    "options": {
+      "color": "Y",
+      "Size": "M"
+    },
+    "stock": 2,
+    "price": 150,
+    "sku": "FZK-Y-M-664",
+    "image": "/uploads/image-1770350174156.jpeg",
+    "_id": "698566ffa9b05660cc00245e",
+    "id": "698566ffa9b05660cc00245e"
+  },
+  {
+    "options": {
+      "color": "Y",
+      "Size": "XXL"
+    },
+    "stock": 2,
+    "price": 140,
+    "sku": "FZK-Y-XX-217",
+    "image": "/uploads/image-1770350174156.jpeg",
+    "_id": "698566ffa9b05660cc00245f",
+    "id": "698566ffa9b05660cc00245f"
+  },
+  {
+    "options": {
+      "color": "R",
+      "Size": "M"
+    },
+    "stock": 2,
+    "price": 180,
+    "sku": "FZK-R-M-774",
+    "image": "/uploads/image-1770350204721.jpeg",
+    "_id": "698566ffa9b05660cc002460",
+    "id": "698566ffa9b05660cc002460"
+  },
+  {
+    "options": {
+      "color": "R",
+      "Size": "XXL"
+    },
+    "stock": 3,
+    "price": 190,
+    "sku": "FZK-R-XX-715",
+    "image": "/uploads/image-1770350204721.jpeg",
+    "_id": "698566ffa9b05660cc002461",
+    "id": "698566ffa9b05660cc002461"
+  }
+]

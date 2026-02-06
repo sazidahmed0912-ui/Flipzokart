@@ -18,17 +18,13 @@ const createProduct = async (req, res) => {
         // Map Metadata to Schema Fields
         if (meta.gallery && Array.isArray(meta.gallery)) req.body.images = meta.gallery;
 
-        // Transform Rich Variants (Admin format) to Simple Schema
-        // ⚠️ DISABLE LEGACY OVERWRITE: The Admin now sends strict flat variants.
-        // Overwriting this with metadata destroys the color/size data.
-        /*
+        // Transform Rich Variants (Admin format) to Simple Variants (DB Schema)
         if (meta.variants && Array.isArray(meta.variants)) {
           req.body.variants = meta.variants.map(v => ({
             name: v.name,
             options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
           }));
         }
-        */
 
         if (meta.matrix) req.body.inventory = meta.matrix;
         if (meta.specifications) req.body.specifications = meta.specifications;
@@ -335,16 +331,12 @@ router.put("/:id", async (req, res) => {
         if (meta.gallery && Array.isArray(meta.gallery)) req.body.images = meta.gallery;
 
         // Transform Rich Variants to Simple Schema
-        // ⚠️ DISABLE LEGACY OVERWRITE: The Admin now sends strict flat variants.
-        // Overwriting this with metadata destroys the color/size data.
-        /*
         if (meta.variants && Array.isArray(meta.variants)) {
           req.body.variants = meta.variants.map(v => ({
             name: v.name,
             options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
           }));
         }
-        */
 
         if (meta.matrix) req.body.inventory = meta.matrix;
         if (meta.specifications) req.body.specifications = meta.specifications;
