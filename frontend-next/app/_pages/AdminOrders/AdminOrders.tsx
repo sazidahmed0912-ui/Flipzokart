@@ -456,6 +456,57 @@ export const AdminOrders: React.FC = () => {
                             </button>
                         </div>
                         <div className="p-6 space-y-4">
+                            {/* Auto Actions */}
+                            <div className="flex gap-2 mb-2">
+                                <button
+                                    onClick={() => {
+                                        if (navigator.geolocation) {
+                                            navigator.geolocation.getCurrentPosition(
+                                                (position) => {
+                                                    setLocationData({
+                                                        ...locationData,
+                                                        lat: position.coords.latitude,
+                                                        lng: position.coords.longitude
+                                                    });
+                                                    // Reverse geocode optional here
+                                                },
+                                                (error) => alert("Error fetching location: " + error.message)
+                                            );
+                                        } else {
+                                            alert("Geolocation is not supported by this browser.");
+                                        }
+                                    }}
+                                    className="flex-1 bg-green-50 text-green-700 text-xs font-bold py-2 rounded-lg hover:bg-green-100 transition-colors flex items-center justify-center gap-1 border border-green-100"
+                                >
+                                    <MapPin size={14} /> Get Current GPS
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        if (!locationData.address) return alert("Please enter an address first");
+                                        try {
+                                            // Nominatim OpenStreetMap (Free, no key)
+                                            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationData.address)}`);
+                                            const data = await res.json();
+                                            if (data && data.length > 0) {
+                                                setLocationData({
+                                                    ...locationData,
+                                                    lat: parseFloat(data[0].lat),
+                                                    lng: parseFloat(data[0].lon)
+                                                });
+                                            } else {
+                                                alert("Address not found!");
+                                            }
+                                        } catch (e) {
+                                            console.error(e);
+                                            alert("Failed to geocode address");
+                                        }
+                                    }}
+                                    className="flex-1 bg-orange-50 text-orange-700 text-xs font-bold py-2 rounded-lg hover:bg-orange-100 transition-colors flex items-center justify-center gap-1 border border-orange-100"
+                                >
+                                    <Search size={14} /> Fetch Coords from Addr
+                                </button>
+                            </div>
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Latitude</label>
