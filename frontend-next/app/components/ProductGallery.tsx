@@ -25,6 +25,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
     const [isZoomed, setIsZoomed] = useState<boolean>(false);
     const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
     const lastTap = useRef<number>(0);
+    const isTouchDevice = useRef<boolean>(false);
 
     // Initialize Images
     useEffect(() => {
@@ -60,7 +61,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
 
     // Zoom Handlers (Desktop Hover)
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isLoading) return;
+        if (isLoading || isTouchDevice.current) return;
         const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
         const x = ((e.clientX - left) / width) * 100;
         const y = ((e.clientY - top) / height) * 100;
@@ -69,11 +70,13 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
     };
 
     const handleMouseLeave = () => {
+        if (isTouchDevice.current) return;
         setIsZoomed(false);
     };
 
     // Mobile Touch & Zoom Handlers
     const handleTouchStart = (e: React.TouchEvent) => {
+        isTouchDevice.current = true; // Mark as touch interaction
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTap.current;
 
@@ -97,6 +100,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
 
     const handleTouchMove = (e: React.TouchEvent) => {
         if (isZoomed) {
+
             // Panning Logic when zoomed
             const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
             const touch = e.targetTouches[0];
