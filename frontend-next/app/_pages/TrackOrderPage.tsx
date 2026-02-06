@@ -137,41 +137,62 @@ export const TrackOrderPage: React.FC = () => {
     // Real-time updates via Socket (Ultra Lock Protocol)
     useEffect(() => {
         if (!socket) return;
+        // Ensure we have a tracking ID to join the room
+        const roomTargetId = trackingId || (order && (order.orderId || order._id));
+        if (!roomTargetId) return;
 
-        const handleStatusUpdate = (data: any) => {
-            // Check matching order ID
-            if (data.orderId === trackingId || (order && data.orderId === order.orderId) || (order && data.orderId === order._id)) {
-                console.log("⚡ SOCKET: ORDER_STATUS_UPDATED", data);
-                setOrder((prev: any) => prev ? {
-                    ...prev,
-                    status: data.status,
-                    currentLocation: data.location || prev.currentLocation,
-                    statusHistory: prev.statusHistory ? [...prev.statusHistory, { status: data.status, timestamp: data.time || new Date(), note: data.message }] : []
-                } : prev);
-                addToast('info', `Order status updated: ${data.status}`);
+        console.log("🔌 Joining Order Room:", roomTargetId);
+        socket.emit("JOIN_ORDER_ROOM", roomTargetId);
+
+        const handleLiveUpdate = (data: any) => {
+            // Check matching order ID aggressively
+            const isMatch = (data.orderId === trackingId) ||
+                (order && (data.orderId === order.orderId || data.orderId === order._id));
+
+            if (isMatch) {
+                console.log("⚡ SOCKET: ORDER_LIVE_UPDATE", data);
+
+                setOrder((prev: any) => {
+                    if (!prev) return prev;
+
+                    // Helper to avoid duplicate history entries if strict check needed
+                    let newHistory = prev.statusHistory ? [...prev.statusHistory] : [];
+                    if (data.status && data.status !== prev.status) {
+                        newHistory.push({
+                            status: data.status,
+                            timestamp: data.updatedAt || new Date(),
+                            note: data.message || `Status updated to ${data.status}`
+                        });
+                    }
+
+                    return {
+                        ...prev,
+                        status: data.status || prev.status,
+                        currentLocation: data.location || prev.currentLocation,
+                        statusHistory: newHistory
+                    };
+                });
+
+                if (data.status) {
+                    addToast('info', `Order status updated: ${data.status}`);
+                }
             }
         };
 
-        const handleLocationUpdate = (data: any) => {
-            if (data.orderId === trackingId || (order && data.orderId === order.orderId) || (order && data.orderId === order._id)) {
-                // console.log("⚡ SOCKET: ORDER_LOCATION_UPDATED", data); // reduce log spam
-                // Update location instantly
-                setOrder((prev: any) => prev ? {
-                    ...prev,
-                    currentLocation: data.location
-                } : prev);
-            }
+        socket.on('ORDER_LIVE_UPDATE', handleLiveUpdate);
+
+        // Fail-safe: Re-join on reconnect
+        const handleReconnect = () => {
+            console.log("🔌 Socket Reconnected, Re-joining Room:", roomTargetId);
+            socket.emit("JOIN_ORDER_ROOM", roomTargetId);
         };
 
-        socket.on('ORDER_STATUS_UPDATED', handleStatusUpdate);
-        socket.on('ORDER_LOCATION_UPDATED', handleLocationUpdate);
+        socket.on('connect', handleReconnect);
 
-        // Also listen to legacy event just in case
-        // socket.on('notification', ...);
-
+        // Cleanup
         return () => {
-            socket.off('ORDER_STATUS_UPDATED', handleStatusUpdate);
-            socket.off('ORDER_LOCATION_UPDATED', handleLocationUpdate);
+            socket.off('ORDER_LIVE_UPDATE', handleLiveUpdate);
+            socket.off('connect', handleReconnect);
         };
     }, [socket, trackingId, order, addToast]);
 
