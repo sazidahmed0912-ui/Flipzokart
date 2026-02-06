@@ -52,7 +52,7 @@ export class CartService {
                     color: variant?.color,
                     size: variant?.size,
                     image: variant?.image,
-                    price: variant?.price
+                    price: variant?.price ?? 0
                 },
             });
         }

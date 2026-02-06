@@ -77,7 +77,7 @@ export class OrderService {
                             price: item.price || item.product.price, // Use snapshot price if available
                             // Critical Snapshot Data
                             productName: item.product.title,
-                            productImage: item.image || item.product.thumbnail || item.product.images[0] || '',
+                            image: item.image || item.product.thumbnail || item.product.images[0] || '',
                             color: item.color,
                             size: item.size,
                             variantId: item.variantId
