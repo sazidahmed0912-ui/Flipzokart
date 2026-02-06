@@ -42,7 +42,10 @@ export const TrackOrderPage: React.FC = () => {
                 shippingFee: normalizedOrder.totals?.shipping || 0,
                 shippingAddress: normalizedOrder.address, // UI uses shippingAddress
                 paymentMethod: normalizedOrder.payment?.method,
-                orderId: normalizedOrder.id // UI uses order.orderId
+                orderId: normalizedOrder.id, // UI uses order.orderId
+                // Real-Time Fields
+                currentLocation: rawOrder.currentLocation || normalizedOrder.currentLocation,
+                statusHistory: rawOrder.statusHistory || normalizedOrder.statusHistory
             };
 
             setOrder(orderForUI);
@@ -133,27 +136,23 @@ export const TrackOrderPage: React.FC = () => {
         const handleUpdate = (data: any) => {
             console.log("Socket Update Received:", data);
 
-            // Check if update implies this order
-            const isRelevant = data.orderId && (data.orderId === trackingId || (order && (order.orderId === data.orderId || order._id === data.orderId)));
+            // Check if update matches current order
+            const isMatch = (data.orderId === trackingId) || (order && (data.orderId === order._id || data.orderId === order.id));
 
-            if (isRelevant) {
+            if (isMatch) {
                 if (data.type === 'orderStatusUpdate') {
                     // Optimistic update
-                    setOrder((prev: any) => ({
-                        ...prev,
-                        status: data.status,
-                        // If we had history in UI, we'd update it too
-                    }));
-
-                    fetchTrackingInfo(true);
-                    addToast('info', `Order status updated to ${data.status}`);
+                    setOrder((prev: any) => prev ? { ...prev, status: data.status } : prev);
+                    addToast('info', `Order status updated: ${data.status}`);
                 }
-
                 if (data.type === 'orderLocationUpdate') {
-                    // If we show live location here later, update it
-                    // Currently only 'Arriving By' might change if backend recalc happens, so fetch is good
-                    fetchTrackingInfo(true);
+                    // Optimistic location update
+                    setOrder((prev: any) => prev ? { ...prev, currentLocation: data.location } : prev);
+                    // No toast for location to avoid spam, just update map
                 }
+
+                // Also fetch fresh data to be safe
+                fetchTrackingInfo(true);
             }
         };
 
@@ -162,7 +161,7 @@ export const TrackOrderPage: React.FC = () => {
         return () => {
             socket.off('notification', handleUpdate);
         };
-    }, [socket, fetchTrackingInfo, trackingId, order, addToast]);
+    }, [socket, trackingId, order, fetchTrackingInfo, addToast]);
 
     if (loading) return <div className="min-h-screen bg-gray-100 flex items-center justify-center">Loading...</div>;
     if (error || !order) return <div className="min-h-screen bg-gray-100 flex items-center justify-center text-red-500">{error || 'Order not found'}</div>;
@@ -286,6 +285,58 @@ export const TrackOrderPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Live Location Map - NEW ADDITION */}
+                {['Shipped', 'Out for Delivery'].includes(displayStatus) && !isCancelled && (
+                    <div className="bg-white p-6 rounded-md shadow-sm mb-6 relative overflow-hidden animate-in fade-in duration-500">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                            <h3 className="font-bold text-lg text-gray-800">Live Delivery Status</h3>
+                        </div>
+
+                        <div className="relative w-full h-80 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-inner group">
+                            {order.currentLocation && order.currentLocation.lat ? (
+                                <>
+                                    <iframe
+                                        width="100%"
+                                        height="100%"
+                                        frameBorder="0"
+                                        scrolling="no"
+                                        marginHeight={0}
+                                        marginWidth={0}
+                                        src={`https://maps.google.com/maps?q=${order.currentLocation.lat},${order.currentLocation.lng}&z=15&output=embed`}
+                                        className="grayscale-[0%] opacity-90 transition-opacity"
+                                        allowFullScreen
+                                    ></iframe>
+
+                                    {/* Location Card */}
+                                    <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-4 rounded-xl border border-gray-100 shadow-lg flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                                            <MapPin className="text-red-500" size={20} fill="currentColor" fillOpacity={0.2} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5">Current Location</p>
+                                            <p className="text-sm font-semibold text-gray-800 leading-tight">
+                                                {order.currentLocation.address || "Location updated just now"}
+                                            </p>
+                                            <p className="text-[10px] text-gray-400 mt-1">
+                                                Updated {order.currentLocation.updatedAt ? new Date(order.currentLocation.updatedAt).toLocaleTimeString() : 'Just now'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center w-full h-full text-gray-400 bg-gray-50">
+                                    <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4 animate-pulse">
+                                        <Truck size={32} className="text-blue-400" />
+                                    </div>
+                                    <p className="text-base font-semibold text-gray-600">Waiting for location update...</p>
+                                    <p className="text-sm text-gray-400 mt-1">The delivery agent hasn't shared their location yet.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Arriving By Banner */}
                 {!isCancelled && (
@@ -462,7 +513,11 @@ export const TrackOrderPage: React.FC = () => {
                                 <div>
                                     <p className="font-bold text-sm text-gray-900">{displayStatus}</p>
                                     <p className="text-xs text-gray-500 mt-0.5">Arriving by {order.expectedDelivery ? formatDate(order.expectedDelivery) : 'Tomorrow'}</p>
-                                    <p className="text-[10px] text-gray-400 mt-1">{new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
+                                    {order.statusHistory && order.statusHistory.length > 0 && (
+                                        <p className="text-[10px] text-gray-400 mt-1">
+                                            {new Date(order.statusHistory[order.statusHistory.length - 1].timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -490,3 +545,14 @@ export const TrackOrderPage: React.FC = () => {
         </div>
     );
 };
+
+// Helper for XCircle since I missed it in step imports
+function XCircle({ size }: { size: number }) {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+    )
+}
