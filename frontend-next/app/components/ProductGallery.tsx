@@ -75,32 +75,52 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
     };
 
     // Mobile Touch & Zoom Handlers
+    // Mobile Touch & Zoom Handlers
     const handleTouchStart = (e: React.TouchEvent) => {
         isTouchDevice.current = true; // Mark as touch interaction
-        const currentTime = new Date().getTime();
-        const tapLength = currentTime - lastTap.current;
+        if (isZoomed) {
+            e.stopPropagation(); // prevent swipe when zoomed
+        }
+    };
 
-        if (tapLength < 300 && tapLength > 0) {
-            // Double Tap Detected (Toggle Zoom)
-            e.preventDefault();
-            const newZoomState = !isZoomed;
-            setIsZoomed(newZoomState);
+    const handleDoubleTap = (swiper: SwiperType, e: any) => {
+        // e is the event (touch or mouse)
+        // Ensure we toggle zoom
+        const newZoomState = !isZoomed;
+        setIsZoomed(newZoomState);
 
-            if (newZoomState) {
-                // Zoom IN at touch point
-                const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-                const touch = e.targetTouches[0];
-                const x = ((touch.clientX - left) / width) * 100;
-                const y = ((touch.clientY - top) / height) * 100;
+        if (newZoomState) {
+            // Calculate zoom position from the event
+            // Swiper event might be a wrapper event, so we need to find the image container or use coordinates relative to window
+            // and map to the slide.
+            // Simplified: Center zoom if complex, or try to get coordinates.
+            // Let's try to get coordinates from the event target (the image container hopefully)
+            // Note: e might be a native event.
+            let clientX, clientY, target;
+
+            if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX;
+                clientY = e.changedTouches[0].clientY;
+                target = e.target;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+                target = e.target;
+            }
+
+            // We need the bounding rect of the image container. 
+            // The target might be the Image or the div.
+            if (target && target.getBoundingClientRect) {
+                const rect = target.getBoundingClientRect();
+                const x = ((clientX - rect.left) / rect.width) * 100;
+                const y = ((clientY - rect.top) / rect.height) * 100;
                 setZoomPos({ x, y });
             }
         }
-        lastTap.current = currentTime;
     };
 
     const handleTouchMove = (e: React.TouchEvent) => {
         if (isZoomed) {
-
             // Panning Logic when zoomed
             const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
             const touch = e.targetTouches[0];
@@ -110,9 +130,8 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
             // Allow full pan
             setZoomPos({ x, y });
 
-            // Stop propagation and prevent default to lock screen while panning
+            // Stop propagation to lock swiper
             e.stopPropagation();
-            // e.preventDefault(); // Optional: might block scrolling excessively if logic fails
         }
     };
 
@@ -155,6 +174,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                     allowTouchMove={!isZoomed}
                     touchStartPreventDefault={false}
                     simulateTouch={true}
+                    onDoubleTap={handleDoubleTap}
                 >
                     {allImages.map((img, idx) => (
                         <SwiperSlide key={idx}>
