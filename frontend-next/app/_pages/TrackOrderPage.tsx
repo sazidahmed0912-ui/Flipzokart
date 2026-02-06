@@ -120,48 +120,55 @@ export const TrackOrderPage: React.FC = () => {
         fetchTrackingInfo();
     }, [fetchTrackingInfo]);
 
-    // Build Polling Mechanism (Safe Fallback)
+    // Build Polling Mechanism (Fail-Safe Fallback)
     useEffect(() => {
         const intervalId = setInterval(() => {
             fetchTrackingInfo(true);
-        }, 10000); // Poll every 10 seconds
+        }, 20000); // Fail-safe: 20 seconds
 
         return () => clearInterval(intervalId);
     }, [fetchTrackingInfo]);
 
-    // Real-time updates via Socket
+    // Real-time updates via Socket (Ultra Lock Protocol)
     useEffect(() => {
         if (!socket) return;
 
-        const handleUpdate = (data: any) => {
-            console.log("Socket Update Received:", data);
-
-            // Check if update matches current order
-            const isMatch = (data.orderId === trackingId) || (order && (data.orderId === order._id || data.orderId === order.id));
-
-            if (isMatch) {
-                if (data.type === 'orderStatusUpdate') {
-                    // Optimistic update
-                    setOrder((prev: any) => prev ? { ...prev, status: data.status } : prev);
-                    addToast('info', `Order status updated: ${data.status}`);
-                }
-                if (data.type === 'orderLocationUpdate') {
-                    // Optimistic location update
-                    setOrder((prev: any) => prev ? { ...prev, currentLocation: data.location } : prev);
-                    // No toast for location to avoid spam, just update map
-                }
-
-                // Also fetch fresh data to be safe
-                fetchTrackingInfo(true);
+        const handleStatusUpdate = (data: any) => {
+            // Check matching order ID
+            if (data.orderId === trackingId || (order && data.orderId === order.orderId) || (order && data.orderId === order._id)) {
+                console.log("⚡ SOCKET: ORDER_STATUS_UPDATED", data);
+                setOrder((prev: any) => prev ? {
+                    ...prev,
+                    status: data.status,
+                    currentLocation: data.location || prev.currentLocation,
+                    statusHistory: prev.statusHistory ? [...prev.statusHistory, { status: data.status, timestamp: data.time || new Date(), note: data.message }] : []
+                } : prev);
+                addToast('info', `Order status updated: ${data.status}`);
             }
         };
 
-        socket.on('notification', handleUpdate);
+        const handleLocationUpdate = (data: any) => {
+            if (data.orderId === trackingId || (order && data.orderId === order.orderId) || (order && data.orderId === order._id)) {
+                // console.log("⚡ SOCKET: ORDER_LOCATION_UPDATED", data); // reduce log spam
+                // Update location instantly
+                setOrder((prev: any) => prev ? {
+                    ...prev,
+                    currentLocation: data.location
+                } : prev);
+            }
+        };
+
+        socket.on('ORDER_STATUS_UPDATED', handleStatusUpdate);
+        socket.on('ORDER_LOCATION_UPDATED', handleLocationUpdate);
+
+        // Also listen to legacy event just in case
+        // socket.on('notification', ...);
 
         return () => {
-            socket.off('notification', handleUpdate);
+            socket.off('ORDER_STATUS_UPDATED', handleStatusUpdate);
+            socket.off('ORDER_LOCATION_UPDATED', handleLocationUpdate);
         };
-    }, [socket, trackingId, order, fetchTrackingInfo, addToast]);
+    }, [socket, trackingId, order, addToast]);
 
     if (loading) return <div className="min-h-screen bg-gray-100 flex items-center justify-center">Loading...</div>;
     if (error || !order) return <div className="min-h-screen bg-gray-100 flex items-center justify-center text-red-500">{error || 'Order not found'}</div>;
