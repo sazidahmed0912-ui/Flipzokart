@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import {
-  ChevronLeft, Search, Filter,
-  Clock, CheckCircle, Truck, XCircle, CreditCard, Banknote,
-  ExternalLink, Eye, ChevronDown, Bell, User, LogOut, ShoppingBag, Trash2, FileText
+  Search,
+  Clock, CheckCircle, Truck, XCircle, Banknote,
+  ExternalLink, Eye, ChevronDown, Bell, LogOut, ShoppingBag, Trash2, FileText,
+  AlertCircle, CloudLightning
 } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { Order } from '@/app/types';
@@ -28,28 +28,30 @@ export const AdminOrders: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  // Status Dropdown State - Simple ID tracking
+  // Dropdown Logic (Fixed Positioning)
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
 
   // Socket
   const socket = useSocket(typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+  const [isConnected, setIsConnected] = useState(false);
 
   // Initial Load
   const loadOrders = async () => {
     try {
       const { data } = await fetchAllOrders();
+      // Ensure specific sorting or processing if needed
       setOrders(data);
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch orders", error);
+      addToast('error', 'Failed to load orders');
     }
   };
 
   useEffect(() => {
     loadOrders();
-
-    // Polling Backup (10s)
-    const interval = setInterval(loadOrders, 10000);
+    const interval = setInterval(loadOrders, 10000); // Polling backup
     return () => clearInterval(interval);
   }, []);
 
@@ -57,40 +59,71 @@ export const AdminOrders: React.FC = () => {
   useEffect(() => {
     if (!socket) return;
 
+    const onConnect = () => setIsConnected(true);
+    const onDisconnect = () => setIsConnected(false);
+
     const handleNotification = (data: any) => {
-      if (data.type === 'adminNewOrder' || data.type === 'orderStatusUpdate') {
-        // Immediate refresh on signal
+      console.log("Socket Event Received:", data);
+      if (['adminNewOrder', 'orderStatusUpdate'].includes(data.type)) {
         loadOrders();
+        addToast('info', 'Orders updated');
       }
     };
 
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
     socket.on('notification', handleNotification);
+
+    // Initial state
+    setIsConnected(socket.connected);
+
     return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
       socket.off('notification', handleNotification);
     };
   }, [socket]);
 
-  // Close dropdowns on global click
+  // Global Click Listener to close dropdowns
   useEffect(() => {
-    const closeDropdown = () => setActiveDropdownId(null);
-    document.addEventListener('click', closeDropdown);
-    return () => document.removeEventListener('click', closeDropdown);
+    const handleClick = () => setActiveDropdownId(null);
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
   }, []);
+
+  // Handler for Positioned Dropdown
+  const handleDropdownClick = (e: React.MouseEvent, orderId: string) => {
+    e.stopPropagation();
+    if (activeDropdownId === orderId) {
+      setActiveDropdownId(null);
+    } else {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+
+      setDropdownPos({
+        top: rect.bottom + scrollTop + 5,
+        left: rect.left + scrollLeft
+      });
+      setActiveDropdownId(orderId);
+    }
+  };
 
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
-    // Optimistic Update
     const oldOrders = [...orders];
+
+    // Optimistic Update
     setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus as any } : o));
-    setActiveDropdownId(null); // Close immediately
+    setActiveDropdownId(null);
 
     try {
       await updateOrderStatus(id, newStatus);
-      addToast('success', `Order status updated to ${newStatus}`);
+      addToast('success', `Status updated to ${newStatus}`);
     } catch (error) {
       console.error("Update failed", error);
-      setOrders(oldOrders); // Revert
-      addToast('error', 'Failed to update status');
+      setOrders(oldOrders);
+      addToast('error', 'Update failed');
     }
   };
 
@@ -109,16 +142,12 @@ export const AdminOrders: React.FC = () => {
   const STATUS_CONFIG: Record<string, { color: string, icon: any }> = {
     'Pending': { color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
     'Processing': { color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Clock },
-    'Ready to Ship': { color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: PackageIcon },
+    'Ready to Ship': { color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: CheckCircle }, // Changed icon to generic Check
     'Shipped': { color: 'bg-purple-100 text-purple-700 border-purple-200', icon: Truck },
     'Out for Delivery': { color: 'bg-orange-100 text-orange-700 border-orange-200', icon: Truck },
     'Delivered': { color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
     'Cancelled': { color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle },
   };
-
-  // Helper Icon Component
-  function PackageIcon({ size }: { size: number }) { return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16.5 9.4L7.5 4.21"></path><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>; }
-
 
   // Filter Logic
   const getTabOrders = () => {
@@ -134,7 +163,6 @@ export const AdminOrders: React.FC = () => {
   };
 
   const finalOrders = getTabOrders();
-
 
   return (
     <div className="flex min-h-screen bg-[#F5F7FA]">
@@ -153,10 +181,13 @@ export const AdminOrders: React.FC = () => {
             />
           </div>
           <div className="flex items-center gap-4">
-            <div className="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-100 flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> Live
+            {/* Read Connection Indicator */}
+            <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-2 ${isConnected ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+              <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+              {isConnected ? 'Real-time On' : 'Connecting...'}
             </div>
-            <div className="w-8 h-8 bg-blue-600 rounded-full text-white flex items-center justify-center font-bold text-xs">{user?.name?.[0]}</div>
+
+            <div className="w-8 h-8 bg-blue-600 rounded-full text-white flex items-center justify-center font-bold text-xs">{user?.name?.[0] || 'A'}</div>
           </div>
         </header>
 
@@ -177,11 +208,7 @@ export const AdminOrders: React.FC = () => {
           </div>
 
           {/* Table */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-visible">
-            {/* Overflow-visible is CRITICAL for dropdowns to pop out if using relative positioning, 
-                but standard table overflow-x-auto clips it. 
-                Fix: We will use a fixed 'actions' column or reliable relative dropdown. 
-            */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="overflow-x-auto min-h-[400px]">
               <table className="w-full text-left">
                 <thead className="bg-gray-50 text-xs text-gray-500 uppercase font-bold sticky top-0">
@@ -206,39 +233,15 @@ export const AdminOrders: React.FC = () => {
                           <p className="text-xs text-gray-400">{order.email}</p>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="relative">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Toggle
-                                setActiveDropdownId(activeDropdownId === order.id ? null : order.id);
-                              }}
-                              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border ${conf.color} transition-all active:scale-95`}
-                            >
-                              <conf.icon size={14} />
-                              <span className="uppercase">{order.status}</span>
-                              <ChevronDown size={12} className="opacity-50" />
-                            </button>
-
-                            {/* Dropdown Menu */}
-                            {activeDropdownId === order.id && (
-                              <div
-                                className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-left"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {['Pending', 'Processing', 'Ready to Ship', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(status => (
-                                  <button
-                                    key={status}
-                                    onClick={() => handleStatusUpdate(order.id, status)}
-                                    className={`w-full text-left px-4 py-3 text-xs font-bold uppercase hover:bg-gray-50 flex items-center gap-2 ${order.status === status ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
-                                  >
-                                    {order.status === status && <CheckCircle size={12} className="text-blue-500" />}
-                                    {status}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          {/* Dropdown Trigger */}
+                          <button
+                            onClick={(e) => handleDropdownClick(e, order.id)}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border ${conf.color} transition-all active:scale-95`}
+                          >
+                            <conf.icon size={14} />
+                            <span className="uppercase">{order.status}</span>
+                            <ChevronDown size={12} className="opacity-50" />
+                          </button>
                         </td>
                         <td className="px-6 py-4 text-sm font-bold text-gray-900">₹{order.total.toLocaleString()}</td>
                         <td className="px-6 py-4">
@@ -252,10 +255,29 @@ export const AdminOrders: React.FC = () => {
                   })}
                 </tbody>
               </table>
-              {finalOrders.length === 0 && <div className="p-12 text-center text-gray-400 font-medium">No orders found in this category.</div>}
+              {finalOrders.length === 0 && <div className="p-12 text-center text-gray-400 font-medium">No orders found.</div>}
             </div>
           </div>
         </div>
+
+        {/* Floating Dropdown (FIXED POSITION to escape clipping) */}
+        {activeDropdownId && (
+          <div
+            className="fixed bg-white rounded-xl shadow-2xl border border-gray-100 z-[9999] w-48 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            style={{ top: dropdownPos.top, left: dropdownPos.left }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {['Pending', 'Processing', 'Ready to Ship', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(status => (
+              <button
+                key={status}
+                onClick={() => handleStatusUpdate(activeDropdownId, status)}
+                className="w-full text-left px-4 py-3 text-xs font-bold uppercase hover:bg-gray-50 flex items-center gap-2 text-gray-600 hover:text-blue-600"
+              >
+                {status === 'Ready to Ship' ? <CheckCircle size={14} /> : <Clock size={14} />} {status}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Modal Preview */}
         {isPreviewOpen && selectedOrder && (
