@@ -74,10 +74,10 @@ export const CartPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 lg:px-8 py-8 animate-in fade-in duration-500">
+    <div className="container mx-auto px-3 py-4 md:px-8 md:py-8 animate-in fade-in duration-500 overflow-x-hidden">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-dark">Shopping Bag</h1>
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-dark">Shopping Bag</h1>
           <p className="text-gray-500 font-medium">You have {cart.length} item{cart.length > 1 ? 's' : ''} in your bag</p>
         </div>
         <button
@@ -93,15 +93,15 @@ export const CartPage: React.FC = () => {
           {cart.map((item) => {
             const itemKey = getCartItemKey(item.id, item.selectedVariants);
             return (
-              <div key={itemKey} className="flex flex-col sm:flex-row gap-6 p-6 bg-white border border-gray-100 rounded-[2.5rem] group hover:shadow-2xl hover:border-primary/10 transition-all duration-500 relative">
-                <div className="w-full sm:w-40 aspect-square bg-lightGray rounded-3xl overflow-hidden shrink-0 border border-gray-100 shadow-inner">
+              <div key={itemKey} className="flex flex-row gap-3 p-3 md:gap-6 md:p-6 bg-white border border-gray-100 rounded-xl md:rounded-[2.5rem] group hover:shadow-2xl hover:border-primary/10 transition-all duration-500 relative">
+                <div className="w-[72px] h-[72px] md:w-40 md:h-40 aspect-square bg-lightGray rounded-lg md:rounded-3xl overflow-hidden shrink-0 border border-gray-100 shadow-inner">
                   <img src={resolveProductImage(item)} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 </div>
 
                 <div className="flex-grow flex flex-col justify-between py-2">
                   <div className="flex justify-between items-start gap-4">
                     <div className="space-y-1">
-                      <Link href={`/product/${item.id}`} className="font-bold text-lg text-dark hover:text-primary transition-colors line-clamp-2 tracking-tight">{item.name}</Link>
+                      <Link href={`/product/${item.id}`} className="font-bold text-sm md:text-lg text-dark hover:text-primary transition-colors line-clamp-2 tracking-tight leading-tight">{item.name}</Link>
                       <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">{item.category}</p>
 
                       {item.selectedVariants && (
@@ -130,11 +130,11 @@ export const CartPage: React.FC = () => {
                     </button>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-6 mt-8">
+                  <div className="flex flex-wrap items-center justify-between gap-3 md:gap-6 mt-3 md:mt-8">
                     <div className="flex items-center gap-5 bg-lightGray/50 p-1.5 rounded-2xl border border-gray-100">
                       <button
                         onClick={() => updateCartQuantity(itemKey, item.quantity - 1)}
-                        className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-dark hover:text-primary hover:shadow-md transition-all active:scale-90 disabled:opacity-30"
+                        className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-white rounded-lg md:rounded-xl shadow-sm text-dark hover:text-primary hover:shadow-md transition-all active:scale-90 disabled:opacity-30"
                         disabled={item.quantity <= 1}
                       >
                         <Minus size={16} />
@@ -142,14 +142,14 @@ export const CartPage: React.FC = () => {
                       <span className="w-8 text-center font-bold text-lg">{item.quantity}</span>
                       <button
                         onClick={() => updateCartQuantity(itemKey, item.quantity + 1)}
-                        className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-dark hover:text-primary hover:shadow-md transition-all active:scale-90"
+                        className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-white rounded-lg md:rounded-xl shadow-sm text-dark hover:text-primary hover:shadow-md transition-all active:scale-90"
                       >
                         <Plus size={16} />
                       </button>
                     </div>
 
                     <div className="text-right">
-                      <p className="text-3xl font-bold text-dark tracking-tighter">₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}</p>
+                      <p className="text-lg md:text-3xl font-bold text-dark tracking-tighter">₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}</p>
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">₹{(item.price || 0).toLocaleString('en-IN')} / unit</p>
                     </div>
                   </div>
@@ -166,7 +166,7 @@ export const CartPage: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-2xl shadow-gray-200/50 sticky top-32">
+          <div className="bg-white p-5 md:p-10 rounded-2xl md:rounded-[3rem] border border-gray-100 shadow-xl shadow-gray-200/50 md:shadow-2xl md:sticky md:top-32">
             <h3 className="text-2xl font-bold mb-8 tracking-tight text-dark border-b border-gray-50 pb-6">Bag Summary</h3>
 
             <div className="space-y-6 mb-10">
@@ -207,19 +207,19 @@ export const CartPage: React.FC = () => {
                 <input
                   type="text"
                   placeholder="COUPON CODE"
-                  className="w-full bg-lightGray/50 pl-10 pr-4 py-4 rounded-2xl text-xs font-bold focus:outline-none focus:ring-4 focus:ring-primary/5 border-2 border-transparent focus:border-primary/20 transition-all uppercase tracking-[0.2em]"
+                  className="w-full bg-lightGray/50 pl-10 pr-4 py-3 md:py-4 rounded-xl md:rounded-2xl text-xs font-bold focus:outline-none focus:ring-4 focus:ring-primary/5 border-2 border-transparent focus:border-primary/20 transition-all uppercase tracking-[0.2em]"
                   value={coupon}
                   onChange={(e) => setCoupon(e.target.value)}
                 />
               </div>
-              <button className="bg-dark text-white font-bold px-6 py-4 rounded-2xl hover:bg-primary transition-all text-[10px] tracking-widest shadow-lg shadow-gray-200 active:scale-95 uppercase">
+              <button className="bg-dark text-white font-bold px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-2xl hover:bg-primary transition-all text-[10px] tracking-widest shadow-lg shadow-gray-200 active:scale-95 uppercase">
                 Apply
               </button>
             </form>
 
             <button
               onClick={handleCheckout}
-              className="w-full bg-primary text-white py-6 rounded-[2rem] font-bold hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/30 uppercase tracking-widest text-sm active:scale-95"
+              className="w-full bg-primary text-white py-3 md:py-6 rounded-xl md:rounded-[2rem] font-bold hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/30 uppercase tracking-widest text-xs md:text-sm active:scale-95"
             >
               Secure Checkout <ArrowRight size={20} />
             </button>
