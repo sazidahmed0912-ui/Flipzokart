@@ -146,8 +146,29 @@ export const ProductDetails: React.FC = () => {
     const colors = Array.from(new Set(variants.map(v => v.color).filter(c => !!c))) as string[];
     const sizes = Array.from(new Set(variants.map(v => v.size).filter(s => !!s))) as string[];
 
-    // For mapping hex if available (not in strict shape but helpful)
+    // For mapping hex if available (from Metadata)
     const cMap: Record<string, string> = {};
+
+    try {
+      if (product.description && product.description.includes('<!-- METADATA:')) {
+        const parts = product.description.split('<!-- METADATA:');
+        const jsonStr = parts[1].split('-->')[0];
+        const meta = JSON.parse(jsonStr);
+
+        if (meta.variants && Array.isArray(meta.variants)) {
+          const colorGroup = meta.variants.find((g: any) => g.name.toLowerCase() === 'color');
+          if (colorGroup && colorGroup.options) {
+            colorGroup.options.forEach((opt: any) => {
+              if (opt.name && opt.color) {
+                cMap[opt.name] = opt.color;
+              }
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse product metadata for colors", e);
+    }
 
     return { uniqueColors: colors, uniqueSizes: sizes, colorMap: cMap };
   }, [product]);
@@ -353,9 +374,10 @@ export const ProductDetails: React.FC = () => {
                 </h3>
                 <div className="flex gap-2 sm:gap-3 flex-wrap">
                   {uniqueColors.map(c => {
-                    const tailwindClass = getColorClass(c);
-                    // Fallback: try to construct a valid CSS color name (e.g. "Royal Blue" -> "royalblue")
-                    const cssFallback = !tailwindClass ? c.replace(/\s+/g, '').toLowerCase() : undefined;
+                    const customHex = colorMap[c];
+                    const tailwindClass = !customHex ? getColorClass(c) : undefined;
+                    // Fallback: try to construct a valid CSS color name
+                    const cssFallback = !customHex && !tailwindClass ? c.replace(/\s+/g, '').toLowerCase() : undefined;
 
                     return (
                       <button
@@ -363,7 +385,7 @@ export const ProductDetails: React.FC = () => {
                         onClick={() => handleColor(c)}
                         className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 ${selectedColor === c ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'} ${tailwindClass || ''}`}
                         title={c}
-                        style={{ backgroundColor: tailwindClass ? undefined : (colorMap[c] || cssFallback || '#ccc') }}
+                        style={{ backgroundColor: customHex ? customHex : (tailwindClass ? undefined : (cssFallback || '#ccc')) }}
                       />
                     );
                   })}
