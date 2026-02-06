@@ -486,9 +486,9 @@ export const AdminOrders: React.FC = () => {
 
                                                     // 0. Accuracy Warning for Desktop/IP Geolocation
                                                     if (accuracy > 5000) {
-                                                        const proceed = window.confirm(`⚠️ Weak GPS Signal!\n\nAccuracy is very low (~${Math.round(accuracy / 1000)}km off). This usually happens on desktops without real GPS.\n\nType your address (e.g., "782126") and use 'Fetch Coords' instead?\n\nClick Cancel to keep these approximate coordinates.`);
+                                                        const proceed = window.confirm(`⚠️ Weak GPS Signal Detected (~${Math.round(accuracy / 1000)}km Error).\n\nYour computer suggests "Azara" (IP Location), but you are likely elsewhere.\n\nRecommended: Click 'OK' to STOP GPS and simply click 'Fetch Coords' to use the address (782126) instead.\n\nClick 'Cancel' only if you really want to use this wrong location.`);
                                                         if (proceed) {
-                                                            if (btn) btn.innerText = "Use Search Instead";
+                                                            if (btn) btn.innerText = "Use Fetch Coords";
                                                             return;
                                                         }
                                                     }
@@ -567,27 +567,30 @@ export const AdminOrders: React.FC = () => {
 
                                         try {
                                             // Nominatim OpenStreetMap (Free, no key)
-                                            // Strategy 1: Full Address
                                             let query = locationData.address;
-                                            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
-                                            let data = await res.json();
+                                            let data = [];
 
-                                            // Strategy 2: Fallback (Remove house numbers/specifics)
+                                            // Strategy 1: ZIP Code Priority (Highest Accuracy for Region)
+                                            const zipMatch = query.match(/\b\d{6}\b/); // Indian 6-digit PIN
+                                            if (zipMatch) {
+                                                console.log("Strategy 1: Searching by ZIP:", zipMatch[0]);
+                                                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${zipMatch[0]}&country=India&limit=1`);
+                                                data = await res.json();
+                                            }
+
+                                            // Strategy 2: Full Address (If ZIP failed or no ZIP)
+                                            if (!data || data.length === 0) {
+                                                console.log("Strategy 2: Searching Full Address");
+                                                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                                                data = await res.json();
+                                            }
+
+                                            // Strategy 3: Fallback (Remove house numbers/specifics)
                                             if (!data || data.length === 0) {
                                                 const parts = query.split(',').slice(1).join(',').trim();
                                                 if (parts.length > 5) {
-                                                    console.log("Retrying with:", parts);
-                                                    res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parts)}&limit=1`);
-                                                    data = await res.json();
-                                                }
-                                            }
-
-                                            // Strategy 3: Try ZIP Code only if present
-                                            if (!data || data.length === 0) {
-                                                const zipMatch = query.match(/\b\d{6}\b/); // Indian 6-digit PIN
-                                                if (zipMatch) {
-                                                    console.log("Retrying with ZIP:", zipMatch[0]);
-                                                    res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${zipMatch[0]}&country=India&limit=1`);
+                                                    console.log("Strategy 3: Retrying with fallback:", parts);
+                                                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parts)}&limit=1`);
                                                     data = await res.json();
                                                 }
                                             }
