@@ -632,4 +632,146 @@
   .empty-cart-image {
     max-height: 250px;
   }
-}
+
+  /* 
+  ================================================================
+  KILL-MODE: HARD MOBILE SIZE OVERRIDE (MAX-WIDTH: 768px)
+  AUTHORITY level: !important 
+  TARGET: Visible Scale Reduction
+  ================================================================
+*/
+  @media (max-width: 768px) {
+
+    /* 1. ROOT CONTAINER SCALE DOWN */
+    .cart-page-container {
+      padding: 8px !important;
+      padding-bottom: 80px !important;
+      /* Space for footer */
+    }
+
+    /* 2. CART ITEM CARD COMPRESSION */
+    .cart-item-card {
+      padding: 10px !important;
+      margin-bottom: 8px !important;
+      gap: 10px !important;
+      border-radius: 8px !important;
+    }
+
+    /* Image Scaling */
+    .item-image-container {
+      width: 64px !important;
+      height: 64px !important;
+      min-width: 64px !important;
+    }
+
+    /* Text Scaling */
+    .item-title {
+      font-size: 13px !important;
+      line-height: 1.3 !important;
+      margin-bottom: 4px !important;
+      max-height: 34px !important;
+      /* Limit visual height */
+      overflow: hidden !important;
+    }
+
+    .item-category,
+    .item-seller {
+      font-size: 10px !important;
+      margin-bottom: 2px !important;
+    }
+
+    .item-rating {
+      font-size: 9px !important;
+      padding: 1px 4px !important;
+      height: 16px !important;
+    }
+
+    /* Price Section Compression */
+    .current-price {
+      font-size: 14px !important;
+    }
+
+    .original-price,
+    .discount-percentage {
+      font-size: 11px !important;
+    }
+
+    /* Quantity & Action Buttons Scaling */
+    .qty-btn {
+      width: 26px !important;
+      height: 26px !important;
+      font-size: 14px !important;
+    }
+
+    .qty-value {
+      height: 26px !important;
+      font-size: 12px !important;
+      width: 30px !important;
+    }
+
+    .item-actions-row {
+      margin-top: 8px !important;
+      gap: 8px !important;
+    }
+
+    .cart-action-btn {
+      font-size: 11px !important;
+      padding: 4px 8px !important;
+      height: auto !important;
+    }
+
+    /* 3. PRICE DETAILS BOX COMPRESSION */
+    .price-details-card {
+      padding: 0 !important;
+      margin-top: 8px !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    .price-header {
+      font-size: 13px !important;
+      padding: 8px 12px !important;
+      min-height: auto !important;
+    }
+
+    .price-breakdown {
+      padding: 4px 12px !important;
+    }
+
+    .price-row {
+      font-size: 12px !important;
+      margin: 6px 0 !important;
+    }
+
+    .total-row {
+      padding: 10px 0 !important;
+      margin-top: 4px !important;
+    }
+
+    .total-row span {
+      font-size: 14px !important;
+    }
+
+    .savings-message {
+      font-size: 12px !important;
+      padding: 8px 12px !important;
+    }
+
+    /* 4. STICKY FOOTER SIZE LOCK */
+    .place-order-sticky-mobile {
+      height: 50px !important;
+      padding: 0 12px !important;
+      bottom: 56px !important;
+      /* Adjust if bottom nav exists, else 0 */
+    }
+
+    .place-order-sticky-mobile .place-order-btn {
+      height: 36px !important;
+      font-size: 13px !important;
+      padding: 0 16px !important;
+    }
+
+    .mobile-total span {
+      font-size: 14px !important;
+    }
+  }

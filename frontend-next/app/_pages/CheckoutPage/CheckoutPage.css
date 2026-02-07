@@ -646,4 +646,111 @@ body {
         padding-bottom: 80px !important;
         /* Reduce safe space */
     }
-}
+
+    /* 
+  ================================================================
+  KILL-MODE: HARD MOBILE SIZE OVERRIDE (MAX-WIDTH: 768px)
+  AUTHORITY level: !important 
+  TARGET: Visible Scale Reduction
+  ================================================================
+*/
+    @media (max-width: 768px) {
+
+        /* 1. ROOT CONTAINER SCALE DOWN */
+        .checkout-container {
+            padding: 0 !important;
+            padding-bottom: 70px !important;
+        }
+
+        .checkout-main {
+            gap: 0 !important;
+            margin: 0 !important;
+        }
+
+        .address-section {
+            padding: 8px 0 !important;
+            margin: 0 !important;
+        }
+
+        .address-section h2 {
+            font-size: 14px !important;
+            padding: 0 12px 8px 12px !important;
+            margin-bottom: 8px !important;
+        }
+
+        /* 2. ADDRESS CARD COMPRESSION */
+        .address-list {
+            padding: 0 12px !important;
+            gap: 8px !important;
+        }
+
+        .address-card {
+            padding: 10px !important;
+            gap: 6px !important;
+            border-radius: 8px !important;
+        }
+
+        .address-card-header {
+            margin-bottom: 4px !important;
+            gap: 8px !important;
+        }
+
+        /* Text Scaling */
+        .address-card-details h3 {
+            font-size: 13px !important;
+            line-height: 1.2 !important;
+        }
+
+        .address-type {
+            font-size: 10px !important;
+            padding: 2px 6px !important;
+            height: 18px !important;
+            line-height: 14px !important;
+        }
+
+        .address-phone {
+            font-size: 11px !important;
+        }
+
+        .address-card-details p {
+            font-size: 12px !important;
+            line-height: 1.35 !important;
+            margin-bottom: 6px !important;
+            color: #555 !important;
+        }
+
+        /* Button Scaling */
+        .address-card-actions {
+            margin-top: 4px !important;
+            gap: 8px !important;
+        }
+
+        .address-btn {
+            height: 28px !important;
+            font-size: 11px !important;
+            padding: 0 12px !important;
+            border-radius: 4px !important;
+        }
+
+        /* 3. ADD NEW ADDRESS BOX */
+        .add-new-address-card {
+            margin: 8px 12px 0 12px !important;
+            padding: 10px !important;
+            border-width: 1px !important;
+        }
+
+        .add-address-btn {
+            font-size: 13px !important;
+        }
+
+        /* 4. FOOTER & MISC scaling */
+        .place-order-sticky-mobile {
+            padding: 8px 12px !important;
+            height: 50px !important;
+        }
+
+        .place-order-sticky-mobile .place-order-btn {
+            height: 34px !important;
+            font-size: 13px !important;
+        }
+    }
