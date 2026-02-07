@@ -804,4 +804,32 @@ body {
     .checkout-container {
         padding-bottom: 20px !important;
     }
+
+    /* 
+      ================================================================
+      HARD FLOW CONTROL: FLEX ORDER (Mobile)
+      TARGET: Header -> Summary -> Address -> Button
+      ================================================================
+    */
+    .checkout-main {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* 1. Price Summary (Top) */
+    .summary-section {
+        order: -1 !important;
+        margin-top: 12px !important;
+        /* Small gap from step bar */
+    }
+
+    /* 2. Address Section (Middle) */
+    .address-section {
+        order: 0 !important;
+    }
+
+    /* 3. Continue Button (Bottom) */
+    .place-order-sticky-mobile {
+        order: 1 !important;
+    }
 }
