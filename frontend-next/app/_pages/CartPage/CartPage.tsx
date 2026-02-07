@@ -1,5 +1,4 @@
-"use client";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Minus, Plus, Star, Trash2, Heart, ShieldCheck, ShoppingBag, AlertTriangle } from 'lucide-react';
@@ -23,27 +22,35 @@ const CartPage = () => {
   const { cart: cartItems, removeFromCart, updateCartQuantity, clearCart, products, removeProductFromCart, isInitialized } = useApp();
   const router = useRouter();
 
+  // DOUBLE-LOCK HYDRATION GATE
+  // Ensure we are strictly on the client and mounted before allowing any interaction
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const updateQuantity = (item: CartItem, change: number) => {
-    if (!isInitialized) return; // Safety check
+    if (!isInitialized || !isMounted) return; // Strict Safety check
     const itemKey = getCartItemKey(item.id, item.selectedVariants, item.variantId);
     const newQuantity = Math.max(1, item.quantity + change);
     updateCartQuantity(itemKey, newQuantity);
   };
 
   const removeItem = (item: CartItem) => {
-    if (!isInitialized) return; // Safety check
+    if (!isInitialized || !isMounted) return; // Strict Safety check
     const itemKey = getCartItemKey(item.id, item.selectedVariants, item.variantId);
     removeFromCart(itemKey);
   };
 
   const handlePlaceOrder = () => {
-    if (!isInitialized) return; // Safety check
+    if (!isInitialized || !isMounted) return; // Strict Safety check
     router.push('/checkout');
   };
 
   // Proactive Cart Cleanup: Remove items that no longer exist in DB
   useEffect(() => {
-    if (isInitialized && products.length > 0 && cartItems.length > 0) {
+    if (isInitialized && isMounted && products.length > 0 && cartItems.length > 0) {
       cartItems.forEach(item => {
         const productExists = products.find(p => p.id === item.id);
         if (!productExists) {
@@ -52,7 +59,7 @@ const CartPage = () => {
         }
       });
     }
-  }, [products, cartItems, removeProductFromCart, isInitialized]);
+  }, [products, cartItems, removeProductFromCart, isInitialized, isMounted]);
 
 
 
@@ -62,7 +69,7 @@ const CartPage = () => {
 
   // HYDRATION LOCK: Ensure we wait for context to fully initialize
   // prevent interactions with stale state
-  const loading = !isInitialized;
+  const loading = !isInitialized || !isMounted;
 
   // Loading skeleton component
   const CartItemSkeleton = () => (
