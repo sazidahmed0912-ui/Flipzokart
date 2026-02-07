@@ -219,6 +219,48 @@ const CheckoutPage = () => {
         }, 1000);
     };
 
+    const renderPriceSummary = () => (
+        <div className="price-summary-card">
+            <h3>Price Summary</h3>
+            <div className="price-summary-item">
+                <span>Items price</span>
+                <span>₹{subtotal.toLocaleString('en-IN')}</span>
+            </div>
+            <div className="price-summary-item">
+                <span>Delivery charges</span>
+                <span className={deliveryCharges === 0 ? "free" : ""}>
+                    {isFreeDeliveryEligible ? 'FREE' : <span className="text-[10px] text-gray-500">Free (Prepaid) / ₹50 (COD)</span>}
+                </span>
+            </div>
+            <div className="price-summary-item">
+                <span>Platform Fee</span>
+                <span>₹{platformFee}</span>
+            </div>
+            <div className="price-summary-total">
+                <span>Total payable</span>
+                <span>₹{totalPayable.toLocaleString('en-IN')}</span>
+            </div>
+            <button
+                className="place-order-btn desktop-only"
+                disabled={isPlaceOrderLoading}
+                onClick={handlePlaceOrder}
+            >
+                {isPlaceOrderLoading ? (
+                    <>
+                        <Loader size={16} className="loading-spinner" />
+                        Processing...
+                    </>
+                ) : (
+                    'CONTINUE'
+                )}
+            </button>
+            <div className="security-badge">
+                <Lock size={16} />
+                <span>Safe & Secure Payments</span>
+            </div>
+        </div>
+    );
+
     return (
         <div className="checkout-container">
             <header className="checkout-header">
@@ -237,6 +279,14 @@ const CheckoutPage = () => {
                 </div>
             </header>
             <main className="checkout-main">
+                {/* 
+                   MOBILE DOM ORDER STRICT: 
+                   Render Price Summary here for Mobile ONLY (display: block on mobile, none on desktop)
+                */}
+                <div className="summary-section mobile-only-summary">
+                    {renderPriceSummary()}
+                </div>
+
                 <div className="address-section">
                     <h2>Select Delivery Address</h2>
                     <div className="address-list">
@@ -284,46 +334,8 @@ const CheckoutPage = () => {
                     </button>
                 </div>
 
-                <div className="summary-section">
-                    <div className="price-summary-card">
-                        <h3>Price Summary</h3>
-                        <div className="price-summary-item">
-                            <span>Items price</span>
-                            <span>₹{subtotal.toLocaleString('en-IN')}</span>
-                        </div>
-                        <div className="price-summary-item">
-                            <span>Delivery charges</span>
-                            <span className={deliveryCharges === 0 ? "free" : ""}>
-                                {isFreeDeliveryEligible ? 'FREE' : <span className="text-[10px] text-gray-500">Free (Prepaid) / ₹50 (COD)</span>}
-                            </span>
-                        </div>
-                        <div className="price-summary-item">
-                            <span>Platform Fee</span>
-                            <span>₹{platformFee}</span>
-                        </div>
-                        <div className="price-summary-total">
-                            <span>Total payable</span>
-                            <span>₹{totalPayable.toLocaleString('en-IN')}</span>
-                        </div>
-                        <button
-                            className="place-order-btn desktop-only"
-                            disabled={isPlaceOrderLoading}
-                            onClick={handlePlaceOrder}
-                        >
-                            {isPlaceOrderLoading ? (
-                                <>
-                                    <Loader size={16} className="loading-spinner" />
-                                    Processing...
-                                </>
-                            ) : (
-                                'CONTINUE'
-                            )}
-                        </button>
-                        <div className="security-badge">
-                            <Lock size={16} />
-                            <span>Safe & Secure Payments</span>
-                        </div>
-                    </div>
+                <div className="summary-section desktop-only-summary">
+                    {renderPriceSummary()}
                 </div>
             </main>
         </div>
