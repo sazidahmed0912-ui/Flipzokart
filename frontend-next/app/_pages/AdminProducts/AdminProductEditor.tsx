@@ -454,6 +454,7 @@ export const AdminProductEditor: React.FC = () => {
                 images: allImages,
                 thumbnail: mainImage,
                 variants: strictVariants, // STRICT TYPES SOURCE OF TRUTH
+                isFeatured: formData.isFeatured,
                 // inventory: undefined,  // REMOVED legacy field
                 specifications: specifications,
                 sku: skuBase,
@@ -719,6 +720,17 @@ export const AdminProductEditor: React.FC = () => {
                                     <div><label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Font Size</label><select value={sectionSize} onChange={(e) => setSectionSize(e.target.value)} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold outline-none"><option value="text-base">Normal</option><option value="text-lg">Large</option><option value="text-xl">Extra Large</option><option value="text-2xl">Huge</option></select></div>
                                 </div>
                                 {sectionTitle && (<div className="mt-2 p-3 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center"><p className="text-[10px] text-gray-400 mb-1">Preview</p><h3 style={{ color: sectionColor }} className={`${sectionSize} font-bold`}>{sectionTitle}</h3></div>)}
+
+                                <div className="pt-4 border-t border-gray-100">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className="relative">
+                                            <input type="checkbox" name="isFeatured" checked={formData.isFeatured} onChange={handleChange} className="peer sr-only" />
+                                            <div className="w-10 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </div>
+                                        <span className="text-xs font-bold text-gray-600 group-hover:text-blue-600 transition-colors">Featured Product</span>
+                                    </label>
+                                    <p className="text-[10px] text-gray-400 mt-1 ml-13">Show in "Featured on Fzokart" section</p>
+                                </div>
                             </div>
                         </div>
 

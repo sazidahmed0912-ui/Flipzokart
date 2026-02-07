@@ -78,6 +78,8 @@ export class ProductService {
                 thumbnail: thumbnail,
                 rating: Number(rating) || 0,
                 isActive: isActive !== undefined ? isActive : true,
+                // @ts-ignore
+                isFeatured: data.isFeatured || false,
                 categoryId
             },
             include: { category: true }
@@ -88,7 +90,7 @@ export class ProductService {
             ...product,
             name: product.title,
             image: product.thumbnail || (product.images.length > 0 ? product.images[0] : ''),
-            category: product.category?.name || 'Unknown'
+            category: (product as any).category?.name || 'Unknown'
         };
     }
 
@@ -119,6 +121,8 @@ export class ProductService {
         }
 
         if (data.isActive !== undefined) updateData.isActive = data.isActive;
+        // @ts-ignore
+        if (data.isFeatured !== undefined) updateData.isFeatured = data.isFeatured;
         if (data.brand) updateData.brand = data.brand;
 
         const categoryInput = data.category;

@@ -101,6 +101,7 @@ model Product {
   rating        Float    @default(0)
   totalSales    Int      @default(0)
   isActive      Boolean  @default(true)
+  isFeatured    Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
