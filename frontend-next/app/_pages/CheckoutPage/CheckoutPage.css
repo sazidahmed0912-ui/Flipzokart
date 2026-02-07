@@ -798,102 +798,133 @@ body {
 
         /* 3. ADD NEW ADDRESS BOX */
         .add-new-address-card {
-            margin: 8px 12px 0 12px !important;
             padding: 10px !important;
-            border-width: 1px !important;
-        }
-
-        .add-address-btn {
-            font-size: 13px !important;
-        }
-
-        /* 4. FOOTER & MISC scaling */
-        .place-order-sticky-mobile {
-            padding: 8px 12px !important;
-            height: 50px !important;
-        }
-
-        .place-order-sticky-mobile .place-order-btn {
-            height: 34px !important;
-            font-size: 13px !important;
+            margin-top: 8px !important;
+            margin-bottom: 0 !important;
         }
     }
-}
 
-/* 
+
+
+    /* 
   ================================================================
   PRECISION ALIGNMENT MODE: STRICT SPACING & FLOW (Mobile)
   TARGET: Fix Price Summary -> Address -> Continue Button flow
   ================================================================
 */
-@media (max-width: 768px) {
+    @media (max-width: 768px) {
 
-    /* 1. CLOSE GAP: Price Summary -> Address Section */
-    .summary-section {
-        margin-bottom: 0 !important;
-        /* Remove gap below price summary */
-        padding-bottom: 0 !important;
-    }
+        /* 1. CLOSE GAP: Price Summary -> Address Section */
+        .summary-section {
+            margin-bottom: 0 !important;
+            /* Remove gap below price summary */
+            padding-bottom: 0 !important;
+        }
 
-    .address-section {
-        padding-top: 8px !important;
-        /* Small clean gap (8px) */
-    }
+        .address-section {
+            padding-top: 8px !important;
+            /* Small clean gap (8px) */
+        }
 
-    /* 2. CONTINUE BUTTON: STATIC FLOW */
-    .place-order-sticky-mobile {
-        position: static !important;
-        /* NO STICKY - FOLLOW FLOW */
-        background: transparent !important;
-        box-shadow: none !important;
-        border-top: none !important;
-        padding: 12px 16px !important;
-        /* Clean tapping area */
-        margin-top: 0 !important;
-    }
+        /* 2. CONTINUE BUTTON: STATIC FLOW */
+        .place-order-sticky-mobile {
+            position: static !important;
+            /* NO STICKY - FOLLOW FLOW */
+            background: transparent !important;
+            box-shadow: none !important;
+            border-top: none !important;
+            padding: 12px 16px !important;
+            /* Clean tapping area */
+            margin-top: 0 !important;
+        }
 
-    /* Minimize gap between "Add Address" and "Continue" */
-    .add-new-address-card {
-        margin-bottom: 0 !important;
-        /* The padding of place-order-sticky-mobile provided the gap */
-    }
+        /* Minimize gap between "Add Address" and "Continue" */
+        .add-new-address-card {
+            margin-bottom: 0 !important;
+            /* The padding of place-order-sticky-mobile provided the gap */
+        }
 
-    /* Ensure Full Width Button */
-    .place-order-sticky-mobile .place-order-btn {
-        width: 100% !important;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-    }
+        /* Ensure Full Width Button */
+        .place-order-sticky-mobile .place-order-btn {
+            width: 100% !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
 
-    /* Remove safe area padding from container since button is not sticky */
-    .checkout-container {
-        padding-bottom: 20px !important;
-    }
+        /* Remove safe area padding from container since button is not sticky */
+        .checkout-container {
+            padding-bottom: 20px !important;
+        }
 
-    /* 
+        /* 
       ================================================================
       HARD FLOW CONTROL: FLEX ORDER (Mobile)
       TARGET: Header -> Summary -> Address -> Button
       ================================================================
     */
+        .checkout-main {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        /* 1. Price Summary (Top) */
+        .summary-section {
+            order: -1 !important;
+            margin-top: 12px !important;
+            /* Small gap from step bar */
+        }
+
+        /* 2. Address Section (Middle) */
+        .address-section {
+            order: 0 !important;
+        }
+
+        /* 3. Continue Button (Bottom) */
+        .place-order-sticky-mobile {
+            order: 1 !important;
+        }
+    }
+}
+
+/* =========================================
+   FINAL GAP FIX - ONE SHOT (USER REQUESTED)
+   ========================================= */
+@media (max-width: 768px) {
+
+    .checkout-container,
+    .checkout-wrapper,
+    .price-summary-wrapper {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    /* Remove gap between Header (Secure Checkout) and Main Content */
+    .checkout-header {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+        border-bottom: none !important;
+        /* Optional: smooth transition */
+    }
+
     .checkout-main {
-        display: flex !important;
-        flex-direction: column !important;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        gap: 0 !important;
     }
 
-    /* 1. Price Summary (Top) */
     .summary-section {
-        order: -1 !important;
-        margin-top: 12px !important;
-        /* Small gap from step bar */
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
 
-    /* 2. Address Section (Middle) */
-    .address-section {
-        order: 0 !important;
+    /* Specific targeting for Secure Checkout parent if needed */
+    .secure-checkout {
+        margin-bottom: 0 !important;
+        padding-bottom: 10px !important;
+        /* Tiny breathing room inside header */
     }
 
-    /* 3. Continue Button (Bottom) */
-    .place-order-sticky-mobile {
-        order: 1 !important;
+    /* Ensure immediate sibling has no gap */
+    .checkout-header+.checkout-main {
+        margin-top: 0 !important;
     }
 }

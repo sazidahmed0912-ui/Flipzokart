@@ -262,7 +262,7 @@ const CheckoutPage = () => {
     );
 
     return (
-        <div className="checkout-container">
+        <div className="checkout-container space-y-0">
             <header className="checkout-header">
                 <div className="logo"></div>
                 <div className="checkout-steps">
