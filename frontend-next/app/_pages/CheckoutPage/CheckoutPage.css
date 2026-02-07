@@ -753,4 +753,55 @@ body {
             height: 34px !important;
             font-size: 13px !important;
         }
-    }}
+    }
+}
+
+/* 
+  ================================================================
+  PRECISION ALIGNMENT MODE: STRICT SPACING & FLOW (Mobile)
+  TARGET: Fix Price Summary -> Address -> Continue Button flow
+  ================================================================
+*/
+@media (max-width: 768px) {
+
+    /* 1. CLOSE GAP: Price Summary -> Address Section */
+    .summary-section {
+        margin-bottom: 0 !important;
+        /* Remove gap below price summary */
+        padding-bottom: 0 !important;
+    }
+
+    .address-section {
+        padding-top: 8px !important;
+        /* Small clean gap (8px) */
+    }
+
+    /* 2. CONTINUE BUTTON: STATIC FLOW */
+    .place-order-sticky-mobile {
+        position: static !important;
+        /* NO STICKY - FOLLOW FLOW */
+        background: transparent !important;
+        box-shadow: none !important;
+        border-top: none !important;
+        padding: 12px 16px !important;
+        /* Clean tapping area */
+        margin-top: 0 !important;
+    }
+
+    /* Minimize gap between "Add Address" and "Continue" */
+    .add-new-address-card {
+        margin-bottom: 0 !important;
+        /* The padding of place-order-sticky-mobile provided the gap */
+    }
+
+    /* Ensure Full Width Button */
+    .place-order-sticky-mobile .place-order-btn {
+        width: 100% !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* Remove safe area padding from container since button is not sticky */
+    .checkout-container {
+        padding-bottom: 20px !important;
+    }
+}
