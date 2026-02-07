@@ -20,27 +20,30 @@ const getCartItemKey = (productId: string, variants?: Record<string, string>, va
 };
 
 const CartPage = () => {
-  const { cart: cartItems, removeFromCart, updateCartQuantity, clearCart, products, removeProductFromCart } = useApp();
+  const { cart: cartItems, removeFromCart, updateCartQuantity, clearCart, products, removeProductFromCart, isInitialized } = useApp();
   const router = useRouter();
 
   const updateQuantity = (item: CartItem, change: number) => {
+    if (!isInitialized) return; // Safety check
     const itemKey = getCartItemKey(item.id, item.selectedVariants, item.variantId);
     const newQuantity = Math.max(1, item.quantity + change);
     updateCartQuantity(itemKey, newQuantity);
   };
 
   const removeItem = (item: CartItem) => {
+    if (!isInitialized) return; // Safety check
     const itemKey = getCartItemKey(item.id, item.selectedVariants, item.variantId);
     removeFromCart(itemKey);
   };
 
   const handlePlaceOrder = () => {
+    if (!isInitialized) return; // Safety check
     router.push('/checkout');
   };
 
   // Proactive Cart Cleanup: Remove items that no longer exist in DB
   useEffect(() => {
-    if (products.length > 0 && cartItems.length > 0) {
+    if (isInitialized && products.length > 0 && cartItems.length > 0) {
       cartItems.forEach(item => {
         const productExists = products.find(p => p.id === item.id);
         if (!productExists) {
@@ -49,14 +52,17 @@ const CartPage = () => {
         }
       });
     }
-  }, [products, cartItems, removeProductFromCart]);
+  }, [products, cartItems, removeProductFromCart, isInitialized]);
 
 
 
   // ... existing code ...
 
   const priceDetails = calculateCartTotals(cartItems);
-  const loading = false; // Set to false as we're using Context which loads from localStorage
+
+  // HYDRATION LOCK: Ensure we wait for context to fully initialize
+  // prevent interactions with stale state
+  const loading = !isInitialized;
 
   // Loading skeleton component
   const CartItemSkeleton = () => (
@@ -122,7 +128,8 @@ const CartPage = () => {
     );
   }
 
-  if (cartItems.length === 0) {
+  // Only check for empty cart AFTER initialization is done
+  if (isInitialized && cartItems.length === 0) {
     return (
       <div className="empty-cart-container">
         <div className="empty-cart-content">
