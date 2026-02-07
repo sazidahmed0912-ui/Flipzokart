@@ -59,18 +59,82 @@ body {
     margin-right: 0.5rem;
 }
 
+/* 
+  ================================================================
+  SINGLE COMPONENT LAYOUT ARCHITECTURE
+  STRATEGY: ROW-REVERSE on Desktop, COLUMN on Mobile
+  ================================================================
+*/
+
+/* DESKTOP DEFAULT: Address (Left) | Summary (Right) */
 .checkout-main {
     display: flex;
+    flex-direction: row-reverse;
+    /* SWAP: Puts Summary (1st child) on Right, Address (2nd child) on Left */
     gap: 1.5rem;
     align-items: flex-start;
 }
 
+/* Ensure Address Section takes remaining space */
 .address-section {
     flex: 2;
-    background-color: var(--background-color-white);
-    padding: 1.5rem;
-    border-radius: 4px;
-    box-shadow: var(--shadow-sm);
+}
+
+/* Ensure Summary Section takes side space */
+.summary-section {
+    flex: 1;
+    position: sticky;
+    top: 1.5rem;
+    margin: 0;
+}
+
+
+/* MOBILE & TABLET OVERRIDES (max-width: 992px) */
+@media (max-width: 992px) {
+    .checkout-main {
+        flex-direction: column;
+        /* Natural Stack: Summary (Top) -> Address (Bottom) */
+    }
+
+    .summary-section {
+        position: relative;
+        width: 100%;
+        margin-bottom: 0 !important;
+        /* Zero gap below summary */
+        padding-bottom: 0 !important;
+        top: 0;
+    }
+}
+
+/* STRICT MOBILE (max-width: 768px) */
+@media (max-width: 768px) {
+
+    /* 1. Header -> Summary (Zero Gap) */
+    .summary-section {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    /* 2. Summary -> Address (Small Gap) */
+    .address-section {
+        margin-top: 0 !important;
+        padding-top: 12px !important;
+    }
+
+    /* 3. Continue Button (Static Flow) */
+    .place-order-sticky-mobile {
+        position: static !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-top: none !important;
+        padding: 12px 16px !important;
+        margin-top: 0 !important;
+    }
+
+    /* Remove heavy container padding */
+    .checkout-container {
+        padding-bottom: 20px !important;
+    }
 }
 
 .address-section h2 {

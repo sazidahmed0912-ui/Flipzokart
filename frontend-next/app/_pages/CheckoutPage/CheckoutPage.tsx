@@ -280,10 +280,12 @@ const CheckoutPage = () => {
             </header>
             <main className="checkout-main">
                 {/* 
-                   MOBILE DOM ORDER STRICT: 
-                   Render Price Summary here for Mobile ONLY (display: block on mobile, none on desktop)
+                   SINGLE DOM SOURCE OF TRUTH: 
+                   Price Summary is FIRST in DOM order.
+                   Mobile: Shows first (Column layout).
+                   Desktop: Shows on right (Row-Reverse layout).
                 */}
-                <div className="summary-section mobile-only-summary">
+                <div className="summary-section">
                     {renderPriceSummary()}
                 </div>
 
@@ -332,10 +334,6 @@ const CheckoutPage = () => {
                             'CONTINUE'
                         )}
                     </button>
-                </div>
-
-                <div className="summary-section desktop-only-summary">
-                    {renderPriceSummary()}
                 </div>
             </main>
         </div>
