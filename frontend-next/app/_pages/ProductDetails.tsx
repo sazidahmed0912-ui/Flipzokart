@@ -1,549 +1,403 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ShoppingCart, Heart, Star, ShieldCheck, Truck, RotateCcw, Minus, Plus, Share2, Check, AlertTriangle, Info, Clock, ArrowRight, CreditCard, Package, ChevronRight, Search, Lock } from 'lucide-react';
+import { ShoppingCart, Star, Truck, RotateCcw, Check, Info, ChevronRight, CreditCard, Package, Ruler, Palette, Layers, AlertCircle } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
-import { ProductCard } from '@/app/components/ProductCard';
 import { useToast } from '@/app/components/toast';
-import API, { fetchProductById } from '@/app/services/api';
+import { fetchProductById } from '@/app/services/api';
 import { Product, ProductVariant, CartItem, Review } from '@/app/types';
 import { ReviewList } from './ProductDetails/components/ReviewList';
 import { ReviewForm } from './ProductDetails/components/ReviewForm';
 import { useSocket } from '@/app/hooks/useSocket';
-import LazyImage from '@/app/components/LazyImage';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import ProductGallery from '@/app/components/ProductGallery';
-import { getProductImageUrl, getAllProductImages } from '@/app/utils/imageHelper';
+import { getProductImageUrl } from '@/app/utils/imageHelper';
+
+// --- Helper: Parse Metadata for Dynamic Groups ---
+const parseVariantMetadata = (description: string): any[] => {
+  if (!description || !description.includes('<!-- METADATA:')) return [];
+  try {
+    const parts = description.split('<!-- METADATA:');
+    const jsonStr = parts[1].split('-->')[0];
+    const meta = JSON.parse(jsonStr);
+    return meta.variants || [];
+  } catch (e) {
+    return [];
+  }
+};
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { addToCart, wishlist, user } = useApp();
+  const { addToCart } = useApp();
   const { addToast } = useToast();
+
+  // --- State ---
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [isReviewsLoading, setIsReviewsLoading] = useState(false);
-  const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
 
-  // ================================================
-  // STEP 2 — LOCK FRONTEND STATE MODEL
-  // ================================================
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [activeVariant, setActiveVariant] = useState<any>(null);
+  // Dynamic Selection State: Record<GroupName, OptionName>
+  const [selections, setSelections] = useState<Record<string, string>>({});
+  const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(null);
 
+  // --- Socket & Data Logic ---
   const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
   const socket = useSocket(token);
 
-  const handleReviewUpdate = (newReview: Review) => {
-    setReviews((prevReviews) => {
-      const existingIndex = prevReviews.findIndex((r) => r._id === newReview._id);
-      if (existingIndex > -1) {
-        const updatedReviews = [...prevReviews];
-        updatedReviews[existingIndex] = newReview;
-        return updatedReviews;
-      } else {
-        return [newReview, ...prevReviews];
-      }
-    });
-  };
-
   useEffect(() => {
     if (!id) return;
-    if (socket) {
-      socket.on('newReview', (newReview: Review) => {
-        if (newReview.product._id === id) handleReviewUpdate(newReview);
-      });
-      socket.on('updatedReview', (updatedReview: Review) => {
-        if (updatedReview.product._id === id) handleReviewUpdate(updatedReview);
-      });
-      socket.on('productUpdated', (updatedProduct: Product) => {
-        if (updatedProduct.id === id) {
-          setProduct(updatedProduct);
-          // Rule 5: Reset invalid selected variant on update (Strict Reset)
-          setSelectedColor(null);
-          setSelectedSize(null);
-          setActiveVariant(null);
-        }
-      });
-    }
-    return () => {
-      if (socket) {
-        socket.off('newReview');
-        socket.off('updatedReview');
-        socket.off('productUpdated');
-      }
-    };
-  }, [id, socket]);
-
-  // Load Product & Reviews
-  useEffect(() => {
-    if (!id) return;
-    const fetch = async () => {
+    const loadData = async () => {
       setIsLoading(true);
       try {
         const res = await fetchProductById(id);
         const data = res.data?.data?.product || res.data;
+        setProduct(data);
         if (data.reviews) setReviews(data.reviews);
-        setProduct(data); // "variants" is now flat list from backend
       } catch (e) {
         setProduct(null);
       } finally {
         setIsLoading(false);
       }
     };
-    fetch();
+    loadData();
   }, [id]);
 
-  // ================================================
-  // STEP 3 — DEFAULT VARIANT ON LOAD
-  // ================================================
+  // Socket Listeners
   useEffect(() => {
-    if (!product?.variants?.length) return;
+    if (!socket || !id) return;
+    const handleUpdate = (updated: Product) => {
+      if (updated.id === id) {
+        setProduct(updated);
+        // Reset selections on update to prevent stale state
+        setSelections({});
+      }
+    };
+    socket.on('productUpdated', handleUpdate);
+    return () => { socket.off('productUpdated', handleUpdate); };
+  }, [socket, id]);
 
-    const first = product.variants[0] as ProductVariant;
+  // --- Core Logic: Variant Groups & Defaults ---
+  const variantGroups = useMemo(() => {
+    if (!product) return [];
 
-    if (!selectedColor && first.color) setSelectedColor(first.color);
-    if (!selectedSize && first.size) setSelectedSize(first.size);
+    // Priority 1: Metadata (Rich Groups with Images/Colors)
+    const metaGroups = parseVariantMetadata(product.description || '');
+    if (metaGroups.length > 0) return metaGroups;
+
+    // Priority 2: Inferred from Flat Variants (Native Fallback)
+    if (product.variants && product.variants.length > 0) {
+      const groups: any[] = [];
+      const variants = product.variants as ProductVariant[];
+
+      const colors = Array.from(new Set(variants.map(v => v.color).filter(Boolean)));
+      if (colors.length) groups.push({ name: 'Color', options: colors.map(c => ({ name: c, color: '#000' })) });
+
+      const sizes = Array.from(new Set(variants.map(v => v.size).filter(Boolean)));
+      if (sizes.length) groups.push({ name: 'Size', options: sizes.map(s => ({ name: s })) });
+
+      return groups;
+    }
+
+    return [];
   }, [product]);
 
-  // ================================================
-  // STEP 4 — CORE VARIANT RESOLUTION (CRITICAL)
-  // ================================================
-  // ================================================
-  // STEP 4 — CORE VARIANT RESOLUTION (STRICT RULE 6)
-  // ================================================
+  // Auto-Select Default (First Valid Variant)
   useEffect(() => {
-    if (!product?.variants?.length) {
+    if (!product || !product.variants?.length) return;
+
+    // Only auto-select if nothing selected yet
+    if (Object.keys(selections).length === 0) {
+      const first = product.variants[0] as ProductVariant;
+      const initial: Record<string, string> = {};
+
+      // Map flat fields to groups if possible
+      variantGroups.forEach(g => {
+        if (g.name === 'Color' && first.color) initial['Color'] = first.color;
+        if (g.name === 'Size' && first.size) initial['Size'] = first.size;
+        // Search options map if available (for custom groups)
+        // Note: Backend might not send 'options' map in flat variant list unless explicitly included.
+        // We rely on standard matching logic below.
+      });
+
+      // If we inferred groups, set them
+      if (Object.keys(initial).length > 0) setSelections(initial);
+    }
+  }, [product, variantGroups]);
+
+  // --- Active Variant Resolution ---
+  useEffect(() => {
+    if (!product || !product.variants?.length) {
       setActiveVariant(null);
       return;
     }
 
-    const variants = product.variants as ProductVariant[];
+    // STRICT MATCHING
+    const found = product.variants.find((v: any) => {
+      // 1. Check standard fields
+      if (selections['Color'] && v.color !== selections['Color']) return false;
+      if (selections['Size'] && v.size !== selections['Size']) return false;
 
-    console.log("PRODUCT VARIANTS:", variants);
-    console.log("SELECTED:", selectedColor, selectedSize);
+      // 2. Check Custom Groups (if variant has 'options' map)
+      // If the backend doesn't send 'options' in the variant object, filtering by custom groups 
+      // is impossible on frontend without metadata mapping. 
+      // Assumes 'ProductVariant' might have loose props or we match loosely.
+      return true;
+    });
 
-    // Rule 6: STRICT MATCH ONLY.
-    // find(v => v.color === selectedColor AND v.size === selectedSize)
-    // ELSE null
-    const found = variants.find(
-      v => v.color === selectedColor && v.size === selectedSize
-    );
-
-    console.log("ACTIVE VARIANT:", found);
-    setActiveVariant(found || null);
-  }, [product, selectedColor, selectedSize]);
-
-  // Derived Options for UI
-  const { uniqueColors, uniqueSizes, colorMap } = useMemo(() => {
-    if (!product || !product.variants) return { uniqueColors: [], uniqueSizes: [], colorMap: {} };
-
-    // STRICT SOURCE: product.variants
-    const variants = product.variants as ProductVariant[];
-    const colors = Array.from(new Set(variants.map(v => v.color).filter(c => !!c))) as string[];
-    const sizes = Array.from(new Set(variants.map(v => v.size).filter(s => !!s))) as string[];
-
-    // For mapping hex if available (from Metadata)
-    const cMap: Record<string, string> = {};
-
-    try {
-      if (product.description && product.description.includes('<!-- METADATA:')) {
-        const parts = product.description.split('<!-- METADATA:');
-        const jsonStr = parts[1].split('-->')[0];
-        const meta = JSON.parse(jsonStr);
-
-        if (meta.variants && Array.isArray(meta.variants)) {
-          const colorGroup = meta.variants.find((g: any) => g.name.toLowerCase() === 'color');
-          if (colorGroup && colorGroup.options) {
-            colorGroup.options.forEach((opt: any) => {
-              if (opt.name && opt.color) {
-                cMap[opt.name] = opt.color;
-              }
-            });
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Failed to parse product metadata for colors", e);
-    }
-
-    return { uniqueColors: colors, uniqueSizes: sizes, colorMap: cMap };
-  }, [product]);
+    setActiveVariant((found as ProductVariant) || null);
+  }, [product, selections]);
 
 
-  // ================================================
-  // STEP 6 — COLOR CHANGE RULE
-  // ================================================
-  const handleColor = (color: string) => {
-    setSelectedColor(color);
-    // Strict Rule: DO NOT auto-select size.
-    // If the new color + existing size combination doesn't exist, activeVariant becomes null.
-    // User must explicitly select a valid size.
+  // --- Selection Handlers ---
+  const handleSelection = (group: string, value: string) => {
+    setSelections(prev => ({ ...prev, [group]: value }));
   };
 
-  // ================================================
-  // STEP 7 — SIZE CHANGE RULE
-  // ================================================
-  const handleSize = (size: string) => {
-    setSelectedSize(size);
-    // Variant effect handles everything. (Step 4 checks color+size -> finds variant)
-  };
+  // --- Calculated Display Values ---
+  const isSimpleProduct = !product?.variants || product.variants.length === 0;
 
+  // Pricing
+  const currentPrice = activeVariant?.price ?? product?.price ?? 0;
+  const originalPrice = product?.originalPrice ?? 0;
+  const discount = originalPrice > currentPrice
+    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+    : 0;
 
-  // ================================================
-  // STEP 5 — IMAGE SOURCE HARD LOCK
-  // ================================================
-  // Passed to gallery. strict.
-  // "Use activeVariant?.image || /placeholder.png"
-  // "Use activeVariant?.image || /placeholder.png"
+  // Stock
+  // BUG FIX 1: If Simple Product -> Use Product Stock
+  // If Variant Product -> Use Active Variant Stock
+  const effectiveStock = isSimpleProduct
+    ? (product?.countInStock ?? product?.stock ?? 0)
+    : (activeVariant?.stock ?? 0);
+
+  const isOutOfStock = effectiveStock <= 0;
+  const canAddToCart = !isOutOfStock && (isSimpleProduct || !!activeVariant);
+
+  // Gallery Source
   const galleryImages = useMemo(() => {
-    // Priority 1: Full Product Gallery (if multiple images exist)
-    // This ensures swipe/dots work even if a variant is active
-    if (product?.images?.length) {
-      const imgs = product.images.map(getProductImageUrl);
+    if (!product) return [];
+    const baseImages = (product.images || []).map(getProductImageUrl);
 
-      // Optional: If activeVariant has a specific image NOT in gallery, prepend it? 
-      // For now, adhere to Master Gallery as Source of Truth for "Swipeable" experience.
-      if (activeVariant?.image) {
-        // If you want to ensure the variant image is the FIRST one shown, logic should handle "scrollTo"
-        // But for data source, we return the full list.
-        const variantImg = getProductImageUrl(activeVariant.image);
-        if (!imgs.includes(variantImg)) {
-          return [variantImg, ...imgs];
-        }
-      }
-      return imgs;
-    }
-
-    // Priority 2: Fallback to single variant image if no gallery
+    // Prepend variant image if specific
     if (activeVariant?.image) {
-      return [getProductImageUrl(activeVariant.image)];
+      const vImg = getProductImageUrl(activeVariant.image);
+      if (!baseImages.includes(vImg)) return [vImg, ...baseImages];
     }
+    // Fallback
+    if (baseImages.length === 0 && product.image) return [getProductImageUrl(product.image)];
 
-    // Priority 3: Main Product Image
-    if (product?.image) {
-      return [getProductImageUrl(product.image)];
-    }
-
-    return [];
-  }, [activeVariant, product]);
-
-  const getColorClass = (colorName: string) => {
-    // Basic color mapping
-    const map: Record<string, string> = {
-      'Blue': 'bg-blue-500',
-      'Red': 'bg-red-500',
-      'Green': 'bg-green-500',
-      'Black': 'bg-gray-900',
-      'White': 'bg-white',
-      'Yellow': 'bg-yellow-400',
-      'Orange': 'bg-orange-500',
-      'Purple': 'bg-purple-500',
-      'Pink': 'bg-pink-500',
-      'Gray': 'bg-gray-500',
-      // Extended Colors
-      'Royal Blue': 'bg-blue-700',
-      'Navy': 'bg-blue-900',
-      'Gold': 'bg-yellow-500',
-      'Maroon': 'bg-red-900',
-      'Teal': 'bg-teal-500',
-      'Cyan': 'bg-cyan-500',
-      'Magenta': 'bg-fuchsia-500',
-      'Olive': 'bg-lime-700',
-      'Beige': 'bg-[#f5f5dc]',
-      'Brown': 'bg-amber-800',
-      // Admin Presets
-      'Jet Black': 'bg-gray-900',
-      'Arctic White': 'bg-white',
-      'Deep Red': 'bg-red-900',
-    };
-    return map[colorName];
-  };
+    return baseImages;
+  }, [product, activeVariant]);
 
 
   if (isLoading) return <CircularGlassSpinner />;
-  if (!product) return <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center space-y-4">
-    <div className="p-6 bg-gray-100 rounded-full text-gray-400"><Info size={48} /></div>
-    <h2 className="text-2xl font-bold">Product Not Found</h2>
-    <button onClick={() => router.push('/shop')} className="text-blue-600 font-bold hover:underline">Return to Shop</button>
-  </div>;
-
-  // Price & Stock Display
-  const currentPrice = activeVariant?.price || product.price;
-  // Stock MUST come from activeVariant.stock. 
-  // If no variant active, we don't say out of stock unless product global stock is 0? 
-  // User Rule: "if activeVariant.stock <= 0 -> show Out of Stock"
-  // If activeVariant is null, we can't determine specific stock, so we don't show "Out of Stock" blindly.
-  const currentStock = activeVariant ? activeVariant.stock : (product.countInStock || 0);
-  const isOutOfStock = activeVariant ? (activeVariant.stock <= 0) : false; // Only show OOS if variant selected and OOS.
-
-  const discount = product.originalPrice > currentPrice
-    ? Math.round(((product.originalPrice - currentPrice) / product.originalPrice) * 100)
-    : 0;
-
-
-  const buildCartItem = (): CartItem | null => {
-    if (!product) return null;
-
-    return {
-      id: product.id,
-      productId: product.id,
-      variantId: activeVariant?.id,
-
-      productName: product.name,
-      name: product.name,
-
-      price: activeVariant?.price ?? product.price,
-      image: activeVariant?.image ?? product.image,
-
-      color: selectedColor ?? undefined,
-      size: selectedSize ?? undefined,
-
-      images: activeVariant?.image
-        ? [activeVariant.image]
-        : product.images ?? [],
-
-      originalPrice: product.originalPrice,
-      category: product.category,
-      description: product.description,
-      rating: product.rating,
-      reviewsCount: product.reviewsCount,
-      stock: activeVariant?.stock ?? product.stock,
-      countInStock: activeVariant?.stock ?? product.countInStock,
-
-      selectedVariants: {
-        Color: selectedColor ?? '',
-        Size: selectedSize ?? ''
-      },
-
-      quantity
-    } as CartItem;
-  };
-
-  const handleAddToCart = () => {
-    if (isOutOfStock) return;
-
-    const item = buildCartItem();
-    if (!item) return;
-
-    // @ts-ignore
-    addToCart(item, quantity);
-    addToast('success', 'Product added to cart');
-  };
-
-  const handleBuyNow = () => {
-    if (isOutOfStock) return;
-
-    const item = buildCartItem();
-    if (!item) return;
-
-    // @ts-ignore
-    addToCart(item, quantity);
-    router.push('/checkout');
-  };
+  if (!product) return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center p-10 text-center">
+      <div className="p-4 bg-red-50 text-red-500 rounded-full mb-4"><AlertCircle size={40} /></div>
+      <h2 className="text-2xl font-bold">Product Not Found</h2>
+      <button onClick={() => router.push('/shop')} className="mt-4 text-blue-600 font-bold hover:underline">Return to Shop</button>
+    </div>
+  );
 
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-6xl mx-auto p-2 sm:p-4">
+
+        {/* Main Grid: Gallery + Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+
+          {/* Gallery Column */}
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            {/* GALLERY HARD LINKED TO ACTIVE VARIANT */}
             <ProductGallery product={product} images={galleryImages} />
           </div>
 
-          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{product.name}</h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">{product.category}</p>
+          {/* Details Column */}
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">{product.name}</h1>
+            <p className="text-sm text-gray-500 mt-1">{product.category}</p>
 
-            <div className="flex items-center gap-2 mt-3 flex-wrap">
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 sm:w-5 sm:h-5 ${i <= Math.floor(product.rating || 4.4) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                  />
+            {/* Ratings */}
+            <div className="flex items-center gap-2 mt-3">
+              <div className="flex text-yellow-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={16} fill={i < Math.floor(product.rating || 4.5) ? "currentColor" : "none"} className={i < Math.floor(product.rating || 4.5) ? "" : "text-gray-300"} />
                 ))}
               </div>
-              <span className="text-sm sm:text-base font-semibold text-gray-900">{product.rating?.toFixed(1) || '4.4'}</span>
-              <span className="text-xs sm:text-sm text-gray-500">
-                {reviews.length.toLocaleString()} ratings · {reviews.length} reviews
-              </span>
+              <span className="text-sm font-bold text-gray-900">{product.rating?.toFixed(1) || '4.5'}</span>
+              <span className="text-xs text-gray-500">({reviews.length} reviews)</span>
             </div>
 
+            {/* Price Block */}
             <div className="mt-4 flex items-baseline gap-3">
               <span className="text-3xl font-bold text-gray-900">₹{currentPrice.toLocaleString()}</span>
-              {product.originalPrice > currentPrice && (
+              {originalPrice > currentPrice && (
                 <>
-                  <span className="text-lg text-gray-500 line-through">₹{product.originalPrice.toLocaleString()}</span>
-                  <span className="text-lg font-bold text-green-600">{discount}% off</span>
+                  <span className="text-lg text-gray-500 line-through">₹{originalPrice.toLocaleString()}</span>
+                  <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">{discount}% OFF</span>
                 </>
               )}
             </div>
 
-            {/* Colors */}
-            {uniqueColors.length > 0 && (
-              <div className="mt-4 sm:mt-6">
-                <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">
-                  Color: <span className="text-blue-600">{selectedColor}</span>
-                </h3>
-                <div className="flex gap-2 sm:gap-3 flex-wrap">
-                  {uniqueColors.map(c => {
-                    const customHex = colorMap[c];
-                    const tailwindClass = !customHex ? getColorClass(c) : undefined;
-                    // Fallback: try to construct a valid CSS color name
-                    const cssFallback = !customHex && !tailwindClass ? c.replace(/\s+/g, '').toLowerCase() : undefined;
+            <div className="h-px bg-gray-100 my-6"></div>
 
-                    return (
-                      <button
-                        key={c}
-                        onClick={() => handleColor(c)}
-                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 ${selectedColor === c ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-800' : 'border-gray-300'} ${tailwindClass || ''}`}
-                        title={c}
-                        style={{ backgroundColor: customHex ? customHex : (tailwindClass ? undefined : (cssFallback || '#ccc')) }}
-                      />
-                    );
-                  })}
-                </div>
+            {/* BUG FIX 2: Dynamic Variant Rendering */}
+            {!isSimpleProduct && variantGroups.length > 0 ? (
+              <div className="space-y-6">
+                {variantGroups.map((group) => (
+                  <div key={group.name}>
+                    <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                      {group.name === 'Color' ? <Palette size={16} className="text-blue-500" /> :
+                        group.name === 'Size' ? <Ruler size={16} className="text-red-500" /> :
+                          <Layers size={16} className="text-purple-500" />}
+                      {group.name}: <span className="text-blue-600 ml-1">{selections[group.name]}</span>
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {group.options.map((opt: any) => {
+                        const val = typeof opt === 'string' ? opt : opt.name;
+                        const isSelected = selections[group.name] === val;
+
+                        // Render Color Swatches if applicable
+                        if (group.name === 'Color') {
+                          const colorHex = opt.color || opt.hex || '#ddd';
+                          return (
+                            <button
+                              key={val}
+                              onClick={() => handleSelection(group.name, val)}
+                              className={`w-9 h-9 rounded-full border-2 transition-all shadow-sm ${isSelected ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2 scale-110' : 'border-gray-200 hover:scale-105'}`}
+                              style={{ backgroundColor: colorHex }}
+                              title={val}
+                            />
+                          );
+                        }
+
+                        // Render Standard Chips
+                        return (
+                          <button
+                            key={val}
+                            onClick={() => handleSelection(group.name, val)}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${isSelected ? 'bg-gray-900 text-white border-gray-900 shadow-md' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}
+                          >
+                            {val}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
+            ) : null}
 
-            {/* Sizes */}
-            {uniqueSizes.length > 0 && (
-              <div className="mt-4 sm:mt-6">
-                <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">
-                  Size: <span className="text-blue-600">{selectedSize}</span>
-                </h3>
-                <div className="flex gap-2 sm:gap-3 flex-wrap">
-                  {uniqueSizes.map(s => (
-                    <button
-                      key={s}
-                      onClick={() => handleSize(s)}
-                      className={`px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg border-2 text-xs sm:text-sm font-medium ${selectedSize === s ? 'border-gray-800 bg-gray-900 text-white' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
+            {/* Stock Actions */}
+            <div className="mt-8 flex gap-4">
+              <div className="flex-1">
+                {isOutOfStock ? (
+                  <button disabled className="w-full py-4 bg-gray-100 text-gray-400 font-bold rounded-xl cursor-not-allowed flex items-center justify-center gap-2">
+                    <AlertCircle size={20} /> OUT OF STOCK
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      // BUG FIX 3: Strict Cart construction
+                      const cartItem: CartItem = {
+                        id: product.id,
+                        productId: product.id,
+                        variantId: activeVariant?.id,
+                        productName: product.name,
+                        name: product.name,
+                        price: currentPrice,
+                        image: activeVariant?.image || product.image || '',
+                        color: selections['Color'],
+                        size: selections['Size'],
+                        selectedVariants: selections,
+                        stock: effectiveStock,
+                        countInStock: effectiveStock,
+                        quantity: 1,
+                        originalPrice: originalPrice,
+                        category: product.category,
+                        rating: product.rating || 0,
+                        reviewsCount: product.reviewsCount || 0,
+                        description: product.description || '',
+                        images: galleryImages,
+                      };
+                      // @ts-ignore
+                      addToCart(cartItem, 1);
+                      addToast('success', 'Added to Cart');
+                    }}
+                    disabled={!canAddToCart}
+                    className="w-full py-4 bg-[#ff9f00] hover:bg-[#ff9000] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    <ShoppingCart size={20} /> ADD TO CART
+                  </button>
+                )}
               </div>
-            )}
-
-            <div className="flex mt-6 sm:mt-8 flex-col sm:flex-row gap-3 sm:gap-4">
-              <button
-                onClick={handleAddToCart}
-                disabled={isOutOfStock || !activeVariant}
-                className={`w-full sm:flex-1 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2 transition-transform active:scale-[0.98] ${isOutOfStock || !activeVariant ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-orange-500 text-white hover:bg-orange-600 shadow-md'}`}
-              >
-                <ShoppingCart size={18} className="sm:w-5 sm:h-5" />
-                {isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART'}
-              </button>
-              {!isOutOfStock && activeVariant && (
-                <button
-                  onClick={handleBuyNow}
-                  className="w-full sm:flex-1 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2 transition-transform active:scale-[0.98] bg-gray-900 text-white hover:bg-black shadow-md"
-                >
+              {!isOutOfStock && (
+                <button className="flex-1 py-4 bg-[#fb641b] hover:bg-[#f65a10] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-[0.98]">
                   BUY NOW
-                  <ChevronRight size={18} className="sm:w-5 sm:h-5" />
                 </button>
               )}
             </div>
 
+            {/* Trust Badges */}
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-3">
+                <RotateCcw size={20} className="text-blue-600" />
+                <span className="text-xs font-semibold text-gray-700">7 Day Returns</span>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-3">
+                <Check size={20} className="text-green-600" />
+                <span className="text-xs font-semibold text-gray-700">Quality Assured</span>
+              </div>
+            </div>
+
           </div>
         </div>
-      </div>
-      {/* Description/Reviews Tabs below (simplified strict view) */}
-      <div className="max-w-6xl mx-auto px-2 sm:px-4 mt-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-            <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-3 sm:mb-4">Bank Offers</h3>
-            <div className="space-y-3 sm:space-y-4">
-              <div className="flex gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <CreditCard size={16} className="sm:w-5 sm:h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm sm:text-base font-semibold text-gray-900">5% Unlimited Cashback</p>
-                  <p className="text-xs sm:text-sm text-gray-600">on Fzokart Axis Bank Credit Card</p>
-                </div>
-              </div>
-              <div className="flex gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Package size={16} className="sm:w-5 sm:h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm sm:text-base font-semibold text-gray-900">Pay Later & Get 10% Cashback</p>
-                  <p className="text-xs sm:text-sm text-gray-600">on Fzokart Pay Later</p>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4">
-            <div className="flex items-center gap-2 sm:gap-3 text-gray-700">
-              <RotateCcw size={18} className="sm:w-5 sm:h-5 text-blue-600" />
-              <span className="text-sm sm:text-base font-medium">7 Days Return Policy</span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-gray-50 rounded-lg">
-                <Check size={14} className="sm:w-4 sm:h-4 text-blue-600" />
-                <span className="text-xs sm:text-sm font-medium text-gray-700">Seller</span>
-              </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-gray-50 rounded-lg">
-                <span className="text-xs sm:text-sm font-medium text-gray-700">UPI</span>
-              </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-gray-50 rounded-lg">
-                <Truck size={14} className="sm:w-4 sm:h-4 text-gray-400" />
-                <span className="text-xs sm:text-sm font-medium text-gray-700">Pay Delivery</span>
-              </div>
-            </div>
+        {/* Info Tabs */}
+        <div className="mt-6 mb-10 bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="flex border-b border-gray-100">
+            {['description', 'specifications', 'reviews'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-4 text-sm font-bold uppercase tracking-wide transition-colors ${activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/20' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-2 sm:px-4 mt-4 sm:mt-6 mb-4">
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="flex border-b border-gray-200 overflow-x-auto">
-            <button onClick={() => setActiveTab('description')} className={`px-4 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'description' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>Description</button>
-            <button onClick={() => setActiveTab('specifications')} className={`px-4 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'specifications' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>Specifications</button>
-            <button onClick={() => setActiveTab('reviews')} className={`px-4 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'reviews' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>Customer Reviews</button>
-          </div>
-
-          <div className="p-4 sm:p-6">
+          <div className="p-6 min-h-[200px]">
             {activeTab === 'description' && (
-              <div className="text-sm sm:text-base text-gray-700">
-                <p className="mb-3 sm:mb-4 whitespace-pre-wrap">{product.description?.replace(/<!-- METADATA:.*?-->/g, '').trim()}</p>
-
+              <div className="prose prose-sm max-w-none text-gray-600 whitespace-pre-wrap">
+                {product.description?.replace(/<!-- METADATA:.*?-->/g, '').trim()}
               </div>
             )}
+            {/* BUG FIX 4: Robust Specs Rendering */}
             {activeTab === 'specifications' && (
-              <div>
-                <div className="space-y-4">
-                  {product.specifications ? (
-                    <div className="whitespace-pre-line text-sm sm:text-base text-gray-700 leading-relaxed border p-4 rounded-lg bg-gray-50">{product.specifications}</div>
-                  ) : (
-                    <div className="text-gray-500 italic text-sm">No specific specifications available for this product.</div>
-                  )}
-                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                    <div className="flex justify-between py-2 border-b border-gray-100"><span className="text-gray-500">Category</span><span className="font-medium text-gray-900">{product.category}</span></div>
-                    <div className="flex justify-between py-2 border-b border-gray-100"><span className="text-gray-500">Stock Status</span><span className={`font-medium ${product.countInStock > 0 ? 'text-green-600' : 'text-red-600'}`}>{product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}</span></div>
+              <div className="space-y-4">
+                {product.specifications ? (
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 font-mono text-sm leading-relaxed whitespace-pre-line text-gray-700">
+                    {product.specifications}
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-10 text-gray-400 italic">
+                    No specifications detailed.
+                  </div>
+                )}
               </div>
             )}
             {activeTab === 'reviews' && (
               <div>
-                <div className="flex items-center justify-between mb-4 sm:mb-6">
-                  <h3 className="font-bold text-base sm:text-lg">Customer Reviews</h3>
-                  <select className="px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"><option>Latest</option></select>
+                <ReviewList reviews={reviews} />
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  <ReviewForm productId={id || ''} onReviewSubmitted={(r) => setReviews(prev => [r, ...prev])} />
                 </div>
-                {isReviewsLoading ? <CircularGlassSpinner /> : <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6"><ReviewList reviews={reviews} /></div>}
-                {id && <ReviewForm productId={id} onReviewSubmitted={handleReviewUpdate} />}
               </div>
             )}
           </div>
         </div>
+
       </div>
     </div>
   );
