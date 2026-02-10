@@ -62,7 +62,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
 
     // 4. DESKTOP HOVER ZOOM ONLY
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isLoading || isTouchDevice) return; // disable on mobile
+        if (isLoading) return; // Allow mouse events even on touch devices (for hybrid)
 
         const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
         const x = ((e.clientX - left) / width) * 100;
@@ -72,7 +72,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
     };
 
     const handleMouseLeave = () => {
-        if (isTouchDevice) return;
+        // if (isTouchDevice) return; // Allow mouse leave to clear zoom on hybrid devices
         setIsZoomed(false);
     };
 
@@ -170,7 +170,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                             <div
                                 className={`relative w-full flex items-center justify-center select-none
                                     ${isZoomed ? 'touch-none cursor-grab' : 'touch-pan-y cursor-zoom-in'}
-                                    ${!isTouchDevice && isZoomed ? 'cursor-zoom-out' : ''}
+                                    ${isZoomed ? 'cursor-zoom-out' : ''}
                                 `}
                                 style={{
                                     touchAction: isZoomed ? 'none' : 'pan-y'
