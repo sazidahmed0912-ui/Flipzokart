@@ -31,7 +31,12 @@ export const NewProductCard: React.FC<ProductCardProps> = ({ product, variant = 
       <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow w-full">
         <Link href={`/product/${product.id}`}>
           <div className="w-full h-32 md:h-40 mb-3 bg-gray-100 rounded-lg p-2 border border-gray-200">
-            <LazyImage src={getProductImage(product)} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+            <LazyImage
+              src={getProductImage(product)}
+              alt={product.name}
+              className="w-full h-full object-cover rounded-lg"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
           </div>
         </Link>
         <h3 className="text-sm font-medium text-gray-800 mb-2 line-clamp-2 h-10">{product.name}</h3>
@@ -57,6 +62,7 @@ export const NewProductCard: React.FC<ProductCardProps> = ({ product, variant = 
             src={getProductImage(product)}
             alt={product.name}
             className="w-full h-32 md:h-40 object-cover rounded-lg"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           />
         </div>
       </Link>

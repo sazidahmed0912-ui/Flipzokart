@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   /* config options here */
   distDir: 'dist',
   images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
     remotePatterns: [
       { protocol: "https", hostname: "cdn.ailandingpage.ai" },
       { protocol: "https", hostname: "images.unsplash.com" },
