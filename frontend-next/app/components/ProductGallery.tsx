@@ -197,6 +197,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                             WebkitBackfaceVisibility: 'hidden',
                                             transformStyle: 'preserve-3d'
                                         }}
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                         onLoad={() => {
                                             if (swiperRef.current) swiperRef.current.update();
                                             if (idx === activeIndex) setIsLoading(false);
@@ -209,7 +210,6 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                             }
                                             if (idx === activeIndex) setIsLoading(false);
                                         }}
-                                        unoptimized={true}
                                     />
                                 </div>
                             </div>
@@ -259,7 +259,7 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
                                     : 'border-gray-100 opacity-70 hover:opacity-100 hover:border-gray-300'
                                 }`}
                         >
-                            <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" unoptimized={true} draggable={false} />
+                            <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" sizes="100px" draggable={false} />
                         </button>
                     ))}
                 </div>
