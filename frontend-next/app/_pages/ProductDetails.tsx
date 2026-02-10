@@ -333,7 +333,34 @@ export const ProductDetails: React.FC = () => {
                 )}
               </div>
               {!isOutOfStock && (
-                <button className="flex-1 py-4 bg-[#fb641b] hover:bg-[#f65a10] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-[0.98]">
+                <button
+                  onClick={() => {
+                    const cartItem: CartItem = {
+                      id: product.id,
+                      productId: product.id,
+                      variantId: activeVariant?.id,
+                      productName: product.name,
+                      name: product.name,
+                      price: currentPrice,
+                      image: activeVariant?.image || product.image || '',
+                      color: selections['Color'],
+                      size: selections['Size'],
+                      selectedVariants: selections,
+                      stock: effectiveStock,
+                      countInStock: effectiveStock,
+                      quantity: 1,
+                      originalPrice: originalPrice,
+                      category: product.category,
+                      rating: product.rating || 0,
+                      reviewsCount: product.reviewsCount || 0,
+                      description: product.description || '',
+                      images: galleryImages,
+                    };
+                    // @ts-ignore
+                    addToCart(cartItem, 1);
+                    router.push('/checkout');
+                  }}
+                  className="flex-1 py-4 bg-[#fb641b] hover:bg-[#f65a10] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-[0.98]">
                   BUY NOW
                 </button>
               )}
