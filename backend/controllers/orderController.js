@@ -106,11 +106,6 @@ const createOrder = async (req, res) => {
         return res.status(400).json({ message: `Product ${product.name} is out of stock.` });
       }
 
-      // Check COD Availability
-      if (product.codAvailable === false) {
-        return res.status(400).json({ message: `Cash on Delivery is not available for ${product.name}. Please choose online payment.` });
-      }
-
       // Add to final array with snapshot data
       finalOrderProducts.push({
         productId: item.productId,
@@ -351,11 +346,6 @@ const verifyPayment = async (req, res) => {
 
       if (product.countInStock < item.quantity) {
         return res.status(400).json({ message: `Product ${product.name} is out of stock. Payment will be refunded.` });
-      }
-
-      // Check Prepaid Availability
-      if (product.prepaidAvailable === false) {
-        return res.status(400).json({ message: `Online Payment is not available for ${product.name}. Please use Cash on Delivery.` });
       }
     }
 

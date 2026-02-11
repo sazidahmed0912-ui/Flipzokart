@@ -27,11 +27,7 @@ const getCart = async (req, res) => {
                 reviews: item.productId.numReviews,
                 quantity: item.quantity,
                 seller: item.productId.brand, // or seller field if matches
-                quantity: item.quantity,
-                seller: item.productId.brand, // or seller field if matches
-                selectedVariants: item.selectedVariants ? Object.fromEntries(item.selectedVariants) : undefined,
-                codAvailable: item.productId.codAvailable !== false,
-                prepaidAvailable: item.productId.prepaidAvailable !== false
+                selectedVariants: item.selectedVariants ? Object.fromEntries(item.selectedVariants) : undefined
             }));
 
         res.json(cartItems);

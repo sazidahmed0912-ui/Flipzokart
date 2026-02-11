@@ -79,9 +79,10 @@ const PaymentPage: React.FC = () => {
     totalAmount: totalPayable
   } = calculateCartTotals(cart, undefined, paymentMethod);
 
-  // 🛡️ Payment Method Availability Logic
-  const allowCod = cart.every(item => item.codAvailable !== false);
-  const allowPrepaid = cart.every(item => item.prepaidAvailable !== false);
+  // 🛡️ Payment Availability Logic
+  // If ANY item in cart has codAvailable === false, then COD is disabled for entire order.
+  const isCodAllowed = cart.every(item => item.codAvailable !== false);
+  const isPrepaidAllowed = cart.every(item => item.prepaidAvailable !== false);
 
   /* =========================
      ERROR HANDLING HELPER
@@ -281,7 +282,8 @@ const PaymentPage: React.FC = () => {
             <p className="sub-heading">Select a payment method to complete this order.</p>
           </div>
 
-          {allowCod ? (
+          {/* COD OPTION */}
+          {isCodAllowed ? (
             <div
               className={`payment-option-card ${paymentMethod === "COD" ? "selected" : ""}`}
               onClick={() => setPaymentMethod("COD")}
@@ -296,7 +298,7 @@ const PaymentPage: React.FC = () => {
               {paymentMethod === "COD" ? <CheckCircle2 className="check-circle" /> : <div className="w-6 h-6 rounded-full border-2 border-gray-200"></div>}
             </div>
           ) : (
-            <div className="payment-option-card disabled opacity-60 cursor-not-allowed bg-gray-50 border-dashed">
+            <div className="payment-option-card disabled opacity-50 cursor-not-allowed bg-gray-50 border-gray-100">
               <div className="icon-wrapper bg-gray-200 text-gray-400">
                 <Banknote size={28} />
               </div>
@@ -307,7 +309,8 @@ const PaymentPage: React.FC = () => {
             </div>
           )}
 
-          {allowPrepaid ? (
+          {/* ONLINE PAYMENT OPTION */}
+          {isPrepaidAllowed ? (
             <div
               className={`payment-option-card ${paymentMethod === "RAZORPAY" ? "selected" : ""}`}
               onClick={() => setPaymentMethod("RAZORPAY")}
@@ -325,7 +328,7 @@ const PaymentPage: React.FC = () => {
               {paymentMethod === "RAZORPAY" ? <CheckCircle2 className="check-circle" /> : <div className="w-6 h-6 rounded-full border-2 border-gray-200"></div>}
             </div>
           ) : (
-            <div className="payment-option-card disabled opacity-60 cursor-not-allowed bg-gray-50 border-dashed">
+            <div className="payment-option-card disabled opacity-50 cursor-not-allowed bg-gray-50 border-gray-100">
               <div className="icon-wrapper bg-gray-200 text-gray-400">
                 <ShieldCheck size={28} />
               </div>

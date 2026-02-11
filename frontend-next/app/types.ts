@@ -10,6 +10,10 @@ export interface VariantCombination {
   price?: number;
   sku?: string;
   image?: string;
+  countInStock: number;
+  codAvailable?: boolean;
+  prepaidAvailable?: boolean;
+  rating?: number;
 }
 
 export interface Product {
@@ -36,7 +40,6 @@ export interface Product {
   deliveryDate?: string;
   selectedVariants?: Record<string, string>;
   defaultColor?: string;
-  // Payment Restrictions
   codAvailable?: boolean;
   prepaidAvailable?: boolean;
 }
@@ -94,8 +97,6 @@ export interface CartItem extends Product {
   size?: string; // Snapshot Size
   productName?: string; // Snapshot Name (fallback to name)
   // image property is inherited from Product interface
-  codAvailable?: boolean;
-  prepaidAvailable?: boolean;
 }
 
 export interface Order {
