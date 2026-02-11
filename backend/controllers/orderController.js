@@ -29,6 +29,10 @@ const createOrder = async (req, res) => {
     console.log('Request body:', req.body);
     console.log('req.user object:', req.user); // Added for debugging
 
+    console.log('[CreateOrder] Request body keys:', Object.keys(req.body));
+    console.log('[CreateOrder] Address in body:', !!req.body.address);
+    console.log('[CreateOrder] Address ID:', req.body.addressId);
+
     const { products, address: bodyAddress, addressId, subtotal, itemsPrice, deliveryCharges, discount, platformFee, tax, total, mrp, finalAmount } = req.body;
 
     let address = bodyAddress;
