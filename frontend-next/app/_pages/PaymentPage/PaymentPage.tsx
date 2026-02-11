@@ -79,6 +79,10 @@ const PaymentPage: React.FC = () => {
     totalAmount: totalPayable
   } = calculateCartTotals(cart, undefined, paymentMethod);
 
+  // 🛡️ Payment Method Availability Logic
+  const allowCod = cart.every(item => item.codAvailable !== false);
+  const allowPrepaid = cart.every(item => item.prepaidAvailable !== false);
+
   /* =========================
      ERROR HANDLING HELPER
   ========================= */
@@ -277,36 +281,60 @@ const PaymentPage: React.FC = () => {
             <p className="sub-heading">Select a payment method to complete this order.</p>
           </div>
 
-          <div
-            className={`payment-option-card ${paymentMethod === "COD" ? "selected" : ""}`}
-            onClick={() => setPaymentMethod("COD")}
-          >
-            <div className="icon-wrapper cod-icon-bg">
-              <Banknote size={28} />
+          {allowCod ? (
+            <div
+              className={`payment-option-card ${paymentMethod === "COD" ? "selected" : ""}`}
+              onClick={() => setPaymentMethod("COD")}
+            >
+              <div className="icon-wrapper cod-icon-bg">
+                <Banknote size={28} />
+              </div>
+              <div className="option-content">
+                <h3>Cash on Delivery</h3>
+                <p className="option-description">Pay in cash when your order arrives</p>
+              </div>
+              {paymentMethod === "COD" ? <CheckCircle2 className="check-circle" /> : <div className="w-6 h-6 rounded-full border-2 border-gray-200"></div>}
             </div>
-            <div className="option-content">
-              <h3>Cash on Delivery</h3>
-              <p className="option-description">Pay in cash when your order arrives</p>
-            </div>
-            {paymentMethod === "COD" ? <CheckCircle2 className="check-circle" /> : <div className="w-6 h-6 rounded-full border-2 border-gray-200"></div>}
-          </div>
-
-          <div
-            className={`payment-option-card ${paymentMethod === "RAZORPAY" ? "selected" : ""}`}
-            onClick={() => setPaymentMethod("RAZORPAY")}
-          >
-            <div className="icon-wrapper online-icon-bg">
-              <ShieldCheck size={28} />
-            </div>
-            <div className="option-content">
-              <h3>Online Payment</h3>
-              <p className="option-description">UPI, Cards, Wallets, NetBanking</p>
-              <div className="secure-badge">
-                <Lock size={10} /> 100% Secure Transaction
+          ) : (
+            <div className="payment-option-card disabled opacity-60 cursor-not-allowed bg-gray-50 border-dashed">
+              <div className="icon-wrapper bg-gray-200 text-gray-400">
+                <Banknote size={28} />
+              </div>
+              <div className="option-content">
+                <h3 className="text-gray-400">Cash on Delivery Unavailable</h3>
+                <p className="option-description text-gray-400 text-xs">Not available for one or more items in your cart.</p>
               </div>
             </div>
-            {paymentMethod === "RAZORPAY" ? <CheckCircle2 className="check-circle" /> : <div className="w-6 h-6 rounded-full border-2 border-gray-200"></div>}
-          </div>
+          )}
+
+          {allowPrepaid ? (
+            <div
+              className={`payment-option-card ${paymentMethod === "RAZORPAY" ? "selected" : ""}`}
+              onClick={() => setPaymentMethod("RAZORPAY")}
+            >
+              <div className="icon-wrapper online-icon-bg">
+                <ShieldCheck size={28} />
+              </div>
+              <div className="option-content">
+                <h3>Online Payment</h3>
+                <p className="option-description">UPI, Cards, Wallets, NetBanking</p>
+                <div className="secure-badge">
+                  <Lock size={10} /> 100% Secure Transaction
+                </div>
+              </div>
+              {paymentMethod === "RAZORPAY" ? <CheckCircle2 className="check-circle" /> : <div className="w-6 h-6 rounded-full border-2 border-gray-200"></div>}
+            </div>
+          ) : (
+            <div className="payment-option-card disabled opacity-60 cursor-not-allowed bg-gray-50 border-dashed">
+              <div className="icon-wrapper bg-gray-200 text-gray-400">
+                <ShieldCheck size={28} />
+              </div>
+              <div className="option-content">
+                <h3 className="text-gray-400">Online Payment Unavailable</h3>
+                <p className="option-description text-gray-400 text-xs">Not available for one or more items in your cart.</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* RIGHT */}

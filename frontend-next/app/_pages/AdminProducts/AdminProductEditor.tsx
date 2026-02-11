@@ -89,6 +89,9 @@ export const AdminProductEditor: React.FC = () => {
     const [sectionTitle, setSectionTitle] = useState('');
     const [sectionColor, setSectionColor] = useState('#111827');
     const [sectionSize, setSectionSize] = useState('text-xl');
+    // --- Payment Options ---
+    const [codAvailable, setCodAvailable] = useState(true);
+    const [prepaidAvailable, setPrepaidAvailable] = useState(true);
 
     // --- Derived State for UI ---
     const colorGroup = variantGroups.find(g => g.name.toLowerCase() === 'color');
@@ -138,6 +141,9 @@ export const AdminProductEditor: React.FC = () => {
                 description: cleanDescription, // Load ONLY clean text
                 isFeatured: data.isFeatured || false
             });
+
+            setCodAvailable(data.codAvailable !== false); // Default to true if undefined
+            setPrepaidAvailable(data.prepaidAvailable !== false);
 
             // Load Gallery Images (Exclude Main Image to avoid duplicate)
             if (data.images && Array.isArray(data.images)) {
@@ -455,6 +461,8 @@ export const AdminProductEditor: React.FC = () => {
                 thumbnail: mainImage,
                 variants: strictVariants, // STRICT TYPES SOURCE OF TRUTH
                 isFeatured: formData.isFeatured,
+                codAvailable,
+                prepaidAvailable,
                 // inventory: undefined,  // REMOVED legacy field
                 specifications: specifications,
                 sku: skuBase,
@@ -721,74 +729,97 @@ export const AdminProductEditor: React.FC = () => {
                                 </div>
                                 {sectionTitle && (<div className="mt-2 p-3 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center"><p className="text-[10px] text-gray-400 mb-1">Preview</p><h3 style={{ color: sectionColor }} className={`${sectionSize} font-bold`}>{sectionTitle}</h3></div>)}
 
-                                <div className="pt-4 border-t border-gray-100">
-                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                        <div className="relative">
-                                            <input type="checkbox" name="isFeatured" checked={formData.isFeatured} onChange={handleChange} className="peer sr-only" />
-                                            <div className="w-10 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                        </div>
-                                        <span className="text-xs font-bold text-gray-600 group-hover:text-blue-600 transition-colors">Featured Product</span>
-                                    </label>
-                                    <p className="text-[10px] text-gray-400 mt-1 ml-13">Show in "Featured on Fzokart" section</p>
-                                </div>
+                                <p className="text-[10px] text-gray-400 mt-1 ml-13">Show in "Featured on Fzokart" section</p>
+                            </div>
+
+                            <div className="pt-4 border-t border-gray-100 space-y-3">
+                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Payment Options</h3>
+
+                                {/* COD Toggle */}
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="relative">
+                                        <input
+                                            type="checkbox"
+                                            checked={codAvailable}
+                                            onChange={(e) => setCodAvailable(e.target.checked)}
+                                            className="peer sr-only"
+                                        />
+                                        <div className="w-10 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                                    </div>
+                                    <span className="text-xs font-bold text-gray-600 group-hover:text-green-600 transition-colors">Cash on Delivery Available</span>
+                                </label>
+
+                                {/* Prepaid Toggle */}
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="relative">
+                                        <input
+                                            type="checkbox"
+                                            checked={prepaidAvailable}
+                                            onChange={(e) => setPrepaidAvailable(e.target.checked)}
+                                            className="peer sr-only"
+                                        />
+                                        <div className="w-10 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </div>
+                                    <span className="text-xs font-bold text-gray-600 group-hover:text-blue-600 transition-colors">Prepaid Payment Available</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Media Section */}
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                        <h2 className="text-sm font-bold text-gray-800 mb-4">Product Images</h2>
+
+                        {/* Main Image (Thumbnail) */}
+                        <div className="mb-6">
+                            <label className="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wider">Main Thumbnail</label>
+                            <div className="aspect-square w-full md:w-1/2 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative cursor-pointer hover:border-blue-500 transition-colors group">
+                                {formData.image ? <img src={getProductImageUrl(formData.image)} className="w-full h-full object-cover" /> : <div className="flex flex-col items-center justify-center text-gray-400"><UploadCloud className="mb-2 group-hover:text-blue-500 transition-colors" /><span className="text-xs">Upload Main</span></div>}
+                                <input type="file" onChange={(e) => handleFileUpload(e, (url) => setFormData(prev => ({ ...prev, image: url })))} className="absolute inset-0 opacity-0 cursor-pointer" />
                             </div>
                         </div>
 
-                        {/* Media Section */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                            <h2 className="text-sm font-bold text-gray-800 mb-4">Product Images</h2>
-
-                            {/* Main Image (Thumbnail) */}
-                            <div className="mb-6">
-                                <label className="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wider">Main Thumbnail</label>
-                                <div className="aspect-square w-full md:w-1/2 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative cursor-pointer hover:border-blue-500 transition-colors group">
-                                    {formData.image ? <img src={getProductImageUrl(formData.image)} className="w-full h-full object-cover" /> : <div className="flex flex-col items-center justify-center text-gray-400"><UploadCloud className="mb-2 group-hover:text-blue-500 transition-colors" /><span className="text-xs">Upload Main</span></div>}
-                                    <input type="file" onChange={(e) => handleFileUpload(e, (url) => setFormData(prev => ({ ...prev, image: url })))} className="absolute inset-0 opacity-0 cursor-pointer" />
-                                </div>
+                        {/* Gallery Section */}
+                        <div>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Gallery Images</label>
+                                <span className="text-[10px] text-gray-400">{gallery.length} Images</span>
                             </div>
 
-                            {/* Gallery Section */}
-                            <div>
-                                <div className="flex justify-between items-center mb-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Gallery Images</label>
-                                    <span className="text-[10px] text-gray-400">{gallery.length} Images</span>
-                                </div>
-
-                                {/* Multi-Upload Button */}
-                                <div className="relative w-full py-3 bg-blue-50 border border-dashed border-blue-200 rounded-xl flex items-center justify-center gap-2 cursor-pointer hover:bg-blue-100 transition-colors group mb-4">
-                                    <ImageIcon size={16} className="text-blue-500" />
-                                    <span className="text-xs font-bold text-blue-600">Select Multiple Images</span>
-                                    <input
-                                        type="file"
-                                        multiple
-                                        accept="image/*"
-                                        onChange={handleMultiImageUpload}
-                                        className="absolute inset-0 opacity-0 cursor-pointer"
-                                    />
-                                </div>
-
-                                {/* Dynamic Preview Grid */}
-                                {gallery.length > 0 ? (
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {gallery.map((img, idx) => (
-                                            <div key={idx} className="aspect-square rounded-lg border border-gray-200 relative overflow-hidden group">
-                                                <img src={getProductImageUrl(img)} className="w-full h-full object-cover" />
-                                                <button
-                                                    onClick={() => setGallery(prev => prev.filter((_, i) => i !== idx))}
-                                                    className="absolute top-1 right-1 p-1 bg-white/90 rounded-full text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                                                    title="Remove Image"
-                                                >
-                                                    <X size={12} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-100">
-                                        <p className="text-[10px] text-gray-400">No gallery images added.</p>
-                                    </div>
-                                )}
+                            {/* Multi-Upload Button */}
+                            <div className="relative w-full py-3 bg-blue-50 border border-dashed border-blue-200 rounded-xl flex items-center justify-center gap-2 cursor-pointer hover:bg-blue-100 transition-colors group mb-4">
+                                <ImageIcon size={16} className="text-blue-500" />
+                                <span className="text-xs font-bold text-blue-600">Select Multiple Images</span>
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={handleMultiImageUpload}
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                />
                             </div>
+
+                            {/* Dynamic Preview Grid */}
+                            {gallery.length > 0 ? (
+                                <div className="grid grid-cols-3 gap-2">
+                                    {gallery.map((img, idx) => (
+                                        <div key={idx} className="aspect-square rounded-lg border border-gray-200 relative overflow-hidden group">
+                                            <img src={getProductImageUrl(img)} className="w-full h-full object-cover" />
+                                            <button
+                                                onClick={() => setGallery(prev => prev.filter((_, i) => i !== idx))}
+                                                className="absolute top-1 right-1 p-1 bg-white/90 rounded-full text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                                title="Remove Image"
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-100">
+                                    <p className="text-[10px] text-gray-400">No gallery images added.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

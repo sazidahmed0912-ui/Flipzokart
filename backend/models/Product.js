@@ -76,6 +76,15 @@ const productSchema = new mongoose.Schema(
     published: {
       type: Boolean,
       default: true
+    },
+    // Payment Restrictions
+    codAvailable: {
+      type: Boolean,
+      default: true
+    },
+    prepaidAvailable: {
+      type: Boolean,
+      default: true
     }
   },
   {
