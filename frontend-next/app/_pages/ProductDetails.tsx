@@ -11,7 +11,10 @@ import { ReviewForm } from './ProductDetails/components/ReviewForm';
 import { useSocket } from '@/app/hooks/useSocket';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import ProductGallery from '@/app/components/ProductGallery';
+
 import { getProductImageUrl } from '@/app/utils/imageHelper';
+import useRelatedProducts from '@/app/hooks/useRelatedProducts';
+import { ProductCard } from '@/app/components/ProductCard';
 
 // --- Helper: Parse Metadata for Dynamic Groups ---
 const parseVariantMetadata = (description: string): any[] => {
@@ -425,7 +428,45 @@ export const ProductDetails: React.FC = () => {
           </div>
         </div>
 
+        {/* RELATED PRODUCTS SECTION */}
+        {product && <RelatedProductsSection category={product.category} productId={product.id} />}
+
       </div>
+    </div>
+  );
+};
+
+// Sub-component to utilize the hook cleanly without re-rendering parent too much
+const RelatedProductsSection: React.FC<{ category: string; productId: string }> = ({ category, productId }) => {
+  const { products: relatedProducts, loading: relatedLoading } = useRelatedProducts(category, productId);
+
+  // Don't show if failed or empty (after loading)
+  if (!relatedLoading && relatedProducts.length === 0) return null;
+
+  return (
+    <div className="max-w-6xl mx-auto px-2 sm:px-4 mt-6 mb-10 border-t border-gray-200 pt-8">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        Similar Products
+        <span className="text-sm font-normal text-gray-500 hidden sm:inline-block">- Based on {category}</span>
+      </h2>
+
+      {relatedLoading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl h-[320px] border border-gray-100 animate-pulse p-4">
+              <div className="w-full h-40 bg-gray-200 rounded-lg mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+          {relatedProducts.map((item) => (
+            <ProductCard key={item.id} product={item} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

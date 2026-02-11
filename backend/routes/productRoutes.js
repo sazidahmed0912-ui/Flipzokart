@@ -218,6 +218,41 @@ router.get("/catalog/summary", async (req, res) => {
   }
 });
 
+// 🔄 GET RELATED PRODUCTS
+router.get("/category/:categoryId", async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const { exclude, limit = 8 } = req.query;
+
+    const filter = {
+      category: categoryId
+    };
+
+    if (exclude) {
+      filter._id = { $ne: exclude };
+    }
+
+    const products = await Product.find(filter)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 });
+
+    // Hydrate products (ensure images/mainImage/variants are set)
+    const hydratedProducts = products.map(p => {
+      const pObj = p.toObject();
+      // Basic hydration similar to GET /
+      if ((!pObj.images || pObj.images.length === 0) && pObj.image) {
+        pObj.images = [pObj.image];
+      }
+      pObj.mainImage = pObj.mainImage || pObj.image || (pObj.images && pObj.images[0]) || '/placeholder.png';
+      return pObj;
+    });
+
+    res.status(200).json(hydratedProducts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // GET SINGLE PRODUCT
 router.get("/:id", async (req, res) => {
   try {
