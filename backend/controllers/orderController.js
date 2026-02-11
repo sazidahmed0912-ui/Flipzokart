@@ -247,10 +247,16 @@ const verifyPayment = async (req, res) => {
       return res.status(500).json({ message: "Server misconfiguration: Missing payment secret" });
     }
 
+    console.log("[VerifyPayment] Raw Body Keys:", Object.keys(req.body));
+    console.log("[VerifyPayment] Payload Address Type:", typeof req.body.address);
+    console.log("[VerifyPayment] Payload Address ID:", req.body.addressId);
+
+
     const {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
+
       products,
 
       subtotal,
