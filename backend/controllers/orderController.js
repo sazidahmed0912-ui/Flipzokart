@@ -53,15 +53,20 @@ const createOrder = async (req, res) => {
     }
 
     // Validate required fields
-    if (!products || !address || !subtotal || !total) {
-      console.log('Missing required fields:', { products, address, subtotal, total });
+    const missingFields = [];
+    if (!products || products.length === 0) missingFields.push('products');
+    if (!address) missingFields.push('address');
+    if (subtotal === undefined || subtotal === null) missingFields.push('subtotal');
+    if (total === undefined || total === null) missingFields.push('total');
+
+    if (missingFields.length > 0) {
+      console.log('Missing required fields logs:', { products: !!products, address: !!address, subtotal, total });
       return res.status(400).json({
-        message: 'Missing required fields: Address is missing',
+        message: `Missing required fields: ${missingFields.join(', ')}`,
         debug: {
           receivedKeys: Object.keys(req.body),
-          hasAddress: !!address,
-          addressIdReceived: req.body.addressId,
-          productsCount: products?.length
+          missingFields,
+          values: { subtotal, total }
         }
       });
     }
