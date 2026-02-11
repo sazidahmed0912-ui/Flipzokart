@@ -252,7 +252,7 @@ const verifyPayment = async (req, res) => {
       razorpay_payment_id,
       razorpay_signature,
       products,
-      address,
+
       subtotal,
       itemsPrice,
       deliveryCharges,
@@ -261,8 +261,30 @@ const verifyPayment = async (req, res) => {
       tax,
       total,
       mrp,
-      finalAmount
+      finalAmount,
+      addressId // Add addressId to destructuring
     } = req.body;
+
+    let address = req.body.address;
+
+    // Fix: If addressId is provided but address object is missing, fetch from user profile
+    if (!address && addressId) {
+      console.log(`[VerifyPayment] Fetching address from user profile for ID: ${addressId}`);
+      const user = await require('../models/User').findById(req.user.id);
+      if (user && user.addresses) {
+        const foundAddress = user.addresses.id(addressId);
+        if (foundAddress) {
+          address = foundAddress; // Use the found address
+          console.log('[VerifyPayment] Address found and linked:', address._id);
+        } else {
+          console.warn('[VerifyPayment] Invalid addressId:', addressId);
+        }
+      }
+    }
+
+    if (!address) {
+      return res.status(400).json({ message: "Address is missing. Please select a valid delivery address." });
+    }
 
     // Verify payment signature
     const sign = razorpay_order_id + '|' + razorpay_payment_id;

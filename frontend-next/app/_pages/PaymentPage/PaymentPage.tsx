@@ -146,6 +146,7 @@ const PaymentPage: React.FC = () => {
         total: totalPayable,
         finalAmount: totalPayable,
         addressId: selectedAddress.id || selectedAddress._id,
+        address: selectedAddress,
       });
 
       clearCart();
@@ -214,6 +215,7 @@ const PaymentPage: React.FC = () => {
               total: totalPayable,
               finalAmount: totalPayable,
               addressId: selectedAddress?.id || selectedAddress?._id,
+              address: selectedAddress,
             });
 
             clearCart();
