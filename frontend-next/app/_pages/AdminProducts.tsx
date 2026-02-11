@@ -122,7 +122,8 @@ export const AdminProducts: React.FC = () => {
       stock: v.stock,
       price: v.price,
       sku: v.sku,
-      image: v.image
+      image: v.image,
+      countInStock: v.stock
     }));
 
     setFormData({
@@ -373,7 +374,8 @@ export const AdminProducts: React.FC = () => {
         stock: 0,
         sku: `${basePrefix}-${variantSuffix}-${randomID}`,
         price: undefined,
-        image: autoImage
+        image: autoImage,
+        countInStock: 0
       };
     });
 
