@@ -444,10 +444,9 @@ const RelatedProductsSection: React.FC<{ category: string; productId: string }> 
   if (!relatedLoading && relatedProducts.length === 0) return null;
 
   return (
-    <div className="max-w-6xl mx-auto px-2 sm:px-4 mt-6 mb-10 border-t border-gray-200 pt-8">
-      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+    <div className="max-w-6xl mx-auto px-2 sm:px-4 mt-6 mb-10">
+      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
         Similar Products
-        <span className="text-sm font-normal text-gray-500 hidden sm:inline-block">- Based on {category}</span>
       </h2>
 
       {relatedLoading ? (
