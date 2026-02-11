@@ -57,6 +57,8 @@ const productSchema = new mongoose.Schema(
     reviewsCount: { type: Number, default: 0 },
     isFeatured: { type: Boolean, default: false },
     defaultColor: { type: String, default: "" },
+    codAvailable: { type: Boolean, default: true },
+    prepaidAvailable: { type: Boolean, default: true },
     // 🔒 SYSTEM INTEGRITY FIELDS
     isDeleted: {
       type: Boolean,
