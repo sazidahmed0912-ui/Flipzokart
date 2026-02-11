@@ -271,7 +271,16 @@ const verifyPayment = async (req, res) => {
       .update(sign.toString())
       .digest('hex');
 
+    console.log("--- Razorpay Verification Debug ---");
+    console.log("Order ID:", razorpay_order_id);
+    console.log("Payment ID:", razorpay_payment_id);
+    console.log("Received Signature:", razorpay_signature);
+    console.log("Generated Signature:", expectedSign);
+    console.log("Key Secret Exists:", !!process.env.RAZORPAY_KEY_SECRET);
+    console.log("-----------------------------------");
+
     if (razorpay_signature !== expectedSign) {
+      console.error("❌ Payment verification failed: Signatures do not match");
       return res.status(400).json({ message: 'Payment verification failed' });
     }
 
