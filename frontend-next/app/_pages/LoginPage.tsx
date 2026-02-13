@@ -41,10 +41,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
   }, [timer]);
 
   // ✅ STEP 2: Login Guard
-  // ✅ STEP 3: LOGIN PAGE HARD BLOCK IF TOKEN EXISTS
   useEffect(() => {
     const token = localStorage.getItem("token");
-
     if (token) {
       router.replace("/profile");
     }

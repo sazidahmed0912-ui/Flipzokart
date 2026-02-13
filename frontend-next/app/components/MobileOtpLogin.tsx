@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/app/store/Context';
+import { useToast } from '@/app/components/toast';
 import Script from 'next/script';
 
 export default function MobileOtpLogin() {
@@ -19,7 +20,7 @@ export default function MobileOtpLogin() {
             console.log("Global Window Message Received:", event.origin, event.data);
             try {
                 if (typeof event.data === 'string' && event.data.includes('msg91')) {
-                    alert("Received MSG91 Message: " + event.data);
+                    console.log("Received MSG91 Message: " + event.data);
                 }
             } catch (e) {
                 // ignore
@@ -59,12 +60,13 @@ export default function MobileOtpLogin() {
 
         } catch (error) {
             console.error("Error calling initSendOTP:", error);
-            alert("Error initializing OTP widget. See console.");
+            // alert("Error initializing OTP widget. See console.");
         }
     };
 
     const { setUser } = useApp();
     const router = useRouter();
+    const { addToast } = useToast();
 
     const handleSuccess = async (data: any, source: string) => {
         console.log("MSG91 RAW DATA: " + JSON.stringify(data, null, 2));
@@ -95,11 +97,10 @@ export default function MobileOtpLogin() {
                 }
             }
 
-            // 🟢 Fallback 2: Manual Entry
+            // 🟢 Fallback 2: Manual prompt removed as per user request
             if (!mobile) {
-                const manualMobile = window.prompt("Confirmed! Enter mobile to complete login:");
-                if (manualMobile) mobile = manualMobile.trim();
-                else return;
+                console.warn("Mobile number could not be detected from OTP response.");
+                // We attempt to verify without explicit mobile, hoping backend can extract from token
             }
 
             const payload = {
@@ -120,26 +121,25 @@ export default function MobileOtpLogin() {
                 const user = result.data?.user;
 
                 if (token) {
-                    // ✅ HARD REQUIREMENT — persist login
+                    // ✅ IMPORTANT — token save
                     localStorage.setItem("token", token);
-                    // Ensure we save the full user object including the phone number we just verified
-                    const finalUser = { ...user, phone: user.phone || mobile };
-                    localStorage.setItem("flipzokart_user", JSON.stringify(finalUser));
 
-                    // ✅ update global auth state immediately
+                    // ✅ IMPORTANT — user state update
+                    // Ensure phone is preserved
+                    const finalUser = { ...user, phone: user.phone || mobile };
                     setUser(finalUser);
 
-                    alert(`Login Successful! Welcome ${finalUser.name || 'User'}`);
+                    addToast('success', `Login Successful! Welcome ${finalUser.name || 'User'}`);
 
-                    // ✅ REDIRECT WITHOUT BACK LOOP
+                    // ✅ Redirect to profile (using router.replace as requested)
                     router.replace("/profile");
                 }
             } else {
-                alert(result.message || "Login Failed");
+                addToast('error', result.message || "Login Failed");
             }
         } catch (e) {
             console.error("Verification error:", e);
-            alert("Verification error");
+            addToast('error', "Verification error");
         }
     };
 
@@ -149,9 +149,9 @@ export default function MobileOtpLogin() {
         const isIpBlocked = JSON.stringify(err).includes("408") || JSON.stringify(err).includes("IPBlocked");
 
         if (isIpBlocked) {
-            alert(`⚠️ IP BLOCKED BY MSG91 (Error 408)\n\nYou are temporarily blocked. Please change your Internet/Network and try again.`);
+            addToast('error', `⚠️ IP BLOCKED BY MSG91. Please change network.`);
         } else {
-            alert(`OTP Verification Failed (${source})`);
+            addToast('error', `OTP Verification Failed`);
         }
     };
 

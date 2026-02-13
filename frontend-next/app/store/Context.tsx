@@ -55,12 +55,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Hydrate from LocalStorage
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem('flipzokart_user');
       const token = localStorage.getItem('token');
-
-      // ✅ STEP 4: GLOBAL AUTH RESTORE ON APP LOAD (MANDATORY)
-      if (token && storedUser) {
-        setUser(JSON.parse(storedUser));
+      const savedUser = localStorage.getItem('flipzokart_user');
+      if (token && savedUser) {
+        setUser(JSON.parse(savedUser));
       }
 
       const savedCart = localStorage.getItem('flipzokart_cart');
