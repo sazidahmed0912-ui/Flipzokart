@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Loader } from 'lucide-react';
 import API from '@/app/services/api';
-import { getSafeAddress } from '@/app/utils/addressHelper';
+import { getSafeAddress, isAddressValid } from '@/app/utils/addressHelper';
 import { useApp } from '@/app/store/Context';
 import { useToast } from '@/app/components/toast';
 import { Address } from '@/app/types';
@@ -251,8 +251,32 @@ const CheckoutPage = () => {
     };
 
     const handlePlaceOrder = () => {
-        if (!selectedAddressId) {
-            addToast('warning', 'Please select a delivery address to proceed!');
+        // Find the full address object from state
+        const selectedAddress = addresses.find(a => a.id === selectedAddressId);
+
+        // 1️⃣ STRICT VALIDATION GUARD
+        if (!selectedAddress || !isAddressValid(selectedAddress)) {
+            addToast('error', 'Please select delivery address');
+
+            // 📂 Auto-Open Logic
+            const addressFormElement = document.getElementById("address-section-container"); // We'll add this ID to wrapper
+
+            // Scroll to section
+            addressFormElement?.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+            });
+
+            // If no valid addresses exist, open the "Add New" form automatically
+            if (addresses.length === 0) {
+                setIsAddressFormOpen(true);
+                setTimeout(() => {
+                    // Try to focus on the first input inside the modal if possible
+                    // Note: Modal content might not be ready instantly.
+                    const firstInput = document.querySelector('[name="fullName"]') as HTMLElement;
+                    firstInput?.focus();
+                }, 400);
+            }
             return;
         }
 
@@ -334,7 +358,7 @@ const CheckoutPage = () => {
                     {renderPriceSummary()}
                 </div>
 
-                <div className="address-section">
+                <div className="address-section" id="address-section-container">
                     <h2>Select Delivery Address</h2>
                     <div className="address-list">
                         {isLoading && <div className="p-4">Loading addresses...</div>}

@@ -48,3 +48,17 @@ export const getSafeAddress = (source: any): NormalizedAddress => {
         type: data.type || 'Home'
     };
 };
+// Strict Address Validator
+export const isAddressValid = (address: any) => {
+    if (!address) return false;
+
+    return (
+        (address.fullName?.trim() || address.name?.trim()) &&
+        /^\d{10}$/.test(address.phone || "") &&
+        address.street?.trim() &&
+        address.city?.trim() &&
+        address.state?.trim() &&
+        /^\d{6}$/.test(address.pincode || "") &&
+        address.country?.trim()
+    );
+};
