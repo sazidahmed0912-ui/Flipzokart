@@ -120,17 +120,18 @@ export default function MobileOtpLogin() {
                 const user = result.data?.user;
 
                 if (token) {
-                    // ✅ IMPORTANT — token save
+                    // ✅ HARD REQUIREMENT — persist login
                     localStorage.setItem("token", token);
-
-                    // ✅ IMPORTANT — user state update
-                    // Ensure phone is preserved
+                    // Ensure we save the full user object including the phone number we just verified
                     const finalUser = { ...user, phone: user.phone || mobile };
+                    localStorage.setItem("flipzokart_user", JSON.stringify(finalUser));
+
+                    // ✅ update global auth state immediately
                     setUser(finalUser);
 
                     alert(`Login Successful! Welcome ${finalUser.name || 'User'}`);
 
-                    // ✅ Redirect to profile (using router.replace as requested)
+                    // ✅ REDIRECT WITHOUT BACK LOOP
                     router.replace("/profile");
                 }
             } else {
