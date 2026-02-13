@@ -394,7 +394,7 @@ const registerStore = async (req, res) => {
   }
 };
 
-// MOBILE LOGIN
+// MOBILE LOGIN (INSTANT SIGNUP)
 const mobileLogin = async (req, res) => {
   try {
     const { phone } = req.body;
@@ -406,12 +406,22 @@ const mobileLogin = async (req, res) => {
     // Check if user exists
     let user = await User.findOne({ phone });
 
-    // 🟢 STRICT LOGIN: If user doesn't exist, FAIL (Don't create)
+    // 🟢 INSTANT SIGNUP LOGIC
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found. Please Sign Up first."
+      console.log(`[Mobile Login] New user detected for ${phone}. Creating account...`);
+      // Create new user with placeholder details
+      user = await User.create({
+        name: "Mobile User", // Placeholder Name
+        email: `${phone}@mobile.temp`, // Placeholder Email (Unique)
+        phone: phone,
+        password: await bcrypt.hash(crypto.randomBytes(16).toString("hex"), 10), // Random Password
+        role: "user",
+        isMobileVerified: true
       });
+
+      // Log creation
+      const broadcastLog = req.app.get("broadcastLog");
+      if (broadcastLog) broadcastLog("success", `New Mobile User ${phone} created`, "Auth");
     }
 
     // Generate JWT token
@@ -420,12 +430,6 @@ const mobileLogin = async (req, res) => {
       process.env.JWT_SECRET || "secret_key_123",
       { expiresIn: "30d" }
     );
-
-    // Broadcast log
-    const broadcastLog = req.app.get("broadcastLog");
-    if (broadcastLog) {
-      broadcastLog("success", `Mobile User ${phone} logged in (Strict Mode)`, "Auth");
-    }
 
     res.status(200).json({
       success: true,
