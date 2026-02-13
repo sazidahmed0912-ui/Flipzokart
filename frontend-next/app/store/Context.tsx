@@ -1,11 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, CartItem, Product, Order, Address } from '@/app/types';
 import { MOCK_PRODUCTS } from '@/app/constants';
 import authService from '@/app/services/authService';
 import { fetchProducts, updateOrderStatus as updateOrderStatusAPI } from '@/app/services/api';
 import { useSocket } from '@/app/hooks/useSocket';
+import { useToast } from '@/app/components/toast';
 
 interface AppContextType {
   user: User | null;
@@ -32,8 +33,9 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// 🟢 5️⃣ STABLE KEY GENERATOR
 const getCartItemKey = (productId: string, variants?: Record<string, string>, variantId?: string) => {
-  if (variantId) return variantId; // Strict Mode: Variant ID is the key
+  if (variantId) return variantId;
   if (!variants) return productId;
   const variantString = Object.entries(variants)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -43,14 +45,23 @@ const getCartItemKey = (productId: string, variants?: Record<string, string>, va
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // 🟢 7️⃣ HYDRATION PROTECTION
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+
   const [user, setUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
-
   const [products, setProducts] = useState<Product[]>([]);
+  const [isCartLoading, setIsCartLoading] = useState(false);
+
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Hydrate from LocalStorage
   useEffect(() => {
@@ -61,7 +72,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setUser(JSON.parse(savedUser));
       }
 
-      const savedCart = localStorage.getItem('flipzokart_cart');
+      const savedCart = localStorage.getItem('flipzokart_cart'); // 🟢 2️⃣ UI -> LocalStorage (Initial Truth)
       if (savedCart) setCart(JSON.parse(savedCart));
 
       const savedWishlist = localStorage.getItem('flipzokart_wishlist');
@@ -80,31 +91,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  // Fetch products from API on mount
+  // Fetch products
   useEffect(() => {
     const loadProducts = async () => {
       try {
         const { data } = await fetchProducts();
-        // Backend returns: { status: 'success', products: [...], total: ... }
-        // Or sometimes it might be just the array depending on endpoint version
         const productList = Array.isArray(data) ? data : (data.products || data.data || []);
-
         setProducts(productList);
         localStorage.setItem('flipzokart_products', JSON.stringify(productList));
       } catch (error) {
         console.error("Failed to fetch products:", error);
-        // Fallback to local storage if API fails, or mocks
         const saved = localStorage.getItem('flipzokart_products');
-        if (saved) {
-          setProducts(JSON.parse(saved));
-        } else {
-          setProducts(MOCK_PRODUCTS.slice().reverse());
-        }
+        if (saved) setProducts(JSON.parse(saved));
+        else setProducts(MOCK_PRODUCTS.slice().reverse());
       }
     };
     loadProducts();
 
-    // ✅ STEP 4: Global Auth Restore (Infinite Redirect Protection)
+    // Global Auth Restore
     const token = localStorage.getItem("token");
     if (token) {
       fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/auth/me`, {
@@ -127,100 +131,104 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  const [isCartLoading, setIsCartLoading] = useState(false);
+  // 🟢 4️⃣ REFRESH SERVER CART
+  const refreshServerCart = useCallback(async () => {
+    if (!user) return;
+    try {
+      setIsCartLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
-  // Sync Cart: FETCH on Login/Mount
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cart`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const serverCart = await response.json();
+        // 🟢 Server is Truth for Logged In User
+        if (Array.isArray(serverCart)) {
+          setCart(serverCart);
+          localStorage.setItem('flipzokart_cart', JSON.stringify(serverCart)); // Update local cache
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch server cart", err);
+    } finally {
+      setIsCartLoading(false);
+    }
+  }, [user]);
+
+  // 🟢 3️⃣ GUEST -> LOGIN MERGE
   useEffect(() => {
-    if (!user) return; // Don't fetch if no user
-    if (!isInitialized) return;
+    if (!user || !isInitialized) return;
 
-    const fetchCart = async () => {
+    const mergeGuestCart = async () => {
+      const guestCartStr = localStorage.getItem("flipzokart_cart");
+      if (!guestCartStr) {
+        // No guest cart, just fetch server cart
+        await refreshServerCart();
+        return;
+      }
+
+      const guestCart = JSON.parse(guestCartStr);
+      if (!Array.isArray(guestCart) || guestCart.length === 0) {
+        await refreshServerCart();
+        return;
+      }
+
+      // We have guest items. Merge them.
       try {
-        setIsCartLoading(true);
         const token = localStorage.getItem('token');
-        if (!token) return;
+        // Optimistic approach: We can't really optimistic merge here easily without conflict logic.
+        // Best to let server handle it.
 
-        // Use axios directly or use fetch with headers
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cart`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cart/merge`, {
+          method: "POST",
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ items: guestCart }),
         });
 
-        if (response.ok) {
-          const serverCart = await response.json();
-          // Merge or Replace? 
-          // Strategy: Replace local with server if server has items.
-          // If server is empty and local has items (guest cart), push local to server?
-          // For simplicity and "Login Restore" requirement: Server > Local.
-          if (serverCart && serverCart.length > 0) {
-            setCart(serverCart);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to sync cart from server", err);
-      } finally {
-        setIsCartLoading(false);
+        // 🟢 Clear Guest Cart from Local (it's now on server)
+        localStorage.removeItem("flipzokart_cart");
+
+        // 🟢 Hard Refresh to get the merged state
+        await refreshServerCart();
+        addToast('success', 'Cart merged successfully');
+
+      } catch (e) {
+        console.error("Failed to merge cart", e);
       }
     };
 
-    fetchCart();
-    fetchCart();
-  }, [user, isInitialized]); // Run when user changes (Login)
+    mergeGuestCart();
+  }, [user, isInitialized, refreshServerCart]); // Runs once when user becomes truthy
 
-  // Socket.IO for Real-Time Products
+  // Real-time Socket
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const socket = useSocket(token);
-
   useEffect(() => {
     if (!socket) return;
-
-    // Listen for New Products
-    socket.on('newProduct', (newProduct: Product) => {
-      setProducts(prev => [newProduct, ...prev]);
-    });
-
-    // Listen for Product Updates
-    socket.on('productUpdated', (updatedProduct: Product) => {
-      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
-    });
-
-    // Listen for Product Deletion
-    socket.on('deleteProduct', (productId: string) => {
-      setProducts(prev => prev.filter(p => p.id !== productId));
-    });
-
+    socket.on('newProduct', (newProduct: Product) => setProducts(prev => [newProduct, ...prev]));
+    socket.on('productUpdated', (updatedProduct: Product) => setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p)));
+    socket.on('deleteProduct', (productId: string) => setProducts(prev => prev.filter(p => p.id !== productId)));
     return () => {
       socket.off('newProduct');
       socket.off('productUpdated');
       socket.off('deleteProduct');
     };
   }, [socket]);
-  useEffect(() => {
-    if (!user) return;
-    const updateLocation = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
 
-        // Fire and Forget - we don't need to wait or show result to user
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/update-location`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-      } catch (err) {
-        console.warn("Passive location update failed", err);
-      }
-    };
-    updateLocation();
-  }, [user]);
-
-  // Sync Cart: SAVE on Change
+  // Sync Cart: SAVE on Change (Debounced)
   useEffect(() => {
     if (!isInitialized) return;
-    if (!user || isCartLoading) return; // Don't save if loading or no user
+
+    // Always save to localStorage (Consistency)
+    localStorage.setItem('flipzokart_cart', JSON.stringify(cart));
+
+    if (!user || isCartLoading) return;
 
     const saveCart = async () => {
       try {
@@ -240,53 +248,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
 
-    // Debounce to prevent too many requests
-    const timeoutId = setTimeout(saveCart, 1000);
+    const timeoutId = setTimeout(saveCart, 1000); // 1s debounce
     return () => clearTimeout(timeoutId);
   }, [cart, user, isCartLoading, isInitialized]);
 
+  // Persist other state
+  useEffect(() => { if (isInitialized) localStorage.setItem('flipzokart_wishlist', JSON.stringify(wishlist)); }, [wishlist, isInitialized]);
+  useEffect(() => { if (isInitialized) localStorage.setItem('flipzokart_orders', JSON.stringify(orders)); }, [orders, isInitialized]);
   useEffect(() => {
     if (!isInitialized) return;
-    if (user) {
-      localStorage.setItem('flipzokart_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('flipzokart_user');
-    }
+    if (selectedAddress) localStorage.setItem('flipzokart_selected_address', JSON.stringify(selectedAddress));
+    else localStorage.removeItem('flipzokart_selected_address');
+  }, [selectedAddress, isInitialized]);
+  useEffect(() => {
+    if (!isInitialized) return;
+    if (user) localStorage.setItem('flipzokart_user', JSON.stringify(user));
+    else localStorage.removeItem('flipzokart_user');
   }, [user, isInitialized]);
 
 
-  useEffect(() => {
-    if (!isInitialized) return;
-    localStorage.setItem('flipzokart_cart', JSON.stringify(cart));
-  }, [cart, isInitialized]);
-
-  useEffect(() => {
-    if (!isInitialized) return;
-    localStorage.setItem('flipzokart_wishlist', JSON.stringify(wishlist));
-  }, [wishlist, isInitialized]);
-
-  useEffect(() => {
-    if (!isInitialized) return;
-    localStorage.setItem('flipzokart_orders', JSON.stringify(orders));
-  }, [orders, isInitialized]);
-
-  useEffect(() => {
-    if (!isInitialized) return;
-    localStorage.setItem('flipzokart_products', JSON.stringify(products));
-  }, [products, isInitialized]);
-
-  // Saved address local storage
-  useEffect(() => {
-    if (!isInitialized) return;
-    if (selectedAddress) {
-      localStorage.setItem('flipzokart_selected_address', JSON.stringify(selectedAddress));
-    } else {
-      localStorage.removeItem('flipzokart_selected_address');
-    }
-  }, [selectedAddress, isInitialized]);
-
+  // 🟢 6️⃣ IMMUTABLE STATE UPDATES (FIX FREEZE)
   const addToCart = (item: CartItem, quantity: number = 1) => {
-    // Generate key based on snapshot data
     const itemKey = getCartItemKey(item.productId, item.selectedVariants, item.variantId);
 
     setCart((prev) => {
@@ -294,35 +276,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         (p) => getCartItemKey(p.productId, p.selectedVariants, p.variantId) === itemKey
       );
 
-      // If already exists → increase qty
       if (existingIndex > -1) {
-        const next = [...prev];
-        next[existingIndex] = {
-          ...next[existingIndex],
-          quantity: next[existingIndex].quantity + quantity
-        };
-        return next;
+        // Immutable Update
+        return prev.map((p, i) => i === existingIndex ? { ...p, quantity: p.quantity + quantity } : p);
       }
 
-      // 🔒 IMPORTANT: store EXACT snapshot (no mutation)
-      // Ensure we treat the incoming item AS the snapshot (CartItem)
-      const snapshot: CartItem = {
-        ...item,
-        quantity
-      };
-
+      const snapshot: CartItem = { ...item, quantity };
       return [...prev, snapshot];
     });
 
-    // Toast handled in UI components to return void here as per interface
+    if (!isInitialized) {
+      // Fallback for very early adds? usually not needed if buttons disabled
+    }
   };
 
   const removeFromCart = (key: string) => {
-    setCart((prev: CartItem[]) => prev.filter((item: CartItem) => getCartItemKey(item.productId, item.selectedVariants, item.variantId) !== key));
+    setCart((prev) => prev.filter((item) => getCartItemKey(item.productId, item.selectedVariants, item.variantId) !== key));
   };
 
   const removeProductFromCart = (key: string) => {
-    setCart((prev: CartItem[]) => prev.filter((item: CartItem) => item.productId !== key));
+    setCart((prev) => prev.filter((item) => item.productId !== key));
   };
 
   const updateCartQuantity = (key: string, qty: number) => {
@@ -330,7 +303,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       removeFromCart(key);
       return;
     }
-    setCart((prev: CartItem[]) => prev.map((item: CartItem) =>
+    setCart((prev) => prev.map((item) =>
       getCartItemKey(item.productId, item.selectedVariants, item.variantId) === key
         ? { ...item, quantity: qty }
         : item
@@ -343,9 +316,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleWishlist = (productId: string) => {
-    setWishlist(prev =>
-      prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
-    );
+    setWishlist(prev => prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]);
   };
 
   const placeOrder = (order: Order) => {
@@ -361,9 +332,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ));
     } catch (error) {
       console.error('Failed to update order status:', error);
-      alert('Failed to update order status. Please try again.');
+      // alert('Failed to update order status. Please try again.');
+      addToast('error', 'Failed to update order status');
     }
   };
+
+  const isAdmin = user?.role === 'admin';
 
   const logout = async () => {
     try {
@@ -377,10 +351,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setWishlist([]);
       localStorage.removeItem('flipzokart_user');
       localStorage.removeItem('flipzokart_wishlist');
+      localStorage.removeItem('token');
+      document.cookie = 'token=; Max-Age=0; path=/;';
     }
   };
 
-  const isAdmin = user?.role === 'admin';
+  // 🟢 7️⃣ HYDRATION CHECK
+  if (!isHydrated) return null; // Prevent mismatched HTML
 
   return (
     <AppContext.Provider value={{
