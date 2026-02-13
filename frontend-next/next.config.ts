@@ -4,6 +4,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   distDir: 'dist',
+  compress: true, // 🟢 Enable Gzip compression
+  poweredByHeader: false, // 🟢 Security & Performance (save bytes)
+  reactStrictMode: false, // 🟢 Disable strict mode for production performance (optional)
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
