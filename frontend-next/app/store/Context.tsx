@@ -69,7 +69,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const token = localStorage.getItem('token');
       const savedUser = localStorage.getItem('flipzokart_user');
       if (token && savedUser) {
-        setUser(JSON.parse(savedUser));
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          // Strict validation to prevent crashes
+          if (parsedUser && parsedUser.id && (parsedUser.email || parsedUser.phone)) {
+            setUser(parsedUser);
+          } else {
+            console.warn("Invalid user data in localStorage, clearing.");
+            localStorage.removeItem('flipzokart_user');
+          }
+        } catch (e) {
+          console.warn("Failed to parse user data", e);
+          localStorage.removeItem('flipzokart_user');
+        }
       }
 
       const savedCart = localStorage.getItem('flipzokart_cart'); // 🟢 2️⃣ UI -> LocalStorage (Initial Truth)
@@ -171,8 +183,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [user]);
 
   // 🟢 3️⃣ GUEST -> LOGIN MERGE
+  const isMergingRef = React.useRef(false);
+
   useEffect(() => {
-    if (!user || !isInitialized) return;
+    if (!isInitialized) return;
+
+    // Reset merge lock if user logs out
+    if (!user) {
+      isMergingRef.current = false;
+      return;
+    }
+
+    // Prevent double execution
+    if (isMergingRef.current) return;
 
     const mergeGuestCart = async () => {
       const guestCartStr = localStorage.getItem("flipzokart_cart");
@@ -188,11 +211,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return;
       }
 
+      // Lock
+      isMergingRef.current = true;
+
       // We have guest items. Merge them.
       try {
         const token = localStorage.getItem('token');
-        // Optimistic approach: We can't really optimistic merge here easily without conflict logic.
-        // Best to let server handle it.
 
         await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cart/merge`, {
           method: "POST",
@@ -212,6 +236,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       } catch (e) {
         console.error("Failed to merge cart", e);
+        // On failure, we might want to unlock to retry? 
+        // For now, keep locked to prevent spam. User can refresh page.
       }
     };
 

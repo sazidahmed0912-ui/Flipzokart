@@ -169,7 +169,7 @@ const Header: React.FC = () => {
                   className="flex flex-col items-center justify-center text-gray-700 hover:text-[#f28c28]"
                 >
                   <User className="w-6 h-6" />
-                  <span className="text-sm font-medium text-center">Welcome Back, {user.name.split(' ')[0]}</span>
+                  <span className="text-sm font-medium text-center">Welcome Back, {(user.name || "User").split(' ')[0]}</span>
                 </button>
                 {isProfileOpen && (
                   <div className="absolute top-full right-0 mt-3 w-56 bg-white border border-gray-100 shadow-2xl rounded-xl overflow-hidden z-50">
