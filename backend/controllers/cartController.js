@@ -57,17 +57,73 @@ const updateCart = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        user.cart = cartToSave;
-        await user.save();
-
         res.json({ message: 'Cart updated', cart: user.cart });
     } catch (error) {
         console.error('Error updating cart:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
+// @route   POST /api/cart/merge
+// @access  Private
+const mergeCart = async (req, res) => {
+    try {
+        const { items } = req.body; // Expecting array of guest cart items
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(200).json({ message: 'No items to merge' });
+        }
+
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Helper to generate a comparable key for variants
+        const getVariantKey = (variants) => {
+            if (!variants) return '';
+            return Object.entries(variants)
+                .sort(([k1], [k2]) => k1.localeCompare(k2))
+                .map(([k, v]) => `${k}:${v}`)
+                .join('|');
+        };
+
+        // Merge Logic
+        items.forEach(guestItem => {
+            const guestVariantKey = getVariantKey(guestItem.selectedVariants);
+
+            // Find if this item already exists in user's cart
+            const existingItemIndex = user.cart.findIndex(userItem => {
+                const userVariantKey = getVariantKey(userItem.selectedVariants);
+                return userItem.productId.toString() === guestItem.productId && userVariantKey === guestVariantKey;
+            });
+
+            if (existingItemIndex > -1) {
+                // Update quantity
+                user.cart[existingItemIndex].quantity += guestItem.quantity;
+            } else {
+                // Add new item
+                user.cart.push({
+                    productId: guestItem.productId,
+                    quantity: guestItem.quantity,
+                    selectedVariants: guestItem.selectedVariants
+                });
+            }
+        });
+
+        await user.save();
+
+        // Return updated cart (same format as getCart)
+        // We can just call getCart logic here or let frontend refetch. 
+        // Returning success message is enough as frontend will refetch.
+        res.json({ success: true, message: 'Cart merged successfully' });
+
+    } catch (error) {
+        console.error('Error merging cart:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 
 module.exports = {
     getCart,
-    updateCart
+    updateCart,
+    mergeCart
 };
