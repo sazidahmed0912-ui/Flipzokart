@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { OtpInput } from '@/app/components/OtpInput';
 import { useApp } from '@/app/store/Context';
 import authService from '@/app/services/authService';
+import { createOrder } from '@/app/services/api';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import { useToast } from '@/app/components/toast';
 import { Eye, EyeOff, Smartphone, CheckCircle } from 'lucide-react';
@@ -168,11 +169,36 @@ export const SignupPage: React.FC = () => {
       // If mobile was verified, we pass it.
       const user = await authService.verifyEmailOtp(email, otpCode, { name, phone, password });
       setUser(user);
-      addToast('success', '✅ Registration successful! Please Login.');
+      addToast('success', '✅ Registration successful!');
+
+      // 🛒 AUTO-ORDER LOGIC
+      const pendingOrder = localStorage.getItem("pendingOrder");
+      if (pendingOrder) {
+        try {
+          addToast('info', 'Processing your pending order...');
+          // Wait a bit for token to settle in localStorage (handled by authService)
+          const orderPayload = JSON.parse(pendingOrder);
+
+          // Execute Order
+          const { data } = await createOrder(orderPayload);
+
+          localStorage.removeItem("pendingOrder");
+          addToast('success', '🎉 Order Placed Successfully!');
+          router.push(`/order-success?orderId=${data.order.id}`);
+          return; // Stop further redirection
+        } catch (e) {
+          console.error("Auto-order failed", e);
+          addToast('error', 'Failed to place pending order. Please try from Cart.');
+        }
+      }
 
       const redirectPath = searchParams.get('redirect');
-      const loginUrl = redirectPath ? `/login?redirect=${encodeURIComponent(redirectPath)}` : '/login';
-      router.push(loginUrl);
+      // If we had a redirect but no pending order (or it failed), go there
+      if (redirectPath && redirectPath !== 'place-order') {
+        router.push(decodeURIComponent(redirectPath));
+      } else {
+        router.push('/');
+      }
     } catch (err: any) {
       addToast('error', err.message || 'Invalid OTP');
     } finally {

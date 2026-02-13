@@ -1,15 +1,12 @@
 export interface NormalizedAddress {
-    id?: string | number; // Optional as it might not be in raw data but added later
     fullName: string;
     phone: string;
     street: string;
     city: string;
     state: string;
     pincode: string;
-    country: string;
     addressLine2?: string;
     type?: string;
-    isDefault?: boolean;
 }
 
 export const getSafeAddress = (source: any): NormalizedAddress => {
@@ -19,8 +16,7 @@ export const getSafeAddress = (source: any): NormalizedAddress => {
         street: 'Address not available',
         city: 'Unknown',
         state: '',
-        pincode: '',
-        country: 'India'
+        pincode: ''
     };
 
     // Handle legacy double-nested or stringified addresses
@@ -36,8 +32,7 @@ export const getSafeAddress = (source: any): NormalizedAddress => {
                 street: source,
                 city: '',
                 state: '',
-                pincode: '',
-                country: 'India'
+                pincode: ''
             };
         }
     }
@@ -50,21 +45,6 @@ export const getSafeAddress = (source: any): NormalizedAddress => {
         city: data.city || data.district || '',
         state: data.state || '',
         pincode: data.pincode || data.zip || data.postalCode || '',
-        country: data.country || "India",
-        isDefault: data.isDefault || false,
-        type: data.type || "Home",
+        type: data.type || 'Home'
     };
-};
-
-export const validateAddress = (address: any): string | null => {
-    if (!address) return "No address selected";
-    if (!address.fullName?.trim()) return "Enter full name";
-    if (!/^\d{10}$/.test(String(address.phone || '').trim())) return "Enter valid 10-digit phone";
-    if (!address.street?.trim()) return "Enter street address";
-    if (!address.city?.trim()) return "Enter city";
-    if (!address.state?.trim()) return "Enter state";
-    if (!/^\d{6}$/.test(String(address.pincode || '').trim())) return "Enter valid 6-digit pincode";
-    if (!address.country?.trim()) return "Enter country";
-
-    return null;
 };

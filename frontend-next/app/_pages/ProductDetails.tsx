@@ -17,7 +17,7 @@ import useRelatedProducts from '@/app/hooks/useRelatedProducts';
 import { ProductCard } from '@/app/components/ProductCard';
 import { viewContent, addToCart as fbAddToCart, initiateCheckout } from '@/lib/fbPixel';
 // import { viewContent, addToCart as fbAddToCart, initiateCheckout } from '@/lib/fbPixel'; // REMOVED DUPLICATE
-import { requireAuthRedirectToSignup } from '@/app/utils/requireAuth';
+// import { requireAuthRedirectToSignup } from '@/app/utils/requireAuth'; // REMOVED FOR GUEST CHECKOUT
 
 // --- Helper: Parse Metadata for Dynamic Groups ---
 const parseVariantMetadata = (description: string): any[] => {
@@ -350,8 +350,8 @@ export const ProductDetails: React.FC = () => {
                   <button
                     onClick={() => {
                       // AUTH GUARD
-                      // AUTH GUARD
-                      if (!requireAuthRedirectToSignup(router)) return;
+                      // AUTH GUARD REMOVED FOR GUEST ACCESS
+                      // if (!requireAuthRedirectToSignup(router)) return;
 
                       // BUG FIX 3: Strict Cart construction
                       const cartItem: CartItem = {
@@ -396,8 +396,8 @@ export const ProductDetails: React.FC = () => {
                 <button
                   onClick={() => {
                     // AUTH GUARD
-                    // AUTH GUARD
-                    if (!requireAuthRedirectToSignup(router)) return;
+                    // AUTH GUARD REMOVED FOR GUEST ACCESS
+                    // if (!requireAuthRedirectToSignup(router)) return;
 
                     const cartItem: CartItem = {
                       id: product.id,

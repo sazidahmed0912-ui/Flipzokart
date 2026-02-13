@@ -7,6 +7,7 @@ import { useApp } from '@/app/store/Context';
 import authService from '@/app/services/authService';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import { useToast } from '@/app/components/toast';
+import { createOrder } from '@/app/services/api';
 import { Eye, EyeOff } from 'lucide-react';
 
 interface LoginPageProps {
@@ -94,8 +95,30 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
       setUser(user);
       addToast('success', '✅ Login successful!');
 
+      // 🛒 AUTO-ORDER LOGIC
+      const pendingOrder = localStorage.getItem("pendingOrder");
+      if (pendingOrder) {
+        try {
+          addToast('info', 'Processing your pending order...');
+          const orderPayload = JSON.parse(pendingOrder);
+          const { data } = await createOrder(orderPayload);
+          localStorage.removeItem("pendingOrder");
+          addToast('success', '🎉 Order Placed Successfully!');
+          router.push(`/order-success?orderId=${data.order.id}`);
+          return;
+        } catch (e) {
+          console.error("Auto-order failed", e);
+          addToast('error', 'Failed to place pending order.');
+        }
+      }
+
       const redirectPath = searchParams.get('redirect');
-      router.push(redirectPath ? decodeURIComponent(redirectPath) : (user.role === 'admin' ? '/admin' : '/profile'));
+      if (redirectPath === 'place-order') {
+        // Should have been handled above, but if failed or empty, go to home
+        router.push('/');
+      } else {
+        router.push(redirectPath ? decodeURIComponent(redirectPath) : (user.role === 'admin' ? '/admin' : '/profile'));
+      }
 
     } catch (err: any) {
       if (err.response?.status === 404 || err.message?.includes("Sign Up first")) {
