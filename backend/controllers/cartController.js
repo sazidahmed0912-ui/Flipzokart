@@ -16,6 +16,7 @@ const getCart = async (req, res) => {
             .filter(item => item.productId)
             .map(item => ({
                 id: item.productId._id,
+                productId: item.productId._id, // 🟢 Critical: Frontend needs this for key generation
                 name: item.productId.name,
                 price: item.productId.price,
                 originalPrice: item.productId.originalPrice,

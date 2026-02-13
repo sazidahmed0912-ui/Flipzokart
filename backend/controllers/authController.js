@@ -425,6 +425,7 @@ const mobileLogin = async (req, res) => {
     }
 
     // Generate JWT token
+    // Generate JWT token
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET || "secret_key_123",
@@ -441,7 +442,9 @@ const mobileLogin = async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
+        authMethod: "mobile-otp" // 🟢 Critical Flag
       },
+      isNewUser: user.createdAt > new Date(Date.now() - 10000) // Rough check if created just now
     });
 
   } catch (error) {
