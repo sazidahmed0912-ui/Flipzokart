@@ -84,25 +84,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       }
 
-      // 🟢 2️⃣ CART HYDRATION (STRICT)
-      // IF LOGGED IN: IGNORE LOCAL CART completely to prevent "zombie merge"
-      if (!token) {
-        const savedCart = localStorage.getItem('flipzokart_cart');
-        if (savedCart) {
-          try {
-            const parsedCart = JSON.parse(savedCart);
-            if (Array.isArray(parsedCart)) {
-              const validItems = parsedCart.filter(item => item.productId && item.quantity > 0);
-              setCart(validItems);
-            }
-          } catch (e) {
-            console.warn("Corrupted cart data found in localStorage, clearing it.");
-            localStorage.removeItem('flipzokart_cart');
+      // 🟢 2️⃣ CART HYDRATION (PERSISTENT for Everyone)
+      const savedCart = localStorage.getItem('flipzokart_cart');
+      if (savedCart) {
+        try {
+          const parsedCart = JSON.parse(savedCart);
+          if (Array.isArray(parsedCart)) {
+            setCart(parsedCart);
           }
+        } catch (e) {
+          console.warn("Corrupted cart data found in localStorage, clearing it.");
+          localStorage.removeItem('flipzokart_cart');
         }
-      } else {
-        // Logged in: Clear local cart to be safe
-        localStorage.removeItem('flipzokart_cart');
       }
 
       const savedWishlist = localStorage.getItem('flipzokart_wishlist');
@@ -214,7 +207,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const guestCart = JSON.parse(guestCartStr);
       if (!Array.isArray(guestCart) || guestCart.length === 0) {
-        localStorage.removeItem("flipzokart_cart");
         sessionStorage.setItem("cartMerged", "true");
         await refreshServerCart();
         return;
@@ -236,8 +228,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           body: JSON.stringify({ items: guestCart }),
         });
 
-        // 🟢 ULTRA-LOCK SUCCESS: Clear Local + Mark Session
-        localStorage.removeItem("flipzokart_cart");
+        // 🟢 MERGE SUCCESS: Mark Session (Keep Local for Persistence)
         sessionStorage.setItem("cartMerged", "true");
 
         // 🟢 Hard Refresh to get the merged state
