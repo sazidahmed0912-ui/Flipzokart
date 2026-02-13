@@ -18,6 +18,7 @@ import {
 import { useApp } from '@/app/store/Context';
 import { useToast } from '@/app/components/toast';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
+import AuthModal from '@/app/components/auth/AuthModal';
 import './PaymentPage.css';
 /* =========================
    Razorpay ENV SAFE ACCESS
@@ -56,6 +57,45 @@ const PaymentPage: React.FC = () => {
   >(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Guest Checkout Logic
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isProcessingPending, setIsProcessingPending] = useState(false);
+
+  /* =========================
+     AUTO-PROCESS PENDING ORDER
+  ========================= */
+  useEffect(() => {
+    // Only run if user is logged in and we are not already processing
+    if (user && !isProcessingPending) {
+      const pendingOrderStr = localStorage.getItem('pendingOrder');
+      if (pendingOrderStr) {
+        console.log("Found pending order, auto-executing...");
+        setIsProcessingPending(true);
+        const pending = JSON.parse(pendingOrderStr);
+
+        // Verify if current cart matches pending (basic check)
+        // Ideally valid, but if they changed cart in another tab? 
+        // We'll proceed with current cart state for now but use method from pending
+
+        if (pending.method) {
+          setPaymentMethod(pending.method);
+          addToast('success', '✅ Account created! Placing your order automatically...');
+
+          // Small delay to ensure state and toast update
+          setTimeout(() => {
+            if (pending.method === 'COD') {
+              placeCODOrder();
+            } else if (pending.method === 'RAZORPAY') {
+              payWithRazorpay();
+            }
+            localStorage.removeItem('pendingOrder');
+            setIsProcessingPending(false);
+          }, 1500);
+        }
+      }
+    }
+  }, [user]);
 
   const razorpayLoaded = useRazorpay();
 
@@ -249,9 +289,20 @@ const PaymentPage: React.FC = () => {
      SUBMIT HANDLER
   ========================= */
   const handleSubmit = () => {
+    // GUEST INTERCEPT
     if (!user) {
-      addToast('warning', '⚠️ Redirecting to Login page...');
-      setTimeout(() => router.push('/login'), 1000);
+      if (!paymentMethod) {
+        addToast('warning', 'Please select a payment method');
+        return;
+      }
+
+      // Store pending intent
+      localStorage.setItem('pendingOrder', JSON.stringify({
+        method: paymentMethod,
+        timestamp: Date.now()
+      }));
+
+      setIsAuthModalOpen(true);
       return;
     }
 
@@ -367,7 +418,7 @@ const PaymentPage: React.FC = () => {
 
             <button
               className="action-button"
-              disabled={(!paymentMethod && !!user) || loading || !selectedAddress} // strict disable
+              disabled={(!paymentMethod) || loading || !selectedAddress} // Allow guest (user check removed from disabled)
               onClick={handleSubmit}
             >
               {loading ? (
@@ -389,7 +440,7 @@ const PaymentPage: React.FC = () => {
         </div>
         <button
           className="action-button mobile-pay-btn"
-          disabled={(!paymentMethod && !!user) || loading || !selectedAddress}
+          disabled={(!paymentMethod) || loading || !selectedAddress}
           onClick={handleSubmit}
         >
           {loading ? (
@@ -401,6 +452,13 @@ const PaymentPage: React.FC = () => {
           )}
         </button>
       </div>
+
+      {/* Auth Modal for Guest Checkout */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        message="🔐 Create your account to place order securely"
+      />
     </div>
   );
 };

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Loader } from 'lucide-react';
 import API from '@/app/services/api';
-import { getSafeAddress } from '@/app/utils/addressHelper';
+import { getSafeAddress, validateAddress } from '@/app/utils/addressHelper';
 import { useApp } from '@/app/store/Context';
 import { useToast } from '@/app/components/toast';
 import { Address } from '@/app/types';
@@ -30,17 +30,29 @@ const CheckoutPage = () => {
     const [addressToEdit, setAddressToEdit] = useState<Address | null>(null);
 
 
-    // Fetch addresses from backend on mount
+    // Fetch addresses from backend on mount OR use local guest address
     React.useEffect(() => {
         const fetchAddresses = async () => {
+            // GUEST MODE: If no user, checking for locally saved guest address
             if (!user) {
+                const savedGuestAddress = localStorage.getItem('flipzokart_guest_address');
+                if (savedGuestAddress) {
+                    try {
+                        const parsed = JSON.parse(savedGuestAddress);
+                        setAddresses([parsed]);
+                        setSelectedAddressId(parsed.id);
+                        setContextAddress(parsed);
+                    } catch (e) {
+                        console.error("Failed to parse guest address", e);
+                    }
+                }
                 setIsLoading(false);
                 return;
             }
+
             try {
                 const { data } = await API.get('/api/user/address');
                 const userAddresses = data.addresses || [];
-                // Map backend addresses to frontend Address type
                 // Map backend addresses to frontend Address type using robust normalization
                 const formatted: Address[] = userAddresses.map((a: any) => {
                     const safe = getSafeAddress(a);
@@ -141,6 +153,16 @@ const CheckoutPage = () => {
 
     const handleDeleteAddress = async (id: string | number) => {
         if (window.confirm('Are you sure you want to delete this address?')) {
+            // GUEST MODE DELETE
+            if (!user) {
+                setAddresses([]);
+                setSelectedAddressId(null);
+                setContextAddress(null);
+                localStorage.removeItem('flipzokart_guest_address');
+                addToast('success', "Address removed");
+                return;
+            }
+
             try {
                 // Determine if we are deleting by mongo _id (string) or local timestamp id (number - if any)
                 // Backend expects _id string. If it's a number, it might be a guest address not supported yet.
@@ -167,6 +189,26 @@ const CheckoutPage = () => {
 
     const handleSaveAddress = async (address: Partial<Address>) => {
         console.log("[Checkout] Saving Address (Payload):", address);
+
+        // GUEST MODE SAVE
+        if (!user) {
+            const guestAddress: Address = {
+                ...getSafeAddress(address),
+                id: Date.now(), // Temporary ID
+                country: 'India'
+            } as Address;
+
+            setAddresses([guestAddress]); // Guest only holds one address usually
+            setSelectedAddressId(guestAddress.id);
+            setContextAddress(guestAddress);
+            localStorage.setItem('flipzokart_guest_address', JSON.stringify(guestAddress));
+
+            setIsAddressFormOpen(false);
+            setAddressToEdit(null);
+            addToast('success', "Address saved locally");
+            return;
+        }
+
         try {
             if (addressToEdit) {
                 // UPDATE existing address
@@ -220,7 +262,15 @@ const CheckoutPage = () => {
 
     const handlePlaceOrder = () => {
         if (!selectedAddressId) {
-            addToast('warning', 'Please select a delivery address to proceed!');
+            addToast('warning', '⚠️ Please select a delivery address to proceed!');
+            return;
+        }
+
+        const selectedAddr = addresses.find(a => a.id === selectedAddressId);
+        const error = validateAddress(selectedAddr);
+
+        if (error) {
+            addToast('error', `⚠️ ${error}`, 2500); // 2500ms duration as requested
             return;
         }
 
@@ -232,47 +282,53 @@ const CheckoutPage = () => {
         }, 1000);
     };
 
-    const renderPriceSummary = () => (
-        <div className="price-summary-card">
-            <h3>Price Summary</h3>
-            <div className="price-summary-item">
-                <span>Items price</span>
-                <span>₹{subtotal.toLocaleString('en-IN')}</span>
+    const renderPriceSummary = () => {
+        const selectedAddr = addresses.find(a => a.id === selectedAddressId);
+        const validationError = selectedAddr ? validateAddress(selectedAddr) : "Select Address";
+
+        return (
+            <div className="price-summary-card">
+                <h3>Price Summary</h3>
+                <div className="price-summary-item">
+                    <span>Items price</span>
+                    <span>₹{subtotal.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="price-summary-item">
+                    <span>Delivery charges</span>
+                    <span className={deliveryCharges === 0 ? "free" : ""}>
+                        {isFreeDeliveryEligible ? 'FREE' : <span className="text-[10px] text-gray-500">Free (Prepaid) / ₹50 (COD)</span>}
+                    </span>
+                </div>
+                <div className="price-summary-item">
+                    <span>Platform Fee</span>
+                    <span>₹{platformFee}</span>
+                </div>
+                <div className="price-summary-total">
+                    <span>Total payable</span>
+                    <span>₹{totalPayable.toLocaleString('en-IN')}</span>
+                </div>
+                <button
+                    className={`place-order-btn desktop-only ${validationError ? "bg-gray-300 cursor-not-allowed hover:bg-gray-300" : ""}`}
+                    disabled={isPlaceOrderLoading || !!validationError}
+                    onClick={handlePlaceOrder}
+                    style={validationError ? { backgroundColor: '#d1d5db', cursor: 'not-allowed' } : {}}
+                >
+                    {isPlaceOrderLoading ? (
+                        <>
+                            <Loader size={16} className="loading-spinner" />
+                            Processing...
+                        </>
+                    ) : (
+                        'CONTINUE'
+                    )}
+                </button>
+                <div className="security-badge">
+                    <Lock size={16} />
+                    <span>Safe & Secure Payments</span>
+                </div>
             </div>
-            <div className="price-summary-item">
-                <span>Delivery charges</span>
-                <span className={deliveryCharges === 0 ? "free" : ""}>
-                    {isFreeDeliveryEligible ? 'FREE' : <span className="text-[10px] text-gray-500">Free (Prepaid) / ₹50 (COD)</span>}
-                </span>
-            </div>
-            <div className="price-summary-item">
-                <span>Platform Fee</span>
-                <span>₹{platformFee}</span>
-            </div>
-            <div className="price-summary-total">
-                <span>Total payable</span>
-                <span>₹{totalPayable.toLocaleString('en-IN')}</span>
-            </div>
-            <button
-                className="place-order-btn desktop-only"
-                disabled={isPlaceOrderLoading}
-                onClick={handlePlaceOrder}
-            >
-                {isPlaceOrderLoading ? (
-                    <>
-                        <Loader size={16} className="loading-spinner" />
-                        Processing...
-                    </>
-                ) : (
-                    'CONTINUE'
-                )}
-            </button>
-            <div className="security-badge">
-                <Lock size={16} />
-                <span>Safe & Secure Payments</span>
-            </div>
-        </div>
-    );
+        )
+    };
 
     return (
         <div className="checkout-container space-y-0">
@@ -334,9 +390,10 @@ const CheckoutPage = () => {
 
                 <div className="place-order-sticky-mobile">
                     <button
-                        className="place-order-btn"
-                        disabled={isPlaceOrderLoading}
+                        className={`place-order-btn ${!selectedAddressId || (selectedAddressId && addresses.find(a => a.id === selectedAddressId) && validateAddress(addresses.find(a => a.id === selectedAddressId))) ? "bg-gray-300 cursor-not-allowed" : ""}`}
+                        disabled={isPlaceOrderLoading || !selectedAddressId || !!(selectedAddressId && validateAddress(addresses.find(a => a.id === selectedAddressId)))}
                         onClick={handlePlaceOrder}
+                        style={(!selectedAddressId || !!(selectedAddressId && validateAddress(addresses.find(a => a.id === selectedAddressId)))) ? { backgroundColor: '#d1d5db' } : {}}
                     >
                         {isPlaceOrderLoading ? (
                             <>
