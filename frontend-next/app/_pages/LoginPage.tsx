@@ -44,7 +44,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      router.replace("/my-profile");
+      router.replace("/profile");
     }
   }, []);
 

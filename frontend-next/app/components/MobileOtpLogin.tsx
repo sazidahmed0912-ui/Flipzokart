@@ -77,14 +77,19 @@ export default function MobileOtpLogin() {
             if (!mobile && (typeof data.message === 'string' || typeof data === 'string')) {
                 try {
                     const token = data.message || data;
-                    const base64Url = token.split('.')[1];
-                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
-                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                    }).join(''));
-
-                    const parsed = JSON.parse(jsonPayload);
-                    mobile = parsed.mobile || parsed.phone || parsed.contact_number;
+                    if (token && typeof token === 'string' && token.includes('.')) {
+                        const base64Url = token.split('.')[1];
+                        if (base64Url) {
+                            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                            }).join(''));
+                            const parsed = JSON.parse(jsonPayload);
+                            mobile = parsed.mobile || parsed.phone || parsed.contact_number;
+                        }
+                    } else {
+                        console.warn("Mobile OTP: Token format invalid for mobile extraction", token);
+                    }
                 } catch (e) {
                     console.error("Failed to decode JWT token:", e);
                 }
@@ -126,7 +131,7 @@ export default function MobileOtpLogin() {
                     alert(`Login Successful! Welcome ${finalUser.name || 'User'}`);
 
                     // ✅ Redirect to profile (using router.replace as requested)
-                    router.replace("/my-profile");
+                    router.replace("/profile");
                 }
             } else {
                 alert(result.message || "Login Failed");
