@@ -122,8 +122,8 @@ export const HomePage: React.FC = () => {
                             <h2 className="text-2xl md:text-3xl font-bold"><span className="text-gray-800">Top Deals</span></h2>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6 auto-rows-fr">
-                            {topDeals.map(product => (
-                                <ProductCard key={product.id} product={product} />
+                            {topDeals.map((product, idx) => (
+                                <ProductCard key={product.id} product={product} priority={idx < 4} />
                             ))}
                         </div>
                     </div>

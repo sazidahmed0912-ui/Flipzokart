@@ -11,22 +11,22 @@ import { addToCart as fbAddToCart } from '@/lib/fbPixel';
 
 interface ProductCardProps {
   product: Product;
+  priority?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) => {
   const { addToCart, toggleWishlist, wishlist } = useApp();
   const { addToast } = useToast();
   const isWishlisted = wishlist.includes(product.id);
 
-  // Robust Image Selection
-  const [imgSrc, setImgSrc] = useState<string>("/placeholder.png");
+  // Robust Image Selection - Direct calculation for performance
+  const resolvedUrl = getProductImage(product);
+  const [imgSrc, setImgSrc] = useState<string>(resolvedUrl);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Sync state if product changes
   useEffect(() => {
-    // Priority: product.images[0] -> product.image -> placeholder
-    const resolvedUrl = getProductImage(product);
-    setImgSrc(resolvedUrl);
-    setIsLoading(true);
+    setImgSrc(getProductImage(product));
   }, [product]);
 
   const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
@@ -60,6 +60,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <Image
             src={imgSrc}
             alt={product.name}
+            priority={priority}
             width={300}
             height={300}
             className={`w-full h-full object-contain transition-transform duration-300 hover:scale-105 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
