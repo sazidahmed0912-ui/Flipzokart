@@ -78,19 +78,6 @@ const OrderSuccessPage = () => {
 
         // Confetti effect can be added here if package is installed
 
-        // Track Purchase
-        // Track Purchase - Strict One-Shot Implementation
-        if (typeof window !== 'undefined' && window.fbq) {
-          window.fbq('track', 'Purchase', {
-            value: data.total,
-            currency: 'INR',
-            order_id: data.id,
-            content_ids: data.items.map((item: any) => item.product || item.productId || item.id), // Handle various backend shapes
-            content_type: 'product',
-            num_items: data.items.length
-          });
-        }
-
       } catch (err: any) {
         console.error("Order load failed", err);
         setError("Failed to load order details. Please check 'My Orders'.");
@@ -101,6 +88,20 @@ const OrderSuccessPage = () => {
 
     loadOrder();
   }, [orderId]);
+
+  // Track Purchase Event - Reliable Implementation
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.fbq && order?.total) {
+      window.fbq("track", "Purchase", {
+        value: order.total,
+        currency: "INR",
+        order_id: order.id,
+        content_ids: order.items.map((item: any) => item.product || item.productId || item.id),
+        content_type: 'product',
+        num_items: order.items.length
+      });
+    }
+  }, [order]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
