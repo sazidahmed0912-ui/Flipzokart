@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { OtpInput } from '@/app/components/OtpInput';
 import { useApp } from '@/app/store/Context';
+import MobileOtpLogin from '@/app/components/MobileOtpLogin';
 import authService from '@/app/services/authService';
 import { createOrder } from '@/app/services/api';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
@@ -59,115 +60,6 @@ export const SignupPage: React.FC = () => {
     } catch (e) {
       console.error("Check Exists Failed", e);
       return false;
-    }
-  };
-
-  const handleMobileOtpSuccess = async (data: any) => {
-    console.log("Signup Mobile Verified Data:", data);
-
-    try {
-      // Extract mobile if available (similar fallback logic as MobileOtpLogin)
-      let mobile = data?.mobile || data?.message?.mobile;
-
-      // Fallback: Parsed JWT if mobile is missing
-      if (!mobile && (typeof data.message === 'string' || typeof data === 'string')) {
-        try {
-          const token = data.message || data;
-          if (token && typeof token === 'string' && token.includes('.')) {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
-              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            const parsed = JSON.parse(jsonPayload);
-            mobile = parsed.mobile || parsed.phone || parsed.contact_number;
-          }
-        } catch (e) {
-          console.error("Failed to decode JWT token:", e);
-        }
-      }
-
-      const payload = {
-        access_token: data.access_token || data?.message || data,
-        mobile: mobile
-      };
-
-      // Call API to Login/Create User
-      const res = await fetch("/api/mobile-otp-verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await res.json();
-
-      if (result.success && result.data?.token) {
-        const token = result.data.token;
-        const user = result.data.user;
-
-        // ✅ Save Session
-        localStorage.setItem("token", token);
-        const finalUser = { ...user, phone: user.phone || mobile, authMethod: 'mobile-otp' };
-        localStorage.setItem("user", JSON.stringify(finalUser));
-        setUser(finalUser);
-
-        addToast('success', `Signup Successful! Welcome!`);
-
-        // 🛒 AUTO-ORDER LOGIC (Guest -> User transition)
-        const pendingOrder = localStorage.getItem("pendingOrder");
-        if (pendingOrder) {
-          // ... existing pending order logic if needed, or just let them go to profile/cart
-          // For strict signup, we might want to prioritize Profile, but if they were checking out, maybe Checkout?
-          // Requirement says: "singup hona chaeye only otp se" -> implies completion.
-          // "Strict Mobile Instant Signup" task said "Redirect to /profile".
-          // I will stick to /profile for consistency, or handle pending order if critical.
-          // Given the user previous request "redirect directly to their profile page", I will prioritize that.
-        }
-
-        // 🚨 INSTANT REDIRECT TO PROFILE
-        router.replace("/profile");
-        return;
-
-      } else {
-        addToast('error', result.message || "Signup Verification Failed");
-      }
-
-    } catch (e) {
-      console.error("Signup Mobile Error:", e);
-      addToast("error", "Verification failed. Please try again.");
-    }
-  };
-
-  const handleMobileOtpClick = () => {
-    // @ts-ignore
-    if (!scriptLoaded && !window.initSendOTP) {
-      addToast("error", "Mobile Service loading... please wait.");
-      return;
-    }
-
-    const configuration = {
-      widgetId: widgetId,
-      tokenAuth: tokenAuth,
-      identifier: "mobile",
-      exposeMethods: false,
-      success: handleMobileOtpSuccess,
-      failure: (err: any) => {
-        console.error("Mobile Verify Error:", err);
-        const isIpBlocked = JSON.stringify(err).includes("408") || JSON.stringify(err).includes("IPBlocked");
-        if (isIpBlocked) {
-          addToast('error', `⚠️ IP BLOCKED BY MSG91. Switch network.`);
-        } else {
-          addToast('error', "Verification Failed");
-        }
-      }
-    };
-
-    try {
-      // @ts-ignore
-      window.initSendOTP(configuration);
-    } catch (e) {
-      console.error(e);
-      addToast("error", "Error launching widget");
     }
   };
 
@@ -337,14 +229,11 @@ export const SignupPage: React.FC = () => {
                       {/* Mobile OTP Button */}
                       {!isMobileVerified && (
                         <div className="mb-4">
-                          <button
-                            type="button"
-                            onClick={handleMobileOtpClick}
-                            className="w-full h-[40px] rounded-[10px] bg-white border border-[#d1d5db] text-[#1F2937] font-medium text-[13px] hover:bg-gray-50 flex items-center justify-center gap-2 transition-all shadow-sm"
-                          >
-                            <Smartphone size={16} className="text-[#2874F0]" />
-                            Sign up with Mobile OTP
-                          </button>
+                          {/* 🟢 USE SHARED COMPONENT FOR ROBUSTNESS */}
+                          <div className="w-full">
+                            <MobileOtpLogin />
+                          </div>
+
                           <div className="flex items-center gap-2 my-3">
                             <div className="h-[1px] flex-1 bg-gray-300"></div>
                             <span className="text-[11px] text-gray-500 uppercase">OR</span>
