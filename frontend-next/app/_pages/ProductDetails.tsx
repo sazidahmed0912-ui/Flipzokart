@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ShoppingCart, Star, Truck, RotateCcw, Check, Info, ChevronRight, CreditCard, Package, Ruler, Palette, Layers, AlertCircle } from 'lucide-react';
+import { ShoppingCart, Star, Truck, RotateCcw, Check, Info, ChevronRight, CreditCard, Package, Ruler, Palette, Layers, AlertCircle, Share2 } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { useToast } from '@/app/components/toast';
 import { fetchProductById } from '@/app/services/api';
@@ -210,6 +210,29 @@ export const ProductDetails: React.FC = () => {
   }, [product, activeVariant]);
 
 
+  // --- Share Handler ---
+  const handleShare = async () => {
+    if (!product) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: `Check out ${product.name} on Flipzokart!`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.log('Error sharing:', error);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        addToast('success', 'Link copied to clipboard!');
+      } catch (err) {
+        addToast('error', 'Failed to copy link');
+      }
+    }
+  };
+
   if (isLoading) return <CircularGlassSpinner />;
   if (!product) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center p-10 text-center">
@@ -233,7 +256,16 @@ export const ProductDetails: React.FC = () => {
 
           {/* Details Column */}
           <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">{product.name}</h1>
+            <div className="flex justify-between items-start gap-4">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">{product.name}</h1>
+              <button
+                onClick={handleShare}
+                className="p-2 -mr-2 rounded-full hover:bg-gray-50 transition-colors text-gray-400 hover:text-blue-600"
+                title="Share Product"
+              >
+                <Share2 size={22} />
+              </button>
+            </div>
             <p className="text-sm text-gray-500 mt-1">{product.category}</p>
 
             {/* Ratings */}
