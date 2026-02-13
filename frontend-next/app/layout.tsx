@@ -1,4 +1,5 @@
 
+import React from "react";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
@@ -38,7 +39,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5PBFNG4P" height="0" width="0" style={{ display: 'none', visibility: 'hidden' }}></iframe></noscript>
 
         <Providers>
-          <FacebookPixel />
+          <React.Suspense fallback={null}>
+            <FacebookPixel />
+          </React.Suspense>
           <ClientLayout>
             {children}
           </ClientLayout>
