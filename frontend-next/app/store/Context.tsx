@@ -303,7 +303,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const removeFromCart = (key: string) => {
-    setCart((prev) => prev.filter((item) => getCartItemKey(item.productId, item.selectedVariants, item.variantId) !== key));
+    console.log("Attempting to remove cart item with key:", key);
+    setCart((prev) => {
+      const newCart = prev.filter((item) => {
+        const currentKey = getCartItemKey(item.productId, item.selectedVariants, item.variantId);
+        const match = currentKey !== key;
+        if (!match) console.log("Removed Item:", item.name, "Key matched:", currentKey);
+        else console.log("Kept Item:", item.name, "Key:", currentKey);
+        return match;
+      });
+      console.log("Cart size before:", prev.length, "After:", newCart.length);
+      return newCart;
+    });
   };
 
   const removeProductFromCart = (key: string) => {

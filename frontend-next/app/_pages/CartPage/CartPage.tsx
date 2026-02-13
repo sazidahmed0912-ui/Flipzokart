@@ -50,17 +50,18 @@ const CartPage = () => {
   };
 
   // Proactive Cart Cleanup: Remove items that no longer exist in DB
-  useEffect(() => {
-    if (isInitialized && isMounted && products.length > 0 && cartItems.length > 0) {
-      cartItems.forEach(item => {
-        const productExists = products.find(p => p.id === item.id);
-        if (!productExists) {
-          console.warn(`Removing invalid cart item: ${item.name} (${item.id})`);
-          removeProductFromCart(item.id);
-        }
-      });
-    }
-  }, [products, cartItems, removeProductFromCart, isInitialized, isMounted]);
+  // Proactive Cart Cleanup: DISABLED due to "All Items Removed" bug if product list is partial
+  // useEffect(() => {
+  //   if (isInitialized && isMounted && products.length > 0 && cartItems.length > 0) {
+  //     cartItems.forEach(item => {
+  //       const productExists = products.find(p => p.id === item.id);
+  //       if (!productExists) {
+  //         console.warn(`Removing invalid cart item: ${item.name} (${item.id})`);
+  //         removeProductFromCart(item.id);
+  //       }
+  //     });
+  //   }
+  // }, [products, cartItems, removeProductFromCart, isInitialized, isMounted]);
 
 
 
