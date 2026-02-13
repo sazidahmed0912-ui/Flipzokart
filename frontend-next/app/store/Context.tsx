@@ -103,6 +103,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
     loadProducts();
+
+    // ✅ STEP 4: Global Auth Restore (Infinite Redirect Protection)
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Token invalid");
+          return res.json();
+        })
+        .then(userData => {
+          console.log("Global Auth Restored:", userData);
+          setUser(userData);
+        })
+        .catch((err) => {
+          console.warn("Auth restore failed, clearing session.", err);
+          localStorage.removeItem("token");
+          localStorage.removeItem("flipzokart_user");
+          setUser(null);
+        });
+    }
   }, []);
 
   const [isCartLoading, setIsCartLoading] = useState(false);

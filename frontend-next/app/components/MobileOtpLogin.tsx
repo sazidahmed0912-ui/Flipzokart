@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useApp } from '@/app/store/Context';
 import Script from 'next/script';
 
 export default function MobileOtpLogin() {
@@ -61,6 +63,9 @@ export default function MobileOtpLogin() {
         }
     };
 
+    const { setUser } = useApp();
+    const router = useRouter();
+
     const handleSuccess = async (data: any, source: string) => {
         console.log("MSG91 RAW DATA: " + JSON.stringify(data, null, 2));
 
@@ -79,32 +84,23 @@ export default function MobileOtpLogin() {
                     }).join(''));
 
                     const parsed = JSON.parse(jsonPayload);
-                    console.log("Decoded MSG91 Token Payload:", parsed);
-
-                    mobile = parsed.mobile || parsed.phone || parsed.contact_number; // Adjust key based on MSG91 payload
+                    mobile = parsed.mobile || parsed.phone || parsed.contact_number;
                 } catch (e) {
                     console.error("Failed to decode JWT token:", e);
                 }
             }
 
-            // 🟢 Fallback 2: Manual Entry (Last Resort)
-            // If we still don't have the mobile number, we can't do strict login.
-            // Ask the user to confirm their number.
+            // 🟢 Fallback 2: Manual Entry
             if (!mobile) {
-                const manualMobile = window.prompt("We couldn't detect your mobile number automatically.\nPlease enter your registered mobile number to login:");
-                if (manualMobile) {
-                    mobile = manualMobile.trim();
-                } else {
-                    alert("Login Cancelled. Mobile number is required.");
-                    return;
-                }
+                const manualMobile = window.prompt("Confirmed! Enter mobile to complete login:");
+                if (manualMobile) mobile = manualMobile.trim();
+                else return;
             }
 
             const payload = {
                 access_token: data.access_token || data?.message || data,
-                mobile: mobile // 🟢 SEND MOBILE EXPLICITLY
+                mobile: mobile
             };
-            console.log("Sending Payload to Backend: " + JSON.stringify(payload));
 
             const res = await fetch("/api/mobile-otp-verify", {
                 method: "POST",
@@ -113,37 +109,31 @@ export default function MobileOtpLogin() {
             });
 
             const result = await res.json();
-            console.log("Backend verification result RAW: " + JSON.stringify(result, null, 2));
 
             if (result.success) {
-                // Login Success!
-                // Safely access data
                 const token = result.data?.token;
                 const user = result.data?.user;
 
                 if (token) {
+                    // ✅ IMPORTANT — token save
                     localStorage.setItem("token", token);
-                    localStorage.setItem("user", JSON.stringify(user));
-                    document.cookie = `token=${token}; path=/; max-age=2592000; SameSite=Lax`;
-                    alert(`Mobile OTP Login Success ✅\nWelcome ${user.phone || "User"}`);
-                    window.location.href = "/";
-                } else {
-                    alert("Login Success (Verified) but no session created.");
-                }
 
-            } else {
-                // If User Not Found (Strict Mode)
-                if (result.isUserNotFound || (result.message && result.message.includes("not found"))) {
-                    alert("⚠️ Mobile number not registered!\n\nPlease use 'Sign up with Mobile OTP' button on Signup page.");
-                } else {
-                    const msg = result.message || JSON.stringify(result);
-                    console.error("Backend Error Message: " + msg);
-                    alert(`Login Failed ❌\nReason: ${msg}`);
+                    // ✅ IMPORTANT — user state update
+                    // Ensure phone is preserved
+                    const finalUser = { ...user, phone: user.phone || mobile };
+                    setUser(finalUser);
+
+                    alert(`Login Successful! Welcome ${finalUser.name || 'User'}`);
+
+                    // ✅ Redirect to profile (using router.replace as requested)
+                    router.replace("/my-profile");
                 }
+            } else {
+                alert(result.message || "Login Failed");
             }
         } catch (e) {
             console.error("Verification error:", e);
-            alert("Verification error (Check console)");
+            alert("Verification error");
         }
     };
 

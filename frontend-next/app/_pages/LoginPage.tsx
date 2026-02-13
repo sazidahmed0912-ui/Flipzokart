@@ -40,6 +40,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
     return () => clearInterval(interval);
   }, [timer]);
 
+  // ✅ STEP 2: Login Guard
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.replace("/my-profile");
+    }
+  }, []);
+
   const handleSendOtp = async () => {
     if (!email.includes('@')) {
       addToast('error', 'Please enter a valid email address');
