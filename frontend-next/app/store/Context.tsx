@@ -84,19 +84,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       }
 
-      const savedCart = localStorage.getItem('flipzokart_cart'); // 🟢 2️⃣ UI -> LocalStorage (Initial Truth)
-      if (savedCart) {
-        try {
-          const parsedCart = JSON.parse(savedCart);
-          if (Array.isArray(parsedCart)) {
-            // Filter out invalid items (e.g. missing productId) to prevent crashes
-            const validItems = parsedCart.filter(item => item.productId && item.quantity > 0);
-            setCart(validItems);
+      // 🟢 2️⃣ CART HYDRATION (STRICT)
+      // IF LOGGED IN: IGNORE LOCAL CART completely to prevent "zombie merge"
+      if (!token) {
+        const savedCart = localStorage.getItem('flipzokart_cart');
+        if (savedCart) {
+          try {
+            const parsedCart = JSON.parse(savedCart);
+            if (Array.isArray(parsedCart)) {
+              const validItems = parsedCart.filter(item => item.productId && item.quantity > 0);
+              setCart(validItems);
+            }
+          } catch (e) {
+            console.warn("Corrupted cart data found in localStorage, clearing it.");
+            localStorage.removeItem('flipzokart_cart');
           }
-        } catch (e) {
-          console.warn("Corrupted cart data found in localStorage, clearing it.");
-          localStorage.removeItem('flipzokart_cart');
         }
+      } else {
+        // Logged in: Clear local cart to be safe
+        localStorage.removeItem('flipzokart_cart');
       }
 
       const savedWishlist = localStorage.getItem('flipzokart_wishlist');
@@ -182,7 +188,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [user]);
 
-  // 🟢 3️⃣ GUEST -> LOGIN MERGE
+  // 🟢 3️⃣ GUEST -> LOGIN MERGE (Strict ULTRA-LOCK)
   const isMergingRef = React.useRef(false);
 
   useEffect(() => {
@@ -191,22 +197,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Reset merge lock if user logs out
     if (!user) {
       isMergingRef.current = false;
+      sessionStorage.removeItem("cartMerged"); // Allow merge on next login
       return;
     }
 
-    // Prevent double execution
-    if (isMergingRef.current) return;
+    // Prevent double execution via Ref OR Session Storage
+    if (isMergingRef.current || sessionStorage.getItem("cartMerged")) return;
 
     const mergeGuestCart = async () => {
       const guestCartStr = localStorage.getItem("flipzokart_cart");
       if (!guestCartStr) {
-        // No guest cart, just fetch server cart
+        sessionStorage.setItem("cartMerged", "true"); // Mark done
         await refreshServerCart();
         return;
       }
 
       const guestCart = JSON.parse(guestCartStr);
       if (!Array.isArray(guestCart) || guestCart.length === 0) {
+        localStorage.removeItem("flipzokart_cart");
+        sessionStorage.setItem("cartMerged", "true");
         await refreshServerCart();
         return;
       }
@@ -227,8 +236,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           body: JSON.stringify({ items: guestCart }),
         });
 
-        // 🟢 Clear Guest Cart from Local (it's now on server)
+        // 🟢 ULTRA-LOCK SUCCESS: Clear Local + Mark Session
         localStorage.removeItem("flipzokart_cart");
+        sessionStorage.setItem("cartMerged", "true");
 
         // 🟢 Hard Refresh to get the merged state
         await refreshServerCart();
@@ -236,8 +246,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       } catch (e) {
         console.error("Failed to merge cart", e);
-        // On failure, we might want to unlock to retry? 
-        // For now, keep locked to prevent spam. User can refresh page.
+        // On failure, keep locked for this session to prevent spam. 
+        // User can reload page to retry if they want.
       }
     };
 
