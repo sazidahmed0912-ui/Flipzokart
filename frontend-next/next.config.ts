@@ -28,11 +28,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:8000/api/:path*", // Proxy API requests
+        destination: "http://localhost:5000/api/:path*", // Proxy API requests
       },
       {
         source: "/uploads/:path*",
-        destination: "http://localhost:8000/uploads/:path*", // Proxy static uploads if any
+        destination: "http://localhost:5000/uploads/:path*", // Proxy static uploads
       },
     ];
   },
