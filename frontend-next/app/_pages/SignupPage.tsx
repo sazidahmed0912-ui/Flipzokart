@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { OtpInput } from '@/app/components/OtpInput';
 import { useApp } from '@/app/store/Context';
 import authService from '@/app/services/authService';
@@ -13,6 +13,7 @@ import Script from 'next/script';
 export const SignupPage: React.FC = () => {
   const { setUser } = useApp();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addToast } = useToast();
 
   const [step, setStep] = useState(1);
@@ -83,7 +84,8 @@ export const SignupPage: React.FC = () => {
           const exists = await checkUserExists('phone', verifiedMobile);
           if (exists) {
             addToast("warning", "Mobile number already registered! Redirecting to Login...");
-            setTimeout(() => router.push('/login'), 2000);
+            const redirectPath = searchParams.get('redirect');
+            setTimeout(() => router.push(redirectPath ? `/login?redirect=${encodeURIComponent(redirectPath)}` : '/login'), 2000);
             return;
           }
 
@@ -135,6 +137,8 @@ export const SignupPage: React.FC = () => {
       const exists = await checkUserExists('email', email);
       if (exists) {
         addToast("error", "Email already registered! Please Login.");
+        const redirectPath = searchParams.get('redirect');
+        setTimeout(() => router.push(redirectPath ? `/login?redirect=${encodeURIComponent(redirectPath)}` : '/login'), 2000);
         setIsLoading(false);
         return;
       }
@@ -165,7 +169,10 @@ export const SignupPage: React.FC = () => {
       const user = await authService.verifyEmailOtp(email, otpCode, { name, phone, password });
       setUser(user);
       addToast('success', '✅ Registration successful! Please Login.');
-      router.push('/login'); // 🟢 Redirect to Login as requested
+
+      const redirectPath = searchParams.get('redirect');
+      const loginUrl = redirectPath ? `/login?redirect=${encodeURIComponent(redirectPath)}` : '/login';
+      router.push(loginUrl);
     } catch (err: any) {
       addToast('error', err.message || 'Invalid OTP');
     } finally {
@@ -369,7 +376,7 @@ export const SignupPage: React.FC = () => {
                       </button>
 
                       <div className="mt-[15px] md:mt-[18px] text-[12px] md:text-[13px] text-[#2874F0] text-center">
-                        Already have an account? <Link href="/login" className="font-bold hover:underline" style={{ color: '#FF3333' }}>Login</Link>
+                        Already have an account? <Link href={searchParams.get('redirect') ? `/login?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : '/login'} className="font-bold hover:underline" style={{ color: '#FF3333' }}>Login</Link>
                       </div>
                     </form>
                   ) : (

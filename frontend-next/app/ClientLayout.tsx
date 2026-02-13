@@ -9,6 +9,7 @@ import { useSocket } from '@/app/hooks/useSocket';
 import authService from '@/app/services/authService';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import PageTransition from '@/app/components/ui/PageTransition';
+import ToastListener from '@/app/components/ToastListener';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const { user, setUser } = useApp();
@@ -78,6 +79,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 <PageTransition key={pathname}>
                     {children}
                 </PageTransition>
+                <ToastListener />
             </Suspense>
         </Layout>
     );

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { OtpInput } from '@/app/components/OtpInput';
 import { useApp } from '@/app/store/Context';
 import authService from '@/app/services/authService';
@@ -18,6 +18,7 @@ import MobileOtpLogin from '@/app/components/MobileOtpLogin';
 export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
   const { setUser } = useApp();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addToast } = useToast();
 
   const [email, setEmail] = useState('');
@@ -92,7 +93,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
 
       setUser(user);
       addToast('success', '✅ Login successful!');
-      router.push(user.role === 'admin' ? '/admin' : '/profile');
+
+      const redirectPath = searchParams.get('redirect');
+      router.push(redirectPath ? decodeURIComponent(redirectPath) : (user.role === 'admin' ? '/admin' : '/profile'));
 
     } catch (err: any) {
       addToast('error', err.message || 'Login failed');
@@ -252,7 +255,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
                   </p>
 
                   <div className="text-[12px] md:text-[13px] text-[#2874F0] text-center">
-                    New to Fzokart? <Link href="/signup" className="font-bold hover:underline" style={{ color: '#FF3333' }}>Sign up</Link>
+                    New to Fzokart? <Link href={searchParams.get('redirect') ? `/signup?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : '/signup'} className="font-bold hover:underline" style={{ color: '#FF3333' }}>Sign up</Link>
                   </div>
                 </form>
               </div>
