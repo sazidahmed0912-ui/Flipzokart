@@ -31,7 +31,7 @@ const FacebookPixel = () => {
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '${FB_PIXEL_ID}');
+              fbq('init', '1180231007033432');
               fbq('track', 'PageView');
             `,
                     }}
@@ -43,7 +43,7 @@ const FacebookPixel = () => {
                         height="1"
                         width="1"
                         style={{ display: "none" }}
-                        src={`https://www.facebook.com/tr?id=${FB_PIXEL_ID}&ev=PageView&noscript=1`}
+                        src="https://www.facebook.com/tr?id=1180231007033432&ev=PageView&noscript=1"
                         alt=""
                     />
                 </noscript>

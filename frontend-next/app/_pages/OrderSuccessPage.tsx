@@ -79,13 +79,17 @@ const OrderSuccessPage = () => {
         // Confetti effect can be added here if package is installed
 
         // Track Purchase
-        purchase({
-          content_ids: data.items.map((item: any) => item.product || item.productId || item.id), // Handle various backend shapes
-          value: data.total,
-          currency: 'INR',
-          order_id: data.id,
-          num_items: data.items.length
-        });
+        // Track Purchase - Strict One-Shot Implementation
+        if (typeof window !== 'undefined' && window.fbq) {
+          window.fbq('track', 'Purchase', {
+            value: data.total,
+            currency: 'INR',
+            order_id: data.id,
+            content_ids: data.items.map((item: any) => item.product || item.productId || item.id), // Handle various backend shapes
+            content_type: 'product',
+            num_items: data.items.length
+          });
+        }
 
       } catch (err: any) {
         console.error("Order load failed", err);
