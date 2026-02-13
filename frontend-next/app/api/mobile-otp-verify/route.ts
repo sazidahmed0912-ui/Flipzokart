@@ -44,7 +44,11 @@ export async function POST(req: NextRequest) {
             const backendData = await backendLoginRes.json();
 
             if (backendLoginRes.ok && backendData.success) {
-                return NextResponse.json({ success: true, data: backendData });
+                return NextResponse.json({
+                    success: true,
+                    data: backendData,
+                    authMethod: 'mobile-otp' // 🟢 Critical Flag
+                });
             } else {
                 // If backend says "User not found" (Strict Login), we must return failure
                 // so the Frontend can show the "Alert: Please Sign Up"

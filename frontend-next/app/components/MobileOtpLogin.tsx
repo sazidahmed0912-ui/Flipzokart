@@ -129,9 +129,15 @@ export default function MobileOtpLogin() {
                     const finalUser = { ...user, phone: user.phone || mobile };
                     setUser(finalUser);
 
-                    addToast('success', `Login Successful! Welcome ${finalUser.name || 'User'}`);
+                    addToast('success', `Login Successful!`);
 
-                    // ✅ Redirect to profile (using router.replace as requested)
+                    // 🚨 CRITICAL CHECK: Instant Mobile Signup/Login
+                    if (result.authMethod === 'mobile-otp') {
+                        router.replace("/profile");
+                        return;
+                    }
+
+                    // Default fallback
                     router.replace("/profile");
                 }
             } else {
