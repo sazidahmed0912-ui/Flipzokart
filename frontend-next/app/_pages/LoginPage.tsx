@@ -98,7 +98,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
       router.push(redirectPath ? decodeURIComponent(redirectPath) : (user.role === 'admin' ? '/admin' : '/profile'));
 
     } catch (err: any) {
-      addToast('error', err.message || 'Login failed');
+      if (err.response?.status === 404 || err.message?.includes("Sign Up first")) {
+        addToast('error', '🚫 Please signup first, then login');
+      } else {
+        addToast('error', err.response?.data?.message || err.message || 'Login failed');
+      }
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,6 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
-export const requireAuth = (router: AppRouterInstance) => {
+export const requireAuthRedirectToSignup = (router: AppRouterInstance) => {
     if (typeof window === "undefined") return true;
 
     const token = localStorage.getItem("token");
@@ -10,12 +10,13 @@ export const requireAuth = (router: AppRouterInstance) => {
             new CustomEvent("show-toast", {
                 detail: {
                     type: "error",
-                    message: "Please login or create an account to continue",
+                    message: "⚠️ Please signup to continue shopping",
                 },
             })
         );
 
-        router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+        // Redirect to SIGNUP instead of login
+        router.push(`/signup?redirect=${encodeURIComponent(window.location.pathname)}`);
         return false;
     }
 
