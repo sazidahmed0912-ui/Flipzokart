@@ -8,16 +8,17 @@ import { ErrorBoundary } from '@/app/components/ErrorBoundary';
 
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
-        <ToastProvider>
-            <AppProvider>
-                <LanguageProvider>
-                    <NotificationProvider>
-                        <ErrorBoundary>
+
+        <ErrorBoundary>
+            <ToastProvider>
+                <AppProvider>
+                    <LanguageProvider>
+                        <NotificationProvider>
                             {children}
-                        </ErrorBoundary>
-                    </NotificationProvider>
-                </LanguageProvider>
-            </AppProvider>
-        </ToastProvider>
+                        </NotificationProvider>
+                    </LanguageProvider>
+                </AppProvider>
+            </ToastProvider>
+        </ErrorBoundary>
     );
 }

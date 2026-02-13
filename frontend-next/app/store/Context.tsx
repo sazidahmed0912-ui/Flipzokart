@@ -73,7 +73,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       const savedCart = localStorage.getItem('flipzokart_cart'); // 🟢 2️⃣ UI -> LocalStorage (Initial Truth)
-      if (savedCart) setCart(JSON.parse(savedCart));
+      if (savedCart) {
+        try {
+          const parsedCart = JSON.parse(savedCart);
+          if (Array.isArray(parsedCart)) {
+            // Filter out invalid items (e.g. missing productId) to prevent crashes
+            const validItems = parsedCart.filter(item => item.productId && item.quantity > 0);
+            setCart(validItems);
+          }
+        } catch (e) {
+          console.warn("Corrupted cart data found in localStorage, clearing it.");
+          localStorage.removeItem('flipzokart_cart');
+        }
+      }
 
       const savedWishlist = localStorage.getItem('flipzokart_wishlist');
       if (savedWishlist) setWishlist(JSON.parse(savedWishlist));

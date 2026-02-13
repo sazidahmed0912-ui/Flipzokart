@@ -125,14 +125,15 @@ export default function MobileOtpLogin() {
                     localStorage.setItem("token", token);
 
                     // ✅ IMPORTANT — user state update
-                    // Ensure phone is preserved
-                    const finalUser = { ...user, phone: user.phone || mobile };
+                    const finalUser = { ...user, phone: user.phone || mobile, authMethod: 'mobile-otp' };
+                    localStorage.setItem("user", JSON.stringify(finalUser)); // Persist immediately
                     setUser(finalUser);
 
                     addToast('success', `Login Successful!`);
 
-                    // 🚨 CRITICAL CHECK: Instant Mobile Signup/Login
-                    if (result.authMethod === 'mobile-otp') {
+                    // 🚨 ULTRA-LOCK: STRICT MOBILE SIGNUP = INSTANT PROFILE
+                    // No forms, no extra steps.
+                    if (result.authMethod === 'mobile-otp' || user.authMethod === 'mobile-otp') {
                         router.replace("/profile");
                         return;
                     }

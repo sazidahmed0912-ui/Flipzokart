@@ -47,7 +47,8 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({
                     success: true,
                     data: backendData,
-                    authMethod: 'mobile-otp' // 🟢 Critical Flag
+                    authMethod: 'mobile-otp', // 🟢 Critical Flag
+                    isNewUser: backendData.isNewUser // Pass through
                 });
             } else {
                 // If backend says "User not found" (Strict Login), we must return failure
