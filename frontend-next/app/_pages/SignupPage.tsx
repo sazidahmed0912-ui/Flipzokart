@@ -62,11 +62,86 @@ export const SignupPage: React.FC = () => {
     }
   };
 
+  const handleMobileOtpSuccess = async (data: any) => {
+    console.log("Signup Mobile Verified Data:", data);
+
+    try {
+      // Extract mobile if available (similar fallback logic as MobileOtpLogin)
+      let mobile = data?.mobile || data?.message?.mobile;
+
+      // Fallback: Parsed JWT if mobile is missing
+      if (!mobile && (typeof data.message === 'string' || typeof data === 'string')) {
+        try {
+          const token = data.message || data;
+          if (token && typeof token === 'string' && token.includes('.')) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            const parsed = JSON.parse(jsonPayload);
+            mobile = parsed.mobile || parsed.phone || parsed.contact_number;
+          }
+        } catch (e) {
+          console.error("Failed to decode JWT token:", e);
+        }
+      }
+
+      const payload = {
+        access_token: data.access_token || data?.message || data,
+        mobile: mobile
+      };
+
+      // Call API to Login/Create User
+      const res = await fetch("/api/mobile-otp-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+
+      if (result.success && result.data?.token) {
+        const token = result.data.token;
+        const user = result.data.user;
+
+        // ✅ Save Session
+        localStorage.setItem("token", token);
+        const finalUser = { ...user, phone: user.phone || mobile, authMethod: 'mobile-otp' };
+        localStorage.setItem("user", JSON.stringify(finalUser));
+        setUser(finalUser);
+
+        addToast('success', `Signup Successful! Welcome!`);
+
+        // 🛒 AUTO-ORDER LOGIC (Guest -> User transition)
+        const pendingOrder = localStorage.getItem("pendingOrder");
+        if (pendingOrder) {
+          // ... existing pending order logic if needed, or just let them go to profile/cart
+          // For strict signup, we might want to prioritize Profile, but if they were checking out, maybe Checkout?
+          // Requirement says: "singup hona chaeye only otp se" -> implies completion.
+          // "Strict Mobile Instant Signup" task said "Redirect to /profile".
+          // I will stick to /profile for consistency, or handle pending order if critical.
+          // Given the user previous request "redirect directly to their profile page", I will prioritize that.
+        }
+
+        // 🚨 INSTANT REDIRECT TO PROFILE
+        router.replace("/profile");
+        return;
+
+      } else {
+        addToast('error', result.message || "Signup Verification Failed");
+      }
+
+    } catch (e) {
+      console.error("Signup Mobile Error:", e);
+      addToast("error", "Verification failed. Please try again.");
+    }
+  };
+
   const handleMobileOtpClick = () => {
-    // Fallback: Check window object directly if state is lagging or script loaded from cache
     // @ts-ignore
     if (!scriptLoaded && !window.initSendOTP) {
-      addToast("error", "Mobile OTP Service not ready. Please wait or refresh.");
+      addToast("error", "Mobile Service loading... please wait.");
       return;
     }
 
@@ -75,46 +150,21 @@ export const SignupPage: React.FC = () => {
       tokenAuth: tokenAuth,
       identifier: "mobile",
       exposeMethods: false,
-      success: async (data: any) => {
-        console.log("Mobile Verified Data:", data);
-
-        let verifiedMobile = data?.mobile || data?.message?.mobile;
-
-        if (verifiedMobile) {
-          // 🟢 DUPLICATE CHECK: Mobile
-          const exists = await checkUserExists('phone', verifiedMobile);
-          if (exists) {
-            addToast("warning", "Mobile number already registered! Redirecting to Login...");
-            const redirectPath = searchParams.get('redirect');
-            setTimeout(() => router.push(redirectPath ? `/login?redirect=${encodeURIComponent(redirectPath)}` : '/login'), 2000);
-            return;
-          }
-
-          setPhone(verifiedMobile);
-        }
-
-        setIsMobileVerified(true);
-        addToast("success", "Mobile Verified Successfully! ✅");
-      },
+      success: handleMobileOtpSuccess,
       failure: (err: any) => {
-        console.error("Mobile Verify Code Error JSON:", JSON.stringify(err));
+        console.error("Mobile Verify Error:", err);
         const isIpBlocked = JSON.stringify(err).includes("408") || JSON.stringify(err).includes("IPBlocked");
         if (isIpBlocked) {
-          alert("⚠️ IP BLOCKED BY MSG91 (Error 408)\n\nYou are temporarily blocked. Please change your Internet connection (e.g. use Mobile Data) to fix this.");
+          addToast('error', `⚠️ IP BLOCKED BY MSG91. Switch network.`);
         } else {
-          addToast("error", "Verification Failed. Please try again.");
+          addToast('error', "Verification Failed");
         }
       }
     };
 
     try {
       // @ts-ignore
-      if (window.initSendOTP) {
-        // @ts-ignore
-        window.initSendOTP(configuration);
-      } else {
-        addToast("error", "Widget not loaded yet");
-      }
+      window.initSendOTP(configuration);
     } catch (e) {
       console.error(e);
       addToast("error", "Error launching widget");
