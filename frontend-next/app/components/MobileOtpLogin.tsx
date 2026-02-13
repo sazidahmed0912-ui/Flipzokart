@@ -68,6 +68,10 @@ export default function MobileOtpLogin() {
     const router = useRouter();
     const { addToast } = useToast();
 
+    const [manualMobile, setManualMobile] = useState('');
+    const [showManualInput, setShowManualInput] = useState(false);
+    const [pendingToken, setPendingToken] = useState<any>(null);
+
     const handleSuccess = async (data: any, source: string) => {
         console.log("MSG91 RAW DATA: " + JSON.stringify(data, null, 2));
 
@@ -89,25 +93,36 @@ export default function MobileOtpLogin() {
                             const parsed = JSON.parse(jsonPayload);
                             mobile = parsed.mobile || parsed.phone || parsed.contact_number;
                         }
-                    } else {
-                        console.warn("Mobile OTP: Token format invalid for mobile extraction", token);
                     }
                 } catch (e) {
                     console.error("Failed to decode JWT token:", e);
                 }
             }
 
-            // 🟢 Fallback 2: Manual prompt removed as per user request
+            // 🟢 Fallback 2: If still no mobile, ASK USER manually
             if (!mobile) {
-                console.warn("Mobile number could not be detected from OTP response.");
-                // We attempt to verify without explicit mobile, hoping backend can extract from token
+                console.warn("Mobile number could not be detected. Requesting manual input.");
+                setPendingToken(data);
+                setShowManualInput(true);
+                addToast('info', 'Please confirm your mobile number to continue.');
+                return;
             }
 
-            const payload = {
-                access_token: data.access_token || data?.message || data,
-                mobile: mobile
-            };
+            verifyBackend(data, mobile);
 
+        } catch (e) {
+            console.error("Verification error:", e);
+            addToast('error', "Verification error");
+        }
+    };
+
+    const verifyBackend = async (tokenData: any, mobile: string) => {
+        const payload = {
+            access_token: tokenData.access_token || tokenData?.message || tokenData,
+            mobile: mobile
+        };
+
+        try {
             const res = await fetch("/api/mobile-otp-verify", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -121,38 +136,37 @@ export default function MobileOtpLogin() {
                 const user = result.data?.user;
 
                 if (token) {
-                    // ✅ IMPORTANT — token save
                     localStorage.setItem("token", token);
-
-                    // ✅ IMPORTANT — user state update
                     const finalUser = { ...user, phone: user.phone || mobile, authMethod: 'mobile-otp' };
-                    localStorage.setItem("user", JSON.stringify(finalUser)); // Persist immediately
+                    localStorage.setItem("user", JSON.stringify(finalUser));
                     setUser(finalUser);
-
                     addToast('success', `Login Successful!`);
 
-                    // 🚨 ULTRA-LOCK: STRICT MOBILE SIGNUP = INSTANT PROFILE
-                    // No forms, no extra steps.
                     if (result.authMethod === 'mobile-otp' || user.authMethod === 'mobile-otp') {
                         router.replace("/profile");
                         return;
                     }
-
-                    // Default fallback
                     router.replace("/profile");
                 }
             } else {
                 addToast('error', result.message || "Login Failed");
             }
         } catch (e) {
-            console.error("Verification error:", e);
-            addToast('error', "Verification error");
+            addToast('error', "Backend Verification Failed");
         }
+    };
+
+    const handleManualSubmit = () => {
+        if (!manualMobile || manualMobile.length < 10) {
+            addToast('error', 'Please enter a valid mobile number');
+            return;
+        }
+        setShowManualInput(false);
+        verifyBackend(pendingToken, manualMobile);
     };
 
     const handleFailure = (err: any, source: string) => {
         console.error(`MSG91 Failure via [${source}]:`, err);
-        // 🟢 UX IMPROVEMENT: Suggest IP Fix
         const isIpBlocked = JSON.stringify(err).includes("408") || JSON.stringify(err).includes("IPBlocked");
 
         if (isIpBlocked) {
@@ -175,25 +189,45 @@ export default function MobileOtpLogin() {
                     console.error("MSG91 OTP Script Failed to Load", e);
                 }}
             />
-            <button
-                type="button"
-                onClick={openMobileOtp}
-                disabled={!isScriptLoaded}
-                style={{
-                    width: "100%",
-                    padding: "12px",
-                    marginTop: "10px",
-                    background: isScriptLoaded ? "#25D366" : "#9ca3af",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontWeight: "600",
-                    cursor: isScriptLoaded ? "pointer" : "not-allowed",
-                    transition: "background 0.3s"
-                }}
-            >
-                {isScriptLoaded ? "Login with Mobile OTP" : "Loading OTP Widget..."}
-            </button>
+
+            {!showManualInput ? (
+                <button
+                    type="button"
+                    onClick={openMobileOtp}
+                    disabled={!isScriptLoaded}
+                    style={{
+                        width: "100%",
+                        padding: "12px",
+                        marginTop: "10px",
+                        background: isScriptLoaded ? "#25D366" : "#9ca3af",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "6px",
+                        fontWeight: "600",
+                        cursor: isScriptLoaded ? "pointer" : "not-allowed",
+                        transition: "background 0.3s"
+                    }}
+                >
+                    {isScriptLoaded ? "Login with Mobile OTP" : "Loading OTP Widget..."}
+                </button>
+            ) : (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">Confirm Mobile Number</p>
+                    <input
+                        type="tel"
+                        placeholder="Enter 10-digit Mobile Number"
+                        className="w-full p-2 border rounded mb-2 text-sm"
+                        value={manualMobile}
+                        onChange={(e) => setManualMobile(e.target.value)}
+                    />
+                    <button
+                        onClick={handleManualSubmit}
+                        className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 transition"
+                    >
+                        Complete Login
+                    </button>
+                </div>
+            )}
         </>
     );
 }
