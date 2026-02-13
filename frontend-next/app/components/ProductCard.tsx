@@ -7,6 +7,7 @@ import { Product } from '@/app/types';
 import { useApp } from '@/app/store/Context';
 import { useToast } from './toast';
 import { getProductImage } from '@/app/utils/imageHelper';
+import { addToCart as fbAddToCart } from '@/lib/fbPixel';
 
 interface ProductCardProps {
   product: Product;
@@ -33,6 +34,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation if clicked on button
     addToCart({ ...product, productId: product.id, quantity: 1, productName: product.name } as any);
+    fbAddToCart({
+      content_name: product.name,
+      content_ids: [product.id],
+      value: product.price,
+      currency: 'INR',
+    });
     addToast('success', '✅ Product added to bag!');
   };
 

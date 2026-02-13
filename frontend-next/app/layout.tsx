@@ -5,6 +5,7 @@ import "./globals.css";
 import Script from "next/script";
 import { Providers } from "./Providers";
 import ClientLayout from "./ClientLayout";
+import FacebookPixel from "./components/analytics/FacebookPixel";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700', '900'],
@@ -37,6 +38,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5PBFNG4P" height="0" width="0" style={{ display: 'none', visibility: 'hidden' }}></iframe></noscript>
 
         <Providers>
+          <FacebookPixel />
           <ClientLayout>
             {children}
           </ClientLayout>

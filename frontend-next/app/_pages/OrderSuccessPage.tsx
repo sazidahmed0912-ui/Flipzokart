@@ -13,6 +13,7 @@ import { fetchOrderById } from '@/app/services/api';
 import { useToast } from '@/app/components/toast';
 import { getSafeAddress } from '@/app/utils/addressHelper';
 import { resolveProductImage } from '@/app/utils/imageHelper';
+import { purchase } from '@/lib/fbPixel';
 
 interface OrderDetails {
   id: string; // Mongo ID
@@ -76,6 +77,16 @@ const OrderSuccessPage = () => {
         });
 
         // Confetti effect can be added here if package is installed
+
+        // Track Purchase
+        purchase({
+          content_ids: data.items.map((item: any) => item.product || item.productId || item.id), // Handle various backend shapes
+          value: data.total,
+          currency: 'INR',
+          order_id: data.id,
+          num_items: data.items.length
+        });
+
       } catch (err: any) {
         console.error("Order load failed", err);
         setError("Failed to load order details. Please check 'My Orders'.");

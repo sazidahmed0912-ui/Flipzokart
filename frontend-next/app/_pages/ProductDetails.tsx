@@ -15,6 +15,7 @@ import ProductGallery from '@/app/components/ProductGallery';
 import { getProductImageUrl } from '@/app/utils/imageHelper';
 import useRelatedProducts from '@/app/hooks/useRelatedProducts';
 import { ProductCard } from '@/app/components/ProductCard';
+import { viewContent, addToCart as fbAddToCart, initiateCheckout } from '@/lib/fbPixel';
 
 // --- Helper: Parse Metadata for Dynamic Groups ---
 const parseVariantMetadata = (description: string): any[] => {
@@ -66,6 +67,18 @@ export const ProductDetails: React.FC = () => {
     };
     loadData();
   }, [id]);
+
+  // Facebook Pixel - ViewContent
+  useEffect(() => {
+    if (product) {
+      viewContent({
+        content_name: product.name,
+        content_ids: [product.id],
+        value: product.price,
+        currency: 'INR',
+      });
+    }
+  }, [product]);
 
   // Socket Listeners
   useEffect(() => {
@@ -326,6 +339,12 @@ export const ProductDetails: React.FC = () => {
                       };
                       // @ts-ignore
                       addToCart(cartItem, 1);
+                      fbAddToCart({
+                        content_name: product.name,
+                        content_ids: [product.id],
+                        value: currentPrice,
+                        currency: 'INR',
+                      });
                       addToast('success', 'Added to Cart');
                     }}
                     disabled={!canAddToCart}
@@ -361,6 +380,18 @@ export const ProductDetails: React.FC = () => {
                     };
                     // @ts-ignore
                     addToCart(cartItem, 1);
+                    fbAddToCart({
+                      content_name: product.name,
+                      content_ids: [product.id],
+                      value: currentPrice,
+                      currency: 'INR',
+                    });
+                    initiateCheckout({
+                      content_ids: [product.id],
+                      num_items: 1,
+                      value: currentPrice,
+                      currency: 'INR'
+                    });
                     router.push('/checkout');
                   }}
                   className="flex-1 py-4 bg-[#fb641b] hover:bg-[#f65a10] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-[0.98]">

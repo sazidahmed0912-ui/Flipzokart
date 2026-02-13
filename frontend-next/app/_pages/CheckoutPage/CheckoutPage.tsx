@@ -13,6 +13,7 @@ import AddressForm from './components/AddressForm';
 import Modal from './components/Modal';
 import './CheckoutPage.css';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
+import { initiateCheckout } from '@/lib/fbPixel';
 
 const CheckoutPage = () => {
     const { cart, selectedAddress: contextAddress, setSelectedAddress: setContextAddress, user } = useApp();
@@ -72,6 +73,18 @@ const CheckoutPage = () => {
     // Pricing is now strictly handled by Unified Pricing Engine.
 
     const { subtotal, deliveryCharges: standardDelivery, platformFee, totalAmount } = calculateCartTotals(cart);
+
+    // Track InitiateCheckout once when cart is loaded and has items
+    React.useEffect(() => {
+        if (cart.length > 0) {
+            initiateCheckout({
+                content_ids: cart.map(item => item.productId),
+                num_items: cart.length,
+                value: subtotal,
+                currency: 'INR'
+            });
+        }
+    }, [cart.length]);
 
     // Use standard delivery as initial state
     const [deliveryCharges, setDeliveryCharges] = useState(standardDelivery);
