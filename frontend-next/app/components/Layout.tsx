@@ -3,26 +3,34 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { Store, ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag, ChevronRight } from 'lucide-react';
+import { Store, ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag, ChevronRight, Bell, CheckCircle, XCircle, AlertTriangle, Info, Clock, Trash2 } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
-import NotificationBell from './NotificationBell';
 import { useNotifications } from '@/app/store/NotificationContext';
+import NotificationBell from './NotificationBell';
 
 
 const Header: React.FC = () => {
   const { cart, user, isAdmin, logout } = useApp();
-  const { unreadCount, notifications, markNotificationAsRead, deleteNotification, clearAllNotifications } = useNotifications();
+  const { notifications, unreadCount, markNotificationAsRead, deleteNotification, clearAllNotifications } = useNotifications();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showMobileNotifications, setShowMobileNotifications] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [showMobileNotifications, setShowMobileNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [isMobileSearchFocused, setIsMobileSearchFocused] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const profileRef = useRef<HTMLDivElement>(null);
+
+  const getNotificationIcon = (type?: string) => {
+    switch (type) {
+      case 'success': return <CheckCircle className="text-green-500" size={20} />;
+      case 'error': return <XCircle className="text-red-500" size={20} />;
+      case 'warning': return <AlertTriangle className="text-yellow-500" size={20} />;
+      case 'info': default: return <Info className="text-blue-500" size={20} />;
+    }
+  };
 
   // Load history on mount
   useEffect(() => {
@@ -240,8 +248,6 @@ const Header: React.FC = () => {
                 placeholder="Search for products, brands and more"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f28c28]"
                 value={searchQuery}
-                onFocus={() => setIsMobileSearchFocused(true)}
-                onBlur={() => setTimeout(() => setIsMobileSearchFocused(false), 200)}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <button type="submit" className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -250,39 +256,47 @@ const Header: React.FC = () => {
             </div>
           </form>
 
-          {/* Mobile Search History */}
-          {pathname === '/' && isMobileSearchFocused && searchHistory.length > 0 && (
-            <div className="bg-white border rounded-lg shadow-sm mt-2 max-h-56 overflow-y-auto w-full absolute left-0 right-0 z-50 mx-4">
-              {/* Fixed width constraint to match container - using absolute with mx-4 might break layout, safer to stay in flow or relative to container?
-                   Actually the requirement says: "When search box is focused OR below search bar."
-                   Let's keep it simple, cleaner to be just below input block.
-               */}
-              <div className="flex justify-between items-center px-4 py-2 border-b border-gray-100 bg-gray-50">
-                <span className="text-xs font-semibold text-gray-500 uppercase">Recent Searches</span>
+          {/* Mobile Homepage Search History */}
+          {pathname === '/' && searchHistory.length > 0 && (
+            <div className="mt-3 bg-gray-50 rounded-lg p-2 animate-in fade-in slide-in-from-top-1">
+              <div className="flex justify-between items-center mb-2 px-2">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Recent Searches</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchHistory([]);
+                    localStorage.removeItem('search_history');
+                  }}
+                  className="text-xs text-blue-600 font-medium"
+                >
+                  Clear All
+                </button>
               </div>
-              <ul>
+              <ul className="space-y-1">
                 {searchHistory.map((item, index) => (
-                  <li key={index} className="flex items-center justify-between px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 active:bg-gray-100 cursor-pointer">
-                    <div
-                      className="flex-1 flex items-center gap-3 text-sm text-gray-700"
-                      onMouseDown={() => {
+                  <li key={index} className="flex items-center justify-between bg-white rounded-md p-2 shadow-sm active:scale-[0.98] transition-transform">
+                    <button
+                      type="button"
+                      className="flex-1 text-left flex items-center gap-2 text-sm text-gray-700"
+                      onClick={() => {
                         setSearchQuery(item);
                         router.push(`/shop?q=${item}`);
                         setIsSearchOpen(false);
                       }}
                     >
-                      <Search size={16} className="text-gray-400" />
+                      <Clock size={14} className="text-gray-400" />
                       {item}
-                    </div>
+                    </button>
                     <button
-                      onMouseDown={(e) => {
+                      type="button"
+                      onClick={(e) => {
                         e.stopPropagation();
                         const newHistory = [...searchHistory];
                         newHistory.splice(index, 1);
                         setSearchHistory(newHistory);
                         localStorage.setItem('search_history', JSON.stringify(newHistory));
                       }}
-                      className="p-2 -mr-2 text-gray-400"
+                      className="p-1 text-gray-400 hover:text-red-500"
                     >
                       <X size={16} />
                     </button>
@@ -361,16 +375,19 @@ const Header: React.FC = () => {
                     </Link>
                   )}
 
-                  {/* Notifications (Mobile Only) */}
+                  {/* Mobile Notifications Link */}
                   <button
-                    onClick={() => setShowMobileNotifications(true)}
-                    className="flex w-full items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setShowMobileNotifications(true);
+                    }}
+                    className="w-full flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
                   >
                     <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center relative">
-                      <MessageCircle size={16} /> {/* Using MessageCircle as generic notification icon or use Bell if updated import */}
+                      <Bell size={16} />
                       {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[9px] text-white font-bold">
-                          {unreadCount > 9 ? '9+' : unreadCount}
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white font-bold ring-2 ring-white">
+                          {unreadCount}
                         </span>
                       )}
                     </div>
@@ -467,16 +484,24 @@ const Header: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile Notification Panel (Sub-View) */}
-      {isMenuOpen && showMobileNotifications && (
-        <div className="md:hidden fixed inset-0 z-[101] flex flex-col bg-white animate-in slide-in-from-right duration-200">
-          <div className="flex items-center px-4 py-3 border-b border-gray-100 bg-white shadow-sm gap-3">
-            <button onClick={() => setShowMobileNotifications(false)} className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full">
-              <ChevronRight size={20} className="rotate-180" /> {/* Back Icon */}
-            </button>
-            <h2 className="text-lg font-bold text-gray-800 flex-1">Notifications</h2>
+      {/* Mobile Notification Panel Overlay */}
+      {showMobileNotifications && (
+        <div className="md:hidden fixed inset-0 z-[110] bg-white flex flex-col animate-in slide-in-from-right duration-300">
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowMobileNotifications(false)}
+                className="p-2 -ml-2 hover:bg-gray-100 rounded-full"
+              >
+                <ChevronRight className="rotate-180" size={24} />
+              </button>
+              <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
+            </div>
             {notifications.length > 0 && (
-              <button onClick={clearAllNotifications} className="text-xs font-bold text-blue-600 uppercase tracking-wide px-2 py-1">
+              <button
+                onClick={clearAllNotifications}
+                className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full"
+              >
                 Clear
               </button>
             )}
@@ -484,29 +509,44 @@ const Header: React.FC = () => {
 
           <div className="flex-1 overflow-y-auto bg-gray-50">
             {notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-gray-400 p-8 text-center bg-white">
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center text-gray-500">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <MessageCircle size={32} className="opacity-30" />
+                  <Bell size={32} className="text-gray-400" />
                 </div>
                 <p className="font-medium">No notifications yet</p>
-                <p className="text-sm mt-1">We'll let you know when updates arrive</p>
+                <p className="text-sm mt-1">We'll let you know when something update arrives.</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100 bg-white">
+              <div className="divide-y divide-gray-100">
                 {notifications.map((notif) => (
                   <div
                     key={notif._id}
+                    className={`p-4 bg-white ${!notif.isRead ? 'bg-blue-50/50' : ''}`}
                     onClick={() => markNotificationAsRead(notif._id)}
-                    className={`p-4 flex gap-3 active:bg-gray-50 transition-colors ${!notif.isRead ? 'bg-blue-50/50' : 'bg-white'}`}
                   >
-                    <div className={`mt-1 flex-shrink-0 w-2 h-2 rounded-full ${!notif.isRead ? 'bg-blue-500' : 'bg-transparent'}`}></div>
-                    <div className="flex-1">
-                      <p className={`text-sm mb-1 ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
-                        {notif.message}
-                      </p>
-                      <span className="text-xs text-gray-400 font-medium">
-                        {new Date(notif.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })} • {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1 flex-shrink-0">
+                        {getNotificationIcon(notif.status)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+                          {notif.message}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {new Date(notif.createdAt).toLocaleString('en-IN', {
+                            day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notif._id);
+                        }}
+                        className="p-2 text-gray-300 hover:text-red-500"
+                      >
+                        <Trash2 size={18} />
+                      </button>
                     </div>
                   </div>
                 ))}
