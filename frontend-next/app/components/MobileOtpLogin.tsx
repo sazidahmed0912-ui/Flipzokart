@@ -8,6 +8,9 @@ import Script from 'next/script';
 
 export default function MobileOtpLogin() {
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+    const [showManualInput, setShowManualInput] = useState(false);
+    const [manualMobile, setManualMobile] = useState("");
+    const [pendingToken, setPendingToken] = useState<any>(null);
 
     useEffect(() => {
         // Check if already loaded from cache or other navigations
@@ -68,54 +71,12 @@ export default function MobileOtpLogin() {
     const router = useRouter();
     const { addToast } = useToast();
 
-    const [manualMobile, setManualMobile] = useState('');
-    const [showManualInput, setShowManualInput] = useState(false);
-    const [pendingToken, setPendingToken] = useState<any>(null);
+    // const [manualMobile, setManualMobile] = useState(''); // Removed duplicate
+    // const [showManualInput, setShowManualInput] = useState(false); // Removed duplicate
+    // const [pendingToken, setPendingToken] = useState<any>(null); // Removed duplicate
 
-    const handleSuccess = async (data: any, source: string) => {
-        console.log("MSG91 RAW DATA: " + JSON.stringify(data, null, 2));
-
-        try {
-            // Extract mobile if available
-            let mobile = data.mobile || data?.message?.mobile;
-
-            // 🟢 Fallback: Parsed JWT if mobile is missing
-            if (!mobile && (typeof data.message === 'string' || typeof data === 'string')) {
-                try {
-                    const token = data.message || data;
-                    if (token && typeof token === 'string' && token.includes('.')) {
-                        const base64Url = token.split('.')[1];
-                        if (base64Url) {
-                            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
-                                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                            }).join(''));
-                            const parsed = JSON.parse(jsonPayload);
-                            mobile = parsed.mobile || parsed.phone || parsed.contact_number;
-                        }
-                    }
-                } catch (e) {
-                    console.error("Failed to decode JWT token:", e);
-                }
-            }
-
-            // 🟢 Fallback 2: If still no mobile, TRY BACKEND ANYWAY
-            // The backend can try to decode the token.
-            if (!mobile) {
-                console.warn("Mobile number could not be detected on client. Sending token to backend.");
-            }
-
-            verifyBackend(data, mobile || "");
-
-            verifyBackend(data, mobile);
-
-        } catch (e) {
-            console.error("Verification error:", e);
-            addToast('error', "Verification error");
-        }
-    };
-
-    const verifyBackend = async (tokenData: any, mobile: string) => {
+    // Helper: Verify with Backend
+    async function verifyBackend(tokenData: any, mobile: string) {
         const payload = {
             access_token: tokenData.access_token || tokenData?.message || tokenData,
             mobile: mobile
@@ -166,26 +127,76 @@ export default function MobileOtpLogin() {
                     // 🟢 FORCE HARD REDIRECT
                     window.location.href = "/profile";
                 }
+            } else {
                 console.error("Login Failed:", result);
-                if (result.debug) {
-                    console.warn("🔍 BACKEND DEBUG INFO:", JSON.stringify(result.debug, null, 2));
-                    addToast('error', `Login Failed: ${result.message} (See Console)`);
+
+                // If backend verification failed, fallback to manual input
+                if (result.message && (result.message.includes("Unable to verify") || result.message.includes("Verification Failed"))) {
+                    console.warn("Backend identification failed. Requesting manual mobile input.");
+                    addToast('info', "We couldn't detect your number automatically. Please confirm it below.");
+                    setShowManualInput(true);
                 } else {
-                    addToast('error', result.message || "Login Failed");
+                    if (result.debug) {
+                        console.warn("🔍 BACKEND DEBUG INFO:", JSON.stringify(result.debug, null, 2));
+                        addToast('error', `Login Failed: ${result.message} (See Console)`);
+                    } else {
+                        addToast('error', result.message || "Login Failed");
+                    }
                 }
             }
         } catch (e) {
             console.error("Backend Verification Exception:", e);
             addToast('error', "Backend Verification Failed");
         }
-    };
+    }
 
-    const handleManualSubmit = () => {
+    async function handleSuccess(data: any, source: string) {
+        console.log("MSG91 RAW DATA: " + JSON.stringify(data, null, 2));
+        setPendingToken(data); // Store token for manual retry if needed
+
+        try {
+            // Extract mobile if available
+            let mobile = data.mobile || data?.message?.mobile;
+
+            // 🟢 Fallback: Parsed JWT if mobile is missing
+            if (!mobile && (typeof data.message === 'string' || typeof data === 'string')) {
+                try {
+                    const token = data.message || data;
+                    if (token && typeof token === 'string' && token.includes('.')) {
+                        const base64Url = token.split('.')[1];
+                        if (base64Url) {
+                            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                            }).join(''));
+                            const parsed = JSON.parse(jsonPayload);
+                            mobile = parsed.mobile || parsed.phone || parsed.contact_number;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to decode JWT token:", e);
+                }
+            }
+
+            if (!mobile) {
+                console.warn("Mobile number could not be detected on client. Sending token to backend.");
+            }
+
+            verifyBackend(data, mobile || "");
+
+        } catch (e) {
+            console.error("Verification error:", e);
+            addToast('error', "Verification error");
+        }
+    }
+
+    const handleManualSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
         if (!manualMobile || manualMobile.length < 10) {
-            addToast('error', 'Please enter a valid mobile number');
+            addToast('error', "Please enter a valid mobile number");
             return;
         }
-        setShowManualInput(false);
+        // Retry verification with manually entered mobile
         verifyBackend(pendingToken, manualMobile);
     };
 
@@ -204,7 +215,7 @@ export default function MobileOtpLogin() {
         <>
             <Script
                 src="https://control.msg91.com/app/assets/otp-provider/otp-provider.js"
-                strategy="afterInteractive"
+                strategy="lazyOnload"
                 onLoad={() => {
                     console.log("MSG91 OTP Script Loaded");
                     setIsScriptLoaded(true);
@@ -214,25 +225,64 @@ export default function MobileOtpLogin() {
                 }}
             />
 
-            <button
-                type="button"
-                onClick={openMobileOtp}
-                disabled={!isScriptLoaded}
-                style={{
-                    width: "100%",
-                    padding: "12px",
-                    marginTop: "10px",
-                    background: isScriptLoaded ? "#25D366" : "#9ca3af",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontWeight: "600",
-                    cursor: isScriptLoaded ? "pointer" : "not-allowed",
-                    transition: "background 0.3s"
-                }}
-            >
-                {isScriptLoaded ? "Login with Mobile OTP" : "Loading OTP Widget..."}
-            </button>
+            {!showManualInput ? (
+                <button
+                    type="button"
+                    onClick={openMobileOtp}
+                    disabled={!isScriptLoaded}
+                    style={{
+                        width: "100%",
+                        padding: "12px",
+                        marginTop: "10px",
+                        background: isScriptLoaded ? "#25D366" : "#9ca3af",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "6px",
+                        fontWeight: "600",
+                        cursor: isScriptLoaded ? "pointer" : "not-allowed",
+                        transition: "background 0.3s"
+                    }}
+                >
+                    {isScriptLoaded ? "Login with Mobile OTP" : "Loading OTP Widget..."}
+                </button>
+            ) : (
+                <div style={{ marginTop: "15px" }}>
+                    <form onSubmit={handleManualSubmit}>
+                        <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                            Confirm Mobile Number
+                        </label>
+                        <input
+                            type="tel"
+                            placeholder="Enter your mobile number"
+                            value={manualMobile}
+                            onChange={(e) => setManualMobile(e.target.value)}
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                marginBottom: "10px",
+                                borderRadius: "4px",
+                                border: "1px solid #ddd"
+                            }}
+                            autoFocus
+                        />
+                        <button
+                            type="submit"
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                background: "#25D366",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "4px",
+                                fontWeight: "600",
+                                cursor: "pointer"
+                            }}
+                        >
+                            Complete Login
+                        </button>
+                    </form>
+                </div>
+            )}
         </>
     );
 }
