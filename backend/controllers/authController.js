@@ -19,7 +19,7 @@ const register = async (req, res) => {
 
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ success: false, message: "Email already exists" });
     }
 
     // Hash password
@@ -65,7 +65,7 @@ const register = async (req, res) => {
       return res.status(400).json({ message: errors.join(', ') });
     }
     if (error.code === 11000) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ success: false, message: "Email already exists" });
     }
     res.status(500).json({ message: "Server error", error: error.message });
   }

@@ -77,11 +77,11 @@ export const SignupPage: React.FC = () => {
     setIsLoading(true);
     try {
       // 🟢 DUPLICATE CHECK: Email
+      // 🟢 DUPLICATE CHECK: Email
       const exists = await checkUserExists('email', email);
       if (exists) {
-        addToast("error", "Email already registered! Please Login.");
-        const redirectPath = searchParams.get('redirect');
-        setTimeout(() => router.push(redirectPath ? `/login?redirect=${encodeURIComponent(redirectPath)}` : '/login'), 2000);
+        addToast("error", "This email is already registered. Redirecting to login...");
+        router.push("/login");
         setIsLoading(false);
         return;
       }
@@ -91,7 +91,12 @@ export const SignupPage: React.FC = () => {
       setTimer(300); // 5 minutes
       addToast('success', 'OTP Sent to your verified email!');
     } catch (err: any) {
-      addToast('error', err.message || 'Failed to send OTP');
+      if (err.message === "Email already exists") {
+        addToast("error", "This email is already registered. Redirecting to login...");
+        router.push("/login");
+      } else {
+        addToast('error', err.message || 'Failed to send OTP');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -148,7 +153,12 @@ export const SignupPage: React.FC = () => {
         router.push('/');
       }
     } catch (err: any) {
-      addToast('error', err.message || 'Invalid OTP');
+      if (err.message === "Email already exists") {
+        addToast("error", "This email is already registered. Redirecting to login...");
+        router.push("/login");
+      } else {
+        addToast('error', err.message || 'Invalid OTP');
+      }
     } finally {
       setIsLoading(false);
     }
