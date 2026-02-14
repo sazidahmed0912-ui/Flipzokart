@@ -12,23 +12,9 @@ import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import { fetchAllReviews, deleteReview } from '@/app/services/adminService';
 import { useToast } from '@/app/components/toast';
 import { useApp } from '@/app/store/Context';
+import { Review } from '@/app/types';
 
-interface Review {
-    _id: string;
-    rating: number;
-    comment: string;
-    createdAt: string;
-    user: {
-        _id: string;
-        name: string;
-        email: string;
-    };
-    product: {
-        _id: string;
-        name: string;
-        image: string;
-    };
-}
+
 
 export const AdminReviews: React.FC = () => {
     const { user: currentUser } = useApp();

@@ -144,9 +144,12 @@ export interface Review {
   product: {
     _id: string;
     name: string;
+    image: string;
   };
   rating: number;
   comment: string;
+  images?: string[];
+  video?: string;
   createdAt: string;
   updatedAt: string;
 }

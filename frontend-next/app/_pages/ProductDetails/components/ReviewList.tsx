@@ -1,5 +1,6 @@
-import React from 'react';
-import { Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, PlayCircle, X } from 'lucide-react';
+import LazyImage from '@/app/components/LazyImage'; // Reusing for optimization
 import { Review } from '@/app/types'; // Adjust path as necessary
 
 interface ReviewListProps {
@@ -35,6 +36,39 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews }) => {
               </div>
             </div>
             <p className="text-gray-600 text-sm md:text-lg leading-relaxed">{r.comment}</p>
+
+            {/* Media Gallery */}
+            {((r.images && r.images.length > 0) || r.video) && (
+              <div className="mt-4 space-y-3">
+                {/* Images Grid */}
+                {r.images && r.images.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {r.images.map((img, idx) => (
+                      <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity">
+                        <img
+                          src={img}
+                          alt={`Review image ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                          onClick={() => window.open(img, '_blank')}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Video Player */}
+                {r.video && (
+                  <div className="w-full max-w-xs rounded-lg overflow-hidden bg-black aspect-video relative group">
+                    <video
+                      src={r.video}
+                      controls
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
               Posted {new Date(r.createdAt).toLocaleDateString()}
             </p>
