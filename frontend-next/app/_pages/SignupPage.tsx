@@ -13,7 +13,7 @@ import { Eye, EyeOff, Smartphone, CheckCircle } from 'lucide-react';
 import Script from 'next/script';
 
 export const SignupPage: React.FC = () => {
-  const { user, setUser, loginSequence } = useApp();
+  const { setUser, loginSequence } = useApp();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
@@ -42,23 +42,6 @@ export const SignupPage: React.FC = () => {
     }
     return () => clearInterval(interval);
   }, [timer]);
-  // 🟢 LOGIN GUARD: If user is already logged in (e.g. via Mobile OTP), get them out of here!
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      // Double check if we have an intent
-      const checkoutIntentStr = localStorage.getItem("checkout_intent");
-      if (checkoutIntentStr) {
-        // Let the handler below take care? No, handler is onSubmit.
-        // We need to proactive redirect.
-        // But wait, if they JUST logged in via MobileOtpLogin, that component handles redirect.
-        // This guard is for if they refresh or if MobileOtpLogin redirect fails.
-        router.replace("/profile");
-      } else {
-        router.replace("/profile");
-      }
-    }
-  }, [user]); // Depend on user changes
 
   // MSG91 Widget Configuration
   const widgetId = "3662616b7765363133313539";

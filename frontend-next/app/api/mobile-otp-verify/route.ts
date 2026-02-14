@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({
                     success: true,
                     data: backendData,
-                    authMethod: 'mobile-otp',
-                    isNewUser: false // 🟢 Force False here too just in case
+                    authMethod: 'mobile-otp', // 🟢 Critical Flag
+                    isNewUser: backendData.isNewUser // Pass through
                 });
             } else {
                 // If backend says "User not found" (Strict Login), we must return failure
@@ -61,92 +61,12 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // 🟢 If NO Mobile number found in token/request, we try to fetch it from MSG91 API directly.
-        if (!mobileToLogin) {
-            console.log("⚠️ Mobile not found in client payload. Attempting Backend MSG91 API verification...");
-
-            try {
-                // Use env var or fallback to the key used in frontend
-                const authKey = process.env.MSG91_AUTH_KEY || "491551TGhhpXBdgY1697f3ab8P1";
-
-                // 1. Try POST Request
-                const msg91Url = "https://control.msg91.com/api/v5/widget/verifyAccessToken";
-                console.log(`Attempting POST to ${msg91Url}`);
-
-                let msg91Res = await fetch(msg91Url, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "authkey": authKey
-                    },
-                    body: JSON.stringify({ access_token }) // Send ONLY access_token
-                });
-
-                let responseText = await msg91Res.text();
-                console.log("MSG91 POST Response:", responseText);
-
-                if (!msg91Res.ok) {
-                    // 2. Try GET Request as Fallback
-                    console.warn(`POST failed with ${msg91Res.status}. Attempting GET fallback...`);
-                    const getUrl = `${msg91Url}?access_token=${encodeURIComponent(access_token)}&authkey=${encodeURIComponent(authKey)}`;
-
-                    msg91Res = await fetch(getUrl, {
-                        method: "GET",
-                        headers: { "Content-Type": "application/json" }
-                    });
-
-                    responseText = await msg91Res.text();
-                    console.log("MSG91 GET Response:", responseText);
-                }
-
-                if (msg91Res.ok) {
-                    try {
-                        const msg91Data = JSON.parse(responseText);
-                        mobileToLogin = msg91Data.mobile ||
-                            msg91Data.message?.mobile ||
-                            msg91Data.data?.mobile ||
-                            msg91Data.phone ||
-                            msg91Data.contact_number;
-
-                        if (mobileToLogin) {
-                            console.log(`✅ Successfully retrieved mobile from MSG91: ${mobileToLogin}`);
-                        } else {
-                            console.error("❌ MSG91 Response OK but no mobile number found in known fields.");
-                        }
-                    } catch (parseErr) {
-                        console.error("❌ Failed to parse MSG91 JSON response:", parseErr);
-                    }
-                } else {
-                    console.error(`❌ MSG91 API Failed with Status ${msg91Res.status}:`, responseText);
-                    // 🟢 EXPOSE ERROR TO CLIENT (For Live Debugging)
-                    return NextResponse.json({
-                        success: false,
-                        message: `MSG91 Verification Failed: ${msg91Res.statusText}`,
-                        debug: {
-                            status: msg91Res.status,
-                            response: responseText,
-                            method: "POST+GET"
-                        }
-                    });
-                }
-            } catch (apiErr: any) {
-                console.error("❌ CRITICAL MSG91 API Error:", apiErr);
-                return NextResponse.json({
-                    success: false,
-                    message: "MSG91 API Connection Error",
-                    debug: { error: apiErr.message }
-                });
-            }
-        }
-
-        // Final check
-        if (!mobileToLogin) {
-            return NextResponse.json({
-                success: false,
-                message: "Unable to verify user identity. Backend API check failed (See Console)",
-                debug: { reason: "Mobile not found in MSG91 response", lastResponse: mobileToLogin }
-            });
-        }
+        // 🟢 If NO Mobile number found in token/request, we can't login.
+        // And since we now enforce "Login only if registered", we can't just return success blindly.
+        return NextResponse.json({
+            success: false,
+            message: "Unable to verify user identity (No phone number found)"
+        });
 
     } catch (err) {
         console.error("Route Error:", err);
