@@ -63,30 +63,56 @@ export async function POST(req: NextRequest) {
 
         // 🟢 If NO Mobile number found in token/request, we try to fetch it from MSG91 API directly.
         if (!mobileToLogin) {
-            console.log("Mobile not found in token payload. Attempting MSG91 API verification...");
+            console.log("⚠️ Mobile not found in client payload. Attempting Backend MSG91 API verification...");
+
             try {
                 // Use env var or fallback to the key used in frontend
                 const authKey = process.env.MSG91_AUTH_KEY || "491551TGhhpXBdgY1697f3ab8P1";
 
-                const msg91Res = await fetch("https://control.msg91.com/api/v5/widget/verifyAccessToken", {
+                // Construct URL - Try the Widget Verify endpoint
+                const msg91Url = "https://control.msg91.com/api/v5/widget/verifyAccessToken";
+
+                console.log(`Sending request to ${msg91Url} with authKey: ${authKey.substring(0, 4)}***`);
+
+                const msg91Res = await fetch(msg91Url, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                         "authkey": authKey
                     },
-                    body: JSON.stringify({ access_token })
+                    body: JSON.stringify({
+                        access_token: access_token,
+                        token: access_token // Try both fields just in case
+                    })
                 });
 
+                const responseText = await msg91Res.text();
+                console.log("MSG91 API Raw Response:", responseText);
+
                 if (msg91Res.ok) {
-                    const msg91Data = await msg91Res.json();
-                    console.log("MSG91 API Response:", JSON.stringify(msg91Data));
-                    // Check field structure (usually message or mobile)
-                    mobileToLogin = msg91Data.mobile || msg91Data.message?.mobile || msg91Data.data?.mobile;
+                    try {
+                        const msg91Data = JSON.parse(responseText);
+                        // Check all possible field locations
+                        mobileToLogin = msg91Data.mobile ||
+                            msg91Data.message?.mobile ||
+                            msg91Data.data?.mobile ||
+                            msg91Data.phone ||
+                            msg91Data.contact_number;
+
+                        if (mobileToLogin) {
+                            console.log(`✅ Successfully retrieved mobile from MSG91: ${mobileToLogin}`);
+                        } else {
+                            console.error("❌ MSG91 Response OK but no mobile number found in known fields.");
+                        }
+
+                    } catch (parseErr) {
+                        console.error("❌ Failed to parse MSG91 JSON response:", parseErr);
+                    }
                 } else {
-                    console.error("MSG91 API Failed:", await msg91Res.text());
+                    console.error(`❌ MSG91 API Failed with Status ${msg91Res.status}:`, responseText);
                 }
             } catch (apiErr) {
-                console.error("MSG91 API Error:", apiErr);
+                console.error("❌ CRITICAL MSG91 API Error:", apiErr);
             }
         }
 
@@ -94,7 +120,7 @@ export async function POST(req: NextRequest) {
         if (!mobileToLogin) {
             return NextResponse.json({
                 success: false,
-                message: "Unable to verify user identity (No phone number found after API check)"
+                message: "Unable to verify user identity. Backend API check failed. Check server logs."
             });
         }
 
