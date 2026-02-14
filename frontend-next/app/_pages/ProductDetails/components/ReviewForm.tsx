@@ -32,7 +32,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmi
 
     setIsLoading(true);
     try {
-      const { data } = await API.post('/reviews', {
+      const { data } = await API.post('/api/reviews', {
         product: productId,
         rating,
         comment,

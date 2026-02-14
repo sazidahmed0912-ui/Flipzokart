@@ -11,6 +11,7 @@ import { ReviewForm } from './ProductDetails/components/ReviewForm';
 import { useSocket } from '@/app/hooks/useSocket';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import ProductGallery from '@/app/components/ProductGallery';
+import Modal from '@/app/components/Modal';
 
 import { getProductImageUrl } from '@/app/utils/imageHelper';
 import useRelatedProducts from '@/app/hooks/useRelatedProducts';
@@ -55,6 +56,9 @@ export const ProductDetails: React.FC = () => {
   useEffect(() => {
     setQuantity(1);
   }, [activeVariant?.id, product?.id]);
+
+  // Return Policy Modal State
+  const [showReturnPolicy, setShowReturnPolicy] = useState(false);
 
   // --- Socket & Data Logic ---
   const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
@@ -477,10 +481,13 @@ export const ProductDetails: React.FC = () => {
 
             {/* Trust Badges */}
             <div className="mt-6 grid grid-cols-2 gap-3">
-              <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-3">
+              <button
+                onClick={() => setShowReturnPolicy(true)}
+                className="p-3 bg-gray-50 rounded-lg flex items-center gap-3 hover:bg-blue-50 transition-colors cursor-pointer text-left w-full"
+              >
                 <RotateCcw size={20} className="text-blue-600" />
-                <span className="text-xs font-semibold text-gray-700">7 Day Returns</span>
-              </div>
+                <span className="text-xs font-semibold text-gray-700 underline decoration-dotted decoration-gray-400 underline-offset-2">7 Day Returns</span>
+              </button>
               <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-3">
                 <Check size={20} className="text-green-600" />
                 <span className="text-xs font-semibold text-gray-700">Quality Assured</span>
@@ -536,6 +543,34 @@ export const ProductDetails: React.FC = () => {
 
         {/* RELATED PRODUCTS SECTION */}
         {product && <RelatedProductsSection category={product.category} productId={product.id} />}
+
+        {/* Return Policy Modal */}
+        <Modal isOpen={showReturnPolicy} onClose={() => setShowReturnPolicy(false)}>
+          <div className="p-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <RotateCcw className="text-blue-600" /> Return Policy
+            </h3>
+            <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
+              <p>
+                <strong>7-Day Replacement Policy:</strong> You can request a replacement for this product within 7 days of delivery.
+              </p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Returns are accepted if the product is damaged, defective, or different from the description.</li>
+                <li>Items must be returned in their original condition, with price tags, user manual, warranty cards, and accessories intact.</li>
+                <li>For mobile phones and electronics, the device should be formatted and screen lock disabled.</li>
+              </ul>
+              <div className="bg-blue-50 p-3 rounded-lg mt-4 border border-blue-100 text-blue-800 text-xs">
+                <strong>Note:</strong> Return requests will be verified by our team. If a defect is confirmed, a replacement or refund will be processed.
+              </div>
+            </div>
+            <button
+              onClick={() => setShowReturnPolicy(false)}
+              className="mt-6 w-full py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        </Modal>
 
       </div>
     </div>
