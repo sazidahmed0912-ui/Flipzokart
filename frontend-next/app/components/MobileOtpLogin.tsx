@@ -176,6 +176,8 @@ export default function MobileOtpLogin() {
         }
     };
 
+    const [showMobileOTP, setShowMobileOTP] = useState(false);
+
     return (
         <>
             <Script
@@ -190,46 +192,69 @@ export default function MobileOtpLogin() {
                 }}
             />
 
-            <div className="w-full">
-                {/* 🟢 CUSTOM CLEAN INPUT UI */}
-                <div className="relative flex items-center mb-3 border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
-                    <div className="bg-gray-100 px-3 py-3 border-r border-gray-200 text-gray-600 font-medium text-sm flex items-center">
-                        🇮🇳 +91
-                    </div>
-                    <input
-                        type="tel"
-                        placeholder="Enter 10-digit mobile number"
-                        className="w-full p-3 text-sm outline-none bg-white text-gray-800 placeholder-gray-400 font-medium tracking-wide"
-                        value={mobileInput}
-                        onChange={(e) => {
-                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                            setMobileInput(val);
-                        }}
-                        disabled={!isScriptLoaded}
-                        maxLength={10}
-                    />
-                </div>
+            <div className="w-full mt-2">
+                {/* 🟢 TRIGGER BUTTON (Visible Only When Closed) */}
+                {!showMobileOTP && (
+                    <button
+                        type="button"
+                        onClick={() => setShowMobileOTP(true)}
+                        className="w-full py-2.5 px-4 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-50 hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 group"
+                    >
+                        <span className="w-5 h-5 flex items-center justify-center bg-green-100 rounded-full text-green-600 group-hover:bg-green-200 transition-colors">
+                            📱
+                        </span>
+                        Login with Mobile OTP
+                    </button>
+                )}
 
-                <button
-                    type="button"
-                    onClick={handleInputSubmit}
-                    disabled={!isScriptLoaded || mobileInput.length < 10}
-                    style={{
-                        width: "100%",
-                        padding: "12px",
-                        background: (isScriptLoaded && mobileInput.length === 10) ? "#25D366" : "#9ca3af",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "8px",
-                        fontWeight: "600",
-                        cursor: (isScriptLoaded && mobileInput.length === 10) ? "pointer" : "not-allowed",
-                        transition: "all 0.3s",
-                        boxShadow: (isScriptLoaded && mobileInput.length === 10) ? "0 4px 6px rgba(37, 211, 102, 0.2)" : "none"
-                    }}
-                    className="flex items-center justify-center gap-2"
+                {/* 🟢 EXPANDABLE SECTION (Input + Get OTP) */}
+                <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${showMobileOTP ? 'max-h-[160px] opacity-100 mt-3' : 'max-h-0 opacity-0'}`}
                 >
-                    {isScriptLoaded ? "Get OTP" : "Loading Service..."}
-                </button>
+                    <div className="p-1">
+                        {/* Custom Input */}
+                        <div className="relative flex items-center mb-3 border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all shadow-sm">
+                            <div className="bg-gray-100 px-3 py-3 border-r border-gray-200 text-gray-600 font-medium text-sm flex items-center">
+                                🇮🇳 +91
+                            </div>
+                            <input
+                                type="tel"
+                                placeholder="Enter 10-digit mobile number"
+                                className="w-full p-3 text-sm outline-none bg-white text-gray-800 placeholder-gray-400 font-medium tracking-wide"
+                                value={mobileInput}
+                                onChange={(e) => {
+                                    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                    setMobileInput(val);
+                                }}
+                                disabled={!isScriptLoaded}
+                                maxLength={10}
+                                autoFocus={showMobileOTP}
+                            />
+                        </div>
+
+                        {/* Get OTP Button */}
+                        <button
+                            type="button"
+                            onClick={handleInputSubmit}
+                            disabled={!isScriptLoaded || mobileInput.length < 10}
+                            style={{
+                                width: "100%",
+                                padding: "12px",
+                                background: (isScriptLoaded && mobileInput.length === 10) ? "#25D366" : "#9ca3af",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "8px",
+                                fontWeight: "600",
+                                cursor: (isScriptLoaded && mobileInput.length === 10) ? "pointer" : "not-allowed",
+                                transition: "all 0.3s",
+                                boxShadow: (isScriptLoaded && mobileInput.length === 10) ? "0 4px 6px rgba(37, 211, 102, 0.2)" : "none"
+                            }}
+                            className="flex items-center justify-center gap-2 hover:brightness-105 active:scale-[0.98]"
+                        >
+                            {isScriptLoaded ? "Get OTP" : "Loading Service..."}
+                        </button>
+                    </div>
+                </div>
             </div>
         </>
     );
