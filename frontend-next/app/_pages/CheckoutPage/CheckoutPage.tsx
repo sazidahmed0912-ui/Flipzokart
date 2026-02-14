@@ -107,7 +107,7 @@ const CheckoutPage = () => {
         if (checkoutItems.length > 0) {
             initiateCheckout({
                 content_ids: checkoutItems.map((item: any) => item.productId),
-                num_items: checkoutItems.length,
+                num_items: checkoutItems.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0),
                 value: subtotal,
                 currency: 'INR'
             });

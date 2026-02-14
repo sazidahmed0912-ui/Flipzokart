@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ShoppingCart, Star, Truck, RotateCcw, Check, Info, ChevronRight, CreditCard, Package, Ruler, Palette, Layers, AlertCircle, Share2 } from 'lucide-react';
+import { ShoppingCart, Star, Truck, RotateCcw, Check, Info, ChevronRight, CreditCard, Package, Ruler, Palette, Layers, AlertCircle, Share2, Plus, Minus } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { useToast } from '@/app/components/toast';
 import { fetchProductById } from '@/app/services/api';
@@ -47,6 +47,14 @@ export const ProductDetails: React.FC = () => {
   // Dynamic Selection State: Record<GroupName, OptionName>
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(null);
+
+  // 🟢 QUANTITY STATE (Default 1)
+  const [quantity, setQuantity] = useState(1);
+
+  // Reset Quantity when Variant/Product Changes
+  useEffect(() => {
+    setQuantity(1);
+  }, [activeVariant?.id, product?.id]);
 
   // --- Socket & Data Logic ---
   const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
@@ -340,21 +348,88 @@ export const ProductDetails: React.FC = () => {
             ) : null}
 
             {/* Stock Actions */}
-            <div className="mt-8 flex gap-4">
-              <div className="flex-1">
-                {isOutOfStock ? (
-                  <button disabled className="w-full py-4 bg-gray-100 text-gray-400 font-bold rounded-xl cursor-not-allowed flex items-center justify-center gap-2">
-                    <AlertCircle size={20} /> OUT OF STOCK
-                  </button>
-                ) : (
+            <div className="mt-6">
+              {/* QUANTITY SELECTOR */}
+              {!isOutOfStock && (
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="text-sm font-semibold text-gray-700">Quantity:</span>
+                  <div className="flex items-center border border-gray-300 rounded-lg bg-white">
+                    <button
+                      onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                      disabled={quantity <= 1}
+                      className="px-3 py-2 text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-white rounded-l-lg transition-colors"
+                    >
+                      <Minus size={18} />
+                    </button>
+                    <div className="w-12 text-center font-bold text-gray-900">{quantity}</div>
+                    <button
+                      onClick={() => setQuantity(q => Math.min(effectiveStock, q + 1))}
+                      disabled={quantity >= effectiveStock}
+                      className="px-3 py-2 text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-white rounded-r-lg transition-colors"
+                    >
+                      <Plus size={18} />
+                    </button>
+                  </div>
+                  {effectiveStock < 10 && (
+                    <span className="text-xs text-red-500 font-medium">
+                      Only {effectiveStock} left!
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  {isOutOfStock ? (
+                    <button disabled className="w-full py-4 bg-gray-100 text-gray-400 font-bold rounded-xl cursor-not-allowed flex items-center justify-center gap-2">
+                      <AlertCircle size={20} /> OUT OF STOCK
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        // BUG FIX 3: Strict Cart construction
+                        const cartItem: CartItem = {
+                          id: product.id,
+                          productId: product.id,
+                          variantId: activeVariant?.id,
+                          productName: product.name,
+                          name: product.name,
+                          price: currentPrice,
+                          image: activeVariant?.image || product.image || '',
+                          color: selections['Color'],
+                          size: selections['Size'],
+                          selectedVariants: selections,
+                          stock: effectiveStock,
+                          countInStock: effectiveStock,
+                          quantity: quantity, // 🟢 USE SELECTED QUANTITY
+                          originalPrice: originalPrice,
+                          category: product.category,
+                          rating: product.rating || 0,
+                          reviewsCount: product.reviewsCount || 0,
+                          description: product.description || '',
+                          images: galleryImages,
+                        };
+                        // @ts-ignore
+                        addToCart(cartItem, quantity); // 🟢 PASS QUANTITY
+                        fbAddToCart({
+                          content_name: product.name,
+                          content_ids: [product.id],
+                          value: currentPrice * quantity, // 🟢 TOTAL VALUE
+                          currency: 'INR',
+                        });
+                        addToast('success', 'Added to Cart');
+                      }}
+                      disabled={!canAddToCart}
+                      className="w-full py-4 bg-[#ff9f00] hover:bg-[#ff9000] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-[0.98] flex items-center justify-center gap-2"
+                    >
+                      <ShoppingCart size={20} /> ADD TO CART
+                    </button>
+                  )}
+                </div>
+                {!isOutOfStock && (
                   <button
                     onClick={() => {
-                      // AUTH GUARD
-                      // AUTH GUARD REMOVED FOR GUEST ACCESS
-                      // if (!requireAuthRedirectToSignup(router)) return;
-
-                      // BUG FIX 3: Strict Cart construction
-                      const cartItem: CartItem = {
+                      const buyNowItem: CartItem = {
                         id: product.id,
                         productId: product.id,
                         variantId: activeVariant?.id,
@@ -367,7 +442,7 @@ export const ProductDetails: React.FC = () => {
                         selectedVariants: selections,
                         stock: effectiveStock,
                         countInStock: effectiveStock,
-                        quantity: 1,
+                        quantity: quantity, // 🟢 USE SELECTED QUANTITY
                         originalPrice: originalPrice,
                         category: product.category,
                         rating: product.rating || 0,
@@ -375,76 +450,29 @@ export const ProductDetails: React.FC = () => {
                         description: product.description || '',
                         images: galleryImages,
                       };
-                      // @ts-ignore
-                      addToCart(cartItem, 1);
-                      fbAddToCart({
-                        content_name: product.name,
+
+                      // 1. Store in Isolated/Temporary Storage
+                      localStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));
+
+                      // 2. Clear any "Checkout Intent" to avoid confusion
+                      localStorage.removeItem('checkout_intent');
+
+                      // 3. Initiate Pixel
+                      initiateCheckout({
                         content_ids: [product.id],
-                        value: currentPrice,
-                        currency: 'INR',
+                        num_items: quantity, // 🟢 CORRECT QUANTITY
+                        value: currentPrice * quantity, // 🟢 TOTAL VALUE
+                        currency: 'INR'
                       });
-                      addToast('success', 'Added to Cart');
+
+                      // 4. Redirect to Checkout (Which will read buyNowItem)
+                      router.push('/checkout');
                     }}
-                    disabled={!canAddToCart}
-                    className="w-full py-4 bg-[#ff9f00] hover:bg-[#ff9000] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-[0.98] flex items-center justify-center gap-2"
-                  >
-                    <ShoppingCart size={20} /> ADD TO CART
+                    className="flex-1 py-4 bg-[#fb641b] hover:bg-[#f65a10] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-[0.98]">
+                    BUY NOW
                   </button>
                 )}
               </div>
-              {!isOutOfStock && (
-                <button
-                  onClick={() => {
-                    // AUTH GUARD
-                    // AUTH GUARD REMOVED FOR GUEST ACCESS
-                    // if (!requireAuthRedirectToSignup(router)) return;
-
-                    const buyNowItem: CartItem = {
-                      id: product.id,
-                      productId: product.id,
-                      variantId: activeVariant?.id,
-                      productName: product.name,
-                      name: product.name,
-                      price: currentPrice,
-                      image: activeVariant?.image || product.image || '',
-                      color: selections['Color'],
-                      size: selections['Size'],
-                      selectedVariants: selections,
-                      stock: effectiveStock,
-                      countInStock: effectiveStock,
-                      quantity: 1,
-                      originalPrice: originalPrice,
-                      category: product.category,
-                      rating: product.rating || 0,
-                      reviewsCount: product.reviewsCount || 0,
-                      description: product.description || '',
-                      images: galleryImages,
-                    };
-
-                    // 1. Store in Isolated/Temporary Storage
-                    localStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));
-
-                    // 2. Clear any "Checkout Intent" to avoid confusion (or set new one if needed)
-                    // Actually, we don't need checkout_intent here because if they are Guest,
-                    // PaymentPage will handle the "Guest -> Signup" flow using pendingOrder later.
-                    // But for consistency:
-                    localStorage.removeItem('checkout_intent');
-
-                    // 3. Initiate Pixel
-                    initiateCheckout({
-                      content_ids: [product.id],
-                      num_items: 1,
-                      value: currentPrice,
-                      currency: 'INR'
-                    });
-
-                    // 4. Redirect to Checkout (Which will read buyNowItem)
-                    router.push('/checkout');
-                  }}
-                  className="flex-1 py-4 bg-[#fb641b] hover:bg-[#f65a10] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-[0.98]">
-                  BUY NOW
-                </button>
-              )}
             </div>
 
             {/* Trust Badges */}
