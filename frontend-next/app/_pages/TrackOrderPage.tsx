@@ -469,7 +469,7 @@ export const TrackOrderPage: React.FC = () => {
                                             Cancel Order
                                         </button>
                                     )}
-                                    {order.status === 'Delivered' && (
+                                    {(order.status?.toLowerCase().trim() === 'delivered') && (
                                         <button
                                             onClick={handleReturnOrder}
                                             className="bg-white border border-gray-300 text-gray-800 font-medium h-10 md:h-auto py-0 md:py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full active:scale-95 flex items-center justify-center gap-2"

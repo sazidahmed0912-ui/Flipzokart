@@ -266,13 +266,28 @@ const OrdersPage: React.FC = () => {
                                                             Cancel Order
                                                         </button>
                                                     )}
-                                                    {order.status === 'Delivered' && (
-                                                        <button
-                                                            onClick={() => router.push(`/product/${item.productId}`)}
-                                                            className="w-full md:w-auto bg-[#2874F0] text-white font-semibold py-2.5 md:py-2 px-6 rounded-lg text-sm shadow-sm hover:bg-blue-600 transition-colors active:scale-95"
-                                                        >
-                                                            Buy Again
-                                                        </button>
+                                                    {(order.status?.toLowerCase().trim() === 'delivered') && (
+                                                        <>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    router.push(`/product/${item.productId}`)
+                                                                }}
+                                                                className="w-full md:w-auto bg-[#2874F0] text-white font-semibold py-2.5 md:py-2 px-6 rounded-lg text-sm shadow-sm hover:bg-blue-600 transition-colors active:scale-95"
+                                                            >
+                                                                Buy Again
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const confirmReturn = window.confirm("Do you want to initiate a return?");
+                                                                    if (confirmReturn) alert("Return Initiated");
+                                                                }}
+                                                                className="w-full md:w-auto bg-white border border-gray-300 text-gray-800 font-medium py-2 px-6 rounded hover:bg-gray-50 transition-colors text-sm w-full md:w-auto shadow-sm flex items-center justify-center gap-2"
+                                                            >
+                                                                <RotateCcw size={14} className="text-[#2874F0]" /> Return
+                                                            </button>
+                                                        </>
                                                     )}
                                                 </div>
 
