@@ -3,18 +3,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { Store, ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, ChevronLeft, Home, MessageCircle, LayoutGrid, Tag, ChevronRight, Bell, CheckCircle, XCircle, AlertTriangle, Info, Clock, Trash2 } from 'lucide-react';
+import { Store, ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag, ChevronRight, Bell, CheckCircle, XCircle, AlertTriangle, Info, Clock, Trash2 } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { useNotifications } from '@/app/store/NotificationContext';
 import NotificationBell from './NotificationBell';
-import { CATEGORIES, FASHION_HIERARCHY } from '@/app/constants/categories'; // Import Hierarchy
 
 
 const Header: React.FC = () => {
   const { cart, user, isAdmin, logout } = useApp();
   const { notifications, unreadCount, markNotificationAsRead, deleteNotification, clearAllNotifications } = useNotifications();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [mobileMenuLevel, setMobileMenuLevel] = useState<'main' | 'fashion'>('main'); // State for Mobile Nested Menu
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [showMobileNotifications, setShowMobileNotifications] = useState(false);
@@ -87,7 +85,6 @@ const Header: React.FC = () => {
   const closeMenus = () => {
     setIsProfileOpen(false);
     setIsMenuOpen(false);
-    setMobileMenuLevel('main'); // Reset mobile menu level
   };
 
   return (
@@ -167,40 +164,6 @@ const Header: React.FC = () => {
               <Home className="w-6 h-6" />
               <span className="text-sm font-medium">Home</span>
             </Link>
-
-            {/* Desktop Fashion Mega Menu */}
-            <div className="relative group cursor-pointer h-16 flex items-center">
-              <div className="flex items-center space-x-1 text-gray-700 group-hover:text-[#f28c28] transition-colors">
-                <LayoutGrid className="w-6 h-6" />
-                <span className="text-sm font-medium">Fashion</span>
-                <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-300" />
-              </div>
-
-              {/* Mega Menu Dropdown */}
-              <div className="absolute top-16 left-1/2 -translate-x-1/2 w-[600px] bg-white shadow-2xl rounded-b-2xl border-t border-[#f28c28] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top z-50 overflow-hidden">
-                <div className="flex p-6 gap-8 bg-gradient-to-b from-white to-gray-50">
-                  {Object.entries(FASHION_HIERARCHY).map(([sub, children]) => (
-                    <div key={sub} className="flex-1">
-                      <Link href={`/shop?category=Fashion&sub=${sub}`} className="block text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider hover:text-[#f28c28] border-b border-gray-100 pb-1">
-                        {sub}
-                      </Link>
-                      <ul className="space-y-2">
-                        {children.map(child => (
-                          <li key={child}>
-                            <Link
-                              href={`/shop?category=Fashion&sub=${sub}&child=${child}`}
-                              className="text-xs text-gray-500 hover:text-[#f28c28] hover:translate-x-1 transition-all inline-block font-medium"
-                            >
-                              {child}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
             <NotificationBell />
             <Link href="/cart" className="flex items-center space-x-1 text-gray-700 hover:text-[#f28c28]">
               <ShoppingCart className="w-6 h-6" />
@@ -354,20 +317,16 @@ const Header: React.FC = () => {
               <span className="text-[#222]">Fzo</span><span className="text-[#f28c28]">kart</span>
             </div>
             <button
-              onClick={() => {
-                if (mobileMenuLevel !== 'main') setMobileMenuLevel('main');
-                else setIsMenuOpen(false);
-              }}
+              onClick={() => setIsMenuOpen(false)}
               className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
             >
-              {mobileMenuLevel === 'main' ? <X size={20} /> : <ChevronLeft size={20} />}
+              <X size={20} />
             </button>
           </div>
 
           {/* List Content (Profile Design) */}
-          <div className="flex-1 overflow-y-auto relative">
-            {/* Main Menu Level */}
-            <div className={`flex flex-col transition-transform duration-300 absolute inset-0 ${mobileMenuLevel === 'main' ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="flex-1 overflow-y-auto">
+            <div className="flex flex-col">
               <Link href="/"
                 onClick={closeMenus}
                 className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
@@ -378,22 +337,6 @@ const Header: React.FC = () => {
                 <span className="font-medium text-sm">Home</span>
                 <ChevronRight size={14} className="ml-auto text-gray-400" />
               </Link>
-
-              {/* Fashion Trigger */}
-              <button
-                onClick={() => setMobileMenuLevel('fashion')}
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors w-full text-left"
-              >
-                <div className="w-8 h-8 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center">
-                  {/* Using LayoutGrid or Shirt icon if available, ensuring LayoutGrid is imported */}
-                  <LayoutGrid size={16} />
-                </div>
-                <span className="font-medium text-sm">Fashion</span>
-                <div className="ml-auto flex items-center gap-1 text-xs text-gray-400">
-                  <span>Men, Women...</span>
-                  <ChevronRight size={14} />
-                </div>
-              </button>
 
               <Link href="/shop"
                 onClick={closeMenus}
@@ -537,125 +480,82 @@ const Header: React.FC = () => {
                 </>
               )}
             </div>
-            {/* End Main Menu Level */}
           </div>
-
-          {/* FASHION SUB-MENU LEVEL */}
-          <div className={`flex flex-col transition-transform duration-300 absolute inset-0 bg-white ${mobileMenuLevel === 'fashion' ? 'translate-x-0' : 'translate-x-full'}`}>
-            <div className="p-4 bg-gray-50 border-b border-gray-100 mb-2">
-              <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Browse Fashion</h3>
-            </div>
-            {Object.entries(FASHION_HIERARCHY).map(([sub, children]) => (
-              <div key={sub} className="border-b border-gray-100">
-                {/* Header for SubCategory (Navigates to Sub) */}
-                <Link
-                  href={`/shop?category=Fashion&sub=${sub}`}
-                  onClick={closeMenus}
-                  className="flex items-center justify-between px-5 py-3 text-gray-800 font-bold hover:bg-gray-50"
-                >
-                  {sub}
-                  <ChevronRight size={14} className="text-gray-400" />
-                </Link>
-                {/* Horizontal Chips for Children */}
-                <div className="px-5 pb-3 flex flex-wrap gap-2">
-                  {children.map(child => (
-                    <Link
-                      key={child}
-                      href={`/shop?category=Fashion&sub=${sub}&child=${child}`}
-                      onClick={closeMenus}
-                      className="px-3 py-1 bg-gray-50 border border-gray-200 rounded-full text-xs text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors"
-                    >
-                      {child}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-            <button
-              onClick={() => setMobileMenuLevel('main')}
-              className="mt-6 mx-5 py-2 text-center text-sm font-bold text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50"
-            >
-              Back to Main Menu
-            </button>
-          </div>
-
         </div>
       )}
 
       {/* Mobile Notification Panel Overlay */}
-      {
-        showMobileNotifications && (
-          <div className="md:hidden fixed inset-0 z-[110] bg-white flex flex-col animate-in slide-in-from-right duration-300">
-            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowMobileNotifications(false)}
-                  className="p-2 -ml-2 hover:bg-gray-100 rounded-full"
-                >
-                  <ChevronRight className="rotate-180" size={24} />
-                </button>
-                <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
-              </div>
-              {notifications.length > 0 && (
-                <button
-                  onClick={clearAllNotifications}
-                  className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full"
-                >
-                  Clear
-                </button>
-              )}
+      {showMobileNotifications && (
+        <div className="md:hidden fixed inset-0 z-[110] bg-white flex flex-col animate-in slide-in-from-right duration-300">
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowMobileNotifications(false)}
+                className="p-2 -ml-2 hover:bg-gray-100 rounded-full"
+              >
+                <ChevronRight className="rotate-180" size={24} />
+              </button>
+              <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
             </div>
-
-            <div className="flex-1 overflow-y-auto bg-gray-50">
-              {notifications.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full p-8 text-center text-gray-500">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                    <Bell size={32} className="text-gray-400" />
-                  </div>
-                  <p className="font-medium">No notifications yet</p>
-                  <p className="text-sm mt-1">We'll let you know when something update arrives.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-100">
-                  {notifications.map((notif) => (
-                    <div
-                      key={notif._id}
-                      className={`p-4 bg-white ${!notif.isRead ? 'bg-blue-50/50' : ''}`}
-                      onClick={() => markNotificationAsRead(notif._id)}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="mt-1 flex-shrink-0">
-                          {getNotificationIcon(notif.status)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
-                            {notif.message}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {new Date(notif.createdAt).toLocaleString('en-IN', {
-                              day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
-                            })}
-                          </p>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteNotification(notif._id);
-                          }}
-                          className="p-2 text-gray-300 hover:text-red-500"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {notifications.length > 0 && (
+              <button
+                onClick={clearAllNotifications}
+                className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full"
+              >
+                Clear
+              </button>
+            )}
           </div>
-        )
-      }
-    </header >
+
+          <div className="flex-1 overflow-y-auto bg-gray-50">
+            {notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center text-gray-500">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <Bell size={32} className="text-gray-400" />
+                </div>
+                <p className="font-medium">No notifications yet</p>
+                <p className="text-sm mt-1">We'll let you know when something update arrives.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {notifications.map((notif) => (
+                  <div
+                    key={notif._id}
+                    className={`p-4 bg-white ${!notif.isRead ? 'bg-blue-50/50' : ''}`}
+                    onClick={() => markNotificationAsRead(notif._id)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1 flex-shrink-0">
+                        {getNotificationIcon(notif.status)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+                          {notif.message}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {new Date(notif.createdAt).toLocaleString('en-IN', {
+                            day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notif._id);
+                        }}
+                        className="p-2 text-gray-300 hover:text-red-500"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
 
