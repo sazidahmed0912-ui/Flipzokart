@@ -69,30 +69,39 @@ export async function POST(req: NextRequest) {
                 // Use env var or fallback to the key used in frontend
                 const authKey = process.env.MSG91_AUTH_KEY || "491551TGhhpXBdgY1697f3ab8P1";
 
-                // Construct URL - Try the Widget Verify endpoint
+                // 1. Try POST Request
                 const msg91Url = "https://control.msg91.com/api/v5/widget/verifyAccessToken";
+                console.log(`Attempting POST to ${msg91Url}`);
 
-                console.log(`Sending request to ${msg91Url} with authKey: ${authKey.substring(0, 4)}***`);
-
-                const msg91Res = await fetch(msg91Url, {
+                let msg91Res = await fetch(msg91Url, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                         "authkey": authKey
                     },
-                    body: JSON.stringify({
-                        access_token: access_token,
-                        token: access_token // Try both fields just in case
-                    })
+                    body: JSON.stringify({ access_token }) // Send ONLY access_token
                 });
 
-                const responseText = await msg91Res.text();
-                console.log("MSG91 API Raw Response:", responseText);
+                let responseText = await msg91Res.text();
+                console.log("MSG91 POST Response:", responseText);
+
+                if (!msg91Res.ok) {
+                    // 2. Try GET Request as Fallback
+                    console.warn(`POST failed with ${msg91Res.status}. Attempting GET fallback...`);
+                    const getUrl = `${msg91Url}?access_token=${encodeURIComponent(access_token)}&authkey=${encodeURIComponent(authKey)}`;
+
+                    msg91Res = await fetch(getUrl, {
+                        method: "GET",
+                        headers: { "Content-Type": "application/json" }
+                    });
+
+                    responseText = await msg91Res.text();
+                    console.log("MSG91 GET Response:", responseText);
+                }
 
                 if (msg91Res.ok) {
                     try {
                         const msg91Data = JSON.parse(responseText);
-                        // Check all possible field locations
                         mobileToLogin = msg91Data.mobile ||
                             msg91Data.message?.mobile ||
                             msg91Data.data?.mobile ||
@@ -104,7 +113,6 @@ export async function POST(req: NextRequest) {
                         } else {
                             console.error("❌ MSG91 Response OK but no mobile number found in known fields.");
                         }
-
                     } catch (parseErr) {
                         console.error("❌ Failed to parse MSG91 JSON response:", parseErr);
                     }
@@ -116,7 +124,8 @@ export async function POST(req: NextRequest) {
                         message: `MSG91 Verification Failed: ${msg91Res.statusText}`,
                         debug: {
                             status: msg91Res.status,
-                            response: responseText
+                            response: responseText,
+                            method: "POST+GET"
                         }
                     });
                 }
@@ -134,8 +143,8 @@ export async function POST(req: NextRequest) {
         if (!mobileToLogin) {
             return NextResponse.json({
                 success: false,
-                message: "Unable to verify user identity. Backend API check failed.",
-                debug: { reason: "No mobile number found in MSG91 response" }
+                message: "Unable to verify user identity. Backend API check failed (See Console)",
+                debug: { reason: "Mobile not found in MSG91 response", lastResponse: mobileToLogin }
             });
         }
 
