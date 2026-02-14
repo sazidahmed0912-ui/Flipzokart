@@ -4,14 +4,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';
 import API from '@/app/services/api';
 import { useSocket } from '@/app/hooks/useSocket';
-import { formatDate } from '@/app/utils/dateHelper';
+// import { formatDate } from '@/app/utils/dateHelper'; // Removed to use local helper
 import { ReviewForm } from './ProductDetails/components/ReviewForm';
 import { normalizeOrder } from '@/app/utils/orderHelper';
 import { resolveProductImage } from '@/app/utils/imageHelper';
 import {
     Check, MapPin, CreditCard, FileText,
     ChevronRight, HelpCircle, Package, Truck, AlertCircle,
-    Download, MoreHorizontal, Info
+    Download, MoreHorizontal, Info, RotateCcw
 } from 'lucide-react';
 
 import { useToast } from '@/app/components/toast';
@@ -114,6 +114,19 @@ export const TrackOrderPage: React.FC = () => {
             console.error("Failed to cancel order", err);
             const errorMessage = err.response?.data?.message || "Failed to cancel order. Please connect with support.";
             alert(errorMessage);
+        }
+    };
+
+    const handleReturnOrder = () => {
+        // Implement Return Logic or Redirect
+        if (order.status !== 'Delivered') {
+            addToast('warning', 'You can only return delivered items');
+            return;
+        }
+        const confirmReturn = window.confirm("Do you want to initiate a return for this item?");
+        if (confirmReturn) {
+            addToast('success', 'Return request initiated');
+            // In real app, redirect to return flow or open modal
         }
     };
 
@@ -454,6 +467,14 @@ export const TrackOrderPage: React.FC = () => {
                                             className="bg-white border border-gray-300 text-gray-800 font-medium h-10 md:h-auto py-0 md:py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full active:scale-95"
                                         >
                                             Cancel Order
+                                        </button>
+                                    )}
+                                    {order.status === 'Delivered' && (
+                                        <button
+                                            onClick={handleReturnOrder}
+                                            className="bg-white border border-gray-300 text-gray-800 font-medium h-10 md:h-auto py-0 md:py-2 px-4 rounded hover:shadow-sm transition-all text-sm w-full active:scale-95 flex items-center justify-center gap-2"
+                                        >
+                                            <RotateCcw size={16} className="text-[#2874F0]" /> Return
                                         </button>
                                     )}
                                     <button

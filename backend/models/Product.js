@@ -17,6 +17,10 @@ const productSchema = new mongoose.Schema(
       type: String,
       index: true
     },
+    subcategory: {
+      type: String,
+      index: true
+    },
     image: {
       type: String,
     },

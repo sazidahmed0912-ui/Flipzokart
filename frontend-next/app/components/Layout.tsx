@@ -202,8 +202,11 @@ const Header: React.FC = () => {
 
         {/* Mobile Header */}
         <div className="md:hidden flex items-center justify-between h-16">
-          <button onClick={() => setIsMenuOpen(true)} className="p-2">
+          <button onClick={() => setIsMenuOpen(true)} className="p-2 relative">
             <Menu className="w-6 h-6 text-gray-700" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-600 rounded-full border border-white animate-pulse shadow-sm"></span>
+            )}
           </button>
           <div className="text-2xl font-bold">
             <Link href="/">

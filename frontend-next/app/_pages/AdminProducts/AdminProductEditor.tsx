@@ -11,7 +11,7 @@ import { AdminSidebar } from '@/app/components/AdminSidebar';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import { fetchProductById, createProduct, updateProduct, uploadFile, uploadMultipleFiles } from '@/app/services/adminService';
 import { useToast } from '@/app/components/toast';
-import { CATEGORIES } from '@/app/constants';
+import { CATEGORIES, SUBCATEGORIES } from '@/app/constants';
 import { getProductImageUrl } from '@/app/utils/imageHelper';
 
 // --- Types ---
@@ -57,6 +57,7 @@ export const AdminProductEditor: React.FC = () => {
         originalPrice: '', // This is the MRP
         image: '',
         category: 'Mobiles',
+        subcategory: '',
         countInStock: '',
         description: '',
         isFeatured: false,
@@ -214,10 +215,17 @@ export const AdminProductEditor: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-        }));
+
+        setFormData(prev => {
+            const updates: any = { [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value };
+
+            // Reset subcategory if category changes
+            if (name === 'category') {
+                updates.subcategory = '';
+            }
+
+            return { ...prev, ...updates };
+        });
     };
 
     // --- File Upload Handlers ---

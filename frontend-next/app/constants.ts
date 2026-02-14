@@ -5,6 +5,19 @@ export const CATEGORIES = [
   'Mobiles', 'Electronics', 'Fashion', 'Home', 'Beauty', 'Appliances', 'Groceries', 'Offers', 'Kids', 'Books', 'Home & Kitchen'
 ];
 
+export const SUBCATEGORIES: Record<string, string[]> = {
+  'Mobiles': ['Smartphones', 'Feature Phones', 'Accessories', 'Tablets'],
+  'Electronics': ['Laptops', 'Cameras', 'Headphones', 'Speakers', 'Computer Accessories'],
+  'Fashion': ['Men', 'Women', 'Kids', 'Watches', 'Footwear', 'Bags'],
+  'Home': ['Furniture', 'Decor', 'Lighting', 'Gardening'],
+  'Beauty': ['Makeup', 'Skincare', 'Haircare', 'Fragrances'],
+  'Appliances': ['TVs', 'Washing Machines', 'Refrigerators', 'ACs', 'Kitchen Appliances'],
+  'Groceries': ['Staples', 'Snacks', 'Beverages', 'Personal Care', 'Dairy'],
+  'Kids': ['Toys', 'Clothing', 'School Supplies', 'Baby Care'],
+  'Books': ['Fiction', 'Non-Fiction', 'Academic', 'Children'],
+  'Home & Kitchen': ['Cookware', 'Dining', 'Storage', 'Tools']
+};
+
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: '65f6170d4f3b7d1e8c7c9f1a', // Example ObjectId
