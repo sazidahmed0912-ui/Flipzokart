@@ -137,6 +137,7 @@ export const AdminProductEditor: React.FC = () => {
                 originalPrice: data.originalPrice || '',
                 image: data.image,
                 category: data.category,
+                subcategory: data.subcategory || '', // Fix for missing property
                 countInStock: data.countInStock || 0,
                 description: cleanDescription, // Load ONLY clean text
                 isFeatured: data.isFeatured || false,
