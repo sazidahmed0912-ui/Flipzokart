@@ -8,69 +8,19 @@ import Script from 'next/script';
 
 export default function MobileOtpLogin() {
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+    const [mobileInput, setMobileInput] = useState('');
+    const [otpStep, setOtpStep] = useState<'input' | 'widget'>('input');
 
+    // Global message listener for debug
     useEffect(() => {
-        // Check if already loaded from cache or other navigations
         if ((window as any).initSendOTP) {
             setIsScriptLoaded(true);
         }
-
-        // Global message listener debug
-        const messageHandler = (event: MessageEvent) => {
-            console.log("Global Window Message Received:", event.origin, event.data);
-            try {
-                if (typeof event.data === 'string' && event.data.includes('msg91')) {
-                    console.log("Received MSG91 Message: " + event.data);
-                }
-            } catch (e) {
-                // ignore
-            }
-        };
-        window.addEventListener("message", messageHandler);
-        return () => window.removeEventListener("message", messageHandler);
     }, []);
-
-    const openMobileOtp = () => {
-        if (!isScriptLoaded || !(window as any).initSendOTP) {
-            console.warn("MSG91 Script not loaded yet");
-            return;
-        }
-
-        console.log("Initializing MSG91 OTP Widget... (Attempt 4 - Log Check)");
-
-        try {
-            const config = {
-                widgetId: "3662616b7765363133313539",
-                tokenAuth: "491551TGhhpXBdgY1697f3ab8P1",
-                identifier: "mobile",
-                exposeMethods: false,
-                countryCode: "91", // 🇮🇳 PRE-SELECT INDIA
-
-                success: (data: any) => handleSuccess(data, 'widget_success_v4'),
-                failure: (err: any) => handleFailure(err, 'widget_failure_v4')
-            };
-
-            console.log("Calling initSendOTP with STANDARD config v4:", config);
-
-            // Invoke
-            (window as any).initSendOTP(config);
-
-            // Manual fallback measure
-            console.log("Window keys after init:", Object.keys(window).filter(k => k.toLowerCase().includes('otp')));
-
-
-        } catch (error) {
-            console.error("Error calling initSendOTP:", error);
-        }
-    };
 
     const { setUser, loginSequence } = useApp();
     const router = useRouter();
     const { addToast } = useToast();
-
-    const [manualMobile, setManualMobile] = useState('');
-    const [showManualInput, setShowManualInput] = useState(false);
-    const [pendingToken, setPendingToken] = useState<any>(null);
 
     const handleSuccess = async (data: any, source: string) => {
         console.log("MSG91 RAW DATA: " + JSON.stringify(data, null, 2));
@@ -99,12 +49,14 @@ export default function MobileOtpLogin() {
                 }
             }
 
-            // 🟢 Fallback 2: If still no mobile, ASK USER manually
+            // 🟢 Fallback 2: Use Manual Input if available
+            if (!mobile && mobileInput) {
+                console.log("Using manual input as fallback mobile:", mobileInput);
+                mobile = mobileInput;
+            }
+
             if (!mobile) {
-                console.warn("Mobile number could not be detected. Requesting manual input.");
-                setPendingToken(data);
-                setShowManualInput(true);
-                addToast('info', 'Please confirm your mobile number to continue.');
+                addToast('error', 'Could not detect mobile number. Please try again.');
                 return;
             }
 
@@ -113,6 +65,52 @@ export default function MobileOtpLogin() {
         } catch (e) {
             console.error("Verification error:", e);
             addToast('error', "Verification error");
+        }
+    };
+
+    const handleFailure = (err: any, source: string) => {
+        console.error(`MSG91 Failure via [${source}]:`, err);
+        const isIpBlocked = JSON.stringify(err).includes("408") || JSON.stringify(err).includes("IPBlocked");
+
+        if (isIpBlocked) {
+            addToast('error', `⚠️ IP BLOCKED BY MSG91. Please change network.`);
+        } else {
+            addToast('error', `OTP Verification Failed`);
+        }
+    };
+
+    const handleInputSubmit = () => {
+        if (!mobileInput || mobileInput.length < 10) {
+            addToast('error', 'Please enter a valid 10-digit mobile number');
+            return;
+        }
+
+        if (!isScriptLoaded || !(window as any).initSendOTP) {
+            addToast('error', 'OTP Service loading...');
+            return;
+        }
+
+        console.log("Launching MSG91 with Mobile:", mobileInput);
+
+        try {
+            const config = {
+                widgetId: "3662616b7765363133313539",
+                tokenAuth: "491551TGhhpXBdgY1697f3ab8P1",
+                identifier: "mobile",
+                exposeMethods: false,
+                countryCode: "91", // 🇮🇳 Force India
+                mobile: "91" + mobileInput, // 🚀 BYPASS INPUT SCREEN
+
+                success: (data: any) => handleSuccess(data, 'widget_success_v4'),
+                failure: (err: any) => handleFailure(err, 'widget_failure_v4')
+            };
+
+            (window as any).initSendOTP(config);
+            setOtpStep('widget');
+
+        } catch (error) {
+            console.error("Error launching OTP widget:", error);
+            addToast('error', 'Failed to launch OTP service');
         }
     };
 
@@ -155,7 +153,7 @@ export default function MobileOtpLogin() {
 
                                 if (intent.paymentMethod === "RAZORPAY") {
                                     localStorage.removeItem("checkout_intent");
-                                    router.replace("/payment"); // Corrected to /payment
+                                    router.replace("/payment");
                                     return;
                                 }
                             }
@@ -178,26 +176,6 @@ export default function MobileOtpLogin() {
         }
     };
 
-    const handleManualSubmit = () => {
-        if (!manualMobile || manualMobile.length < 10) {
-            addToast('error', 'Please enter a valid mobile number');
-            return;
-        }
-        setShowManualInput(false);
-        verifyBackend(pendingToken, manualMobile);
-    };
-
-    const handleFailure = (err: any, source: string) => {
-        console.error(`MSG91 Failure via [${source}]:`, err);
-        const isIpBlocked = JSON.stringify(err).includes("408") || JSON.stringify(err).includes("IPBlocked");
-
-        if (isIpBlocked) {
-            addToast('error', `⚠️ IP BLOCKED BY MSG91. Please change network.`);
-        } else {
-            addToast('error', `OTP Verification Failed`);
-        }
-    };
-
     return (
         <>
             <Script
@@ -212,47 +190,47 @@ export default function MobileOtpLogin() {
                 }}
             />
 
-            {!showManualInput ? (
-                <button
-                    type="button"
-                    onClick={openMobileOtp}
-                    disabled={!isScriptLoaded}
-                    style={{
-                        width: "100%",
-                        padding: "12px",
-                        marginTop: "10px",
-                        background: isScriptLoaded ? "#25D366" : "#9ca3af",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "6px",
-                        fontWeight: "600",
-                        cursor: isScriptLoaded ? "pointer" : "not-allowed",
-                        transition: "background 0.3s"
-                    }}
-                >
-                    {isScriptLoaded ? "Login with Mobile OTP" : "Loading OTP Widget..."}
-                </button>
-            ) : (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-sm font-semibold text-gray-700 mb-2">Confirm Mobile Number</p>
+            <div className="w-full">
+                {/* 🟢 CUSTOM CLEAN INPUT UI */}
+                <div className="relative flex items-center mb-3 border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+                    <div className="bg-gray-100 px-3 py-3 border-r border-gray-200 text-gray-600 font-medium text-sm flex items-center">
+                        🇮🇳 +91
+                    </div>
                     <input
                         type="tel"
                         placeholder="Enter 10-digit mobile number"
-                        className="w-full p-2 border rounded mb-2 text-sm"
-                        value={manualMobile}
+                        className="w-full p-3 text-sm outline-none bg-white text-gray-800 placeholder-gray-400 font-medium tracking-wide"
+                        value={mobileInput}
                         onChange={(e) => {
                             const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                            setManualMobile(val);
+                            setMobileInput(val);
                         }}
+                        disabled={!isScriptLoaded}
+                        maxLength={10}
                     />
-                    <button
-                        onClick={handleManualSubmit}
-                        className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 transition"
-                    >
-                        Complete Login
-                    </button>
                 </div>
-            )}
+
+                <button
+                    type="button"
+                    onClick={handleInputSubmit}
+                    disabled={!isScriptLoaded || mobileInput.length < 10}
+                    style={{
+                        width: "100%",
+                        padding: "12px",
+                        background: (isScriptLoaded && mobileInput.length === 10) ? "#25D366" : "#9ca3af",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "8px",
+                        fontWeight: "600",
+                        cursor: (isScriptLoaded && mobileInput.length === 10) ? "pointer" : "not-allowed",
+                        transition: "all 0.3s",
+                        boxShadow: (isScriptLoaded && mobileInput.length === 10) ? "0 4px 6px rgba(37, 211, 102, 0.2)" : "none"
+                    }}
+                    className="flex items-center justify-center gap-2"
+                >
+                    {isScriptLoaded ? "Get OTP" : "Loading Service..."}
+                </button>
+            </div>
         </>
     );
 }
