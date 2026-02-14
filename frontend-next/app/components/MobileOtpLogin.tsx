@@ -149,13 +149,13 @@ export default function MobileOtpLogin() {
 
                                 if (intent.paymentMethod === "COD") {
                                     localStorage.removeItem("checkout_intent");
-                                    router.replace("/checkout/place-order-cod");
+                                    window.location.href = "/checkout/place-order-cod";
                                     return;
                                 }
 
                                 if (intent.paymentMethod === "RAZORPAY") {
                                     localStorage.removeItem("checkout_intent");
-                                    router.replace("/payment");
+                                    window.location.href = "/payment";
                                     return;
                                 }
                             }
@@ -164,11 +164,8 @@ export default function MobileOtpLogin() {
                         }
                     }
 
-                    if (result.authMethod === 'mobile-otp' || user.authMethod === 'mobile-otp') {
-                        router.replace("/profile");
-                        return;
-                    }
-                    router.replace("/profile");
+                    // 🟢 FORCE HARD REDIRECT
+                    window.location.href = "/profile";
                 }
             } else {
                 addToast('error', result.message || "Login Failed");
