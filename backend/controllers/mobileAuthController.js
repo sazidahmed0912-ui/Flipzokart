@@ -26,11 +26,11 @@ const sendOtp = async (req, res) => {
         const fullMobile = `${countryCode}${mobile}`;
 
         // Call MSG91 API
+        // NOTE: We do NOT send template_id as empty string. 
+        // If not provided, MSG91 uses the default template set in the dashboard.
         const response = await axios.post(
             `https://control.msg91.com/api/v5/otp?mobile=${fullMobile}`,
-            {
-                template_id: "" // Optional: Leave empty for default if configured
-            },
+            {}, // Empty body to use defaults
             {
                 headers: {
                     "authkey": MSG91_AUTH_KEY,
@@ -42,8 +42,12 @@ const sendOtp = async (req, res) => {
         if (response.data.type === 'success') {
             return res.status(200).json({ success: true, message: "OTP sent successfully" });
         } else {
-            console.error("MSG91 Send Error:", response.data);
-            return res.status(500).json({ success: false, message: "Failed to send OTP", error: response.data.message });
+            console.error("MSG91 API Error Response:", JSON.stringify(response.data, null, 2));
+            return res.status(500).json({
+                success: false,
+                message: response.data.message || "Failed to send OTP",
+                type: response.data.type
+            });
         }
 
     } catch (error) {
