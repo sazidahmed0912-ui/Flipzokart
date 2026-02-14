@@ -166,10 +166,16 @@ export default function MobileOtpLogin() {
                     // 🟢 FORCE HARD REDIRECT
                     window.location.href = "/profile";
                 }
-            } else {
-                addToast('error', result.message || "Login Failed");
+                console.error("Login Failed:", result);
+                if (result.debug) {
+                    console.warn("🔍 BACKEND DEBUG INFO:", JSON.stringify(result.debug, null, 2));
+                    addToast('error', `Login Failed: ${result.message} (See Console)`);
+                } else {
+                    addToast('error', result.message || "Login Failed");
+                }
             }
         } catch (e) {
+            console.error("Backend Verification Exception:", e);
             addToast('error', "Backend Verification Failed");
         }
     };

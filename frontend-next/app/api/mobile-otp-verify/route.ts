@@ -110,9 +110,23 @@ export async function POST(req: NextRequest) {
                     }
                 } else {
                     console.error(`❌ MSG91 API Failed with Status ${msg91Res.status}:`, responseText);
+                    // 🟢 EXPOSE ERROR TO CLIENT (For Live Debugging)
+                    return NextResponse.json({
+                        success: false,
+                        message: `MSG91 Verification Failed: ${msg91Res.statusText}`,
+                        debug: {
+                            status: msg91Res.status,
+                            response: responseText
+                        }
+                    });
                 }
-            } catch (apiErr) {
+            } catch (apiErr: any) {
                 console.error("❌ CRITICAL MSG91 API Error:", apiErr);
+                return NextResponse.json({
+                    success: false,
+                    message: "MSG91 API Connection Error",
+                    debug: { error: apiErr.message }
+                });
             }
         }
 
@@ -120,7 +134,8 @@ export async function POST(req: NextRequest) {
         if (!mobileToLogin) {
             return NextResponse.json({
                 success: false,
-                message: "Unable to verify user identity. Backend API check failed. Check server logs."
+                message: "Unable to verify user identity. Backend API check failed.",
+                debug: { reason: "No mobile number found in MSG91 response" }
             });
         }
 
