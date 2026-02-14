@@ -407,19 +407,20 @@ const mobileLogin = async (req, res) => {
     let user = await User.findOne({ phone });
 
     // 🟢 INSTANT SIGNUP LOGIC
+    // 🟢 INSTANT SIGNUP LOGIC
     if (!user) {
       console.log(`[Mobile Login] New user detected for ${phone}. Creating account...`);
       // Create new user with placeholder details
       user = await User.create({
-        name: "Mobile User", // Placeholder Name
+        name: "Mobile User",
         email: `${phone}@mobile.temp`, // Placeholder Email (Unique)
         phone: phone,
-        password: await bcrypt.hash(crypto.randomBytes(16).toString("hex"), 10), // Random Password
+        password: await bcrypt.hash(crypto.randomBytes(16).toString("hex"), 10),
         role: "user",
-        isMobileVerified: true
+        isMobileVerified: true,
+        authMethod: "mobile-otp"
       });
 
-      // Log creation
       const broadcastLog = req.app.get("broadcastLog");
       if (broadcastLog) broadcastLog("success", `New Mobile User ${phone} created`, "Auth");
     }
@@ -442,9 +443,11 @@ const mobileLogin = async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
-        authMethod: "mobile-otp" // 🟢 Critical Flag
+        authMethod: "mobile-otp"
       },
-      isNewUser: user.createdAt > new Date(Date.now() - 10000) // Rough check if created just now
+      // 🟢 Force FALSE to skip "Complete Profile" form on frontend
+      // User is already created with placeholder details, so we treat them as logged in.
+      isNewUser: false
     });
 
   } catch (error) {
