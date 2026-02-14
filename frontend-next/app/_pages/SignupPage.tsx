@@ -31,7 +31,7 @@ export const SignupPage: React.FC = () => {
 
   // Mobile Verification State
   const [isMobileVerified, setIsMobileVerified] = useState(false);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
+
 
   useEffect(() => {
     let interval: any;
@@ -44,8 +44,7 @@ export const SignupPage: React.FC = () => {
   }, [timer]);
 
   // MSG91 Widget Configuration
-  const widgetId = "3662616b7765363133313539";
-  const tokenAuth = "491551TGhhpXBdgY1697f3ab8P1";
+
 
   // Helper to check existence
   const checkUserExists = async (field: 'email' | 'phone', value: string) => {
@@ -193,14 +192,7 @@ export const SignupPage: React.FC = () => {
 
   return (
     <>
-      <Script
-        src="https://control.msg91.com/app/assets/otp-provider/otp-provider.js"
-        strategy="afterInteractive"
-        onLoad={() => {
-          console.log("Signup MSG91 Script Loaded");
-          setScriptLoaded(true);
-        }}
-      />
+
       <div
         className="min-h-[100dvh] h-auto flex items-center justify-center p-0 md:p-4 font-sans"
         style={{
