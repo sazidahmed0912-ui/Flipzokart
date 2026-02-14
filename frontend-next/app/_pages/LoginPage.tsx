@@ -126,7 +126,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
 
             if (intent.paymentMethod === "RAZORPAY") {
               localStorage.removeItem("checkout_intent");
-              router.push("/checkout/payment");
+              router.push("/payment");
               return;
             }
           }

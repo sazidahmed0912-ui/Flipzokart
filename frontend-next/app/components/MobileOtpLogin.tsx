@@ -155,7 +155,7 @@ export default function MobileOtpLogin() {
 
                                 if (intent.paymentMethod === "RAZORPAY") {
                                     localStorage.removeItem("checkout_intent");
-                                    router.replace("/checkout/payment");
+                                    router.replace("/payment");
                                     return;
                                 }
                             }

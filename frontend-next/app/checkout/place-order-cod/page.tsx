@@ -26,7 +26,7 @@ const PlaceOrderCodPage = () => {
 
                 if (!pendingOrderStr) {
                     addToast("error", "Session expired or invalid order.");
-                    router.replace("/checkout/payment");
+                    router.replace("/payment");
                     return;
                 }
 
@@ -49,7 +49,7 @@ const PlaceOrderCodPage = () => {
                 console.error("Auto COD Order Failed", error);
                 setStatus("failed");
                 addToast("error", error.message || "Order placement failed");
-                setTimeout(() => router.replace("/checkout/payment"), 2000);
+                setTimeout(() => router.replace("/payment"), 2000);
             }
         };
 

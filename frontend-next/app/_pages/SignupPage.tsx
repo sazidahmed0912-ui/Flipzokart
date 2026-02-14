@@ -143,7 +143,7 @@ export const SignupPage: React.FC = () => {
 
             if (intent.paymentMethod === "RAZORPAY") {
               localStorage.removeItem("checkout_intent");
-              router.push("/checkout/payment");
+              router.push("/payment");
               return;
             }
           }
