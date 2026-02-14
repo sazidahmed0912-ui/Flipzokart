@@ -67,6 +67,27 @@ const PaymentPage: React.FC = () => {
   // }, [user, navigate]);
 
   /* =========================
+     ISOLATED BUY NOW LOGIC
+  ========================= */
+  const [buyNowItem, setBuyNowItem] = useState<any>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('buyNowItem');
+    if (stored) {
+      try {
+        setBuyNowItem(JSON.parse(stored));
+      } catch (e) {
+        console.error("Invalid buyNowItem", e);
+        localStorage.removeItem('buyNowItem');
+      }
+    }
+  }, []);
+
+  // Determine ACTIVE CART for this session
+  // If buyNowItem exists, WE IGNORE THE GLOBAL CART
+  const activeCart = buyNowItem ? [buyNowItem] : cart;
+
+  /* =========================
      Price Calculation
   ========================= */
   const {
@@ -77,12 +98,12 @@ const PaymentPage: React.FC = () => {
     platformFee,
     tax,
     totalAmount: totalPayable
-  } = calculateCartTotals(cart, undefined, paymentMethod);
+  } = calculateCartTotals(activeCart, undefined, paymentMethod);
 
   // 🛡️ Payment Availability Logic
   // If ANY item in cart has codAvailable === false, then COD is disabled for entire order.
-  const isCodAllowed = cart.every(item => item.codAvailable !== false);
-  const isPrepaidAllowed = cart.every(item => item.prepaidAvailable !== false);
+  const isCodAllowed = activeCart.every(item => item.codAvailable !== false);
+  const isPrepaidAllowed = activeCart.every(item => item.prepaidAvailable !== false);
 
   /* =========================
      ERROR HANDLING HELPER
@@ -93,24 +114,22 @@ const PaymentPage: React.FC = () => {
 
     // Auto-Remove Deleted Products
     if (errorMsg.includes("not found (likely deleted)")) {
-      // Extract ID from message: "Product with ID <id> ..."
       const match = errorMsg.match(/ID\s([a-f0-9]+)/i);
       if (match && match[1]) {
         const invalidId = match[1];
-        // Find the item in cart to get getCartItemKey if needed, or just try removing by ID
-        // The context's removeFromCart expects cartItemKey. 
-        // Since we don't have the variant string here easily, we might need to find the item first.
+
+        // If in Buy Now mode, just clear it and redirect
+        if (buyNowItem && buyNowItem.id === invalidId) {
+          localStorage.removeItem('buyNowItem');
+          alert(`Item removed: ${errorMsg}`);
+          router.push('/shop');
+          return;
+        }
+
         const itemToRemove = cart.find(i => i.id === invalidId);
         if (itemToRemove) {
-          // We need to reconstruct the key or if simple ID works
-          // Context uses keys. Let's try to remove all variants of this product ID to be safe
-          // OR just alert user. But auto-removal is better.
-          // For now, let's just use the ID if no variants, or filter cart ourselves.
-          // Actually, clearCart might be too aggressive.
-          // Let's trust the error message is clear enough, but adding a specific Toast would be nice.
           alert(`Item removed: ${errorMsg}`);
-          // Let's rely on the user reading the message for now, OR try to filter:
-          removeProductFromCart(itemToRemove.id); // Try ID directly (if getCartItemKey handles it or if it matches)
+          removeProductFromCart(itemToRemove.id);
         }
       }
     }
@@ -130,7 +149,7 @@ const PaymentPage: React.FC = () => {
       }
 
       const { data } = await createOrder({
-        products: cart.map((i) => ({
+        products: activeCart.map((i) => ({
           productId: i.id,
           variantId: i.variantId,
           productName: i.productName || i.name,
@@ -154,7 +173,13 @@ const PaymentPage: React.FC = () => {
         address: selectedAddress,
       });
 
-      clearCart();
+      // CLEANUP based on MODE
+      if (buyNowItem) {
+        localStorage.removeItem('buyNowItem');
+      } else {
+        clearCart();
+      }
+
       // Use the returned order ID for the success page
       router.push(`/order-success?orderId=${data.order.id}`);
     } catch (err: any) {
@@ -199,7 +224,7 @@ const PaymentPage: React.FC = () => {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              products: cart.map((i) => ({
+              products: activeCart.map((i) => ({
                 productId: i.id,
                 variantId: i.variantId,
                 productName: i.productName || i.name,
@@ -223,7 +248,13 @@ const PaymentPage: React.FC = () => {
               address: selectedAddress,
             });
 
-            clearCart();
+            // CLEANUP based on MODE
+            if (buyNowItem) {
+              localStorage.removeItem('buyNowItem');
+            } else {
+              clearCart();
+            }
+
             router.push(`/order-success?orderId=${data.order.id}`);
           } catch (err) {
             handlePaymentError(err);
@@ -255,7 +286,7 @@ const PaymentPage: React.FC = () => {
     // 1️⃣ GUEST HANDLING: Redirect to Signup with Pending Order
     if (!user) {
       const orderPayload = {
-        products: cart.map((i) => ({
+        products: activeCart.map((i) => ({
           productId: i.id,
           variantId: i.variantId,
           productName: i.productName || i.name,
@@ -290,6 +321,10 @@ const PaymentPage: React.FC = () => {
         }));
       }
 
+      // 🛑 STORE BUY NOW ITEM FOR RESTORE
+      // If we are in Buy Now Mode, the buyNowItem is already in LS.
+      // But we should ensure it stays there. It persists by default.
+
       addToast('info', '⚠️ Please signup/login to place your order');
       // Redirect to signup which will handle the intent
       setTimeout(() => router.push('/signup?redirect=checkout'), 1000);
@@ -306,10 +341,13 @@ const PaymentPage: React.FC = () => {
   return (
     <div className="payment-page-container">
       <header className="payment-header">
-
         <div className="checkout-steps">
-          Cart <ChevronRight size={14} />
-          Address <ChevronRight size={14} />
+          {buyNowItem ? (
+            <span className="text-orange-600 font-bold">⚡ Buy Now Mode</span>
+          ) : (
+            <>Cart <ChevronRight size={14} /></>
+          )}
+          {buyNowItem ? <ChevronRight size={14} /> : null} Address <ChevronRight size={14} />
           <span className="active">Payment</span>
           <ChevronRight size={14} /> Confirmation
         </div>

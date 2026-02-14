@@ -399,7 +399,7 @@ export const ProductDetails: React.FC = () => {
                     // AUTH GUARD REMOVED FOR GUEST ACCESS
                     // if (!requireAuthRedirectToSignup(router)) return;
 
-                    const cartItem: CartItem = {
+                    const buyNowItem: CartItem = {
                       id: product.id,
                       productId: product.id,
                       variantId: activeVariant?.id,
@@ -420,20 +420,25 @@ export const ProductDetails: React.FC = () => {
                       description: product.description || '',
                       images: galleryImages,
                     };
-                    // @ts-ignore
-                    addToCart(cartItem, 1);
-                    fbAddToCart({
-                      content_name: product.name,
-                      content_ids: [product.id],
-                      value: currentPrice,
-                      currency: 'INR',
-                    });
+
+                    // 1. Store in Isolated/Temporary Storage
+                    localStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));
+
+                    // 2. Clear any "Checkout Intent" to avoid confusion (or set new one if needed)
+                    // Actually, we don't need checkout_intent here because if they are Guest,
+                    // PaymentPage will handle the "Guest -> Signup" flow using pendingOrder later.
+                    // But for consistency:
+                    localStorage.removeItem('checkout_intent');
+
+                    // 3. Initiate Pixel
                     initiateCheckout({
                       content_ids: [product.id],
                       num_items: 1,
                       value: currentPrice,
                       currency: 'INR'
                     });
+
+                    // 4. Redirect to Checkout (Which will read buyNowItem)
                     router.push('/checkout');
                   }}
                   className="flex-1 py-4 bg-[#fb641b] hover:bg-[#f65a10] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-[0.98]">

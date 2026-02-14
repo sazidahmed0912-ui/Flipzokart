@@ -27,9 +27,16 @@ const CartPage = () => {
   // Ensure we are strictly on the client and mounted before allowing any interaction
   const [isMounted, setIsMounted] = useState(false);
 
+  // --- ISOLATED BUY NOW GUARD ---
+  // If user navigates to Cart, they are EXITING Buy Now mode.
+  useEffect(() => {
+    localStorage.removeItem('buyNowItem');
+  }, []);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
 
   const updateQuantity = (item: CartItem, change: number) => {
     if (!isInitialized || !isMounted) return; // Strict Safety check

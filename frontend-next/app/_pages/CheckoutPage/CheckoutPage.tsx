@@ -71,22 +71,48 @@ const CheckoutPage = () => {
         fetchAddresses();
     }, [user]);
 
+    // --- ISOLATED BUY NOW LOGIC ---
+    const [buyNowItem, setBuyNowItem] = useState<any>(null);
+
+    React.useEffect(() => {
+        const stored = localStorage.getItem('buyNowItem');
+        if (stored) {
+            try {
+                setBuyNowItem(JSON.parse(stored));
+            } catch (e) {
+                console.error("Invalid buyNowItem", e);
+                localStorage.removeItem('buyNowItem');
+            }
+        }
+    }, []);
+
+    // Determine what to show in Checkout
+    // IF buyNowItem exists, ignore Cart.
+    const checkoutItems = buyNowItem ? [buyNowItem] : cart;
+
+    // Redirect if empty
+    React.useEffect(() => {
+        if (!isLoading && !buyNowItem && cart.length === 0) {
+            // router.push('/shop'); // Optional: Redirect if nothing to checkout
+        }
+    }, [cart, buyNowItem, isLoading]);
+
     // Removed legacy calculateShippingCost to prevent price overrides. 
     // Pricing is now strictly handled by Unified Pricing Engine.
 
-    const { subtotal, deliveryCharges: standardDelivery, platformFee, totalAmount } = calculateCartTotals(cart);
+    const { subtotal, deliveryCharges: standardDelivery, platformFee, totalAmount } = calculateCartTotals(checkoutItems);
 
     // Track InitiateCheckout once when cart is loaded and has items
     React.useEffect(() => {
-        if (cart.length > 0) {
+        if (checkoutItems.length > 0) {
             initiateCheckout({
-                content_ids: cart.map(item => item.productId),
-                num_items: cart.length,
+                content_ids: checkoutItems.map((item: any) => item.productId),
+                num_items: checkoutItems.length,
                 value: subtotal,
                 currency: 'INR'
             });
         }
-    }, [cart.length]);
+    }, [checkoutItems.length, subtotal]);
 
     // Use standard delivery as initial state
     const [deliveryCharges, setDeliveryCharges] = useState(standardDelivery);
@@ -335,7 +361,12 @@ const CheckoutPage = () => {
             <header className="checkout-header">
                 <div className="logo"></div>
                 <div className="checkout-steps">
-                    <span>Cart</span> → <span className="active">Address</span> → <span>Payment</span> → <span>Confirmation</span>
+                    {buyNowItem ? (
+                        <span className="text-orange-600 font-bold">⚡ Buy Now Mode</span>
+                    ) : (
+                        <span>Cart</span>
+                    )}
+                    → <span className="active">Address</span> → <span>Payment</span> → <span>Confirmation</span>
                 </div>
                 {!isFreeDeliveryEligible && (
                     <div className="bg-blue-50 text-blue-800 text-xs px-4 py-2 text-center font-medium border-b border-blue-100 w-full absolute top-[60px] left-0 z-20">

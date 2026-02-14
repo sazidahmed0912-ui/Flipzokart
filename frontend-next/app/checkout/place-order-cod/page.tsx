@@ -38,6 +38,7 @@ const PlaceOrderCodPage = () => {
                 // Cleanup
                 localStorage.removeItem("pendingOrder");
                 localStorage.removeItem("checkout_intent"); // Safety clear
+                localStorage.removeItem("buyNowItem"); // 🟢 Strict Cleanup for Buy Now Mode
                 clearCart();
 
                 setStatus("success");
