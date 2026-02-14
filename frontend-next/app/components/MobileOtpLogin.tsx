@@ -44,14 +44,26 @@ const MobileOtpLogin = () => {
         }
 
         setIsLoading(true);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const url = `${apiUrl}/api/mobile/send-otp`;
+        console.log("🚀 Sending OTP to:", url);
+
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/mobile/send-otp`, {
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ mobile })
             });
 
-            const data = await res.json();
+            const contentType = res.headers.get("content-type");
+            let data;
+            if (contentType && contentType.includes("application/json")) {
+                data = await res.json();
+            } else {
+                const text = await res.text();
+                console.error("❌ Non-JSON Response:", text);
+                throw new Error(`Server Error (${res.status}): ${text.slice(0, 50)}...`);
+            }
 
             if (!data.success) {
                 throw new Error(data.message || 'Failed to send OTP');
@@ -61,6 +73,7 @@ const MobileOtpLogin = () => {
             setStep(2);
             setTimer(30); // 30s Timer
         } catch (error: any) {
+            console.error("OTP Send Error:", error);
             addToast('error', error.message || 'Network Error');
         } finally {
             setIsLoading(false);
@@ -78,14 +91,24 @@ const MobileOtpLogin = () => {
         }
 
         setIsLoading(true);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const url = `${apiUrl}/api/mobile/verify-otp`;
+
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/mobile/verify-otp`, {
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ mobile, otp: otpValue })
             });
 
-            const data = await res.json();
+            const contentType = res.headers.get("content-type");
+            let data;
+            if (contentType && contentType.includes("application/json")) {
+                data = await res.json();
+            } else {
+                const text = await res.text();
+                throw new Error(`Server Error (${res.status}): ${text.slice(0, 50)}...`);
+            }
 
             if (!data.success) {
                 throw new Error(data.message || 'Invalid OTP');
