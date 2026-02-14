@@ -11,7 +11,7 @@ import { AdminSidebar } from '@/app/components/AdminSidebar';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import { fetchProductById, createProduct, updateProduct, uploadFile, uploadMultipleFiles } from '@/app/services/adminService';
 import { useToast } from '@/app/components/toast';
-import { CATEGORIES } from '@/app/constants';
+import { CATEGORIES, FASHION_HIERARCHY } from '@/app/constants/categories'; // Ensure correct import path
 import { getProductImageUrl } from '@/app/utils/imageHelper';
 
 // --- Types ---
@@ -57,6 +57,8 @@ export const AdminProductEditor: React.FC = () => {
         originalPrice: '', // This is the MRP
         image: '',
         category: 'Mobiles',
+        subCategory: '',
+        childCategory: '',
         countInStock: '',
         description: '',
         isFeatured: false,
@@ -136,6 +138,8 @@ export const AdminProductEditor: React.FC = () => {
                 originalPrice: data.originalPrice || '',
                 image: data.image,
                 category: data.category,
+                subCategory: data.subCategory || '',
+                childCategory: data.childCategory || '',
                 countInStock: data.countInStock || 0,
                 description: cleanDescription, // Load ONLY clean text
                 isFeatured: data.isFeatured || false,
@@ -214,10 +218,12 @@ export const AdminProductEditor: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-        }));
+        setFormData(prev => {
+            const updates: any = { [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value };
+            if (name === 'category') { updates.subCategory = ''; updates.childCategory = ''; }
+            if (name === 'subCategory') { updates.childCategory = ''; }
+            return { ...prev, ...updates };
+        });
     };
 
     // --- File Upload Handlers ---
@@ -700,6 +706,42 @@ export const AdminProductEditor: React.FC = () => {
                                             disabled={matrix.length > 0}
                                         />
                                     </div>
+
+                                    {/* Dependent Dropdowns for Fashion */}
+                                    {formData.category === 'Fashion' && (
+                                        <>
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-500">Sub Category</label>
+                                                <select
+                                                    name="subCategory"
+                                                    value={formData.subCategory}
+                                                    onChange={handleChange}
+                                                    className="w-full mt-1 px-4 py-2 border rounded-xl text-sm"
+                                                >
+                                                    <option value="">Select...</option>
+                                                    {Object.keys(FASHION_HIERARCHY).map(sub => (
+                                                        <option key={sub} value={sub}>{sub}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-500">Type</label>
+                                                <select
+                                                    name="childCategory"
+                                                    value={formData.childCategory}
+                                                    onChange={handleChange}
+                                                    className="w-full mt-1 px-4 py-2 border rounded-xl text-sm"
+                                                    disabled={!formData.subCategory}
+                                                >
+                                                    <option value="">Select...</option>
+                                                    {formData.subCategory && FASHION_HIERARCHY[formData.subCategory as keyof typeof FASHION_HIERARCHY]?.map(child => (
+                                                        <option key={child} value={child}>{child}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </>
+                                    )}
 
                                     {/* Payment Options Toggles */}
                                     <div className="col-span-2 flex gap-6 mt-2 p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">

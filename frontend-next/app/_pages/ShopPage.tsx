@@ -12,9 +12,13 @@ export const ShopPage: React.FC = () => {
   const { products } = useApp();
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'All';
+  const initialSub = searchParams.get('sub') || '';
+  const initialChild = searchParams.get('child') || '';
   const initialQuery = searchParams.get('q') || '';
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedSub, setSelectedSub] = useState(initialSub);
+  const [selectedChild, setSelectedChild] = useState(initialChild);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]);
   const [sortBy, setSortBy] = useState('relevance');
   const [showFilters, setShowFilters] = useState(false);
@@ -22,19 +26,22 @@ export const ShopPage: React.FC = () => {
   const [minRating, setMinRating] = useState(0);
 
   // Default to list view if searching (Desktop only preference, but let's stick to Grid for consistency per user request)
-  // useEffect(() => {
-  //   if (initialQuery) {
-  //     console.log("Search mode");
-  //   }
-  // }, [initialQuery]);
+  // Sync State with URL Params
+  useEffect(() => {
+    setSelectedCategory(searchParams.get('category') || 'All');
+    setSelectedSub(searchParams.get('sub') || '');
+    setSelectedChild(searchParams.get('child') || '');
+  }, [searchParams]);
 
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
       const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
+      const matchesSub = !selectedSub || p.subCategory === selectedSub;
+      const matchesChild = !selectedChild || p.childCategory === selectedChild;
       const matchesPrice = p.price >= priceRange[0] && p.price <= priceRange[1];
       const matchesSearch = p.name.toLowerCase().includes(initialQuery.toLowerCase());
       const matchesRating = p.rating >= minRating;
-      return matchesCategory && matchesPrice && matchesSearch && matchesRating;
+      return matchesCategory && matchesSub && matchesChild && matchesPrice && matchesSearch && matchesRating;
     }).sort((a, b) => {
       if (sortBy === 'price-low') return a.price - b.price;
       if (sortBy === 'price-high') return b.price - a.price;
@@ -42,11 +49,13 @@ export const ShopPage: React.FC = () => {
       if (sortBy === 'newest') return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       return 0; // Relevance (default)
     });
-  }, [products, selectedCategory, priceRange, sortBy, initialQuery, minRating]);
+  }, [products, selectedCategory, selectedSub, selectedChild, priceRange, sortBy, initialQuery, minRating]);
 
   // Clear all filters
   const clearFilters = () => {
     setSelectedCategory('All');
+    setSelectedSub('');
+    setSelectedChild('');
     setPriceRange([0, 200000]);
     setMinRating(0);
     setSortBy('relevance');
