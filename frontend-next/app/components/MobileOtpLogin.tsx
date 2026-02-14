@@ -99,14 +99,13 @@ export default function MobileOtpLogin() {
                 }
             }
 
-            // 🟢 Fallback 2: If still no mobile, ASK USER manually
+            // 🟢 Fallback 2: If still no mobile, TRY BACKEND ANYWAY
+            // The backend can try to decode the token.
             if (!mobile) {
-                console.warn("Mobile number could not be detected. Requesting manual input.");
-                setPendingToken(data);
-                setShowManualInput(true);
-                addToast('info', 'Please confirm your mobile number to continue.');
-                return;
+                console.warn("Mobile number could not be detected on client. Sending token to backend.");
             }
+
+            verifyBackend(data, mobile || "");
 
             verifyBackend(data, mobile);
 
@@ -209,44 +208,25 @@ export default function MobileOtpLogin() {
                 }}
             />
 
-            {!showManualInput ? (
-                <button
-                    type="button"
-                    onClick={openMobileOtp}
-                    disabled={!isScriptLoaded}
-                    style={{
-                        width: "100%",
-                        padding: "12px",
-                        marginTop: "10px",
-                        background: isScriptLoaded ? "#25D366" : "#9ca3af",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "6px",
-                        fontWeight: "600",
-                        cursor: isScriptLoaded ? "pointer" : "not-allowed",
-                        transition: "background 0.3s"
-                    }}
-                >
-                    {isScriptLoaded ? "Login with Mobile OTP" : "Loading OTP Widget..."}
-                </button>
-            ) : (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-sm font-semibold text-gray-700 mb-2">Confirm Mobile Number</p>
-                    <input
-                        type="tel"
-                        placeholder="Enter 10-digit Mobile Number"
-                        className="w-full p-2 border rounded mb-2 text-sm"
-                        value={manualMobile}
-                        onChange={(e) => setManualMobile(e.target.value)}
-                    />
-                    <button
-                        onClick={handleManualSubmit}
-                        className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 transition"
-                    >
-                        Complete Login
-                    </button>
-                </div>
-            )}
+            <button
+                type="button"
+                onClick={openMobileOtp}
+                disabled={!isScriptLoaded}
+                style={{
+                    width: "100%",
+                    padding: "12px",
+                    marginTop: "10px",
+                    background: isScriptLoaded ? "#25D366" : "#9ca3af",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontWeight: "600",
+                    cursor: isScriptLoaded ? "pointer" : "not-allowed",
+                    transition: "background 0.3s"
+                }}
+            >
+                {isScriptLoaded ? "Login with Mobile OTP" : "Loading OTP Widget..."}
+            </button>
         </>
     );
 }
