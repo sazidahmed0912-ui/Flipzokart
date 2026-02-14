@@ -17,14 +17,14 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 
 function checkFileType(file, cb) {
-    const filetypes = /jpg|jpeg|png|webp|gif/;
+    const filetypes = /jpg|jpeg|png|webp|gif|mp4|webm/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = filetypes.test(file.mimetype);
 
     if (extname && mimetype) {
         return cb(null, true);
     }
-    cb('Images only!');
+    cb('Images and Videos only!');
 }
 
 const upload = multer({

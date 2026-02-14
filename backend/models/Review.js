@@ -22,6 +22,18 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    images: {
+      type: [String],
+      validate: [
+        {
+          validator: (val) => val.length <= 5,
+          message: 'Maximum 5 images allowed'
+        }
+      ]
+    },
+    video: {
+      type: String
+    }
   },
   {
     timestamps: true,

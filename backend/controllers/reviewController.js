@@ -29,7 +29,7 @@ const calculateProductStats = async (productId, io) => {
 // @route   POST /api/reviews
 // @access  Private
 const createReview = async (req, res) => {
-  const { product, rating, comment } = req.body;
+  const { product, rating, comment, images, video } = req.body;
   const user = req.user._id;
 
   try {
@@ -48,6 +48,8 @@ const createReview = async (req, res) => {
       product,
       rating: Number(rating),
       comment,
+      images: images || [],
+      video: video || null
     });
 
     const populatedReview = await Review.findById(review._id)
