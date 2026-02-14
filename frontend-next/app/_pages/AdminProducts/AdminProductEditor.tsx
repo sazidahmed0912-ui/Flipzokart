@@ -697,6 +697,26 @@ export const AdminProductEditor: React.FC = () => {
                                             ))}
                                         </select>
                                     </div>
+
+                                    {/* Subcategory - Dependent Dropdown */}
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500">Subcategory</label>
+                                        <select
+                                            name="subcategory"
+                                            value={formData.subcategory}
+                                            onChange={handleChange}
+                                            className="w-full mt-1 px-4 py-2 border rounded-xl text-sm disabled:bg-gray-100 disabled:text-gray-400"
+                                            disabled={!formData.category || !SUBCATEGORIES[formData.category]}
+                                        >
+                                            <option value="">Select Subcategory</option>
+                                            {formData.category && SUBCATEGORIES[formData.category]?.map(sub => (
+                                                <option key={sub} value={sub}>{sub}</option>
+                                            ))}
+                                        </select>
+                                        {formData.category && !SUBCATEGORIES[formData.category] && (
+                                            <p className="text-[10px] text-orange-500 mt-1">No subcategories for {formData.category}</p>
+                                        )}
+                                    </div>
                                     <div>
                                         <label className="text-xs font-bold text-gray-500">Stock</label>
                                         <input

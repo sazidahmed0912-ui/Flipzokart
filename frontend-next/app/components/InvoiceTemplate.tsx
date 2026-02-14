@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import QRCode from "react-qr-code";
 
 interface InvoiceTemplateProps {
     order: any;
@@ -6,6 +7,9 @@ interface InvoiceTemplateProps {
 
 export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ order }, ref) => {
     if (!order) return null;
+
+    // QR Code Value: Tracking URL
+    const qrValue = `https://flipzokart.com/track/${order.orderId || order._id}`;
 
     return (
         <div ref={ref} className="bg-white p-8 max-w-[800px] mx-auto min-h-[1000px] text-gray-800 font-sans">
@@ -19,14 +23,20 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                         <p>Order ID: <span className="font-semibold text-gray-800">{order.orderId || order._id}</span></p>
                     </div>
                 </div>
-                <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-800 mb-1">Fzokart</div>
-                    <p className="text-xs text-gray-500 max-w-[200px] leading-relaxed">
-                        Fzokart Retails Pvt Ltd.<br />
-                        Barthal Doloigaon, Moirabari<br />
-                        Morigaon, Assam - 782126<br />
-                        GSTIN: 29ABCDE1234F1Z5
-                    </p>
+                <div className="flex flex-col items-end gap-2">
+                    <div className="text-right">
+                        <div className="text-2xl font-bold text-gray-800 mb-1">Fzokart</div>
+                        <p className="text-xs text-gray-500 max-w-[200px] leading-relaxed">
+                            Fzokart Retails Pvt Ltd.<br />
+                            Barthal Doloigaon, Moirabari<br />
+                            Morigaon, Assam - 782126<br />
+                            GSTIN: 29ABCDE1234F1Z5
+                        </p>
+                    </div>
+                    {/* QR Code */}
+                    <div className="mt-2 p-1 bg-white border border-gray-200 rounded">
+                        <QRCode value={qrValue} size={64} style={{ height: "auto", maxWidth: "100%", width: "100%" }} viewBox={`0 0 256 256`} />
+                    </div>
                 </div>
             </div>
 

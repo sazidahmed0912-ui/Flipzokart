@@ -5,9 +5,11 @@ const Notification = require('../models/Notification');
 // @access  Private
 const getNotifications = async (req, res) => {
   try {
+    console.log(`[GET NOTIF] Fetching for user: ${req.user.id}`);
     const notifications = await Notification.find({ recipient: req.user.id })
       .sort({ createdAt: -1 })
       .limit(20); // Limit to latest 20 notifications
+    console.log(`[GET NOTIF] Found: ${notifications.length}`);
     res.json(notifications);
   } catch (error) {
     console.error('Error fetching notifications:', error);

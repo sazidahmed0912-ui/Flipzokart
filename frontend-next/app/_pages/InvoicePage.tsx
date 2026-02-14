@@ -6,10 +6,14 @@ import { InvoiceTemplate } from '../components/InvoiceTemplate';
 import { normalizeOrder } from '@/app/utils/orderHelper';
 import { Printer, MapPin, Phone, Mail, Package } from 'lucide-react';
 import { useSocket } from '@/app/hooks/useSocket';
+import QRCode from "react-qr-code";
 
 // --- MOBILE ONLY INVOICE COMPONENT ---
 // Strictly defined for < 768px devices
 const MobileInvoiceLayout = ({ order }: { order: any }) => {
+    // QR Code Value
+    const qrValue = `https://flipzokart.com/track/${order.orderId || order._id}`;
+
     return (
         <div className="bg-white p-4 space-y-6 text-sm text-gray-800">
             <style jsx global>{`
@@ -19,13 +23,19 @@ const MobileInvoiceLayout = ({ order }: { order: any }) => {
             `}</style>
 
             {/* Header: Logo & Title */}
-            <div className="flex flex-col gap-2 border-b border-gray-100 pb-4">
-                <div className="bg-[#2874F0] w-10 h-10 rounded flex items-center justify-center text-white font-bold text-xl">
-                    F
+            <div className="flex justify-between items-start border-b border-gray-100 pb-4">
+                <div className="flex flex-col gap-2">
+                    <div className="bg-[#2874F0] w-10 h-10 rounded flex items-center justify-center text-white font-bold text-xl">
+                        F
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold uppercase text-gray-900">Tax Invoice</h1>
+                        <p className="text-xs text-gray-500">Original for Recipient</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 className="text-xl font-bold uppercase text-gray-900">Tax Invoice</h1>
-                    <p className="text-xs text-gray-500">Original for Recipient</p>
+                {/* QR Code */}
+                <div className="p-1 bg-white border border-gray-200 rounded">
+                    <QRCode value={qrValue} size={48} style={{ height: "auto", maxWidth: "100%", width: "100%" }} viewBox={`0 0 256 256`} />
                 </div>
             </div>
 

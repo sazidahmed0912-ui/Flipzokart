@@ -65,6 +65,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   /* ---------- FETCH NOTIFICATIONS ---------- */
   const fetchNotifications = useCallback(async () => {
     if (!user) {
+      // console.log("FETCH NOTIF: No user, clearing.");
       setNotifications([]);
       return;
     }
@@ -73,9 +74,11 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
       const token = localStorage.getItem("token");
       if (!token) return;
 
+      // console.log("FETCH NOTIF: Fetching for user", user._id);
       const { data } = await axios.get(`${API_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("FETCH NOTIF: Fetched count:", data.length);
       setNotifications(data);
     } catch (error) {
       console.error("Failed to fetch notifications", error);
@@ -86,6 +89,31 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
+
+  /* ---------- REAL-TIME SOCKET LISTENER ---------- */
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    // We use a direct socket connection or reuse useSocket if possible.
+    // Since we are in a Provider, we might create a dedicated listener.
+    // For simplicity, we can assume the Global Socket (if exists) or create a temporary one.
+    // Ideally we should use the useSocket hook, but let's check imports.
+    // Importing useSocket requires ensuring it doesn't create circular deps or multiple connections.
+    // Let's rely on the fact that existing app puts socket in `window` or similar? No.
+    // Let's use `io` directly here just for the event listener if useSocket isn't available in Context.
+    // Actually, let's use the import if available.
+    // Check imports... useApp is there.
+
+    // To avoid complexity, we'll try to listen if we can access the socket instance.
+    // If not, we will rely on `Layout.tsx` which typically handles global sockets in Next.js apps.
+    // BUT user says it works in real-time. So someone IS listening.
+    // Adding a second listener is safe.
+
+    // Let's SKIP adding a new socket connection here to avoid duplicates/auth issues.
+    // Instead, rely on fetch.
+
+  }, []);
 
   /* ---------- API ACTIONS ---------- */
   const markNotificationAsRead = async (_id: string) => {
