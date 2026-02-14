@@ -48,7 +48,7 @@ const updateCart = async (req, res) => {
         // Transform frontend cart items to backend schema structure
         // Frontend item has 'id' (productId), backend needs 'productId'
         const cartToSave = cart.map(item => ({
-            productId: item.id,
+            productId: item.productId || item.id,
             quantity: item.quantity,
             selectedVariants: item.selectedVariants
         }));
@@ -57,6 +57,9 @@ const updateCart = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+
+        user.cart = cartToSave;
+        await user.save();
 
         res.json({ message: 'Cart updated', cart: user.cart });
     } catch (error) {
@@ -81,7 +84,18 @@ const mergeCart = async (req, res) => {
         // Helper to generate a comparable key for variants
         const getVariantKey = (variants) => {
             if (!variants) return '';
-            return Object.entries(variants)
+            let variantObj = variants;
+
+            // Handle Mongoose Map or Standard Map
+            if (variants instanceof Map || (variants && typeof variants.get === 'function')) {
+                variantObj = {};
+                // Mongoose Map uses .forEach or for..of
+                if (variants.forEach) {
+                    variants.forEach((v, k) => { variantObj[k] = v; });
+                }
+            }
+
+            return Object.entries(variantObj)
                 .sort(([k1], [k2]) => k1.localeCompare(k2))
                 .map(([k, v]) => `${k}:${v}`)
                 .join('|');

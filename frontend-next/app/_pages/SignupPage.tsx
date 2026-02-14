@@ -13,7 +13,7 @@ import { Eye, EyeOff, Smartphone, CheckCircle } from 'lucide-react';
 import Script from 'next/script';
 
 export const SignupPage: React.FC = () => {
-  const { setUser } = useApp();
+  const { setUser, loginSequence } = useApp();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
@@ -110,7 +110,13 @@ export const SignupPage: React.FC = () => {
       // Verify email OTP and create user
       // If mobile was verified, we pass it.
       const user = await authService.verifyEmailOtp(email, otpCode, { name, phone, password });
-      setUser(user);
+      // 🟢 ULTRA-LOCK SEQ
+      const token = localStorage.getItem("token");
+      if (token && user) {
+        await loginSequence(token, user);
+      } else {
+        setUser(user);
+      }
       addToast('success', '✅ Registration successful!');
 
       // 🛒 AUTO-ORDER LOGIC

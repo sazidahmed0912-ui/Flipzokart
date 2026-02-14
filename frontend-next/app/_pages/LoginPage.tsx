@@ -17,7 +17,7 @@ interface LoginPageProps {
 import MobileOtpLogin from '@/app/components/MobileOtpLogin';
 
 export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
-  const { setUser } = useApp();
+  const { setUser, loginSequence } = useApp();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
@@ -100,7 +100,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
         user = await authService.verifyEmailOtp(email, otpCode);
       }
 
-      setUser(user);
+      // 🟢 ULTRA-LOCK SEQ
+      const token = localStorage.getItem("token");
+      if (token && user) {
+        await loginSequence(token, user);
+      } else {
+        // Fallback (should not happen if authService works)
+        setUser(user);
+      }
       addToast('success', '✅ Login successful!');
 
       // 🛒 AUTO-ORDER LOGIC

@@ -64,7 +64,7 @@ export default function MobileOtpLogin() {
         }
     };
 
-    const { setUser } = useApp();
+    const { setUser, loginSequence } = useApp();
     const router = useRouter();
     const { addToast } = useToast();
 
@@ -136,10 +136,7 @@ export default function MobileOtpLogin() {
                 const user = result.data?.user;
 
                 if (token) {
-                    localStorage.setItem("token", token);
-                    const finalUser = { ...user, phone: user.phone || mobile, authMethod: 'mobile-otp' };
-                    localStorage.setItem("user", JSON.stringify(finalUser));
-                    setUser(finalUser);
+                    await loginSequence(token, { ...user, phone: user.phone || mobile, authMethod: 'mobile-otp' });
                     addToast('success', `Login Successful!`);
 
                     if (result.authMethod === 'mobile-otp' || user.authMethod === 'mobile-otp') {
