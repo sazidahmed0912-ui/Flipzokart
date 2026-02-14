@@ -7,7 +7,6 @@ import { useToast } from '@/app/components/toast';
 import { fetchProductById } from '@/app/services/api';
 import { Product, ProductVariant, CartItem, Review } from '@/app/types';
 import { ReviewList } from './ProductDetails/components/ReviewList';
-import { ReviewForm } from './ProductDetails/components/ReviewForm';
 import { useSocket } from '@/app/hooks/useSocket';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import ProductGallery from '@/app/components/ProductGallery';
@@ -533,9 +532,7 @@ export const ProductDetails: React.FC = () => {
             {activeTab === 'reviews' && (
               <div>
                 <ReviewList reviews={reviews} />
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <ReviewForm productId={id || ''} onReviewSubmitted={(r) => setReviews(prev => [r, ...prev])} />
-                </div>
+                {/* Review Form moved to Order Details page */}
               </div>
             )}
           </div>

@@ -4,12 +4,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';
 import API from '@/app/services/api';
 import { useSocket } from '@/app/hooks/useSocket';
+import { formatDate } from '@/app/utils/dateHelper';
+import { ReviewForm } from './ProductDetails/components/ReviewForm';
 import { normalizeOrder } from '@/app/utils/orderHelper';
 import { resolveProductImage } from '@/app/utils/imageHelper';
 import {
     Check, MapPin, CreditCard, FileText,
     ChevronRight, HelpCircle, Package, Truck, AlertCircle,
-    Download, MoreHorizontal
+    Download, MoreHorizontal, Info
 } from 'lucide-react';
 
 import { useToast } from '@/app/components/toast';
@@ -469,6 +471,45 @@ export const TrackOrderPage: React.FC = () => {
                         ))}
                     </div>
                 )}
+
+                {/* 🆕 Write a Review Box (Between Product Info & Address) */}
+                <div className="bg-white p-4 md:p-6 rounded-sm shadow-sm mb-4 md:mb-6">
+                    <h3 className="font-bold text-base md:text-lg text-gray-800 mb-4 border-b border-gray-100 pb-2">
+                        Write a Review
+                    </h3>
+
+                    {displayStatus === 'Delivered' ? (
+                        <div className="space-y-6">
+                            {/* Map over items to allow reviewing separate products if needed/wanted. 
+                                 For now, standardizing on a single form per product or list. 
+                                 Given the prompt asks for "Write a Review Box", we'll list items to review.
+                             */}
+                            {order.items?.map((item: any, idx: number) => (
+                                <div key={idx} className={idx > 0 ? "pt-6 border-t border-gray-50" : ""}>
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-10 h-10 border border-gray-200 p-1 flex items-center justify-center rounded">
+                                            <img src={resolveProductImage(item)} alt={item.name} className="max-w-full max-h-full object-contain" />
+                                        </div>
+                                        <p className="text-sm font-medium text-gray-900 line-clamp-1">{item.name}</p>
+                                    </div>
+                                    <ReviewForm
+                                        productId={item.productId || item.product}
+                                        onReviewSubmitted={() => {
+                                            // Optional: Refresh or show success state specific to this item
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-center gap-3">
+                            <Info className="text-blue-600 shrink-0" size={20} />
+                            <p className="text-sm text-blue-800">
+                                Reviews are available after the order is delivered.
+                            </p>
+                        </div>
+                    )}
+                </div>
 
                 {/* Bottom Grid: Address, Payment, Shipping */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
