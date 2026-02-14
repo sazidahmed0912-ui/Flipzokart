@@ -155,27 +155,27 @@ const ProfilePage = () => {
 
   return (
     <div className="bg-[#F5F7FA] min-h-screen font-sans text-[#1F2937]">
-      <div className="max-w-[1200px] mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
+      <div className="max-w-[1200px] mx-auto px-3 py-4 md:px-4 md:py-8 flex flex-col lg:flex-row gap-4 md:gap-6">
 
         {/* ──────── LEFT SIDEBAR ──────── */}
         <ProfileSidebar />
 
         {/* ──────── MAIN CONTENT ──────── */}
-        <div className="flex-1 space-y-6">
+        <div className="flex-1 space-y-4 md:space-y-6">
 
           {/* PAGE TITLE */}
           <SmoothReveal direction="down" delay={100}>
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-[#1F2937]">My Profile</h1>
+              <h1 className="text-lg md:text-2xl font-bold text-[#1F2937]">My Profile</h1>
             </div>
           </SmoothReveal>
 
           {/* PROFILE HEADER CARD */}
           <SmoothReveal direction="up" delay={200}>
-            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-3 md:p-8 flex flex-row md:flex-row items-center justify-between gap-3 md:gap-6 relative min-h-[80px] md:min-h-0">
-              <div className="flex items-center gap-3 md:gap-6 w-full">
+            <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] md:shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6 relative">
+              <div className="flex items-center gap-4 md:gap-6 w-full">
                 <div className="relative group cursor-pointer flex-shrink-0" onClick={handleAvatarClick}>
-                  <div className="w-[44px] h-[44px] md:w-24 md:h-24 rounded-full bg-[#FFE11B] flex items-center justify-center text-lg md:text-3xl font-bold text-[#1F2937] border-2 md:border-4 border-white shadow-sm overflow-hidden">
+                  <div className="w-[60px] h-[60px] md:w-24 md:h-24 rounded-full bg-[#FFE11B] flex items-center justify-center text-xl md:text-3xl font-bold text-[#1F2937] border-2 md:border-4 border-white shadow-sm overflow-hidden">
                     {profileData.avatar ? (
                       <img src={profileData.avatar.startsWith('http') ? profileData.avatar : `/${profileData.avatar}`} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
@@ -188,40 +188,40 @@ const ProfilePage = () => {
                   <input type="file" id="avatar-input" className="hidden" accept="image/*" onChange={handleFileChange} />
                 </div>
 
-                <div className="space-y-0.5 md:space-y-1 overflow-hidden flex-1">
-                  <h2 className="text-[15px] md:text-2xl font-bold text-[#1F2937] flex items-center gap-1.5 md:gap-2 truncate">
+                <div className="space-y-1 overflow-hidden flex-1">
+                  <h2 className="text-lg md:text-2xl font-bold text-[#1F2937] flex items-center gap-1.5 md:gap-2 truncate">
                     {profileData.name || "User Name"}
-                    <CheckCircle2 size={14} className="text-green-500 fill-current md:w-5 md:h-5" />
+                    <CheckCircle2 size={16} className="text-green-500 fill-current md:w-5 md:h-5" />
                   </h2>
-                  <div className="text-[11px] md:text-sm text-gray-400 md:text-gray-500 font-medium truncate">{profileData.email || "email@example.com"}</div>
-                  <div className="text-[11px] md:text-sm text-gray-500 font-medium truncate md:hidden">{profileData.phone || "+91 XXXXXXXXXX"}</div>
+                  <div className="text-sm text-gray-500 font-medium truncate">{profileData.email || "email@example.com"}</div>
+                  <div className="text-sm text-gray-500 font-medium truncate md:hidden">{profileData.phone || "+91 XXXXXXXXXX"}</div>
                 </div>
               </div>
 
               <button
                 onClick={openModal}
-                className="bg-[#F9C74F] text-[#1F2937] px-3 md:px-6 py-1.5 md:py-2.5 rounded-full md:rounded-[6px] font-semibold text-[10px] md:text-sm shadow-sm hover:shadow-md transition-shadow active:scale-95 whitespace-nowrap h-[28px] md:h-auto self-center"
+                className="w-full md:w-auto bg-[#F9C74F] text-[#1F2937] px-6 py-2.5 rounded-lg md:rounded-[6px] font-semibold text-sm shadow-sm hover:shadow-md transition-shadow active:scale-95 flex items-center justify-center h-11 md:h-auto"
               >
-                Edit
+                Edit Profile
               </button>
             </div>
           </SmoothReveal>
 
           {/* QUICK INFO CARDS */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {[
               { label: "Total Orders", value: orderCount.toString(), icon: Package },
               { label: "Account Status", value: profileData.status || "Active", icon: ShieldCheck, isStatus: true },
               { label: "Member Since", value: getMemberSince(), icon: Calendar }
             ].map((stat, i) => (
               <SmoothReveal key={i} direction="up" delay={300 + (i * 100)} className="h-full">
-                <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] md:shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-2.5 md:p-5 flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 h-full min-h-[64px] md:min-h-0">
-                  <div className="w-6 h-6 md:w-10 md:h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#2874F0] flex-shrink-0">
-                    <stat.icon size={14} className="md:w-5 md:h-5" />
+                <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] md:shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-3 md:p-5 flex items-center gap-3 md:gap-4 h-full min-h-[70px] md:min-h-0">
+                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#2874F0] flex-shrink-0">
+                    <stat.icon size={18} className="md:w-5 md:h-5" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[10px] md:text-xs text-gray-400 md:text-gray-500 font-medium uppercase tracking-wide truncate">{stat.label}</div>
-                    <div className={`text-[13px] md:text-lg font-bold truncate ${stat.isStatus ? "text-green-600" : "text-[#1F2937]"}`}>{stat.value}</div>
+                    <div className="text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{stat.label}</div>
+                    <div className={`text-base md:text-lg font-bold truncate ${stat.isStatus ? "text-green-600" : "text-[#1F2937]"}`}>{stat.value}</div>
                   </div>
                 </div>
               </SmoothReveal>
@@ -236,9 +236,9 @@ const ProfilePage = () => {
                 onClick={() => setIsMobileInfoExpanded(!isMobileInfoExpanded)}
               >
                 <div className="flex items-center gap-2">
-                  <h3 className="text-[15px] md:text-lg font-bold text-[#1F2937]">Personal Information</h3>
+                  <h3 className="text-[17px] md:text-lg font-bold text-[#1F2937]">Personal Information</h3>
                   <div className="md:hidden text-gray-400">
-                    {isMobileInfoExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    {isMobileInfoExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                   </div>
                 </div>
                 {!isModalOpen && (
@@ -247,7 +247,7 @@ const ProfilePage = () => {
                       e.stopPropagation();
                       openModal();
                     }}
-                    className="bg-transparent md:bg-[#F9C74F] text-blue-600 md:text-[#1F2937] px-0 md:px-4 py-0 md:py-1.5 rounded-[2px] font-semibold text-xs md:text-sm shadow-none md:shadow-sm hover:underline md:hover:no-underline md:hover:shadow-md transition-all active:scale-95"
+                    className="bg-[#F9C74F] text-[#1F2937] md:bg-[#F9C74F] px-4 py-1.5 rounded-md font-semibold text-xs md:text-sm shadow-sm hover:shadow-md transition-all active:scale-95 h-8 flex items-center"
                   >
                     Edit
                   </button>
@@ -293,25 +293,25 @@ const ProfilePage = () => {
           {/* RECENT ACTIVITY */}
           <SmoothReveal direction="up" delay={700}>
             <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] md:shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 md:p-8 mb-20 md:mb-0">
-              <h3 className="text-[15px] md:text-lg font-bold text-[#1F2937] mb-3 md:mb-6">Recent Activity</h3>
+              <h3 className="text-[17px] md:text-lg font-bold text-[#1F2937] mb-4 md:mb-6">Recent Activity</h3>
               {activities.length === 0 ? (
-                <div className="text-center py-6 md:py-8 text-[12px] md:text-base text-gray-400 md:text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                <div className="text-center py-8 text-sm text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
                   No recent activity found.
                 </div>
               ) : (
                 <div className="space-y-3 md:space-y-4">
                   {activities.map((activity, idx) => (
                     <div key={idx} className="flex items-center gap-3 md:gap-4 p-3 md:p-4 hover:bg-gray-50 rounded-xl transition-colors border border-gray-100">
-                      <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center shrink-0
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0
                         ${activity.type === 'order' ? 'bg-blue-100 text-blue-600' :
                           activity.type === 'login' ? 'bg-green-100 text-green-600' :
                             'bg-gray-100 text-gray-600'}`}>
-                        {activity.type === 'order' ? <Package size={14} className="md:w-[18px]" /> :
-                          activity.type === 'login' ? <Lock size={14} className="md:w-[18px]" /> : <Info size={14} className="md:w-[18px]" />}
+                        {activity.type === 'order' ? <Package size={18} /> :
+                          activity.type === 'login' ? <Lock size={18} /> : <Info size={18} />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-800 text-[12px] md:text-base truncate">{activity.message}</p>
-                        <p className="text-[10px] md:text-xs text-gray-400 md:text-gray-500">{new Date(activity.date).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</p>
+                        <p className="font-semibold text-gray-800 text-sm md:text-base truncate">{activity.message}</p>
+                        <p className="text-xs text-gray-500">{new Date(activity.date).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                       </div>
                     </div>
                   ))}
@@ -377,18 +377,18 @@ const EditProfileForm = ({ initialData, onCancel, onSuccess }: any) => {
         />
       </div>
 
-      <div className="md:col-span-2 flex justify-end gap-3 mt-4">
+      <div className="md:col-span-2 flex flex-col-reverse md:flex-row justify-end gap-3 mt-6">
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-2.5 rounded-lg font-bold text-gray-600 hover:bg-gray-100 text-sm"
+          className="w-full md:w-auto px-6 h-11 rounded-lg font-bold text-gray-600 hover:bg-gray-100 text-sm border border-gray-200 md:border-transparent"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="bg-[#2874F0] text-white px-8 py-2.5 rounded-lg font-bold text-sm shadow-md hover:bg-blue-600 transition-colors disabled:opacity-50"
+          className="w-full md:w-auto bg-[#2874F0] text-white px-8 h-11 rounded-lg font-bold text-sm shadow-md hover:bg-blue-600 transition-colors disabled:opacity-50 flex items-center justify-center"
         >
           {loading ? "Saving..." : "Save Changes"}
         </button>
