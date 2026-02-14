@@ -86,14 +86,14 @@ export const SignupPage: React.FC = () => {
         return;
       }
 
-      await authService.sendEmailOtp(email);
+      await authService.sendEmailOtp(email, 'signup');
       setStep(2);
       setTimer(300); // 5 minutes
       addToast('success', 'OTP Sent to your verified email!');
     } catch (err: any) {
-      if (err.message === "Email already exists") {
-        addToast("error", "This email is already registered. Redirecting to login...");
-        router.push("/login");
+      if (err.message === "Email already exists" || err.message === "This email is already registered. Please log in.") {
+        addToast("error", "This email is already registered. Redirecting you to login…");
+        setTimeout(() => router.push("/login"), 1500);
       } else {
         addToast('error', err.message || 'Failed to send OTP');
       }

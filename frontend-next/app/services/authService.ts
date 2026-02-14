@@ -211,7 +211,7 @@ const authService = {
   // =========================
   // ✅ SEND EMAIL OTP
   // =========================
-  async sendEmailOtp(email: string): Promise<void> {
+  async sendEmailOtp(email: string, type?: string): Promise<void> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
@@ -219,7 +219,7 @@ const authService = {
       const response = await fetch(`${API_BASE_URL}/api/auth/send-email-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, type }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);

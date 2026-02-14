@@ -13,6 +13,14 @@ const sendEmailOtp = async (req, res) => {
             return res.status(400).json({ message: "Email is required" });
         }
 
+        // 🟢 PRE-CHECK: Duplicate Signup Block (Master Fix)
+        if (type === 'signup') {
+            const userExists = await User.findOne({ email });
+            if (userExists) {
+                return res.status(409).json({ message: "This email is already registered. Please log in." });
+            }
+        }
+
         // Generate 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
