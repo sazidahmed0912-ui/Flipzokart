@@ -110,27 +110,34 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
       }
       addToast('success', '✅ Login successful!');
 
-      // 🛒 AUTO-ORDER LOGIC
-      const pendingOrder = localStorage.getItem("pendingOrder");
-      if (pendingOrder) {
+      // 🛒 CHECKOUT INTENT LOGIC
+      const checkoutIntentStr = localStorage.getItem("checkout_intent");
+      if (checkoutIntentStr) {
         try {
-          addToast('info', 'Processing your pending order...');
-          const orderPayload = JSON.parse(pendingOrder);
-          const { data } = await createOrder(orderPayload);
-          localStorage.removeItem("pendingOrder");
-          addToast('success', '🎉 Order Placed Successfully!');
-          router.push(`/order-success?orderId=${data.order.id}`);
-          return;
+          const intent = JSON.parse(checkoutIntentStr);
+          if (intent.fromCheckout && intent.paymentMethod) {
+            addToast('success', 'Redirecting to checkout...');
+
+            if (intent.paymentMethod === "COD") {
+              localStorage.removeItem("checkout_intent");
+              router.push("/checkout/place-order-cod");
+              return;
+            }
+
+            if (intent.paymentMethod === "RAZORPAY") {
+              localStorage.removeItem("checkout_intent");
+              router.push("/checkout/payment");
+              return;
+            }
+          }
         } catch (e) {
-          console.error("Auto-order failed", e);
-          addToast('error', 'Failed to place pending order.');
+          console.error("Intent Parse Error", e);
         }
       }
 
       const redirectPath = searchParams.get('redirect');
-      if (redirectPath === 'place-order') {
-        // Should have been handled above, but if failed or empty, go to home
-        router.push('/');
+      if (redirectPath === 'place-order' || redirectPath === 'checkout') {
+        router.push('/'); // Fallback if no intent found
       } else {
         router.push(redirectPath ? decodeURIComponent(redirectPath) : (user.role === 'admin' ? '/admin' : '/profile'));
       }

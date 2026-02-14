@@ -124,30 +124,44 @@ export const SignupPage: React.FC = () => {
       }
       addToast('success', '✅ Registration successful!');
 
-      // 🛒 AUTO-ORDER LOGIC
-      const pendingOrder = localStorage.getItem("pendingOrder");
-      if (pendingOrder) {
+      // 🛒 CHECKOUT INTENT LOGIC
+      const checkoutIntentStr = localStorage.getItem("checkout_intent");
+      if (checkoutIntentStr) {
         try {
-          addToast('info', 'Processing your pending order...');
-          // Wait a bit for token to settle in localStorage (handled by authService)
-          const orderPayload = JSON.parse(pendingOrder);
+          const intent = JSON.parse(checkoutIntentStr);
+          if (intent.fromCheckout && intent.paymentMethod) {
+            addToast('success', 'Redirecting to checkout...');
 
-          // Execute Order
-          const { data } = await createOrder(orderPayload);
+            if (intent.paymentMethod === "COD") {
+              // Don't clear yet if needed by next page? 
+              // Actually PlaceOrderCodPage doesn't read intent, it reads pendingOrder.
+              // So we can clear intent here.
+              localStorage.removeItem("checkout_intent");
+              router.push("/checkout/place-order-cod");
+              return;
+            }
 
-          localStorage.removeItem("pendingOrder");
-          addToast('success', '🎉 Order Placed Successfully!');
-          router.push(`/order-success?orderId=${data.order.id}`);
-          return; // Stop further redirection
+            if (intent.paymentMethod === "RAZORPAY") {
+              localStorage.removeItem("checkout_intent");
+              router.push("/checkout/payment");
+              return;
+            }
+          }
         } catch (e) {
-          console.error("Auto-order failed", e);
-          addToast('error', 'Failed to place pending order. Please try from Cart.');
+          console.error("Intent Parse Error", e);
         }
       }
 
+      // 🛒 AUTO-ORDER LOGIC (Legacy / Fallback)
+      const pendingOrder = localStorage.getItem("pendingOrder");
+      // ... keep existing auto-order as backup or for other flows? 
+      // User said "Direct Signup -> No checkout redirect".
+      // So if NO intent, we should NOT redirect to checkout even if pendingOrder exists?
+      // Actually, if pendingOrder exists but NO intent, it might be an abandoned cart.
+      // But let's stick to the requested "Direct Signup (without payment page) -> NORMAL redirect".
+
       const redirectPath = searchParams.get('redirect');
-      // If we had a redirect but no pending order (or it failed), go there
-      if (redirectPath && redirectPath !== 'place-order') {
+      if (redirectPath && redirectPath !== 'place-order' && redirectPath !== 'checkout') {
         router.push(decodeURIComponent(redirectPath));
       } else {
         router.push('/');

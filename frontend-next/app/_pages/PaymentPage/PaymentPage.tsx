@@ -281,8 +281,18 @@ const PaymentPage: React.FC = () => {
       };
 
       localStorage.setItem("pendingOrder", JSON.stringify(orderPayload));
+
+      // 🟢 STORE CHECKOUT INTENT
+      if (paymentMethod) {
+        localStorage.setItem("checkout_intent", JSON.stringify({
+          fromCheckout: true,
+          paymentMethod: paymentMethod // 'COD' or 'RAZORPAY'
+        }));
+      }
+
       addToast('info', '⚠️ Please signup/login to place your order');
-      setTimeout(() => router.push('/signup?redirect=place-order'), 1000);
+      // Redirect to signup which will handle the intent
+      setTimeout(() => router.push('/signup?redirect=checkout'), 1000);
       return;
     }
 
