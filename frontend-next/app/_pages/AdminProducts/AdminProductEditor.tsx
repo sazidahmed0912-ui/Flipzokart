@@ -192,6 +192,9 @@ export const AdminProductEditor: React.FC = () => {
             setMatrix(loadedMatrix);
             setSkuBase(data.sku || meta.sku || 'FZK');
 
+            // Fix: Hydrate Specifications to prevent data loss on edit
+            setSpecifications(data.specifications || meta.specifications || '');
+
             if (Object.keys(meta).length > 0 && meta.section) {
                 setSectionTitle(meta.section.title || '');
                 setSectionColor(meta.section.color || '#111827');
