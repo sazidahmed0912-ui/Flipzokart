@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Package, User, RefreshCw, CreditCard, FileText, Shield, ArrowRight, Phone, Mail, MessageSquare, Ticket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/app/components/toast';
 
 const HelpCenterPage: React.FC = () => {
     const router = useRouter();
+    const { addToast } = useToast();
     const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -15,15 +17,17 @@ const HelpCenterPage: React.FC = () => {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        // Basic mock search functionality - could redirect or filter
-        if (searchQuery.trim()) {
-            // For now, if query matches an FAQ, open it, else show alert/toast (simplified for UI demo)
-            const foundIdx = faqs.findIndex(f => f.question.toLowerCase().includes(searchQuery.toLowerCase()));
-            if (foundIdx !== -1) {
-                setOpenFaqIndex(foundIdx);
-                // scroll to faq section
-                document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth' });
-            }
+        if (!searchQuery.trim()) return;
+
+        const foundIdx = faqs.findIndex(f => f.question.toLowerCase().includes(searchQuery.toLowerCase()));
+
+        if (foundIdx !== -1) {
+            setOpenFaqIndex(foundIdx);
+            setTimeout(() => {
+                document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        } else {
+            addToast('error', 'No result found. Try contacting support.');
         }
     };
 
@@ -58,9 +62,10 @@ const HelpCenterPage: React.FC = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="What issue are you facing?"
+                        enterKeyHint="search"
                         className="w-full border border-gray-300 rounded-[4px] pl-10 md:pl-12 pr-10 py-2.5 md:py-3 bg-gray-50 text-sm focus:outline-none focus:border-[#2874F0] focus:ring-1 focus:ring-[#2874F0]"
                     />
-                    <button type="submit" className="absolute top-1/2 right-0 pr-3 h-full flex items-center">
+                    <button type="submit" className="absolute top-0 right-0 pr-3 h-full flex items-center z-10">
                         <ArrowRight className="text-gray-400 cursor-pointer hover:text-[#2874F0]" size={18} />
                     </button>
                 </form>
