@@ -14,18 +14,16 @@ const sendOtp = async (req, res) => {
     try {
         const { mobile } = req.body;
 
-        if (!mobile || !/^\d{10}$/.test(mobile)) {
-            return res.status(400).json({ success: false, message: "Invalid mobile number. Must be 10 digits." });
+        // 🛡️ STRICT REGEX (Indian Mobile Number: starts with 6-9, 10 digits)
+        if (!mobile || !/^[6-9]\d{9}$/.test(mobile)) {
+            return res.status(400).json({ success: false, message: "Invalid mobile number. Must be 10 digits starting with 6-9." });
         }
-
-        // Rate Limiting (Basic - can be enhanced with Redis/DB)
-        // For now, MSG91 handles some rate limiting.
 
         // Standard Indian Mobile with Country Code
         const countryCode = "91";
         const fullMobile = `${countryCode}${mobile}`;
 
-        // Call MSG91 API
+        // Call MSG91 API (POST)
         // NOTE: We do NOT send template_id as empty string. 
         // If not provided, MSG91 uses the default template set in the dashboard.
         const response = await axios.post(
@@ -67,14 +65,22 @@ const verifyOtp = async (req, res) => {
         const countryCode = "91";
         const fullMobile = `${countryCode}${mobile}`;
 
-        // 1. Verify with MSG91
-        const verifyResponse = await axios.get("https://control.msg91.com/api/v5/otp/verify", {
-            params: {
-                otp: otp,
-                mobile: fullMobile,
-                authkey: MSG91_AUTH_KEY
+        // 1. Verify with MSG91 using POST (Best Practice)
+        // Note: Docs support GET/POST. Switching to POST as per user reference.
+        // URL: https://control.msg91.com/api/v5/otp/verify
+        const verifyResponse = await axios.post(
+            "https://control.msg91.com/api/v5/otp/verify",
+            {
+                otp: Number(otp), // Ensure number type if needed
+                mobile: fullMobile
+            },
+            {
+                headers: {
+                    "authkey": MSG91_AUTH_KEY,
+                    "Content-Type": "application/json"
+                }
             }
-        });
+        );
 
         if (verifyResponse.data.type !== 'success') {
             return res.status(400).json({ success: false, message: verifyResponse.data.message || "Invalid OTP" });
@@ -83,31 +89,13 @@ const verifyOtp = async (req, res) => {
         // 2. OTP Valid - Handle User (Atomic Upsert)
         // We use findOneAndUpdate to ensure atomicity
 
-        // Prepare default user data if creating new
-        const defaultUserData = {
-            name: "Mobile User",
-            email: `${mobile}@mobile.temp`, // Placeholder
-            phone: mobile,
-            role: "user",
-            isMobileVerified: true,
-            status: "active"
-        };
-
-        // If user already exists, we just update verification status (if needed)
-        // If not, we set defaults. 
-        // Crucial: Don't overwrite existing name/email if user exists.
-
-        // Strategy: Try to find first. 
-        // Actually, atomic upsert is better for concurrency.
-        // $setOnInsert is perfect for this.
-
         const user = await User.findOneAndUpdate(
             { phone: mobile },
             {
                 $set: { isMobileVerified: true }, // Always mark verified
                 $setOnInsert: { // Only set on creation
                     name: "Mobile User",
-                    email: `${mobile}@mobile.temp`,
+                    email: `${mobile}@mobile.temp`, // Required field placeholder
                     password: crypto.randomBytes(20).toString('hex'), // Random password
                     role: "user",
                     status: "active",
@@ -143,9 +131,14 @@ const verifyOtp = async (req, res) => {
 
     } catch (error) {
         console.error("Verify OTP Error:", error);
+        // Handle MSG91 error specifically if axios fails with 400
+        if (error.response && error.response.data) {
+            return res.status(400).json({ success: false, message: error.response.data.message || "Invalid OTP" });
+        }
         res.status(500).json({ success: false, message: "Verification failed", error: error.message });
     }
 };
+
 
 module.exports = {
     sendOtp,
