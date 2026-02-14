@@ -139,6 +139,31 @@ export default function MobileOtpLogin() {
                     await loginSequence(token, { ...user, phone: user.phone || mobile, authMethod: 'mobile-otp' });
                     addToast('success', `Login Successful!`);
 
+                    // 🛒 CHECKOUT INTENT LOGIC
+                    const checkoutIntentStr = localStorage.getItem("checkout_intent");
+                    if (checkoutIntentStr) {
+                        try {
+                            const intent = JSON.parse(checkoutIntentStr);
+                            if (intent.fromCheckout && intent.paymentMethod) {
+                                addToast('success', 'Redirecting to checkout...');
+
+                                if (intent.paymentMethod === "COD") {
+                                    localStorage.removeItem("checkout_intent");
+                                    router.replace("/checkout/place-order-cod");
+                                    return;
+                                }
+
+                                if (intent.paymentMethod === "RAZORPAY") {
+                                    localStorage.removeItem("checkout_intent");
+                                    router.replace("/checkout/payment");
+                                    return;
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Intent Parse Error", e);
+                        }
+                    }
+
                     if (result.authMethod === 'mobile-otp' || user.authMethod === 'mobile-otp') {
                         router.replace("/profile");
                         return;
