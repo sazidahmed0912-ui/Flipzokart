@@ -93,20 +93,39 @@ export default function MobileOtpLogin() {
         console.log("Launching MSG91 with Mobile:", mobileInput);
 
         try {
+            // 1. Initialize Widget with Manual Methods Exposed
             const config = {
                 widgetId: "3662616b7765363133313539",
                 tokenAuth: "491551TGhhpXBdgY1697f3ab8P1",
                 identifier: "mobile",
-                exposeMethods: false,
-                countryCode: "91", // 🇮🇳 Force India
-                mobile: "91" + mobileInput, // 🚀 BYPASS INPUT SCREEN
-
+                exposeMethods: true, // 🟢 Enable Manual Control
                 success: (data: any) => handleSuccess(data, 'widget_success_v4'),
                 failure: (err: any) => handleFailure(err, 'widget_failure_v4')
             };
 
             (window as any).initSendOTP(config);
-            setOtpStep('widget');
+
+            // 2. Call sendOTP directly to BYPASS input screen
+            // args: (mobileNumber, countryCode)
+            // Note: sendOTP expects country code as 2nd arg or mobile with country code?
+            // checking docs: sendOTP(mobileNumber, countryCode)
+
+            setTimeout(() => {
+                if ((window as any).sendOTP) {
+                    (window as any).sendOTP(mobileInput, "91"); // 🟢 Strict Bypass
+                    setOtpStep('widget');
+                } else {
+                    console.error("sendOTP method not found even after exposeMethods:true");
+                    // Fallback to init if sendOTP fails
+                    const fallbackConfig = {
+                        ...config,
+                        exposeMethods: false,
+                        countryCode: "91",
+                        mobile: "91" + mobileInput
+                    };
+                    (window as any).initSendOTP(fallbackConfig);
+                }
+            }, 100); // Small delay to ensure init completes
 
         } catch (error) {
             console.error("Error launching OTP widget:", error);
