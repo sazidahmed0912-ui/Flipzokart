@@ -1,292 +1,258 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/app/store/Context';
 import { useToast } from '@/app/components/toast';
-import { Smartphone, Loader2, RefreshCw, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { OtpInput } from '@/app/components/OtpInput'; // Reusing existing component
+import Script from 'next/script';
 
-const MobileOtpLogin = () => {
+export default function MobileOtpLogin() {
+    const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+
+    useEffect(() => {
+        // Check if already loaded from cache or other navigations
+        if ((window as any).initSendOTP) {
+            setIsScriptLoaded(true);
+        }
+
+        // Global message listener debug
+        const messageHandler = (event: MessageEvent) => {
+            console.log("Global Window Message Received:", event.origin, event.data);
+            try {
+                if (typeof event.data === 'string' && event.data.includes('msg91')) {
+                    console.log("Received MSG91 Message: " + event.data);
+                }
+            } catch (e) {
+                // ignore
+            }
+        };
+        window.addEventListener("message", messageHandler);
+        return () => window.removeEventListener("message", messageHandler);
+    }, []);
+
+    const openMobileOtp = () => {
+        if (!isScriptLoaded || !(window as any).initSendOTP) {
+            console.warn("MSG91 Script not loaded yet");
+            return;
+        }
+
+        console.log("Initializing MSG91 OTP Widget... (Attempt 4 - Log Check)");
+
+        try {
+            const config = {
+                widgetId: "3662616b7765363133313539",
+                tokenAuth: "491551TGhhpXBdgY1697f3ab8P1",
+                identifier: "mobile",
+                exposeMethods: false,
+                countryCode: "91", // 🇮🇳 PRE-SELECT INDIA
+
+                success: (data: any) => handleSuccess(data, 'widget_success_v4'),
+                failure: (err: any) => handleFailure(err, 'widget_failure_v4')
+            };
+
+            console.log("Calling initSendOTP with STANDARD config v4:", config);
+
+            // Invoke
+            (window as any).initSendOTP(config);
+
+            // Manual fallback measure
+            console.log("Window keys after init:", Object.keys(window).filter(k => k.toLowerCase().includes('otp')));
+
+
+        } catch (error) {
+            console.error("Error calling initSendOTP:", error);
+        }
+    };
+
+    const { setUser, loginSequence } = useApp();
     const router = useRouter();
-    const { loginSequence } = useApp();
     const { addToast } = useToast();
 
-    const [step, setStep] = useState<1 | 2>(1); // 1: Phone, 2: OTP
-    const [mobile, setMobile] = useState('');
-    const [otp, setOtp] = useState(['', '', '', '', '', '']);
-    const [isLoading, setIsLoading] = useState(false);
-    const [timer, setTimer] = useState(0);
+    const [manualMobile, setManualMobile] = useState('');
+    const [showManualInput, setShowManualInput] = useState(false);
+    const [pendingToken, setPendingToken] = useState<any>(null);
 
-    // Timer Countdown
-    useEffect(() => {
-        let interval: any;
-        if (timer > 0) {
-            interval = setInterval(() => {
-                setTimer((prev) => prev - 1);
-            }, 1000);
-        }
-        return () => clearInterval(interval);
-    }, [timer]);
-
-    // Handle Mobile Input Change
-    const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-        setMobile(val);
-    };
-
-    // SEND OTP
-    const handleSendOtp = async (e?: React.FormEvent) => {
-        e?.preventDefault();
-
-        if (mobile.length !== 10) {
-            addToast('error', 'Please enter a valid 10-digit mobile number');
-            return;
-        }
-
-        setIsLoading(true);
-        // 🛡️ USE RELATIVE URL to leverage Next.js Rewrites (Bypass CORS)
-        // If that fails, we can try absolute, but relative is safest for Next.js
-        const url = `/api/mobile/send-otp`;
-        console.log("🚀 Sending OTP to:", url);
+    const handleSuccess = async (data: any, source: string) => {
+        console.log("MSG91 RAW DATA: " + JSON.stringify(data, null, 2));
 
         try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mobile })
-            });
+            // Extract mobile if available
+            let mobile = data.mobile || data?.message?.mobile;
 
-            const contentType = res.headers.get("content-type");
-            let data;
-            if (contentType && contentType.includes("application/json")) {
-                data = await res.json();
-            } else {
-                const text = await res.text();
-                // 🚨 CRITICAL: Log non-JSON response
-                console.error("❌ Non-JSON Response:", text);
-                throw new Error(`Server Error (${res.status}): ${text.slice(0, 50)}...`);
-            }
-
-            if (!data.success) {
-                throw new Error(data.message || 'Failed to send OTP');
-            }
-
-            addToast('success', 'OTP Sent Successfully!');
-            setStep(2);
-            setTimer(30); // 30s Timer
-        } catch (error: any) {
-            console.error("OTP Send Error:", error);
-            // 🚨 FALLBACK ALERT for Zero-Failure Visibility
-            const msg = error.message || 'Network Error';
-            addToast('error', msg);
-            // If toast fails or is swallowed, alert ensures user sees it
-            if (msg.includes("Server Error") || msg.includes("Failed to fetch")) {
-                alert(`OTP Error: ${msg}\nPlease try again or contact support.`);
-            }
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // VERIFY OTP
-    const handleVerifyOtp = async (e?: React.FormEvent) => {
-        e?.preventDefault();
-        const otpValue = otp.join('');
-
-        if (otpValue.length !== 6) {
-            addToast('error', 'Please enter valid 6-digit OTP');
-            return;
-        }
-
-        setIsLoading(true);
-        // 🛡️ Relative URL
-        const url = `/api/mobile/verify-otp`;
-
-        try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mobile, otp: otpValue })
-            });
-
-            const contentType = res.headers.get("content-type");
-            let data;
-            if (contentType && contentType.includes("application/json")) {
-                data = await res.json();
-            } else {
-                const text = await res.text();
-                throw new Error(`Server Error (${res.status}): ${text.slice(0, 50)}...`);
-            }
-
-            if (!data.success) {
-                throw new Error(data.message || 'Invalid OTP');
-            }
-
-            // ✅ Login Successful
-            addToast('success', 'Login Successful!');
-
-            // Execute Global Login Sequence (Sync Cart, Set User)
-            if (data.token && data.user) {
-                await loginSequence(data.token, data.user);
-            }
-
-            // 🛒 CHECKOUT INTENT REDIRECT LOGIC
-            const checkoutIntentStr = localStorage.getItem("checkout_intent");
-            if (checkoutIntentStr) {
+            // 🟢 Fallback: Parsed JWT if mobile is missing
+            if (!mobile && (typeof data.message === 'string' || typeof data === 'string')) {
                 try {
-                    const intent = JSON.parse(checkoutIntentStr);
-                    if (intent.fromCheckout && intent.paymentMethod) {
-
-                        if (intent.paymentMethod === "COD") {
-                            localStorage.removeItem("checkout_intent");
-                            router.replace("/checkout/place-order-cod");
-                            return;
-                        }
-
-                        if (intent.paymentMethod === "RAZORPAY") {
-                            localStorage.removeItem("checkout_intent");
-                            router.replace("/payment"); // Corrected Route
-                            return;
+                    const token = data.message || data;
+                    if (token && typeof token === 'string' && token.includes('.')) {
+                        const base64Url = token.split('.')[1];
+                        if (base64Url) {
+                            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                            }).join(''));
+                            const parsed = JSON.parse(jsonPayload);
+                            mobile = parsed.mobile || parsed.phone || parsed.contact_number;
                         }
                     }
-                } catch (err) {
-                    console.error(err);
+                } catch (e) {
+                    console.error("Failed to decode JWT token:", e);
                 }
             }
 
-            // Default Redirect
-            router.replace("/profile");
-
-        } catch (error: any) {
-            const msg = error.message || 'Verification Failed';
-            addToast('error', msg);
-            if (msg.includes("Server Error")) {
-                alert(`Verification Error: ${msg}`);
+            // 🟢 Fallback 2: If still no mobile, ASK USER manually
+            if (!mobile) {
+                console.warn("Mobile number could not be detected. Requesting manual input.");
+                setPendingToken(data);
+                setShowManualInput(true);
+                addToast('info', 'Please confirm your mobile number to continue.');
+                return;
             }
-        } finally {
-            setIsLoading(false);
+
+            verifyBackend(data, mobile);
+
+        } catch (e) {
+            console.error("Verification error:", e);
+            addToast('error', "Verification error");
+        }
+    };
+
+    const verifyBackend = async (tokenData: any, mobile: string) => {
+        const payload = {
+            access_token: tokenData.access_token || tokenData?.message || tokenData,
+            mobile: mobile
+        };
+
+        try {
+            const res = await fetch("/api/mobile-otp-verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+
+            const result = await res.json();
+
+            if (result.success) {
+                const token = result.data?.token;
+                const user = result.data?.user;
+
+                if (token) {
+                    await loginSequence(token, { ...user, phone: user.phone || mobile, authMethod: 'mobile-otp' });
+                    addToast('success', `Login Successful!`);
+
+                    // 🛒 CHECKOUT INTENT LOGIC
+                    const checkoutIntentStr = localStorage.getItem("checkout_intent");
+                    if (checkoutIntentStr) {
+                        try {
+                            const intent = JSON.parse(checkoutIntentStr);
+                            if (intent.fromCheckout && intent.paymentMethod) {
+                                addToast('success', 'Redirecting to checkout...');
+
+                                if (intent.paymentMethod === "COD") {
+                                    localStorage.removeItem("checkout_intent");
+                                    router.replace("/checkout/place-order-cod");
+                                    return;
+                                }
+
+                                if (intent.paymentMethod === "RAZORPAY") {
+                                    localStorage.removeItem("checkout_intent");
+                                    router.replace("/payment"); // Corrected to /payment
+                                    return;
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Intent Parse Error", e);
+                        }
+                    }
+
+                    if (result.authMethod === 'mobile-otp' || user.authMethod === 'mobile-otp') {
+                        router.replace("/profile");
+                        return;
+                    }
+                    router.replace("/profile");
+                }
+            } else {
+                addToast('error', result.message || "Login Failed");
+            }
+        } catch (e) {
+            addToast('error', "Backend Verification Failed");
+        }
+    };
+
+    const handleManualSubmit = () => {
+        if (!manualMobile || manualMobile.length < 10) {
+            addToast('error', 'Please enter a valid mobile number');
+            return;
+        }
+        setShowManualInput(false);
+        verifyBackend(pendingToken, manualMobile);
+    };
+
+    const handleFailure = (err: any, source: string) => {
+        console.error(`MSG91 Failure via [${source}]:`, err);
+        const isIpBlocked = JSON.stringify(err).includes("408") || JSON.stringify(err).includes("IPBlocked");
+
+        if (isIpBlocked) {
+            addToast('error', `⚠️ IP BLOCKED BY MSG91. Please change network.`);
+        } else {
+            addToast('error', `OTP Verification Failed`);
         }
     };
 
     return (
-        <div className="w-full max-w-[380px] mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+        <>
+            <Script
+                src="https://control.msg91.com/app/assets/otp-provider/otp-provider.js"
+                strategy="afterInteractive"
+                onLoad={() => {
+                    console.log("MSG91 OTP Script Loaded");
+                    setIsScriptLoaded(true);
+                }}
+                onError={(e) => {
+                    console.error("MSG91 OTP Script Failed to Load", e);
+                }}
+            />
 
-            {/* Header */}
-            <div className="text-center mb-6">
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Smartphone size={24} />
-                </div>
-                <h3 className="text-xl font-bold text-gray-800">
-                    {step === 1 ? 'Mobile Login' : 'Verify OTP'}
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                    {step === 1
-                        ? 'Enter your mobile number to continue'
-                        : `Enter verify code sent to +91 ${mobile}`}
-                </p>
-            </div>
-
-            {step === 1 ? (
-                /* STEP 1: MOBILE INPUT */
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                    <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium border-r pr-2 border-gray-300">
-                            +91
-                        </span>
-                        <input
-                            type="tel"
-                            value={mobile}
-                            onChange={handleMobileChange}
-                            placeholder="Enter Mobile Number"
-                            className="w-full h-12 pl-14 pr-4 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold text-gray-800 text-lg tracking-wide placeholder:text-base placeholder:font-normal"
-                            disabled={isLoading}
-                            autoFocus
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={isLoading || mobile.length !== 10}
-                        className="w-full h-12 bg-[#F9C74F] hover:bg-[#F0B93E] text-gray-900 font-bold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-95"
-                    >
-                        {isLoading ? <Loader2 className="animate-spin" size={20} /> : (
-                            <>
-                                Send OTP <ArrowRight size={18} />
-                            </>
-                        )}
-                    </button>
-                </form>
+            {!showManualInput ? (
+                <button
+                    type="button"
+                    onClick={openMobileOtp}
+                    disabled={!isScriptLoaded}
+                    style={{
+                        width: "100%",
+                        padding: "12px",
+                        marginTop: "10px",
+                        background: isScriptLoaded ? "#25D366" : "#9ca3af",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "6px",
+                        fontWeight: "600",
+                        cursor: isScriptLoaded ? "pointer" : "not-allowed",
+                        transition: "background 0.3s"
+                    }}
+                >
+                    {isScriptLoaded ? "Login with Mobile OTP" : "Loading OTP Widget..."}
+                </button>
             ) : (
-                /* STEP 2: OTP INPUT */
-                <form onSubmit={handleVerifyOtp} className="space-y-6">
-
-                    <div className="flex justify-center">
-                        {/* Reuse existing OTP Input Component */}
-                        {/* Assuming OtpInput accepts standard props */}
-                        <div className="otp-container">
-                            {/* 
-                  Wrapper to style the inputs if needed.
-                  The existing component has built-in styling.
-               */}
-                            {/* @ts-ignore */}
-                            <OtpInput
-                                length={6}
-                                value={otp}
-                                onChange={setOtp}
-                                disabled={isLoading}
-                            />
-                        </div>
-                    </div>
-
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">Confirm Mobile Number</p>
+                    <input
+                        type="tel"
+                        placeholder="Enter 10-digit mobile number"
+                        className="w-full p-2 border rounded mb-2 text-sm"
+                        value={manualMobile}
+                        onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                            setManualMobile(val);
+                        }}
+                    />
                     <button
-                        type="submit"
-                        disabled={isLoading || otp.join('').length !== 6}
-                        className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-95"
+                        onClick={handleManualSubmit}
+                        className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 transition"
                     >
-                        {isLoading ? <Loader2 className="animate-spin" size={20} /> : (
-                            <>
-                                Verify & Login <CheckCircle2 size={18} />
-                            </>
-                        )}
+                        Complete Login
                     </button>
-
-                    <div className="flex items-center justify-between text-sm">
-                        <button
-                            type="button"
-                            onClick={() => { setStep(1); setOtp(['', '', '', '', '', '']); }}
-                            className="text-gray-500 hover:text-gray-700"
-                        >
-                            Change Number
-                        </button>
-
-                        {timer > 0 ? (
-                            <span className="text-gray-400 font-mono">
-                                Resend in 00:{timer.toString().padStart(2, '0')}
-                            </span>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={() => handleSendOtp()}
-                                className="text-blue-600 font-semibold flex items-center gap-1 hover:underline"
-                                disabled={isLoading}
-                            >
-                                <RefreshCw size={14} /> Resend OTP
-                            </button>
-                        )}
-                    </div>
-                </form>
+                </div>
             )}
-
-            {/* Security Badge */}
-            <div className="mt-8 text-center">
-                <p className="text-[10px] text-gray-400 uppercase tracking-widest flex items-center justify-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                    Secure 256-bit Encryption
-                </p>
-            </div>
-
-        </div>
+        </>
     );
-};
-
-export default MobileOtpLogin;
+}
