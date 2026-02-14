@@ -44,8 +44,9 @@ const MobileOtpLogin = () => {
         }
 
         setIsLoading(true);
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-        const url = `${apiUrl}/api/mobile/send-otp`;
+        // 🛡️ USE RELATIVE URL to leverage Next.js Rewrites (Bypass CORS)
+        // If that fails, we can try absolute, but relative is safest for Next.js
+        const url = `/api/mobile/send-otp`;
         console.log("🚀 Sending OTP to:", url);
 
         try {
@@ -61,6 +62,7 @@ const MobileOtpLogin = () => {
                 data = await res.json();
             } else {
                 const text = await res.text();
+                // 🚨 CRITICAL: Log non-JSON response
                 console.error("❌ Non-JSON Response:", text);
                 throw new Error(`Server Error (${res.status}): ${text.slice(0, 50)}...`);
             }
@@ -74,7 +76,13 @@ const MobileOtpLogin = () => {
             setTimer(30); // 30s Timer
         } catch (error: any) {
             console.error("OTP Send Error:", error);
-            addToast('error', error.message || 'Network Error');
+            // 🚨 FALLBACK ALERT for Zero-Failure Visibility
+            const msg = error.message || 'Network Error';
+            addToast('error', msg);
+            // If toast fails or is swallowed, alert ensures user sees it
+            if (msg.includes("Server Error") || msg.includes("Failed to fetch")) {
+                alert(`OTP Error: ${msg}\nPlease try again or contact support.`);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -91,8 +99,8 @@ const MobileOtpLogin = () => {
         }
 
         setIsLoading(true);
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-        const url = `${apiUrl}/api/mobile/verify-otp`;
+        // 🛡️ Relative URL
+        const url = `/api/mobile/verify-otp`;
 
         try {
             const res = await fetch(url, {
@@ -150,7 +158,11 @@ const MobileOtpLogin = () => {
             router.replace("/profile");
 
         } catch (error: any) {
-            addToast('error', error.message || 'Verification Failed');
+            const msg = error.message || 'Verification Failed';
+            addToast('error', msg);
+            if (msg.includes("Server Error")) {
+                alert(`Verification Error: ${msg}`);
+            }
         } finally {
             setIsLoading(false);
         }
