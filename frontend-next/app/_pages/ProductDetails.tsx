@@ -503,13 +503,13 @@ export const ProductDetails: React.FC = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-4 text-sm font-bold uppercase tracking-wide transition-colors ${activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/20' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wide transition-colors ${activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/20' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 {tab}
               </button>
             ))}
           </div>
-          <div className="p-6 min-h-[200px]">
+          <div className="p-4 md:p-6 min-h-[200px]">
             {activeTab === 'description' && (
               <div className="prose prose-sm max-w-none text-gray-600 whitespace-pre-wrap">
                 {product.description?.replace(/<!-- METADATA:.*?-->/g, '').trim()}
@@ -519,7 +519,7 @@ export const ProductDetails: React.FC = () => {
             {activeTab === 'specifications' && (
               <div className="space-y-4">
                 {product.specifications ? (
-                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 font-mono text-sm leading-relaxed whitespace-pre-line text-gray-700">
+                  <div className="bg-gray-50 p-3 md:p-4 rounded-xl border border-gray-100 font-mono text-xs md:text-sm leading-relaxed whitespace-pre-line text-gray-700">
                     {product.specifications}
                   </div>
                 ) : (
