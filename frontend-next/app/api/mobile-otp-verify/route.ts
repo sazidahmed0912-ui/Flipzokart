@@ -61,12 +61,42 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // 🟢 If NO Mobile number found in token/request, we can't login.
-        // And since we now enforce "Login only if registered", we can't just return success blindly.
-        return NextResponse.json({
-            success: false,
-            message: "Unable to verify user identity (No phone number found)"
-        });
+        // 🟢 If NO Mobile number found in token/request, we try to fetch it from MSG91 API directly.
+        if (!mobileToLogin) {
+            console.log("Mobile not found in token payload. Attempting MSG91 API verification...");
+            try {
+                // Use env var or fallback to the key used in frontend
+                const authKey = process.env.MSG91_AUTH_KEY || "491551TGhhpXBdgY1697f3ab8P1";
+
+                const msg91Res = await fetch("https://control.msg91.com/api/v5/widget/verifyAccessToken", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "authkey": authKey
+                    },
+                    body: JSON.stringify({ access_token })
+                });
+
+                if (msg91Res.ok) {
+                    const msg91Data = await msg91Res.json();
+                    console.log("MSG91 API Response:", JSON.stringify(msg91Data));
+                    // Check field structure (usually message or mobile)
+                    mobileToLogin = msg91Data.mobile || msg91Data.message?.mobile || msg91Data.data?.mobile;
+                } else {
+                    console.error("MSG91 API Failed:", await msg91Res.text());
+                }
+            } catch (apiErr) {
+                console.error("MSG91 API Error:", apiErr);
+            }
+        }
+
+        // Final check
+        if (!mobileToLogin) {
+            return NextResponse.json({
+                success: false,
+                message: "Unable to verify user identity (No phone number found after API check)"
+            });
+        }
 
     } catch (err) {
         console.error("Route Error:", err);
