@@ -38,7 +38,7 @@ const Modal: React.FC<ModalProps> = ({ show, isOpen, onClose, children }) => {
     <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity"
+        className="absolute inset-0 bg-black/40 md:bg-black/60 backdrop-blur-[2px] transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -50,7 +50,7 @@ const Modal: React.FC<ModalProps> = ({ show, isOpen, onClose, children }) => {
         aria-modal="true"
       >
         {/* Sticky Close Button Area */}
-        <div className="absolute top-4 right-4 z-20">
+        <div className="absolute top-3 right-3 md:top-4 md:right-4 z-20">
           <button
             onClick={onClose}
             className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 text-gray-500 transition-colors"
@@ -61,9 +61,9 @@ const Modal: React.FC<ModalProps> = ({ show, isOpen, onClose, children }) => {
         </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto p-5 md:p-8 lg:p-10 overscroll-contain">
+        <div className="overflow-y-auto p-4 md:p-8 lg:p-10 overscroll-contain">
           {/* Add top padding to avoid close button overlap if no header */}
-          <div className="mt-2 text-base md:text-lg">
+          <div className="mt-2 text-sm md:text-base lg:text-lg text-gray-700 leading-relaxed">
             {children}
           </div>
         </div>
