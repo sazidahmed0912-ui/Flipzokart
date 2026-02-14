@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
 import { X } from "lucide-react";
 
 interface ModalProps {
@@ -10,13 +11,21 @@ interface ModalProps {
 
 const Modal: React.FC<ModalProps> = ({ show, isOpen, onClose, children }) => {
   const isVisible = show || isOpen; // Handle both prop names
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   // Handle ESC key to close
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (isVisible && e.key === 'Escape') onClose();
     };
-    window.addEventListener('keydown', handleEsc);
+    if (isVisible) {
+      window.addEventListener('keydown', handleEsc);
+    }
     return () => window.removeEventListener('keydown', handleEsc);
   }, [isVisible, onClose]);
 
@@ -32,9 +41,9 @@ const Modal: React.FC<ModalProps> = ({ show, isOpen, onClose, children }) => {
     };
   }, [isVisible]);
 
-  if (!isVisible) return null;
+  if (!mounted || !isVisible) return null;
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:p-4">
       {/* Backdrop */}
       <div
@@ -70,6 +79,8 @@ const Modal: React.FC<ModalProps> = ({ show, isOpen, onClose, children }) => {
       </div>
     </div>
   );
+
+  return ReactDOM.createPortal(modalContent, document.body);
 };
 
 export default Modal;
