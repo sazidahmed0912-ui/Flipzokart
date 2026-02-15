@@ -84,6 +84,9 @@ export const FashionPage: React.FC = () => {
     const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
 
     // Fetch dynamic subcategory icons (optional enhancement, kept for backward compat)
+    // Fetch dynamic subcategory icons (optional enhancement, kept for backward compat)
+    // TEMPORARILY DISABLED: To ensure hardcoded Unsplash images are shown and not overwritten by potential empty DB values
+    /*
     useEffect(() => {
         const fetchContent = async () => {
             try {
@@ -113,6 +116,7 @@ export const FashionPage: React.FC = () => {
         };
         fetchContent();
     }, []);
+    */
 
     // Filter Products based on Tab
     const tabProducts = products.filter(p =>
