@@ -22,7 +22,6 @@ const {
     upsertSubcategory,
     getCategoryLayout,
     saveCategoryLayout,
-    saveCategoryLayout,
     publishCategoryLayout,
     exportContent,
     importContent
