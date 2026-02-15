@@ -42,6 +42,12 @@ export const ShopPage: React.FC = () => {
       return;
     }
 
+    // Redirect Beauty to Landing Page
+    if (selectedCategory === 'Beauty' || selectedCategory === 'beauty') {
+      window.location.href = '/beauty';
+      return;
+    }
+
     const slug = selectedCategory.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
     API.get(`/api/content/categories/${slug}`)
       .then(res => {
