@@ -13,6 +13,7 @@ import { fetchProductById, createProduct, updateProduct, uploadFile, uploadMulti
 import { useToast } from '@/app/components/toast';
 import { CATEGORIES, SUBCATEGORIES } from '@/app/constants';
 import { getProductImageUrl } from '@/app/utils/imageHelper';
+import { FashionSubcategorySelector } from '@/app/components/FashionSubcategorySelector';
 
 // --- Types ---
 interface VariantOption {
@@ -417,6 +418,13 @@ export const AdminProductEditor: React.FC = () => {
                 return;
             }
 
+            // Validation: Strict Fashion Subcategory
+            if (formData.category === 'Fashion' && !formData.subcategory) {
+                addToast('error', 'Please select a valid Fashion subcategory (e.g. Men > Shirts)');
+                setSaving(false);
+                return;
+            }
+
             if (finalSalePrice > finalOriginalPrice) {
                 addToast('error', 'Sale Price cannot be greater than Original Price');
                 setSaving(false);
@@ -699,22 +707,33 @@ export const AdminProductEditor: React.FC = () => {
                                     </div>
 
                                     {/* Subcategory - Dependent Dropdown */}
+                                    {/* Subcategory - Dependent Dropdown OR Custom Fashion Selector */}
                                     <div>
-                                        <label className="text-xs font-bold text-gray-500">Subcategory</label>
-                                        <select
-                                            name="subcategory"
-                                            value={formData.subcategory}
-                                            onChange={handleChange}
-                                            className="w-full mt-1 px-4 py-2 border rounded-xl text-sm disabled:bg-gray-100 disabled:text-gray-400"
-                                            disabled={!formData.category || !SUBCATEGORIES[formData.category]}
-                                        >
-                                            <option value="">Select Subcategory</option>
-                                            {formData.category && SUBCATEGORIES[formData.category]?.map(sub => (
-                                                <option key={sub} value={sub}>{sub}</option>
-                                            ))}
-                                        </select>
-                                        {formData.category && !SUBCATEGORIES[formData.category] && (
-                                            <p className="text-[10px] text-orange-500 mt-1">No subcategories for {formData.category}</p>
+                                        {formData.category === 'Fashion' ? (
+                                            <FashionSubcategorySelector
+                                                value={formData.subcategory}
+                                                onChange={(val) => setFormData(prev => ({ ...prev, subcategory: val }))}
+                                                error={(!formData.subcategory && saving) ? "Required" : undefined}
+                                            />
+                                        ) : (
+                                            <>
+                                                <label className="text-xs font-bold text-gray-500">Subcategory</label>
+                                                <select
+                                                    name="subcategory"
+                                                    value={formData.subcategory}
+                                                    onChange={handleChange}
+                                                    className="w-full mt-1 px-4 py-2 border rounded-xl text-sm disabled:bg-gray-100 disabled:text-gray-400"
+                                                    disabled={!formData.category || !SUBCATEGORIES[formData.category]}
+                                                >
+                                                    <option value="">Select Subcategory</option>
+                                                    {formData.category && SUBCATEGORIES[formData.category]?.map(sub => (
+                                                        <option key={sub} value={sub}>{sub}</option>
+                                                    ))}
+                                                </select>
+                                                {formData.category && !SUBCATEGORIES[formData.category] && (
+                                                    <p className="text-[10px] text-orange-500 mt-1">No subcategories for {formData.category}</p>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                     <div>

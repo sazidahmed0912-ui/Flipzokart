@@ -165,7 +165,7 @@ export const FashionPage: React.FC = () => {
             </div>
 
             {/* 2. SWIPER HERO BANNER (ULTRA LOCK FIX) */}
-            <div className="w-full h-[220px] md:h-[420px] bg-gray-100 overflow-hidden">
+            <div className="w-full h-[220px] md:h-[420px] lg:h-[420px] xl:h-[520px] 2xl:h-[580px] bg-gray-100 overflow-hidden lg:max-w-[1400px] xl:max-w-[1500px] mx-auto rounded-none lg:rounded-2xl lg:mt-4 lg:shadow-xl relative">
                 <Swiper
                     key={activeTab} // Force re-render on activeTab change
                     modules={[Autoplay, Pagination]}
@@ -188,18 +188,18 @@ export const FashionPage: React.FC = () => {
                                 <img
                                     src={img}
                                     alt={`${currentBanner.title} - Slide ${index + 1}`}
-                                    className="absolute inset-0 w-full h-full object-cover md:object-fill"
+                                    className="absolute inset-0 w-full h-full object-cover object-center"
                                 />
 
                                 {/* Gradient Overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12 pointer-events-none">
-                                    <div className="text-white pointer-events-auto">
-                                        <h2 className="text-xl md:text-5xl font-bold mb-1 md:mb-3">{currentBanner.title}</h2>
+                                    <div className="text-white pointer-events-auto max-w-[600px] lg:max-w-[800px]">
+                                        <h2 className="text-xl md:text-5xl lg:text-5xl xl:text-6xl font-bold mb-1 md:mb-3 lg:mb-4">{currentBanner.title}</h2>
                                         <Link
                                             href={currentBanner.link}
-                                            className="text-xs md:text-base font-semibold bg-white text-black px-3 py-1.5 md:px-6 md:py-2.5 rounded-full inline-flex items-center gap-1 hover:bg-opacity-90 transition-colors"
+                                            className="text-xs md:text-base lg:text-lg font-semibold bg-white text-black px-3 py-1.5 md:px-6 md:py-2.5 lg:px-8 lg:py-3 rounded-full inline-flex items-center gap-1 hover:bg-opacity-90 transition-transform hover:scale-105 shadow-lg"
                                         >
-                                            Shop Now <ChevronRight size={12} className="md:w-4 md:h-4" />
+                                            Shop Now <ChevronRight size={16} className="md:w-4 md:h-4 lg:w-5 lg:h-5" />
                                         </Link>
                                     </div>
                                 </div>
