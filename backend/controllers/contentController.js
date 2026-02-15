@@ -92,75 +92,48 @@ const deleteHomepageBanner = async (req, res) => {
     }
 };
 
-// @desc    Admin: Seed default banners AND categories if empty
+// @desc    Admin: Seed default banners if empty
 // @route   POST /api/admin/content/banners/seed
 // @access  Private/Admin
 const seedHomepageBanners = async (req, res) => {
     try {
-        // 1. Seed Banners
-        const bannerCount = await HomepageBanner.countDocuments();
-        let seededBanners = [];
-
-        if (bannerCount === 0) {
-            const defaultBanners = [
-                {
-                    title: "Start Selling for Everyone",
-                    subtitle: "Sell your products online and reach more customers with Flipzokart",
-                    ctaText: "Join as a Seller",
-                    redirectUrl: "/sell",
-                    imageUrl: "/assets/banner_seller.png",
-                    mobileImageUrl: "/assets/banner_seller.png",
-                    position: 1,
-                    isActive: true
-                },
-                {
-                    title: "The Big Fashion Sale",
-                    subtitle: "Up to 50% OFF on Top Brands",
-                    ctaText: "Shop Now",
-                    redirectUrl: "/shop?tag=offer",
-                    imageUrl: "/assets/banner_offer_new.png",
-                    mobileImageUrl: "/assets/banner_offer_new.png",
-                    position: 2,
-                    isActive: true
-                },
-                {
-                    title: "Mega Savings Deal",
-                    subtitle: "Flat 50% OFF on Kids Collection & More",
-                    ctaText: "Shop Now",
-                    redirectUrl: "/shop?category=Kids",
-                    imageUrl: "/assets/banner_kids_new.jpg",
-                    mobileImageUrl: "/assets/banner_kids_new.jpg",
-                    position: 3,
-                    isActive: true
-                }
-            ];
-            seededBanners = await HomepageBanner.insertMany(defaultBanners);
-            console.log("Seeded Banners");
+        const count = await HomepageBanner.countDocuments();
+        if (count > 0) {
+            return res.status(400).json({ message: 'Banners already exist. Cannot seed.' });
         }
 
-        // 2. Seed Default Categories (Critical for Builder)
-        const categories = [
-            { name: "Electronics", slug: "electronics" },
-            { name: "Fashion", slug: "fashion" },
-            { name: "Home & Garden", slug: "home-and-garden" },
-            { name: "Beauty", slug: "beauty" }
+        const defaultBanners = [
+            {
+                title: "Start Selling for Everyone",
+                subtitle: "Sell your products online and reach more customers with Fzokart",
+                ctaText: "Join as a Seller",
+                redirectUrl: "/sell",
+                imageUrl: "/assets/banner_seller.png",
+                mobileImageUrl: "/assets/banner_seller.png",
+                position: 1
+            },
+            {
+                title: "The Big Fashion Sale",
+                subtitle: "Up to 50% OFF on Top Brands",
+                ctaText: "Shop Now",
+                redirectUrl: "/shop?tag=offer",
+                imageUrl: "/assets/banner_offer_new.png",
+                mobileImageUrl: "/assets/banner_offer_new.png",
+                position: 2
+            },
+            {
+                title: "Mega Savings Deal",
+                subtitle: "Flat 50% OFF on Kids Collection & More",
+                ctaText: "Shop Now",
+                redirectUrl: "/shop?category=Kids",
+                imageUrl: "/assets/banner_kids_new.jpg",
+                mobileImageUrl: "/assets/banner_kids_new.jpg",
+                position: 3
+            }
         ];
 
-        let seededCategories = [];
-        for (const cat of categories) {
-            const exists = await Category.findOne({ slug: cat.slug });
-            if (!exists) {
-                const newCat = await Category.create({ ...cat, isActive: true });
-                seededCategories.push(newCat);
-            }
-        }
-
-        res.status(201).json({
-            message: 'Content seeding completed',
-            bannersSeeded: seededBanners.length > 0,
-            categoriesSeeded: seededCategories.length
-        });
-
+        await HomepageBanner.insertMany(defaultBanners);
+        res.status(201).json({ message: 'Default banners seeded successfully', banners: defaultBanners });
     } catch (error) {
         console.error("seedHomepageBanners Error:", error);
         res.status(500).json({ message: 'Server Error', error: error.message });
@@ -432,28 +405,8 @@ module.exports = {
     // Layout Management
     getCategoryLayout: async (req, res) => {
         try {
-            const { slug } = req.params;
-            let category = await Category.findOne({ slug });
-
-            // Auto-create category if missing to allow Builder to work
-            if (!category) {
-                // Determine name from slug (e.g., 'mens-fashion' -> 'Mens Fashion')
-                const name = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-
-                try {
-                    category = await Category.create({
-                        name,
-                        slug,
-                        isActive: true
-                    });
-                    console.log(`Auto-created missing category for builder: ${slug}`);
-                } catch (createError) {
-                    console.error("Auto-create category failed:", createError);
-                    // Fallback if duplicate name exists but different slug, etc.
-                    return res.status(404).json({ message: 'Category not found and could not be created' });
-                }
-            }
-
+            const category = await Category.findOne({ slug: req.params.slug });
+            if (!category) return res.status(404).json({ message: 'Category not found' });
             res.json({
                 draft: category.draftLayout || [],
                 published: category.pageLayout || []

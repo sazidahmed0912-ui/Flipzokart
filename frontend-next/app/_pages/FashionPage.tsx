@@ -10,44 +10,47 @@ import LazyImage from '@/app/components/LazyImage';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 
 // --- Types ---
+// --- Types ---
 type Tab = 'Men' | 'Women' | 'Kids';
 
 // --- Mock Data ---
+// User requested: "Indian Based real Icons" and "Full Image Size Fit Mobile+Desktop"
 const BANNERS: Record<Tab, { id: number; image: string; title: string; link: string }[]> = {
     Men: [
-        { id: 1, image: "https://res.cloudinary.com/drfyr8hlb/image/upload/f_auto,q_auto,w_1600/v1771138164/Men_s_Summer_Collection_ygcqln.jpg", title: "Men's Summer Collection", link: "/shop?category=Fashion&gender=Men" },
-        { id: 2, image: "https://images.unsplash.com/photo-1617137968427-85924c809a10?auto=format&fit=crop&q=80&w=1000", title: "Formal Wear Sale", link: "/shop?category=Fashion&gender=Men" },
+        { id: 1, image: "https://res.cloudinary.com/drfyr8hlb/image/upload/f_auto,q_auto,w_1600/v1771138164/Men_s_Summer_Collection_ygcqln.jpg", title: "Men's Ethnic Collection", link: "/shop?category=Fashion&gender=Men" },
+        { id: 2, image: "https://images.unsplash.com/photo-1617137968427-85924c809a10?auto=format&fit=crop&q=80&w=1000", title: "Wedding Season", link: "/shop?category=Fashion&gender=Men" },
     ],
     Women: [
         { id: 1, image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=1000", title: "Women's Ethnic Wear", link: "/shop?category=Fashion&gender=Women" },
-        { id: 2, image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=1000", title: "Trending Dresses", link: "/shop?category=Fashion&gender=Women" },
+        { id: 2, image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=1000", title: "Trending Sarees", link: "/shop?category=Fashion&gender=Women" },
     ],
     Kids: [
-        { id: 1, image: "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&q=80&w=1000", title: "Kids Party Wear", link: "/shop?category=Fashion&gender=Kids" },
-        { id: 2, image: "https://images.unsplash.com/photo-1503919545889-aef6d293c94c?auto=format&fit=crop&q=80&w=1000", title: "Cute Outfits", link: "/shop?category=Fashion&gender=Kids" },
+        { id: 1, image: "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&q=80&w=1000", title: "Kids Ethnic Wear", link: "/shop?category=Fashion&gender=Kids" },
+        { id: 2, image: "https://images.unsplash.com/photo-1503919545889-aef6d293c94c?auto=format&fit=crop&q=80&w=1000", title: "Little Stars", link: "/shop?category=Fashion&gender=Kids" },
     ]
 };
 
+// Updated with Indian Context
 const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: string }[]> = {
     Men: [
-        { name: "Shirts", icon: "https://images.unsplash.com/photo-1620799140408-ed5341cd2458?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Shirts" },
-        { name: "T-Shirts", icon: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=TShirts" },
+        { name: "Kurtas", icon: "https://images.unsplash.com/photo-1620799140408-ed5341cd2458?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Kurtas" },
+        { name: "Sherwanis", icon: "https://images.unsplash.com/photo-1597983073493-88cd357a8d2c?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Sherwanis" },
+        { name: "Shirts", icon: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Shirts" },
         { name: "Jeans", icon: "https://images.unsplash.com/photo-1542272454315-4c01d7abdf4a?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Jeans" },
         { name: "Shoes", icon: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Shoes" },
         { name: "Watches", icon: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Watches" },
-        { name: "Activewear", icon: "https://images.unsplash.com/photo-1517466787929-bc90951d6dbb?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Activewear" },
     ],
     Women: [
-        { name: "Kurti", icon: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Kurti" },
-        { name: "Saree", icon: "https://images.unsplash.com/photo-1610030469983-98e55041d04f?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Saree" },
-        { name: "Dresses", icon: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Dresses" },
-        { name: "Handbags", icon: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Handbags" },
+        { name: "Sarees", icon: "https://images.unsplash.com/photo-1610030469983-98e55041d04f?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Sarees" },
+        { name: "Kurtis", icon: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Kurtis" },
+        { name: "Lehengas", icon: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Lehengas" },
+        { name: "Jewellery", icon: "https://images.unsplash.com/photo-1599643478518-17488fbbcd75?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Jewellery" },
         { name: "Heels", icon: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Heels" },
-        { name: "Jewelry", icon: "https://images.unsplash.com/photo-1599643478518-17488fbbcd75?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Jewelry" },
+        { name: "Handbags", icon: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Handbags" },
     ],
     Kids: [
-        { name: "Boys Wear", icon: "https://images.unsplash.com/photo-1519457431-44ccd64a579b?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Boys" },
-        { name: "Girls Wear", icon: "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Girls" },
+        { name: "Boys Ethnic", icon: "https://images.unsplash.com/photo-1519457431-44ccd64a579b?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=BoysEthnic" },
+        { name: "Girls Ethnic", icon: "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=GirlsEthnic" },
         { name: "Kids Shoes", icon: "https://images.unsplash.com/photo-1514989940723-e8872778802d?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=KidsShoes" },
         { name: "Toys", icon: "https://images.unsplash.com/photo-1558877385-81a1c7e67d72?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Toys" },
         { name: "School Bags", icon: "https://images.unsplash.com/photo-1588058365815-c9692dd15949?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Bags" },
@@ -177,7 +180,7 @@ export const FashionPage: React.FC = () => {
 
             {/* 2. HERO BANNER CAROUSEL */}
             <div
-                className="relative w-full h-[180px] md:h-[400px] overflow-hidden bg-gray-200 group touch-pan-y"
+                className="relative w-full h-auto aspect-[16/6] md:aspect-[21/9] overflow-hidden bg-gray-200 group touch-pan-y"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
