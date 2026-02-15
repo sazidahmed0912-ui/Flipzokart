@@ -14,7 +14,7 @@ type Tab = 'Men' | 'Women' | 'Kids';
 // --- Mock Data ---
 const BANNERS: Record<Tab, { id: number; image: string; title: string; link: string }[]> = {
     Men: [
-        { id: 1, image: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771138164/Men_s_Summer_Collection_ygcqln.jpg", title: "Men's Summer Collection", link: "/shop?category=Fashion&gender=Men" },
+        { id: 1, image: "https://res.cloudinary.com/drfyr8hlb/image/upload/f_auto,q_auto,w_1600/v1771138164/Men_s_Summer_Collection_ygcqln.jpg", title: "Men's Summer Collection", link: "/shop?category=Fashion&gender=Men" },
         { id: 2, image: "https://images.unsplash.com/photo-1617137968427-85924c809a10?auto=format&fit=crop&q=80&w=1000", title: "Formal Wear Sale", link: "/shop?category=Fashion&gender=Men" },
     ],
     Women: [
@@ -164,6 +164,7 @@ export const FashionPage: React.FC = () => {
                             fill
                             className="object-cover"
                             priority
+                            sizes="100vw"
                         />
                         {/* Gradient Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12">

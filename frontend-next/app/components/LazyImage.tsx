@@ -48,7 +48,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
     const finalProps = effectiveFill ? { fill: true } : { width, height };
 
     return (
-        <div className={`relative overflow-hidden bg-gray-50 ${wrapperClassName} ${effectiveFill ? '' : 'inline-block'} ${className}`}>
+        <div className={`relative overflow-hidden bg-gray-50 ${wrapperClassName} ${effectiveFill ? 'w-full h-full' : 'inline-block'} ${className}`}>
             <Image
                 src={imgSrc || '/placeholder.png'}
                 alt={alt}
@@ -64,7 +64,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
                 }}
                 className={`
                     transition-opacity duration-300 ease-in-out
-                    opacity-100
+                    ${isLoaded ? 'opacity-100' : 'opacity-0'}
                     ${className}
                 `}
                 {...finalProps}
