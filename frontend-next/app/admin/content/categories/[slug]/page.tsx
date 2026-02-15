@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '@/app/services/api';
 import { useParams } from 'next/navigation';
 import { ImageUpload } from '../../_components/ImageUpload';
 import { SUBCATEGORIES } from '@/app/constants';
@@ -38,7 +38,7 @@ export default function CategoryDetailPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const res = await axios.get(`/api/content/categories/${slug}`);
+            const res = await API.get(`/api/content/categories/${slug}`);
             setCategoryData(res.data.category || {});
             setBannerUrl(res.data.category?.bannerUrl || '');
             setMobileBannerUrl(res.data.category?.mobileBannerUrl || '');
@@ -82,12 +82,12 @@ export default function CategoryDetailPage() {
 
     const saveCategoryBanner = async () => {
         try {
-            await axios.post('/api/admin/content/categories', {
+            await API.post('/api/admin/content/categories', {
                 name: displayName, // Ideally correct case
                 slug: slug,
                 bannerUrl: bannerUrl,
                 mobileBannerUrl: mobileBannerUrl
-            }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+            });
             alert('Banner saved!');
         } catch (e) {
             alert('Failed to save banner');
@@ -103,22 +103,22 @@ export default function CategoryDetailPage() {
             // Need categoryId. If categoryData doesn't exist yet, ensure it exists first
             let catId = categoryData?._id;
             if (!catId) {
-                const catRes = await axios.post('/api/admin/content/categories', {
+                const catRes = await API.post('/api/admin/content/categories', {
                     name: displayName,
                     slug: slug,
                     bannerUrl: bannerUrl,
                     mobileBannerUrl: mobileBannerUrl
-                }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+                });
                 catId = catRes.data._id;
                 setCategoryData(catRes.data);
             }
 
-            await axios.post('/api/admin/content/subcategories', {
+            await API.post('/api/admin/content/subcategories', {
                 categoryId: catId,
                 name: sub.name,
                 slug: sub.slug,
                 iconUrl: newUrl
-            }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+            });
 
         } catch (e) {
             console.error(e);

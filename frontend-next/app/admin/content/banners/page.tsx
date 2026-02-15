@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '@/app/services/api';
 import { Plus, Save, Trash2, ArrowUp, ArrowDown, ExternalLink, RefreshCw, Type, Image as ImageIcon, GripVertical, Check, Filter } from 'lucide-react';
 import { ImageUpload } from '../_components/ImageUpload';
 import { Reorder, motion } from 'framer-motion';
@@ -42,9 +42,7 @@ export default function BannersPage() {
     const fetchBanners = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('/api/admin/content/banners', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const res = await API.get('/api/admin/content/banners');
             setBanners(res.data);
         } catch (error) {
             console.error('Failed to fetch banners', error);
@@ -56,9 +54,7 @@ export default function BannersPage() {
     const handleImportDefaults = async () => {
         try {
             setImporting(true);
-            await axios.post('/api/admin/content/banners/seed', {}, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            await API.post('/api/admin/content/banners/seed', {});
             alert('Default banners imported successfully!');
             fetchBanners();
         } catch (error: any) {
@@ -72,15 +68,13 @@ export default function BannersPage() {
         if (!newBannerImage) return alert('Please upload a desktop banner image');
 
         try {
-            await axios.post('/api/admin/content/banners', {
+            await API.post('/api/admin/content/banners', {
                 imageUrl: newBannerImage,
                 mobileImageUrl: newBannerMobileImage || newBannerImage,
                 redirectUrl: newBannerLink,
                 title: newTitle,
                 subtitle: newSubtitle,
                 ctaText: newCta
-            }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
 
             setNewBannerImage('');
@@ -99,9 +93,7 @@ export default function BannersPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure?')) return;
         try {
-            await axios.delete(`/api/admin/content/banners/${id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            await API.delete(`/api/admin/content/banners/${id}`);
             fetchBanners();
         } catch (error) {
             alert('Failed to delete');
@@ -110,9 +102,7 @@ export default function BannersPage() {
 
     const handleUpdate = async (id: string, data: Partial<Banner>) => {
         try {
-            await axios.put(`/api/admin/content/banners/${id}`, data, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            await API.put(`/api/admin/content/banners/${id}`, data);
             // Update local state without full refetch if possible for smoother toggle
             setBanners(prev => prev.map(b => b._id === id ? { ...b, ...data } : b));
         } catch (error) {
@@ -125,10 +115,8 @@ export default function BannersPage() {
         setBanners(newOrder); // Optimistic Update
 
         try {
-            await axios.put('/api/admin/content/banners/reorder', {
+            await API.put('/api/admin/content/banners/reorder', {
                 orderedIds: newOrder.map(b => b._id)
-            }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
         } catch (error) {
             console.error("Reorder failed", error);

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '@/app/services/api';
 import { Plus, Save, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { ImageUpload } from '../_components/ImageUpload';
 import { CATEGORIES } from '@/app/constants'; // Use centralized constants for dropdowns
@@ -32,9 +32,7 @@ export default function HomeCategoriesPage() {
     const fetchCategories = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('/api/admin/content/home-categories', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const res = await API.get('/api/admin/content/home-categories');
             setCategories(res.data);
         } catch (error) {
             console.error('Failed to fetch categories', error);
@@ -47,12 +45,10 @@ export default function HomeCategoriesPage() {
         if (!newIcon || !newName) return alert('Please provide name and icon');
 
         try {
-            await axios.post('/api/admin/content/home-categories', {
+            await API.post('/api/admin/content/home-categories', {
                 categoryName: newName,
                 iconUrl: newIcon,
                 redirectUrl: newLink
-            }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
 
             setNewIcon('');
@@ -68,9 +64,7 @@ export default function HomeCategoriesPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure?')) return;
         try {
-            await axios.delete(`/api/admin/content/home-categories/${id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            await API.delete(`/api/admin/content/home-categories/${id}`);
             fetchCategories();
         } catch (error) {
             alert('Failed to delete');
@@ -91,8 +85,8 @@ export default function HomeCategoriesPage() {
 
         try {
             await Promise.all([
-                axios.put(`/api/admin/content/home-categories/${current._id}`, { position: target.position }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
-                axios.put(`/api/admin/content/home-categories/${target._id}`, { position: current.position }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+                API.put(`/api/admin/content/home-categories/${current._id}`, { position: target.position }),
+                API.put(`/api/admin/content/home-categories/${target._id}`, { position: current.position })
             ]);
             fetchCategories();
         } catch (err) {

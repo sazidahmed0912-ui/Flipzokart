@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Image as ImageIcon, Layers, Smartphone, Monitor } from 'lucide-react';
-import axios from 'axios';
+import API from '@/app/services/api';
 import { StatsCards } from './_components/StatsCards';
 
 const tabs = [
@@ -25,9 +25,7 @@ export default function ContentLayout({ children }: { children: React.ReactNode 
     const fetchStats = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('/api/admin/content/stats', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const res = await API.get('/api/admin/content/stats');
             setStats(res.data);
         } catch (error) {
             console.error(error);
@@ -57,8 +55,8 @@ export default function ContentLayout({ children }: { children: React.ReactNode 
                                 key={tab.path}
                                 href={tab.path}
                                 className={`flex items-center gap-2 px-5 py-3 rounded-t-lg text-sm font-medium transition-all border-b-2 whitespace-nowrap ${isActive
-                                        ? 'border-[#2874F0] text-[#2874F0] bg-blue-50/50'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                    ? 'border-[#2874F0] text-[#2874F0] bg-blue-50/50'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                     }`}
                             >
                                 <Icon size={18} />

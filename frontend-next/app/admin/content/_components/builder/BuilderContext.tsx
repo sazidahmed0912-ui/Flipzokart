@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '@/app/services/api';
 import { useToast } from '@/app/components/toast';
 
 export interface Section {
@@ -96,9 +96,7 @@ export const BuilderProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const loadLayout = async (slug: string) => {
         setLoading(true);
         try {
-            const { data } = await axios.get(`/api/admin/categories/${slug}/layout`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const { data } = await API.get(`/api/admin/categories/${slug}/layout`);
             // Prefer draft if exists and not empty, otherwise published
             const loaded = data.draft && data.draft.length > 0 ? data.draft : (data.published || []);
             setSections(loaded);
@@ -113,10 +111,7 @@ export const BuilderProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const saveDraft = async (slug: string) => {
         setSaving(true);
         try {
-            await axios.post(`/api/admin/categories/${slug}/layout`,
-                { layout: sections },
-                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-            );
+            await API.post(`/api/admin/categories/${slug}/layout`, { layout: sections });
             addToast('success', 'Draft Saved');
         } catch (error) {
             addToast('error', 'Failed to save draft');
@@ -129,10 +124,7 @@ export const BuilderProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (!confirm('Publish this layout to the live site?')) return;
         setSaving(true);
         try {
-            await axios.post(`/api/admin/categories/${slug}/publish`,
-                {},
-                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-            );
+            await API.post(`/api/admin/categories/${slug}/publish`, {});
             addToast('success', 'Layout Published!');
         } catch (error) {
             addToast('error', 'Failed to publish');

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import API from '@/app/services/api';
 
 interface ImageUploadProps {
     value: string;
@@ -42,8 +42,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         formData.append('image', file);
 
         try {
-            // Correct endpoint for single upload
-            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/upload`, formData, {
+            // API instance handles base URL and auth
+            const res = await API.post('/api/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Filter, ChevronDown, Grid, List, Search, X, Star } from 'lucide-react';
-import axios from 'axios';
+import API from '@/app/services/api';
 import { ProductCard } from '@/app/components/ProductCard';
 import { SearchProductCard } from '@/app/components/SearchProductCard';
 import { useApp } from '@/app/store/Context';
@@ -43,7 +43,7 @@ export const ShopPage: React.FC = () => {
     }
 
     const slug = selectedCategory.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
-    axios.get(`/api/content/categories/${slug}`)
+    API.get(`/api/content/categories/${slug}`)
       .then(res => {
         if (res.data) {
           if (res.data.category?.bannerUrl) setCategoryBanner(res.data.category.bannerUrl);
