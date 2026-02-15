@@ -8,6 +8,7 @@ const {
     deleteHomepageBanner,
     seedHomepageBanners,
     reorderBanners,
+    getUnifiedAdminContent,
     getContentStats,
 
     getHomepageCategoryIcons,
@@ -35,6 +36,9 @@ router.get('/categories/:slug', getCategoryContent);
 router.get('/admin/stats', protect, admin, getContentStats); // Dashboard Stats
 router.post('/admin/banners/seed', protect, admin, seedHomepageBanners);
 router.put('/admin/banners/reorder', protect, admin, reorderBanners); // Bulk Reorder
+
+router.get('/admin/content/all', protect, admin, getUnifiedAdminContent);
+
 
 router.get('/admin/banners', protect, admin, getAdminHomepageBanners);
 router.post('/admin/banners', protect, admin, createHomepageBanner);

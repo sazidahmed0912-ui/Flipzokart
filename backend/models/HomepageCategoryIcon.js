@@ -22,7 +22,8 @@ const homepageCategoryIconSchema = new mongoose.Schema({
         default: true
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    collection: 'homepage_categories'
 });
 
 module.exports = mongoose.model('HomepageCategoryIcon', homepageCategoryIconSchema);

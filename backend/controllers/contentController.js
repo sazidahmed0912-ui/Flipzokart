@@ -351,7 +351,37 @@ const reorderBanners = async (req, res) => {
     }
 };
 
+// @desc    Admin: Get Unified Content (All Tables)
+// @route   GET /api/admin/content/all
+// @access  Private/Admin
+const getUnifiedAdminContent = async (req, res) => {
+    try {
+        const [
+            homepageBanners,
+            homepageCategories, // These are the icons
+            categories,
+            subcategories
+        ] = await Promise.all([
+            HomepageBanner.find({}).sort({ position: 1 }),
+            HomepageCategoryIcon.find({}).sort({ position: 1 }),
+            Category.find({}).sort({ name: 1 }),
+            Subcategory.find({}).sort({ categoryId: 1, position: 1 })
+        ]);
+
+        res.json({
+            homepageBanners,
+            homepageCategories,
+            categories,
+            subcategories
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
 module.exports = {
+    getUnifiedAdminContent,
     getHomepageBanners,
     getAdminHomepageBanners,
     createHomepageBanner,

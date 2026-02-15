@@ -25,9 +25,20 @@ const homepageBannerSchema = new mongoose.Schema({
         type: String,
         default: 'main', // 'main', 'secondary', etc. if needed later
         enum: ['main']
-    }
+    },
+    // Compatibility fields for legacy/imported data
+    banner: { type: String },
+    image: { type: String }
 }, {
-    timestamps: true
+    timestamps: true,
+    collection: 'homepage_banners',
+    toJSON: { getters: true },
+    toObject: { getters: true }
+});
+
+// Robust getter for imageUrl to handle field mismatches (banner vs image vs imageUrl)
+homepageBannerSchema.path('imageUrl').get(function (v) {
+    return v || this.banner || this.image;
 });
 
 module.exports = mongoose.model('HomepageBanner', homepageBannerSchema);

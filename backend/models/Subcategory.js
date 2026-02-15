@@ -27,7 +27,8 @@ const subcategorySchema = new mongoose.Schema({
         default: true
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    collection: 'subcategories'
 });
 
 // Ensure unique subcategory name per category if desired, but slug should definitely be unique per category context or globally.

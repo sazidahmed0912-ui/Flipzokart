@@ -32,8 +32,9 @@ export default function HomeCategoriesPage() {
     const fetchCategories = async () => {
         try {
             setLoading(true);
-            const res = await API.get('/api/content/admin/home-categories');
-            setCategories(res.data);
+            // Unified Admin Content API
+            const res = await API.get('/api/admin/content/all');
+            setCategories(res.data.homepageCategories || []);
         } catch (error) {
             console.error('Failed to fetch categories', error);
         } finally {
