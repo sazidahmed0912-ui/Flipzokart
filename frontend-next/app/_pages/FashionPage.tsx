@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ChevronRight, TrendingUp, Star, ShoppingBag } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { ProductCard } from '@/app/components/ProductCard';
-import LazyImage from '@/app/components/LazyImage';
+
 
 // --- Swiper Versions ---
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -213,12 +213,10 @@ export const FashionPage: React.FC = () => {
                         {subcategories[activeTab].map((sub, idx) => (
                             <Link key={idx} href={sub.link} className="flex flex-col items-center group">
                                 <div className="w-full aspect-square relative rounded-lg overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:border-blue-400 transition-colors">
-                                    <LazyImage
+                                    <img
                                         src={sub.icon}
                                         alt={sub.name}
-                                        fill
-                                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                        sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                     />
                                 </div>
                                 <span className="text-[11px] md:text-sm font-medium text-gray-700 text-center">{sub.name}</span>
