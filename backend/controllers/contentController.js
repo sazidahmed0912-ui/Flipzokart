@@ -621,6 +621,8 @@ module.exports = {
     getAdminCategories,
     upsertCategory,
     upsertSubcategory,
+    upsertSubMenu,
+    getFullCategoryTree,
 
     getCategoryLayout,
     saveCategoryLayout,
