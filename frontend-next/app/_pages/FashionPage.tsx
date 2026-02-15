@@ -55,10 +55,10 @@ const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: str
     Men: [
         { name: "Shirts", icon: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Shirts" },
         { name: "T-Shirts", icon: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=TShirts" },
-        { name: "Jeans", icon: "https://images.unsplash.com/photo-1542272617-08f086303294?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Jeans" },
+        { name: "Jeans", icon: "https://images.unsplash.com/photo-1604176354204-9268737828fa?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Jeans" },
         { name: "Shoes", icon: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Shoes" },
         { name: "Watches", icon: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Watches" },
-        { name: "Activewear", icon: "https://images.unsplash.com/photo-1517466787929-bc90951d6dbb?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Activewear" },
+        { name: "Activewear", icon: "https://images.unsplash.com/photo-1518459031867-a89b944bffe4?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Activewear" },
     ],
     Women: [
         { name: "Kurti", icon: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Kurti" },
