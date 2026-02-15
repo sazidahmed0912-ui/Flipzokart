@@ -29,7 +29,7 @@ const BANNERS: Record<Tab, BannerConfig> = {
         title: "Men's Summer Collection",
         images: [
             "https://res.cloudinary.com/drfyr8hlb/image/upload/f_auto,q_auto,w_1600/v1771138164/Men_s_Summer_Collection_ygcqln.jpg",
-            "https://images.unsplash.com/photo-1593030761757-71bd90dbe3e4?q=80&w=1600&auto=format&fit=crop"
+            "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169316/WhatsApp_Image_2026-02-15_at_8.55.41_PM_utjlhk.jpg"
         ],
         link: "/shop?category=Fashion&gender=Men"
     },
@@ -45,7 +45,7 @@ const BANNERS: Record<Tab, BannerConfig> = {
         title: "Kids Party Wear",
         images: [
             "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&q=80&w=1600",
-            "https://images.unsplash.com/photo-1622290291314-883f94739770?q=80&w=1600&auto=format&fit=crop"
+            "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169942/WhatsApp_Image_2026-02-15_at_9.07.12_PM_usbnjn.jpg"
         ],
         link: "/shop?category=Fashion&gender=Kids"
     }
