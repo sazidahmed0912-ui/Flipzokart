@@ -10,10 +10,9 @@ import LazyImage from '@/app/components/LazyImage';
 
 // --- Swiper Imports ---
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import 'swiper/css/navigation';
 
 // --- Types ---
 type Tab = 'Men' | 'Women' | 'Kids';
@@ -161,37 +160,44 @@ export const FashionPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* 2. SWIPER HERO BANNER */}
-            <div className="w-full h-[180px] md:h-[400px] bg-gray-200">
+            {/* 2. SWIPER HERO BANNER (ULTRA LOCK FIX) */}
+            <div className="w-full h-[220px] md:h-[420px] bg-gray-100 overflow-hidden">
                 <Swiper
-                    key={activeTab} // Force re-render on tab change
-                    modules={[Autoplay, Pagination, Navigation]}
+                    key={activeTab} // Force re-render on activeTab change
+                    modules={[Autoplay, Pagination]}
                     spaceBetween={0}
                     slidesPerView={1}
-                    loop={currentBanner.images.length > 1}
-                    autoplay={{ delay: 4000, disableOnInteraction: false }}
+                    loop={true} // Infinite loop
+                    autoplay={{
+                        delay: 3000,
+                        disableOnInteraction: false
+                    }}
                     pagination={{ clickable: true }}
-                    navigation={true}
-                    className="w-full h-full group"
+                    observer={true}
+                    observeParents={true}
+                    className="w-full h-full"
                 >
                     {currentBanner.images.map((img, index) => (
-                        <SwiperSlide key={`${activeTab}-${index}`} className="relative w-full h-full">
-                            <img
-                                src={img}
-                                alt={`${currentBanner.title} - Slide ${index + 1}`}
-                                className="absolute inset-0 w-full h-full object-cover"
-                                loading={index === 0 ? "eager" : "lazy"}
-                            />
-                            {/* Gradient Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12 pointer-events-none">
-                                <div className="text-white pointer-events-auto">
-                                    <h2 className="text-xl md:text-5xl font-bold mb-1 md:mb-3">{currentBanner.title}</h2>
-                                    <Link
-                                        href={currentBanner.link}
-                                        className="text-xs md:text-base font-semibold bg-white text-black px-3 py-1.5 md:px-6 md:py-2.5 rounded-full inline-flex items-center gap-1 hover:bg-opacity-90 transition-colors"
-                                    >
-                                        Shop Now <ChevronRight size={12} className="md:w-4 md:h-4" />
-                                    </Link>
+                        <SwiperSlide key={`${activeTab}-${index}`}>
+                            <div className="relative w-full h-full">
+                                {/* PURE IMG TAG to avoid Next.js Image lifestyle conflicts in Swiper */}
+                                <img
+                                    src={img}
+                                    alt={`${currentBanner.title} - Slide ${index + 1}`}
+                                    className="absolute inset-0 w-full h-full object-cover"
+                                />
+
+                                {/* Gradient Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12 pointer-events-none">
+                                    <div className="text-white pointer-events-auto">
+                                        <h2 className="text-xl md:text-5xl font-bold mb-1 md:mb-3">{currentBanner.title}</h2>
+                                        <Link
+                                            href={currentBanner.link}
+                                            className="text-xs md:text-base font-semibold bg-white text-black px-3 py-1.5 md:px-6 md:py-2.5 rounded-full inline-flex items-center gap-1 hover:bg-opacity-90 transition-colors"
+                                        >
+                                            Shop Now <ChevronRight size={12} className="md:w-4 md:h-4" />
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </SwiperSlide>
@@ -199,7 +205,7 @@ export const FashionPage: React.FC = () => {
                 </Swiper>
             </div>
 
-            {/* 3. RESPONSIVE SUBCATEGORY GRID */}
+            {/* 3. RESPONSIVE SUBCATEGORY GRID (Flipkart Style) */}
             <div className="bg-white py-4 md:py-8 px-3 md:px-8 mb-4 shadow-sm">
                 <div className="max-w-7xl mx-auto">
                     <h3 className="text-xs md:text-lg font-bold text-gray-800 mb-3 md:mb-6 uppercase tracking-wider">Explore {activeTab}</h3>
