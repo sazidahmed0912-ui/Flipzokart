@@ -309,6 +309,48 @@ const upsertSubcategory = async (req, res) => {
     }
 };
 
+// @desc    Admin: Get Dashboard Stats
+// @route   GET /api/admin/content/stats
+// @access  Private/Admin
+const getContentStats = async (req, res) => {
+    try {
+        const bannersCount = await HomepageBanner.countDocuments();
+        const categoriesCount = await Category.countDocuments();
+        const subcategoriesCount = await Subcategory.countDocuments();
+        const activeBanners = await HomepageBanner.countDocuments({ isActive: true });
+
+        res.json({
+            banners: { total: bannersCount, active: activeBanners },
+            categories: categoriesCount,
+            subcategories: subcategoriesCount
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+// @desc    Admin: Reorder Banners
+// @route   PUT /api/admin/content/banners/reorder
+// @access  Private/Admin
+const reorderBanners = async (req, res) => {
+    try {
+        const { orderedIds } = req.body; // Array of banner IDs in new order
+        if (!orderedIds || !Array.isArray(orderedIds)) {
+            return res.status(400).json({ message: 'Invalid data' });
+        }
+
+        const updates = orderedIds.map((id, index) => {
+            return HomepageBanner.findByIdAndUpdate(id, { position: index + 1 });
+        });
+
+        await Promise.all(updates);
+        res.json({ message: 'Banners reordered' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
 module.exports = {
     getHomepageBanners,
     getAdminHomepageBanners,
@@ -316,6 +358,8 @@ module.exports = {
     updateHomepageBanner,
     deleteHomepageBanner,
     seedHomepageBanners,
+    getContentStats,
+    reorderBanners,
 
     getHomepageCategoryIcons,
     createHomepageCategoryIcon,
