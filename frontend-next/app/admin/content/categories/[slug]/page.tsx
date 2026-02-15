@@ -5,7 +5,7 @@ import API from '@/app/services/api';
 import { useParams } from 'next/navigation';
 import { ImageUpload } from '../../_components/ImageUpload';
 import { SUBCATEGORIES } from '@/app/constants';
-import { Save, ArrowLeft, Loader2, Smartphone, Monitor, Layout } from 'lucide-react';
+import { Save, ArrowLeft, Loader2, Smartphone, Monitor, Layout, Plus } from 'lucide-react';
 import Link from 'next/link';
 
 // Helper to reverse slugify to find matching constant key if needed, 
@@ -126,6 +126,50 @@ export default function CategoryDetailPage() {
         }
     };
 
+    // New Subcategory Logic
+    const [isAddingSub, setIsAddingSub] = useState(false);
+    const [newSubName, setNewSubName] = useState('');
+    const [newSubIcon, setNewSubIcon] = useState('');
+
+    const handleAddSubcategory = async () => {
+        if (!newSubName || !newSubIcon) return;
+        const newSlug = newSubName.toLowerCase().replace(/ /g, '-');
+
+        // Optimistic
+        const newSub = { name: newSubName, slug: newSlug, iconUrl: newSubIcon };
+        setMergedSubcats([...mergedSubcats, newSub]);
+
+        try {
+            // Ensure Category Exists
+            let catId = categoryData?._id;
+            if (!catId) {
+                const catRes = await API.post('/api/admin/content/categories', {
+                    name: displayName,
+                    slug: slug,
+                    bannerUrl: bannerUrl,
+                    mobileBannerUrl: mobileBannerUrl
+                });
+                catId = catRes.data._id;
+                setCategoryData(catRes.data);
+            }
+
+            await API.post('/api/admin/content/subcategories', {
+                categoryId: catId,
+                name: newSubName,
+                slug: newSlug,
+                iconUrl: newSubIcon
+            });
+
+            setIsAddingSub(false);
+            setNewSubName('');
+            setNewSubIcon('');
+            alert('Subcategory Added');
+            fetchData(); // Refetch to align with backend
+        } catch (e) {
+            alert('Failed to add subcategory');
+        }
+    };
+
     if (loading) return <div className="p-8 text-center flex justify-center"><Loader2 className="animate-spin" /></div>;
 
     return (
@@ -197,10 +241,58 @@ export default function CategoryDetailPage() {
 
                 {/* Subcategories Section */}
                 <section>
-                    <h3 className="font-semibold text-gray-700 mb-4">Subcategory Icons</h3>
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-semibold text-gray-700">Subcategory Icons</h3>
+                        <button
+                            onClick={() => setIsAddingSub(!isAddingSub)}
+                            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium"
+                        >
+                            <Plus size={16} /> Add Subcategory
+                        </button>
+                    </div>
+
+                    {isAddingSub && (
+                        <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-blue-100 animate-in fade-in slide-in-from-top-2">
+                            <h4 className="text-sm font-bold text-gray-700 mb-3">New Subcategory</h4>
+                            <div className="flex flex-col md:flex-row gap-4 items-start">
+                                <div className="flex-1">
+                                    <label className="text-xs font-semibold text-gray-500 mb-1 block">Name</label>
+                                    <input
+                                        type="text"
+                                        value={newSubName}
+                                        onChange={(e) => setNewSubName(e.target.value)}
+                                        autoFocus
+                                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                                        placeholder="e.g. Party Wear"
+                                    />
+                                </div>
+                                <div className="w-24">
+                                    <label className="text-xs font-semibold text-gray-500 mb-1 block">Icon</label>
+                                    <ImageUpload
+                                        value={newSubIcon}
+                                        onChange={setNewSubIcon}
+                                        onRemove={() => setNewSubIcon('')}
+                                        height="h-20"
+                                        width="w-20"
+                                        minimal
+                                    />
+                                </div>
+                                <div className="flex items-end h-full pt-6">
+                                    <button
+                                        onClick={handleAddSubcategory}
+                                        disabled={!newSubName || !newSubIcon}
+                                        className="px-4 py-2 bg-[#2874F0] text-white text-sm font-bold rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                         {mergedSubcats.map((sub) => (
-                            <div key={sub.slug} className="bg-white p-4 rounded-xl border flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-all">
+                            <div key={sub.slug} className="bg-white p-4 rounded-xl border flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-all relative group">
                                 <span className="font-medium text-sm text-center min-h-[40px] flex items-center">{sub.name}</span>
                                 <div className="w-full aspect-square relative">
                                     <ImageUpload
@@ -217,11 +309,6 @@ export default function CategoryDetailPage() {
                             </div>
                         ))}
                     </div>
-                    {mergedSubcats.length === 0 && (
-                        <div className="text-center p-8 bg-gray-50 rounded-xl">
-                            No subcategories defined for this category in constants.
-                        </div>
-                    )}
                 </section>
             </div>
         </div>
