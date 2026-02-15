@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { ChevronRight, TrendingUp, Star, ShoppingBag } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { ProductCard } from '@/app/components/ProductCard';
-import { fetchCategoryTree } from '@/app/services/categoryService';
 
 
 // --- Swiper Versions ---
@@ -52,49 +51,72 @@ const BANNERS: Record<Tab, BannerConfig> = {
     }
 };
 
-// --- Dynamic Data State ---
+const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: string }[]> = {
+    Men: [
+        { name: "Shirts", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771162918/expert-023d4b3e-5b64-4061-b018-f52223faa9de_ulp28f.jpg", link: "/shop?category=Fashion&sub=Shirts" },
+        { name: "T-Shirts", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771163570/expert-926e4b5d-a4b2-4a74-8c1b-0550ae534081_jde77w.jpg", link: "/shop?category=Fashion&sub=TShirts" },
+        { name: "Jeans", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771164135/WhatsApp_Image_2026-02-15_at_7.31.40_PM_t5afmz.jpg", link: "/shop?category=Fashion&sub=Jeans" },
+        { name: "Shoes", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771163760/expert-d3f96149-9062-469a-880c-81f29df29022_leyoct.jpg", link: "/shop?category=Fashion&sub=Shoes" },
+        { name: "Watches", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1770388041/samples/ecommerce/analog-classic.jpg", link: "/shop?category=Fashion&sub=Watches" },
+        { name: "Activewear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771164274/WhatsApp_Image_2026-02-15_at_7.34.13_PM_kdf4gi.jpg", link: "/shop?category=Fashion&sub=Activewear" },
+    ],
+    Women: [
+        { name: "Kurti", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771165309/WhatsApp_Image_2026-02-15_at_7.50.26_PM_fsfcla.jpg", link: "/shop?category=Fashion&sub=Kurti" },
+        { name: "Saree", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771165271/WhatsApp_Image_2026-02-15_at_7.50.44_PM_vpsgfj.jpg", link: "/shop?category=Fashion&sub=Saree" },
+        { name: "Dresses", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167063/WhatsApp_Image_2026-02-15_at_8.18.49_PM_oa0rrp.jpg", link: "/shop?category=Fashion&sub=Dresses" },
+        { name: "Handbags", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167019/WhatsApp_Image_2026-02-15_at_8.19.40_PM_fjfx5a.jpg", link: "/shop?category=Fashion&sub=Handbags" },
+        { name: "Heels", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167139/WhatsApp_Image_2026-02-15_at_8.22.00_PM_rkd8of.jpg", link: "/shop?category=Fashion&sub=Heels" },
+        { name: "Jewellery", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167235/WhatsApp_Image_2026-02-15_at_8.23.36_PM_gvxim0.jpg", link: "/shop?category=Fashion&sub=Jewelry" },
+    ],
+    Kids: [
+        { name: "Boys Wear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.13_PM_ghtqpc.jpg", link: "/shop?category=Fashion&sub=Boys" },
+        { name: "Girls Wear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.14_PM_livxev.jpg", link: "/shop?category=Fashion&sub=Girls" },
+        { name: "Kids Shoes", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.14_PM_1_gyko9v.jpg", link: "/shop?category=Fashion&sub=KidsShoes" },
+        { name: "Toys", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169130/WhatsApp_Image_2026-02-15_at_8.54.45_PM_ro7nbb.jpg", link: "/shop?category=Fashion&sub=Toys" },
+        { name: "School Bags", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169132/WhatsApp_Image_2026-02-15_at_8.54.44_PM_1_rtf3vg.jpg", link: "/shop?category=Fashion&sub=Bags" },
+        { name: "Accessories", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169130/WhatsApp_Image_2026-02-15_at_8.54.44_PM_otyzko.jpg", link: "/shop?category=Fashion&sub=Accessories" },
+    ]
+};
+
 export const FashionPage: React.FC = () => {
     const { products } = useApp();
-    const [fashionCategory, setFashionCategory] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<Tab>('Men');
+    const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
 
-    const [activeTab, setActiveTab] = useState<string>('Men');
-
-    // Fetch Dynamic Tree
+    // Fetch dynamic subcategory icons (optional enhancement, kept for backward compat)
+    // Fetch dynamic subcategory icons (optional enhancement, kept for backward compat)
+    // TEMPORARILY DISABLED: To ensure hardcoded Unsplash images are shown and not overwritten by potential empty DB values
+    /*
     useEffect(() => {
-        const loadPyramid = async () => {
+        const fetchContent = async () => {
             try {
-                const tree = await fetchCategoryTree();
-                const fashion = tree.find(c => c.name === 'Fashion');
+                const res = await axios.get('/api/content/categories/fashion');
+                if (res.data && res.data.subcategories) {
+                    const dbSubcats = res.data.subcategories;
 
-                if (fashion) {
-                    setFashionCategory(fashion);
-                    // Default to first subcategory if Men not found, or keep Men if exists
-                    const hasMen = fashion.subcategories.some((s: any) => s.name === 'Men');
-                    if (!hasMen && fashion.subcategories.length > 0) {
-                        setActiveTab(fashion.subcategories[0].name);
-                    }
+                    setSubcategories(prev => {
+                        const next = { ...prev };
+                        (['Men', 'Women', 'Kids'] as Tab[]).forEach(tab => {
+                            next[tab] = next[tab].map(item => {
+                                // Find match in DB
+                                const slug = item.name.toLowerCase().replace(/ /g, '-');
+                                const match = dbSubcats.find((s: any) => s.slug === slug);
+                                if (match && match.iconUrl) {
+                                    return { ...item, icon: match.iconUrl };
+                                }
+                                return item;
+                            });
+                        });
+                        return next;
+                    });
                 }
-            } catch (err) {
-                console.error("Dynamic Sync Failed", err);
-            } finally {
-                setLoading(false);
+            } catch (error) {
+                console.error("Failed to fetch fashion content", error);
             }
         };
-        loadPyramid();
+        fetchContent();
     }, []);
-
-    // Derived Data
-    const availableTabs = fashionCategory?.subcategories?.map((s: any) => s.name) || ['Men', 'Women', 'Kids'];
-
-    // Get current subcategory (Level 2) -> to get its submenu (Level 3)
-    const currentSubcat = fashionCategory?.subcategories?.find((s: any) => s.name === activeTab);
-    const displayGrid = currentSubcat?.submenu || [];
-
-    // Fallback for static banners (DB doesn't have subcategory banners yet)
-    // We map activeTab name to existing BANNERS key if possible, else default
-    const bannerKey = (activeTab in BANNERS) ? activeTab as Tab : 'Men';
-    const currentBanner = BANNERS[bannerKey] || BANNERS['Men'];
+    */
 
     // Filter Products based on Tab
     const tabProducts = products.filter(p =>
@@ -106,19 +128,21 @@ export const FashionPage: React.FC = () => {
     const trendingProducts = tabProducts.slice(0, 8);
     const bestOfProducts = tabProducts.slice(8, 16);
 
+    const currentBanner = BANNERS[activeTab];
+
     return (
         <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
 
             {/* 1. STICKY NAV STRIP */}
             <div className="sticky top-[56px] md:top-[72px] z-20 bg-white shadow-sm border-b border-gray-100">
                 <div className="w-full max-w-7xl mx-auto px-0 md:px-8">
-                    <div className="flex w-full overflow-x-auto no-scrollbar">
-                        {availableTabs.map((tab: string) => (
+                    <div className="flex w-full">
+                        {(['Men', 'Women', 'Kids'] as Tab[]).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`
-                                    relative flex-1 py-3 md:py-4 text-sm md:text-base font-bold uppercase tracking-wide text-center transition-all duration-200 outline-none select-none whitespace-nowrap px-4
+                                    relative flex-1 py-3 md:py-4 text-sm md:text-base font-bold uppercase tracking-wide text-center transition-all duration-200 outline-none select-none
                                     ${activeTab === tab
                                         ? 'text-black bg-gradient-to-b from-white to-yellow-50'
                                         : 'text-gray-600 hover:text-black hover:bg-yellow-50'
@@ -189,44 +213,20 @@ export const FashionPage: React.FC = () => {
             <div className="bg-white py-4 md:py-8 px-3 md:px-8 mb-4 shadow-sm">
                 <div className="max-w-7xl mx-auto">
                     <h3 className="text-xs md:text-lg font-bold text-gray-800 mb-3 md:mb-6 uppercase tracking-wider">Explore {activeTab}</h3>
-
-                    {loading ? (
-                        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 animate-pulse">
-                            {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="flex flex-col items-center">
-                                    <div className="w-full aspect-square bg-gray-200 rounded-lg mb-2"></div>
-                                    <div className="h-3 w-20 bg-gray-200 rounded"></div>
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-6">
+                        {subcategories[activeTab].map((sub, idx) => (
+                            <Link key={idx} href={sub.link} className="flex flex-col items-center group">
+                                <div className="w-full aspect-square relative rounded-lg overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:border-blue-400 transition-colors">
+                                    <img
+                                        src={sub.icon}
+                                        alt={sub.name}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-6">
-                            {displayGrid.length > 0 ? (
-                                displayGrid.map((sub: any, idx: number) => (
-                                    <Link key={idx} href={`/shop?category=Fashion&sub=${sub.slug}`} className="flex flex-col items-center group">
-                                        <div className="w-full aspect-square relative rounded-lg overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:border-blue-400 transition-colors">
-                                            {sub.icon ? (
-                                                <img
-                                                    src={sub.icon}
-                                                    alt={sub.name}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                                    <ShoppingBag size={24} />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <span className="text-[11px] md:text-sm font-medium text-gray-700 text-center">{sub.name}</span>
-                                    </Link>
-                                ))
-                            ) : (
-                                <div className="col-span-full text-center py-8 text-gray-400 text-sm">
-                                    No categories found in {activeTab}
-                                </div>
-                            )}
-                        </div>
-                    )}
+                                <span className="text-[11px] md:text-sm font-medium text-gray-700 text-center">{sub.name}</span>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
             </div>
 
