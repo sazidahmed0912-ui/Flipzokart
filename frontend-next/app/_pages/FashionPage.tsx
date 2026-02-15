@@ -191,13 +191,10 @@ export const FashionPage: React.FC = () => {
                         transition={{ duration: 0.5 }}
                         className="absolute inset-0"
                     >
-                        <LazyImage
+                        <img
                             src={BANNERS[activeTab][currentBannerIndex].image}
                             alt={BANNERS[activeTab][currentBannerIndex].title}
-                            fill
-                            className="object-cover"
-                            priority
-                            sizes="100vw"
+                            className="absolute inset-0 w-full h-full object-cover"
                         />
                         {/* Gradient Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12">
