@@ -14,6 +14,7 @@ export const updateProduct = (id: string, data: any) => API.put(`/api/products/$
 export const deleteProduct = (id: string) => API.delete(`/api/products/${id}`);
 
 // Order Management
+// Note: fetchAllOrders now returns statusHistory for tracking
 export const fetchAllOrders = () => API.get("/api/order/admin/all");
 export const fetchOrderById = (id: string) => API.get(`/api/order/${id}`);
 // Real-Time Tracking & Status API (Admin Routes)

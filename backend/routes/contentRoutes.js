@@ -37,7 +37,7 @@ router.get('/admin/stats', protect, admin, getContentStats); // Dashboard Stats
 router.post('/admin/banners/seed', protect, admin, seedHomepageBanners);
 router.put('/admin/banners/reorder', protect, admin, reorderBanners); // Bulk Reorder
 
-router.get('/admin/all', protect, admin, getUnifiedAdminContent);
+router.get('/admin/content/all', protect, admin, getUnifiedAdminContent);
 
 
 router.get('/admin/banners', protect, admin, getAdminHomepageBanners);

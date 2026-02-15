@@ -33,6 +33,7 @@ interface Order {
     items: any[];
     paymentMethod: string;
     currentLocation?: { lat: number; lng: number; address: string };
+    statusHistory?: { status: string; timestamp: string; note?: string }[]; // Added for persistence
 }
 
 export const AdminOrders: React.FC = () => {
@@ -62,7 +63,11 @@ export const AdminOrders: React.FC = () => {
 
     const openStatusModal = (order: Order) => {
         setSelectedOrder(order);
-        setStatusData({ status: order.status, note: '' });
+        // Pre-fill with last note if available
+        const lastNote = order.statusHistory && order.statusHistory.length > 0
+            ? order.statusHistory[order.statusHistory.length - 1].note
+            : '';
+        setStatusData({ status: order.status, note: lastNote || '' });
         setIsStatusOpen(true);
     };
 

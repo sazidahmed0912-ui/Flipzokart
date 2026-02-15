@@ -43,7 +43,7 @@ export default function BannersPage() {
         try {
             setLoading(true);
             // Unified Admin Content API - fetches all data to ensure sync
-            const res = await API.get('/api/content/admin/all');
+            const res = await API.get('/api/admin/content/all');
             setBanners(res.data.homepageBanners || []);
         } catch (error) {
             console.error('Failed to fetch banners', error);

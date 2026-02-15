@@ -713,9 +713,9 @@ const getOrderById = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, note } = req.body; // Destructure note
 
-    console.log(`Updating order ${id} to status: ${status}`);
+    console.log(`Updating order ${id} to status: ${status} with note: ${note}`);
 
     // Validate status - must match Order model enum
     const validStatuses = ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
@@ -748,6 +748,13 @@ const updateOrderStatus = async (req, res) => {
 
     order.status = status;
 
+    // Add to History (Persistence Fix)
+    order.statusHistory.push({
+      status,
+      timestamp: new Date(),
+      note: note || ''
+    });
+
     // Update paymentStatus if status is Paid
     if (status === 'Paid') {
       order.paymentStatus = 'PAID';
@@ -761,12 +768,13 @@ const updateOrderStatus = async (req, res) => {
     try {
       if (order.user) {
         // Create Notification and Emit Socket
+        // Include note in message if available? Maybe too long. Keep simple message.
         const message = `Your order #${order._id.toString().slice(-6)} is now ${status}`;
 
         // Persist
         await Notification.create({
           recipient: order.user,
-          message,
+          message: note ? `${message}: ${note}` : message, // Include note in notification text if present
           type: 'orderStatusUpdate',
           relatedId: order._id
         });
@@ -775,7 +783,7 @@ const updateOrderStatus = async (req, res) => {
         if (io) {
           io.to(order.user.toString()).emit('notification', {
             type: 'orderStatusUpdate',
-            message,
+            message: note ? `${message}: ${note}` : message,
             orderId: order._id,
             status: 'info'
           });

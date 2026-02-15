@@ -33,7 +33,7 @@ export default function HomeCategoriesPage() {
         try {
             setLoading(true);
             // Unified Admin Content API
-            const res = await API.get('/api/content/admin/all');
+            const res = await API.get('/api/admin/content/all');
             setCategories(res.data.homepageCategories || []);
         } catch (error) {
             console.error('Failed to fetch categories', error);

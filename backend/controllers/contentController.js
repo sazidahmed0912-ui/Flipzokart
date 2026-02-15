@@ -135,8 +135,8 @@ const seedHomepageBanners = async (req, res) => {
         await HomepageBanner.insertMany(defaultBanners);
         res.status(201).json({ message: 'Default banners seeded successfully', banners: defaultBanners });
     } catch (error) {
-        console.error("seedHomepageBanners Error:", error);
-        res.status(500).json({ message: 'Server Error', error: error.message });
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
     }
 };
 
@@ -325,8 +325,7 @@ const getContentStats = async (req, res) => {
             subcategories: subcategoriesCount
         });
     } catch (error) {
-        console.error("getContentStats Error:", error);
-        res.status(500).json({ message: 'Server Error', error: error.message });
+        res.status(500).json({ message: 'Server Error' });
     }
 };
 
@@ -376,8 +375,8 @@ const getUnifiedAdminContent = async (req, res) => {
             subcategories
         });
     } catch (error) {
-        console.error("getUnifiedAdminContent Error:", error);
-        res.status(500).json({ message: 'Server Error', error: error.message });
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
     }
 };
 
@@ -412,8 +411,7 @@ module.exports = {
                 published: category.pageLayout || []
             });
         } catch (error) {
-            console.error("getCategoryLayout Error:", error);
-            res.status(500).json({ message: 'Server Error', error: error.message });
+            res.status(500).json({ message: 'Server Error' });
         }
     },
 
@@ -427,8 +425,7 @@ module.exports = {
             await category.save();
             res.json({ message: 'Draft saved', layout: category.draftLayout });
         } catch (error) {
-            console.error("saveCategoryLayout Error:", error);
-            res.status(500).json({ message: 'Server Error', error: error.message });
+            res.status(500).json({ message: 'Server Error' });
         }
     },
 
@@ -441,8 +438,7 @@ module.exports = {
             await category.save();
             res.json({ message: 'Layout published', layout: category.pageLayout });
         } catch (error) {
-            console.error("publishCategoryLayout Error:", error);
-            res.status(500).json({ message: 'Server Error', error: error.message });
+            res.status(500).json({ message: 'Server Error' });
         }
     }
 };
