@@ -57,7 +57,7 @@ const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: str
         { name: "T-Shirts", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=TShirts" },
         { name: "Jeans", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Jeans" },
         { name: "Shoes", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Shoes" },
-        { name: "Watches", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Watches" },
+        { name: "Watches", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1770388041/samples/ecommerce/analog-classic.jpg", link: "/shop?category=Fashion&sub=Watches" },
         { name: "Activewear", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Activewear" },
     ],
     Women: [
