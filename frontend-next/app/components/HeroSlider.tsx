@@ -56,15 +56,29 @@ const slides = [
     }
 ];
 
-export const HeroSlider: React.FC = () => {
+// ... imports
+// Keep existing slides array as fallback (lines 8-57)
+
+interface HeroSliderProps {
+    banners?: Array<{
+        _id: string;
+        imageUrl: string;
+        redirectUrl: string;
+    }>;
+}
+
+export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    const activeSlides = banners.length > 0 ? banners : slides;
+    const isDynamic = banners.length > 0;
 
     useEffect(() => {
         const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % slides.length);
+            setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
         }, 5000);
         return () => clearInterval(timer);
-    }, []);
+    }, [activeSlides.length]);
 
     const touchStartX = React.useRef(0);
     const touchEndX = React.useRef(0);
@@ -84,94 +98,119 @@ export const HeroSlider: React.FC = () => {
         const isSwipeRight = distance < -50;
 
         if (isSwipeLeft) {
-            setCurrentIndex((prev) => (prev + 1) % slides.length);
+            setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
         }
         if (isSwipeRight) {
-            setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
+            setCurrentIndex((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
         }
 
         touchStartX.current = 0;
         touchEndX.current = 0;
     };
 
+    if (activeSlides.length === 0) return null;
+
     return (
         <section
-            className="relative w-full md:w-auto md:mx-8 md:my-6 h-[30vh] min-h-[220px] md:h-[55vh] md:min-h-[450px] max-h-[600px] overflow-hidden md:rounded-2xl shadow-lg group bg-gray-100 touch-pan-y"
+            className="relative w-full md:w-auto md:mx-8 md:my-6 h-[200px] md:h-[450px] lg:h-[500px] max-h-[600px] overflow-hidden md:rounded-2xl shadow-lg group bg-gray-100 touch-pan-y"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
         >
             <AnimatePresence mode='wait'>
-                <motion.div
-                    key={currentIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className={`absolute inset-0 bg-gradient-to-r ${slides[currentIndex].gradient} flex md:items-center`}
-                >
-                    <div className="w-full h-full md:max-w-7xl md:mx-auto md:px-12 relative">
-                        <div className="flex flex-col md:grid md:grid-cols-2 gap-0 md:gap-8 h-full items-center">
-
-                            {/* Image Content */}
-                            <div className="absolute inset-0 md:relative md:h-full w-full flex justify-center md:justify-end items-center order-1 md:order-2 z-0 md:z-auto">
-                                <motion.div
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    transition={{ delay: 0.1, duration: 0.4 }}
-                                    className="relative w-full h-full md:h-[85%] md:w-full"
-                                >
-                                    <LazyImage
-                                        src={slides[currentIndex].image}
-                                        alt={slides[currentIndex].title}
-                                        priority={true} // Priority loading for Hero
-                                        fill={true}
-                                        className="object-cover md:object-contain drop-shadow-2xl"
-                                        sizes="(max-width: 768px) 100vw, 50vw"
-                                        wrapperClassName="w-full h-full bg-transparent"
-                                    />
-                                </motion.div>
-                            </div>
-
-                            {/* Text Content - Overlay on Mobile */}
-                            <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col items-start text-left z-10 md:static md:bg-none md:order-1 md:h-auto md:justify-center md:p-0 md:pt-0 md:pb-0">
-                                <motion.h1
-                                    initial={{ y: 20, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    transition={{ delay: 0.2 }}
-                                    className={`text-xl sm:text-2xl md:text-5xl lg:text-6xl font-extrabold mb-1 md:mb-4 leading-tight line-clamp-2 ${slides[currentIndex].textParams.titleColor}`}
-                                >
-                                    {slides[currentIndex].title}
-                                </motion.h1>
-                                <motion.p
-                                    initial={{ y: 20, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    transition={{ delay: 0.3 }}
-                                    className={`text-xs sm:text-sm md:text-xl mb-3 md:mb-8 max-w-[90%] md:max-w-md line-clamp-1 ${slides[currentIndex].textParams.textColor}`}
-                                >
-                                    {slides[currentIndex].subtext}
-                                </motion.p>
-                                <motion.div
-                                    initial={{ y: 20, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    transition={{ delay: 0.4 }}
-                                >
-                                    <Link href={slides[currentIndex].link}
-                                        className={`${slides[currentIndex].textParams.buttonBg} ${slides[currentIndex].textParams.buttonText} px-5 py-2 md:px-8 md:py-3 rounded-full font-bold text-xs md:text-lg hover:shadow-xl hover:scale-105 transition-all shadow-md inline-block uppercase tracking-wide`}
+                {isDynamic ? (
+                    // DYNAMIC IMAGE BANNER RENDER
+                    <motion.div
+                        key={currentIndex}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="absolute inset-0"
+                    >
+                        <Link href={(activeSlides[currentIndex] as any).redirectUrl || '#'} className="block w-full h-full relative">
+                            <LazyImage
+                                src={(activeSlides[currentIndex] as any).imageUrl}
+                                alt="Banner"
+                                fill={true}
+                                priority={true}
+                                className="object-cover w-full h-full"
+                                sizes="100vw"
+                            />
+                        </Link>
+                    </motion.div>
+                ) : (
+                    // STATIC FALLBACK RENDER (Existing Logic)
+                    <motion.div
+                        key={currentIndex}
+                        // ... existing motion props
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className={`absolute inset-0 bg-gradient-to-r ${(activeSlides[currentIndex] as any).gradient} flex md:items-center`}
+                    >
+                        <div className="w-full h-full md:max-w-7xl md:mx-auto md:px-12 relative">
+                            <div className="flex flex-col md:grid md:grid-cols-2 gap-0 md:gap-8 h-full items-center">
+                                {/* Image Content */}
+                                <div className="absolute inset-0 md:relative md:h-full w-full flex justify-center md:justify-end items-center order-1 md:order-2 z-0 md:z-auto">
+                                    <motion.div
+                                        initial={{ scale: 0.9, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        transition={{ delay: 0.1, duration: 0.4 }}
+                                        className="relative w-full h-full md:h-[85%] md:w-full"
                                     >
-                                        {slides[currentIndex].cta}
-                                    </Link>
-                                </motion.div>
-                            </div>
+                                        <LazyImage
+                                            src={(activeSlides[currentIndex] as any).image}
+                                            alt={(activeSlides[currentIndex] as any).title}
+                                            priority={true}
+                                            fill={true}
+                                            className="object-cover md:object-contain drop-shadow-2xl"
+                                            sizes="(max-width: 768px) 100vw, 50vw"
+                                            wrapperClassName="w-full h-full bg-transparent"
+                                        />
+                                    </motion.div>
+                                </div>
 
+                                {/* Text Content */}
+                                <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col items-start text-left z-10 md:static md:bg-none md:order-1 md:h-auto md:justify-center md:p-0 md:pt-0 md:pb-0">
+                                    <motion.h1
+                                        initial={{ y: 20, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        transition={{ delay: 0.2 }}
+                                        className={`text-xl sm:text-2xl md:text-5xl lg:text-6xl font-extrabold mb-1 md:mb-4 leading-tight line-clamp-2 ${(activeSlides[currentIndex] as any).textParams.titleColor}`}
+                                    >
+                                        {(activeSlides[currentIndex] as any).title}
+                                    </motion.h1>
+                                    <motion.p
+                                        initial={{ y: 20, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        transition={{ delay: 0.3 }}
+                                        className={`text-xs sm:text-sm md:text-xl mb-3 md:mb-8 max-w-[90%] md:max-w-md line-clamp-1 ${(activeSlides[currentIndex] as any).textParams.textColor}`}
+                                    >
+                                        {(activeSlides[currentIndex] as any).subtext}
+                                    </motion.p>
+                                    <motion.div
+                                        initial={{ y: 20, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        transition={{ delay: 0.4 }}
+                                    >
+                                        <Link href={(activeSlides[currentIndex] as any).link}
+                                            className={`${(activeSlides[currentIndex] as any).textParams.buttonBg} ${(activeSlides[currentIndex] as any).textParams.buttonText} px-5 py-2 md:px-8 md:py-3 rounded-full font-bold text-xs md:text-lg hover:shadow-xl hover:scale-105 transition-all shadow-md inline-block uppercase tracking-wide`}
+                                        >
+                                            {(activeSlides[currentIndex] as any).cta}
+                                        </Link>
+                                    </motion.div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </motion.div>
+                    </motion.div>
+                )}
             </AnimatePresence>
 
-            {/* Banner Switching Indicators */}
+            {/* Indicators */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-                {slides.map((_, index) => (
+                {activeSlides.map((_, index) => (
                     <button
                         key={index}
                         onClick={() => setCurrentIndex(index)}

@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-;
+import axios from 'axios';
 import { useApp } from '@/app/store/Context';
 import { ProductCard } from '@/app/components/ProductCard';
 import { GrocerySection } from '@/app/components/GrocerySection';
@@ -9,20 +9,45 @@ import LazyImage from '@/app/components/LazyImage';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import { HeroSlider } from '@/app/components/HeroSlider';
 
-// Same category data as before, but will be styled according to new rules.
-const categories = [
-    { name: 'Groceries', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-groceries-e6814d7f00ef4f7d92268edd5246a637.png', href: '/shop?category=Groceries' },
-    { name: 'Mobiles', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-mobiles-4f832660f1f64e30b256a396f486ad70.png', href: '/shop?category=Mobiles' },
-    { name: 'Electronics', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-electronics-2416c835515347fdabf6e9053feec09e.png', href: '/shop?category=Electronics' },
-    { name: 'Fashion', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-fashion-ceae805ee2f24728922582c24545ceba.png', href: '/fashion' },
-    { name: 'Beauty', imageUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100&h=100&fit=crop&q=60', href: '/shop?category=Beauty' },
-    { name: 'Home', imageUrl: 'https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=100&h=100&fit=crop&q=60', href: '/shop?category=Home' },
-    { name: 'Appliances', imageUrl: 'https://images.unsplash.com/photo-1626806819282-2c1dc01a5e0c?w=100&h=100&fit=crop&q=60', href: '/shop?category=Appliances' },
-    { name: 'Offers', imageUrl: 'https://rukminim1.flixcart.com/fk-p-flap/80/80/image/0139228b2f7eb413.jpg?q=100', href: '/shop?tag=offer' },
+// Fallback data
+const initialCategories = [
+    { name: 'Groceries', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-groceries-e6814d7f00ef4f7d92268edd5246a637.png', href: '/shop?category=Groceries', redirectUrl: '/shop?category=Groceries' },
+    { name: 'Mobiles', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-mobiles-4f832660f1f64e30b256a396f486ad70.png', href: '/shop?category=Mobiles', redirectUrl: '/shop?category=Mobiles' },
+    { name: 'Electronics', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-electronics-2416c835515347fdabf6e9053feec09e.png', href: '/shop?category=Electronics', redirectUrl: '/shop?category=Electronics' },
+    { name: 'Fashion', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-fashion-ceae805ee2f24728922582c24545ceba.png', href: '/fashion', redirectUrl: '/fashion' },
+    { name: 'Beauty', imageUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100&h=100&fit=crop&q=60', href: '/shop?category=Beauty', redirectUrl: '/shop?category=Beauty' },
+    { name: 'Home', imageUrl: 'https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=100&h=100&fit=crop&q=60', href: '/shop?category=Home', redirectUrl: '/shop?category=Home' },
+    { name: 'Appliances', imageUrl: 'https://images.unsplash.com/photo-1626806819282-2c1dc01a5e0c?w=100&h=100&fit=crop&q=60', href: '/shop?category=Appliances', redirectUrl: '/shop?category=Appliances' },
+    { name: 'Offers', imageUrl: 'https://rukminim1.flixcart.com/fk-p-flap/80/80/image/0139228b2f7eb413.jpg?q=100', href: '/shop?tag=offer', redirectUrl: '/shop?tag=offer' },
 ];
 
 export const HomePage: React.FC = () => {
     const { products } = useApp();
+    const [banners, setBanners] = useState<any[]>([]);
+    const [displayCategories, setDisplayCategories] = useState(initialCategories);
+
+    useEffect(() => {
+        // Fetch Banners
+        axios.get('/api/content/banners').then(res => {
+            if (res.data && res.data.length > 0) {
+                setBanners(res.data);
+            }
+        }).catch(err => console.error(err));
+
+        // Fetch Categories
+        axios.get('/api/content/home-categories').then(res => {
+            if (res.data && res.data.length > 0) {
+                const mapped = res.data.map((c: any) => ({
+                    name: c.categoryName,
+                    imageUrl: c.iconUrl,
+                    href: c.redirectUrl || (c.categoryName.toLowerCase() === 'fashion' ? '/fashion' : `/shop?category=${encodeURIComponent(c.categoryName)}`)
+                }));
+                setDisplayCategories(mapped);
+            }
+        }).catch(err => console.error(err));
+    }, []);
+
+
     // Filter out groceries from general homepage sections
     const nonGroceryProducts = products.filter(p => p.category !== 'Groceries');
     const topDeals = nonGroceryProducts.slice(0, 8);
@@ -72,13 +97,13 @@ export const HomePage: React.FC = () => {
 
     return (
         <>
-            <HeroSlider />
+            <HeroSlider banners={banners} />
 
             <section className="py-4 md:py-8 px-4 md:px-8">
                 <SmoothReveal direction="up" delay={200}>
                     <div className="max-w-7xl mx-auto">
                         <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-center"><span className="text-gray-800">Shop by Categories</span></h2>
-                        <div className="flex overflow-x-auto pb-2 gap-3 px-2 md:grid md:grid-cols-8 md:gap-6 no-scrollbar snap-x">                        {categories.map(category => (
+                        <div className="flex overflow-x-auto pb-2 gap-3 px-2 md:grid md:grid-cols-8 md:gap-6 no-scrollbar snap-x">                        {displayCategories.map(category => (
                             <Link href={category.href} key={category.name} className="flex flex-col items-center flex-shrink-0 snap-center w-[72px] md:w-auto text-center group">
                                 <div className="w-14 h-14 md:w-20 md:h-20 mb-2 bg-gray-100 rounded-full md:rounded-xl p-3 border border-gray-200 group-hover:shadow-md transition-shadow flex items-center justify-center">
                                     <LazyImage

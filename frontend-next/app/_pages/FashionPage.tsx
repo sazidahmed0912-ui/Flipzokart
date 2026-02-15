@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Filter, TrendingUp, Star, ShoppingBag } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
@@ -27,7 +28,7 @@ const BANNERS: Record<Tab, { id: number; image: string; title: string; link: str
     ]
 };
 
-const SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: string }[]> = {
+const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: string }[]> = {
     Men: [
         { name: "Shirts", icon: "https://images.unsplash.com/photo-1620799140408-ed5341cd2458?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Shirts" },
         { name: "T-Shirts", icon: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=TShirts" },
@@ -58,6 +59,38 @@ export const FashionPage: React.FC = () => {
     const { products } = useApp();
     const [activeTab, setActiveTab] = useState<Tab>('Men');
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+    const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
+
+    // Fetch dynamic subcategory icons
+    useEffect(() => {
+        const fetchContent = async () => {
+            try {
+                const res = await axios.get('/api/content/categories/fashion');
+                if (res.data && res.data.subcategories) {
+                    const dbSubcats = res.data.subcategories;
+
+                    setSubcategories(prev => {
+                        const next = { ...prev };
+                        (['Men', 'Women', 'Kids'] as Tab[]).forEach(tab => {
+                            next[tab] = next[tab].map(item => {
+                                // Find match in DB
+                                const slug = item.name.toLowerCase().replace(/ /g, '-');
+                                const match = dbSubcats.find((s: any) => s.slug === slug);
+                                if (match && match.iconUrl) {
+                                    return { ...item, icon: match.iconUrl };
+                                }
+                                return item;
+                            });
+                        });
+                        return next;
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to fetch fashion content", error);
+            }
+        };
+        fetchContent();
+    }, []);
 
     // Filter Products based on Tab (Basic filtering logic for demo)
     // accessible via search terms or category matching
@@ -144,7 +177,7 @@ export const FashionPage: React.FC = () => {
 
             {/* 2. HERO BANNER CAROUSEL */}
             <div
-                className="relative w-full h-[240px] md:h-[360px] lg:h-[480px] overflow-hidden bg-gray-200 group touch-pan-y"
+                className="relative w-full h-[180px] md:h-[400px] overflow-hidden bg-gray-200 group touch-pan-y"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
@@ -162,34 +195,21 @@ export const FashionPage: React.FC = () => {
                             src={BANNERS[activeTab][currentBannerIndex].image}
                             alt={BANNERS[activeTab][currentBannerIndex].title}
                             fill
-                            className="object-cover object-center"
+                            className="object-cover"
                             priority
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
+                            sizes="100vw"
                         />
-                        {/* Gradient Overlay - Linear Left to Right */}
-                        <div
-                            className="absolute inset-0 pointer-events-none"
-                            style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.45), rgba(0,0,0,0.05))' }}
-                        />
-
-                        {/* Text Content */}
-                        <div className="absolute left-4 md:left-10 bottom-[20%] z-10 text-white">
-                            <h2 className="text-2xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-5 drop-shadow-sm">
-                                {BANNERS[activeTab][currentBannerIndex].title}
-                            </h2>
-                            <Link
-                                href={BANNERS[activeTab][currentBannerIndex].link}
-                                className="
-                                    inline-flex items-center gap-2 
-                                    bg-white text-black font-semibold 
-                                    rounded-full 
-                                    px-[18px] py-[10px] text-sm
-                                    md:px-[24px] md:py-[12px] md:text-base
-                                    hover:bg-[#ffd814] transition-colors duration-300 shadow-sm
-                                "
-                            >
-                                Shop Now <ChevronRight size={16} className="md:w-5 md:h-5" />
-                            </Link>
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12">
+                            <div className="text-white">
+                                <h2 className="text-xl md:text-5xl font-bold mb-1 md:mb-3">{BANNERS[activeTab][currentBannerIndex].title}</h2>
+                                <Link
+                                    href={BANNERS[activeTab][currentBannerIndex].link}
+                                    className="text-xs md:text-base font-semibold bg-white text-black px-3 py-1.5 md:px-6 md:py-2.5 rounded-full inline-flex items-center gap-1 hover:bg-opacity-90 transition-colors"
+                                >
+                                    Shop Now <ChevronRight size={12} className="md:w-4 md:h-4" />
+                                </Link>
+                            </div>
                         </div>
                     </motion.div>
                 </AnimatePresence>
@@ -210,7 +230,7 @@ export const FashionPage: React.FC = () => {
                 <div className="max-w-7xl mx-auto">
                     <h3 className="text-xs md:text-lg font-bold text-gray-800 mb-3 md:mb-6 uppercase tracking-wider">Explore {activeTab}</h3>
                     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-6">
-                        {SUBCATEGORIES[activeTab].map((sub, idx) => (
+                        {subcategories[activeTab].map((sub, idx) => (
                             <Link key={idx} href={sub.link} className="flex flex-col items-center group">
                                 <div className="w-full aspect-square relative rounded-xl overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:border-blue-400 transition-colors">
                                     <LazyImage

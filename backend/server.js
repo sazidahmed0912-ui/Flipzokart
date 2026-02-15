@@ -281,6 +281,9 @@ app.use("/api/reviews", require("./routes/reviewRoutes"));
 // 🛒 Persistent Cart
 app.use("/api/cart", require("./routes/cartRoutes"));
 
+// 🎨 Website Content Manager
+app.use("/api/content", require("./routes/contentRoutes"));
+
 // 🔗 Frontend compatibility - alias /admin to /api/admin
 app.use("/admin", require("./routes/adminRoutes"));
 

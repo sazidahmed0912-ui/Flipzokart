@@ -2,31 +2,55 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Filter, ChevronDown, Grid, List, Search, X, Star } from 'lucide-react';
+import axios from 'axios';
 import { ProductCard } from '@/app/components/ProductCard';
 import { SearchProductCard } from '@/app/components/SearchProductCard';
 import { useApp } from '@/app/store/Context';
 import { CATEGORIES } from '@/app/constants';
 import { AnimatePresence, motion } from 'framer-motion';
+import LazyImage from '@/app/components/LazyImage';
+import Link from 'next/link';
 
 export const ShopPage: React.FC = () => {
   const { products } = useApp();
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'All';
   const initialQuery = searchParams.get('q') || '';
+  const initialSub = searchParams.get('sub') || '';
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]);
   const [sortBy, setSortBy] = useState('relevance');
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); // Default to grid for better mobile view
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [minRating, setMinRating] = useState(0);
 
-  // Default to list view if searching (Desktop only preference, but let's stick to Grid for consistency per user request)
-  // useEffect(() => {
-  //   if (initialQuery) {
-  //     console.log("Search mode");
-  //   }
-  // }, [initialQuery]);
+  // Dynamic Content State
+  const [categoryBanner, setCategoryBanner] = useState('');
+  const [subcategories, setSubcategories] = useState<any[]>([]);
+
+  // Fetch Category Content
+  useEffect(() => {
+    if (selectedCategory === 'All') {
+      setCategoryBanner('');
+      setSubcategories([]);
+      return;
+    }
+
+    const slug = selectedCategory.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+    axios.get(`/api/content/categories/${slug}`)
+      .then(res => {
+        if (res.data) {
+          if (res.data.category?.bannerUrl) setCategoryBanner(res.data.category.bannerUrl);
+          if (res.data.subcategories) setSubcategories(res.data.subcategories);
+        }
+      })
+      .catch(err => {
+        console.error("No content for category", err);
+        setCategoryBanner('');
+        setSubcategories([]);
+      });
+  }, [selectedCategory]);
 
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
@@ -34,15 +58,18 @@ export const ShopPage: React.FC = () => {
       const matchesPrice = p.price >= priceRange[0] && p.price <= priceRange[1];
       const matchesSearch = p.name.toLowerCase().includes(initialQuery.toLowerCase());
       const matchesRating = p.rating >= minRating;
-      return matchesCategory && matchesPrice && matchesSearch && matchesRating;
+      // Basic subcategory match if param exists (assuming subcategory is part of name or desc for now, as schema might not have it strictly)
+      const matchesSub = !initialSub || p.name.toLowerCase().includes(initialSub.toLowerCase()) || p.description.toLowerCase().includes(initialSub.toLowerCase());
+
+      return matchesCategory && matchesPrice && matchesSearch && matchesRating && matchesSub;
     }).sort((a, b) => {
       if (sortBy === 'price-low') return a.price - b.price;
       if (sortBy === 'price-high') return b.price - a.price;
       if (sortBy === 'rating') return b.rating - a.rating;
       if (sortBy === 'newest') return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-      return 0; // Relevance (default)
+      return 0; // Relevance
     });
-  }, [products, selectedCategory, priceRange, sortBy, initialQuery, minRating]);
+  }, [products, selectedCategory, priceRange, sortBy, initialQuery, minRating, initialSub]);
 
   // Clear all filters
   const clearFilters = () => {
@@ -55,6 +82,34 @@ export const ShopPage: React.FC = () => {
   return (
     <div className="bg-[#F1F3F6] min-h-screen font-sans">
       <div className="max-w-[1400px] mx-auto px-2 lg:px-6 py-2 lg:py-4">
+
+        {/* Category Banner */}
+        {categoryBanner && (
+          <div className="mb-4 w-full h-[150px] md:h-[250px] relative rounded-xl overflow-hidden shadow-sm">
+            <LazyImage src={categoryBanner} alt={selectedCategory} fill className="object-cover" />
+          </div>
+        )}
+
+        {/* Subcategories */}
+        {subcategories.length > 0 && (
+          <div className="mb-4 bg-white p-4 rounded-xl shadow-sm overflow-x-auto">
+            <div className="flex gap-6 min-w-max md:justify-center">
+              {subcategories.map(sub => (
+                <Link key={sub._id} href={`/shop?category=${selectedCategory}&sub=${sub.name}`} className="flex flex-col items-center gap-2 group min-w-[64px]">
+                  <div className="w-16 h-16 rounded-full bg-gray-50 border border-gray-100 overflow-hidden group-hover:border-blue-500 transition-colors">
+                    {sub.iconUrl ? (
+                      <LazyImage src={sub.iconUrl} alt={sub.name} width="64" height="64" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 font-bold">{sub.name[0]}</div>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium text-gray-700 group-hover:text-blue-600">{sub.name}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Mobile Filter Toggle - Sticky */}
         <div className="lg:hidden flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm sticky top-[60px] z-30">
           <span className="font-bold text-gray-800 text-sm">{filteredProducts.length} Results</span>
@@ -148,7 +203,6 @@ export const ShopPage: React.FC = () => {
             </div>
           </aside>
 
-          {/* ──────── RIGHT GRID ──────── */}
           {/* ──────── RIGHT GRID ──────── */}
           <main className="flex-1">
 
