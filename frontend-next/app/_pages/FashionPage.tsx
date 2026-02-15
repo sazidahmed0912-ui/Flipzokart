@@ -16,7 +16,7 @@ type Tab = 'Men' | 'Women' | 'Kids';
 const BANNERS: Record<Tab, { id: number; image: string; title: string; link: string }[]> = {
     Men: [
         { id: 1, image: "https://res.cloudinary.com/drfyr8hlb/image/upload/f_auto,q_auto,w_1600/v1771138164/Men_s_Summer_Collection_ygcqln.jpg", title: "Men's Summer Collection", link: "/shop?category=Fashion&gender=Men" },
-        { id: 2, image: "https://images.unsplash.com/photo-1617137968427-85924c809a10?auto=format&fit=crop&q=80&w=1000", title: "Formal Wear Sale", link: "/shop?category=Fashion&gender=Men" },
+        { id: 2, image: "https://images.unsplash.com/photo-1593030761757-71bd90dbe3e4?q=80&w=1600&auto=format&fit=crop", title: "Formal Wear Sale", link: "/shop?category=Fashion&gender=Men" },
     ],
     Women: [
         { id: 1, image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=1000", title: "Women's Ethnic Wear", link: "/shop?category=Fashion&gender=Women" },
@@ -24,7 +24,7 @@ const BANNERS: Record<Tab, { id: number; image: string; title: string; link: str
     ],
     Kids: [
         { id: 1, image: "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&q=80&w=1000", title: "Kids Party Wear", link: "/shop?category=Fashion&gender=Kids" },
-        { id: 2, image: "https://images.unsplash.com/photo-1503919545889-aef6d293c94c?auto=format&fit=crop&q=80&w=1000", title: "Cute Outfits", link: "/shop?category=Fashion&gender=Kids" },
+        { id: 2, image: "https://images.unsplash.com/photo-1622290291314-883f94739770?q=80&w=1600&auto=format&fit=crop", title: "Cute Outfits", link: "/shop?category=Fashion&gender=Kids" },
     ]
 };
 
