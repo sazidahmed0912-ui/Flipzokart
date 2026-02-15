@@ -53,28 +53,28 @@ const BANNERS: Record<Tab, BannerConfig> = {
 
 const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: string }[]> = {
     Men: [
-        { name: "Shirts", icon: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Shirts" },
-        { name: "T-Shirts", icon: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=TShirts" },
-        { name: "Jeans", icon: "https://images.unsplash.com/photo-1604176354204-9268737828fa?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Jeans" },
-        { name: "Shoes", icon: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Shoes" },
-        { name: "Watches", icon: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Watches" },
-        { name: "Activewear", icon: "https://images.unsplash.com/photo-1518459031867-a89b944bffe4?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Activewear" },
+        { name: "Shirts", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Shirts" },
+        { name: "T-Shirts", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=TShirts" },
+        { name: "Jeans", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Jeans" },
+        { name: "Shoes", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Shoes" },
+        { name: "Watches", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Watches" },
+        { name: "Activewear", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Activewear" },
     ],
     Women: [
-        { name: "Kurti", icon: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Kurti" },
-        { name: "Saree", icon: "https://images.unsplash.com/photo-1610030469983-98e55041d04f?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Saree" },
-        { name: "Dresses", icon: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Dresses" },
-        { name: "Handbags", icon: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Handbags" },
-        { name: "Heels", icon: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Heels" },
-        { name: "Jewelry", icon: "https://images.unsplash.com/photo-1599643478518-17488fbbcd75?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Jewelry" },
+        { name: "Kurti", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Kurti" },
+        { name: "Saree", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Saree" },
+        { name: "Dresses", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Dresses" },
+        { name: "Handbags", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Handbags" },
+        { name: "Heels", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Heels" },
+        { name: "Jewelry", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Jewelry" },
     ],
     Kids: [
-        { name: "Boys Wear", icon: "https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Boys" },
-        { name: "Girls Wear", icon: "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Girls" },
-        { name: "Kids Shoes", icon: "https://images.unsplash.com/photo-1514989940723-e8872778802d?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=KidsShoes" },
-        { name: "Toys", icon: "https://images.unsplash.com/photo-1558877385-81a1c7e67d72?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Toys" },
-        { name: "School Bags", icon: "https://images.unsplash.com/photo-1588058365815-c9692dd15949?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Bags" },
-        { name: "Accessories", icon: "https://images.unsplash.com/photo-1614030636278-f77d33b497cb?auto=format&fit=crop&q=80&w=300", link: "/shop?category=Fashion&sub=Accessories" },
+        { name: "Boys Wear", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Boys" },
+        { name: "Girls Wear", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Girls" },
+        { name: "Kids Shoes", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=KidsShoes" },
+        { name: "Toys", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Toys" },
+        { name: "School Bags", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Bags" },
+        { name: "Accessories", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Accessories" },
     ]
 };
 
