@@ -144,7 +144,7 @@ export const FashionPage: React.FC = () => {
 
             {/* 2. HERO BANNER CAROUSEL */}
             <div
-                className="relative w-full h-[180px] md:h-[400px] overflow-hidden bg-gray-200 group touch-pan-y"
+                className="relative w-full h-[240px] md:h-[360px] lg:h-[480px] overflow-hidden bg-gray-200 group touch-pan-y"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
@@ -162,21 +162,34 @@ export const FashionPage: React.FC = () => {
                             src={BANNERS[activeTab][currentBannerIndex].image}
                             alt={BANNERS[activeTab][currentBannerIndex].title}
                             fill
-                            className="object-cover"
+                            className="object-cover object-center"
                             priority
-                            sizes="100vw"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
                         />
-                        {/* Gradient Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12">
-                            <div className="text-white">
-                                <h2 className="text-xl md:text-5xl font-bold mb-1 md:mb-3">{BANNERS[activeTab][currentBannerIndex].title}</h2>
-                                <Link
-                                    href={BANNERS[activeTab][currentBannerIndex].link}
-                                    className="text-xs md:text-base font-semibold bg-white text-black px-3 py-1.5 md:px-6 md:py-2.5 rounded-full inline-flex items-center gap-1 hover:bg-opacity-90 transition-colors"
-                                >
-                                    Shop Now <ChevronRight size={12} className="md:w-4 md:h-4" />
-                                </Link>
-                            </div>
+                        {/* Gradient Overlay - Linear Left to Right */}
+                        <div
+                            className="absolute inset-0 pointer-events-none"
+                            style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.45), rgba(0,0,0,0.05))' }}
+                        />
+
+                        {/* Text Content */}
+                        <div className="absolute left-4 md:left-10 bottom-[20%] z-10 text-white">
+                            <h2 className="text-2xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-5 drop-shadow-sm">
+                                {BANNERS[activeTab][currentBannerIndex].title}
+                            </h2>
+                            <Link
+                                href={BANNERS[activeTab][currentBannerIndex].link}
+                                className="
+                                    inline-flex items-center gap-2 
+                                    bg-white text-black font-semibold 
+                                    rounded-full 
+                                    px-[18px] py-[10px] text-sm
+                                    md:px-[24px] md:py-[12px] md:text-base
+                                    hover:bg-[#ffd814] transition-colors duration-300 shadow-sm
+                                "
+                            >
+                                Shop Now <ChevronRight size={16} className="md:w-5 md:h-5" />
+                            </Link>
                         </div>
                     </motion.div>
                 </AnimatePresence>
