@@ -61,6 +61,44 @@ export const ShopPage: React.FC = () => {
       });
   }, [selectedCategory]);
 
+  // Real-time Sync Listener
+  useEffect(() => {
+    const socket = (window as any).socket;
+    if (!socket) return;
+
+    const handleContentUpdate = (data: { type: string, data: any }) => {
+      // Only update if relevant to current category
+      // 1. Layout Update
+      if (data.type === 'category-layout' && data.data.slug === selectedCategory.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')) {
+        setPageLayout(data.data.layout);
+      }
+      // 2. Meta Update (Banner)
+      if (data.type === 'category-meta') {
+        // Check if it matches current category (Slug or Name check)
+        // simplified check: just refetch if we are browsing this category
+        const currentSlug = selectedCategory.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+        if (data.data.slug === currentSlug) {
+          if (data.data.bannerUrl) setCategoryBanner(data.data.bannerUrl);
+          if (data.data.mobileBannerUrl) setMobileCategoryBanner(data.data.mobileBannerUrl);
+        }
+      }
+      // 3. Subcategory Update
+      if (data.type === 'subcategory-update') {
+        // Hard to match categoryId without storing it. 
+        // We'll just trigger a refetch of the content endpoint
+        const currentSlug = selectedCategory.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+        API.get(`/api/content/categories/${currentSlug}`).then(res => {
+          if (res.data?.subcategories) setSubcategories(res.data.subcategories);
+        }).catch(() => { });
+      }
+    };
+
+    socket.on('content:update', handleContentUpdate);
+    return () => {
+      socket.off('content:update', handleContentUpdate);
+    };
+  }, [selectedCategory]);
+
   // Render Custom Layout if Exists
   if (pageLayout && pageLayout.length > 0) {
     return (

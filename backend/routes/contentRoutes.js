@@ -22,7 +22,10 @@ const {
     upsertSubcategory,
     getCategoryLayout,
     saveCategoryLayout,
-    publishCategoryLayout
+    saveCategoryLayout,
+    publishCategoryLayout,
+    exportContent,
+    importContent
 } = require('../controllers/contentController');
 
 const { protect, admin } = require('../middleware/authMiddleware');
@@ -57,5 +60,9 @@ router.post('/admin/subcategories', protect, admin, upsertSubcategory);
 router.get('/admin/categories/:slug/layout', protect, admin, getCategoryLayout);
 router.post('/admin/categories/:slug/layout', protect, admin, saveCategoryLayout);
 router.post('/admin/categories/:slug/publish', protect, admin, publishCategoryLayout);
+
+// Import/Export
+router.get('/admin/export', protect, admin, exportContent);
+router.post('/admin/import', protect, admin, importContent);
 
 module.exports = router;

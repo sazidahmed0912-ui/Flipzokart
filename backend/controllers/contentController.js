@@ -271,6 +271,8 @@ const upsertCategory = async (req, res) => {
                 mobileBannerUrl
             });
         }
+
+        emitUpdate(req, 'category-meta', category); // Realtime Update
         res.json(category);
     } catch (error) {
         console.error(error);
@@ -301,6 +303,8 @@ const upsertSubcategory = async (req, res) => {
                 position: position || 0
             });
         }
+
+        emitUpdate(req, 'subcategory-update', subcat); // Realtime Update
         res.json(subcat);
 
     } catch (error) {
@@ -380,6 +384,141 @@ const getUnifiedAdminContent = async (req, res) => {
     }
 };
 
+// Exports moved to bottom
+// ...
+
+
+// ... existing code ...
+
+const getCategoryLayout = async (req, res) => {
+    try {
+        const category = await Category.findOne({ slug: req.params.slug });
+        if (!category) return res.status(404).json({ message: 'Category not found' });
+        res.json({
+            draft: category.draftLayout || [],
+            published: category.pageLayout || []
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+const saveCategoryLayout = async (req, res) => {
+    try {
+        const { layout } = req.body; // Array of sections
+        const category = await Category.findOne({ slug: req.params.slug });
+        if (!category) return res.status(404).json({ message: 'Category not found' });
+
+        category.draftLayout = layout;
+        await category.save();
+        res.json({ message: 'Draft saved', layout: category.draftLayout });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+const publishCategoryLayout = async (req, res) => {
+    try {
+        const category = await Category.findOne({ slug: req.params.slug });
+        if (!category) return res.status(404).json({ message: 'Category not found' });
+
+        category.pageLayout = category.draftLayout;
+        await category.save();
+
+        // Emit Update
+        const io = req.app.get('socketio');
+        if (io) io.emit('content:update', { type: 'category-layout', data: { slug: req.params.slug, layout: category.pageLayout } });
+
+        res.json({ message: 'Layout published', layout: category.pageLayout });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+// --- IMPORT / EXPORT SYSTEM ---
+
+// @desc    Admin: Export Data (JSON)
+// @route   GET /api/admin/content/export
+// @access  Private/Admin
+const exportContent = async (req, res) => {
+    try {
+        const { type } = req.query; // 'banners', 'home-categories', 'all'
+
+        let data = {};
+
+        if (type === 'banners' || type === 'all') {
+            data.banners = await HomepageBanner.find({}).sort({ position: 1 });
+        }
+        if (type === 'home-categories' || type === 'all') {
+            data.homeCategories = await HomepageCategoryIcon.find({}).sort({ position: 1 });
+        }
+
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ message: 'Export failed' });
+    }
+};
+
+// @desc    Admin: Import Data (JSON)
+// @route   POST /api/admin/content/import
+// @access  Private/Admin
+const importContent = async (req, res) => {
+    try {
+        const { banners, homeCategories } = req.body;
+        const results = { banners: 0, homeCategories: 0, errors: [] };
+        const io = req.app.get('socketio');
+
+        // Import Banners
+        if (banners && Array.isArray(banners)) {
+            for (const b of banners) {
+                // Duplicate Check by Title (if exists) or ID
+                const exists = await HomepageBanner.findOne({
+                    $or: [{ title: b.title }, { imageUrl: b.imageUrl }]
+                });
+
+                if (!exists) {
+                    await HomepageBanner.create({
+                        title: b.title,
+                        subtitle: b.subtitle,
+                        imageUrl: b.imageUrl,
+                        mobileImageUrl: b.mobileImageUrl,
+                        redirectUrl: b.redirectUrl,
+                        ctaText: b.ctaText,
+                        isActive: b.isActive !== undefined ? b.isActive : true,
+                        position: b.position || 0
+                    });
+                    results.banners++;
+                }
+            }
+            if (results.banners > 0 && io) io.emit('content:update', { type: 'banners', data: { imported: true } });
+        }
+
+        // Import Home Categories
+        if (homeCategories && Array.isArray(homeCategories)) {
+            for (const c of homeCategories) {
+                const exists = await HomepageCategoryIcon.findOne({ categoryName: c.categoryName });
+                if (!exists) {
+                    await HomepageCategoryIcon.create({
+                        categoryName: c.categoryName,
+                        iconUrl: c.iconUrl,
+                        redirectUrl: c.redirectUrl,
+                        isActive: c.isActive !== undefined ? c.isActive : true,
+                        position: c.position || 0
+                    });
+                    results.homeCategories++;
+                }
+            }
+            if (results.homeCategories > 0 && io) io.emit('content:update', { type: 'home-categories', data: { imported: true } });
+        }
+
+        res.json({ message: 'Import completed', results });
+
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({ message: 'Import failed' });
+    }
+};
+
 module.exports = {
     getUnifiedAdminContent,
     getHomepageBanners,
@@ -401,44 +540,10 @@ module.exports = {
     upsertCategory,
     upsertSubcategory,
 
-    // Layout Management
-    getCategoryLayout: async (req, res) => {
-        try {
-            const category = await Category.findOne({ slug: req.params.slug });
-            if (!category) return res.status(404).json({ message: 'Category not found' });
-            res.json({
-                draft: category.draftLayout || [],
-                published: category.pageLayout || []
-            });
-        } catch (error) {
-            res.status(500).json({ message: 'Server Error' });
-        }
-    },
+    getCategoryLayout,
+    saveCategoryLayout,
+    publishCategoryLayout,
 
-    saveCategoryLayout: async (req, res) => {
-        try {
-            const { layout } = req.body; // Array of sections
-            const category = await Category.findOne({ slug: req.params.slug });
-            if (!category) return res.status(404).json({ message: 'Category not found' });
-
-            category.draftLayout = layout;
-            await category.save();
-            res.json({ message: 'Draft saved', layout: category.draftLayout });
-        } catch (error) {
-            res.status(500).json({ message: 'Server Error' });
-        }
-    },
-
-    publishCategoryLayout: async (req, res) => {
-        try {
-            const category = await Category.findOne({ slug: req.params.slug });
-            if (!category) return res.status(404).json({ message: 'Category not found' });
-
-            category.pageLayout = category.draftLayout;
-            await category.save();
-            res.json({ message: 'Layout published', layout: category.pageLayout });
-        } catch (error) {
-            res.status(500).json({ message: 'Server Error' });
-        }
-    }
+    exportContent,
+    importContent
 };

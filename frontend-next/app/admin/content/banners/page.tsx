@@ -42,9 +42,8 @@ export default function BannersPage() {
     const fetchBanners = async () => {
         try {
             setLoading(true);
-            // Unified Admin Content API - fetches all data to ensure sync
-            const res = await API.get('/api/admin/content/all');
-            setBanners(res.data.homepageBanners || []);
+            const res = await API.get('/api/admin/content/banners');
+            setBanners(res.data);
         } catch (error) {
             console.error('Failed to fetch banners', error);
         } finally {
@@ -55,7 +54,7 @@ export default function BannersPage() {
     const handleImportDefaults = async () => {
         try {
             setImporting(true);
-            await API.post('/api/content/admin/banners/seed', {});
+            await API.post('/api/admin/content/banners/seed', {});
             alert('Default banners imported successfully!');
             fetchBanners();
         } catch (error: any) {
@@ -65,11 +64,50 @@ export default function BannersPage() {
         }
     };
 
+    const handleExport = async () => {
+        try {
+            const res = await API.get('/api/admin/content/export?type=banners');
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res.data.banners, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "banners_export.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        } catch (error) {
+            alert('Export failed');
+        }
+    };
+
+    const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const json = JSON.parse(e.target?.result as string);
+                if (!Array.isArray(json)) throw new Error('Invalid JSON format');
+
+                setImporting(true);
+                await API.post('/api/admin/content/import', { banners: json });
+                alert('Banners imported successfully!');
+                fetchBanners();
+            } catch (error) {
+                alert('Import failed: Invalid JSON or Server Error');
+            } finally {
+                setImporting(false);
+                event.target.value = ''; // Reset
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const handleAdd = async () => {
         if (!newBannerImage) return alert('Please upload a desktop banner image');
 
         try {
-            await API.post('/api/content/admin/banners', {
+            await API.post('/api/admin/content/banners', {
                 imageUrl: newBannerImage,
                 mobileImageUrl: newBannerMobileImage || newBannerImage,
                 redirectUrl: newBannerLink,
@@ -94,7 +132,7 @@ export default function BannersPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure?')) return;
         try {
-            await API.delete(`/api/content/admin/banners/${id}`);
+            await API.delete(`/api/admin/content/banners/${id}`);
             fetchBanners();
         } catch (error) {
             alert('Failed to delete');
@@ -103,7 +141,7 @@ export default function BannersPage() {
 
     const handleUpdate = async (id: string, data: Partial<Banner>) => {
         try {
-            await API.put(`/api/content/admin/banners/${id}`, data);
+            await API.put(`/api/admin/content/banners/${id}`, data);
             // Update local state without full refetch if possible for smoother toggle
             setBanners(prev => prev.map(b => b._id === id ? { ...b, ...data } : b));
         } catch (error) {
@@ -116,7 +154,7 @@ export default function BannersPage() {
         setBanners(newOrder); // Optimistic Update
 
         try {
-            await API.put('/api/content/admin/banners/reorder', {
+            await API.put('/api/admin/content/banners/reorder', {
                 orderedIds: newOrder.map(b => b._id)
             });
         } catch (error) {
@@ -173,6 +211,26 @@ export default function BannersPage() {
                             {importing ? 'Importing...' : 'Import Defaults'}
                         </button>
                     )}
+
+                    {/* Export/Import JSON */}
+                    <div className="flex gap-2 mx-2">
+                        <button
+                            onClick={handleExport}
+                            className="p-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg border border-gray-200"
+                            title="Export Banners JSON"
+                        >
+                            <ArrowUp size={18} className="rotate-45" />
+                        </button>
+                        <label className="p-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg border border-gray-200 cursor-pointer" title="Import Banners JSON">
+                            <ArrowDown size={18} className="rotate-45" />
+                            <input
+                                type="file"
+                                accept=".json"
+                                className="hidden"
+                                onChange={handleImportFile}
+                            />
+                        </label>
+                    </div>
                     <button
                         onClick={() => setIsAdding(!isAdding)}
                         className="flex items-center gap-2 bg-[#2874F0] text-white px-4 py-2 rounded-lg hover:bg-[#1e5bbf] shadow-sm"

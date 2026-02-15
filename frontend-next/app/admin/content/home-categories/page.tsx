@@ -18,6 +18,7 @@ interface HomeCategory {
 export default function HomeCategoriesPage() {
     const [categories, setCategories] = useState<HomeCategory[]>([]);
     const [loading, setLoading] = useState(true);
+    const [importing, setImporting] = useState(false);
 
     // New Item State
     const [isAdding, setIsAdding] = useState(false);
@@ -32,9 +33,8 @@ export default function HomeCategoriesPage() {
     const fetchCategories = async () => {
         try {
             setLoading(true);
-            // Unified Admin Content API
-            const res = await API.get('/api/admin/content/all');
-            setCategories(res.data.homepageCategories || []);
+            const res = await API.get('/api/admin/content/home-categories');
+            setCategories(res.data);
         } catch (error) {
             console.error('Failed to fetch categories', error);
         } finally {
@@ -42,11 +42,50 @@ export default function HomeCategoriesPage() {
         }
     };
 
+    const handleExport = async () => {
+        try {
+            const res = await API.get('/api/admin/content/export?type=home-categories');
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res.data.homeCategories, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "home_categories_export.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        } catch (error) {
+            alert('Export failed');
+        }
+    };
+
+    const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const json = JSON.parse(e.target?.result as string);
+                if (!Array.isArray(json)) throw new Error('Invalid JSON format');
+
+                setImporting(true);
+                await API.post('/api/admin/content/import', { homeCategories: json });
+                alert('Categories imported successfully!');
+                fetchCategories();
+            } catch (error) {
+                alert('Import failed: Invalid JSON or Server Error');
+            } finally {
+                setImporting(false);
+                event.target.value = ''; // Reset
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const handleAdd = async () => {
         if (!newIcon || !newName) return alert('Please provide name and icon');
 
         try {
-            await API.post('/api/content/admin/home-categories', {
+            await API.post('/api/admin/content/home-categories', {
                 categoryName: newName,
                 iconUrl: newIcon,
                 redirectUrl: newLink
@@ -65,7 +104,7 @@ export default function HomeCategoriesPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure?')) return;
         try {
-            await API.delete(`/api/content/admin/home-categories/${id}`);
+            await API.delete(`/api/admin/content/home-categories/${id}`);
             fetchCategories();
         } catch (error) {
             alert('Failed to delete');
@@ -86,8 +125,8 @@ export default function HomeCategoriesPage() {
 
         try {
             await Promise.all([
-                API.put(`/api/content/admin/home-categories/${current._id}`, { position: target.position }),
-                API.put(`/api/content/admin/home-categories/${target._id}`, { position: current.position })
+                API.put(`/api/admin/content/home-categories/${current._id}`, { position: target.position }),
+                API.put(`/api/admin/content/home-categories/${target._id}`, { position: current.position })
             ]);
             fetchCategories();
         } catch (err) {
@@ -104,13 +143,36 @@ export default function HomeCategoriesPage() {
                     <h2 className="text-xl font-bold text-gray-800">Home Categories</h2>
                     <p className="text-sm text-gray-500">Manage the 'Shop By Category' icons on the homepage.</p>
                 </div>
-                <button
-                    onClick={() => setIsAdding(!isAdding)}
-                    className="flex items-center gap-2 bg-[#2874F0] text-white px-4 py-2 rounded-lg hover:bg-[#1e5bbf]"
-                >
-                    <Plus size={18} />
-                    Add New Icon
-                </button>
+                <div className="flex items-center gap-2">
+                    {/* Export/Import JSON */}
+                    <div className="flex gap-2 mx-2">
+                        <button
+                            onClick={handleExport}
+                            className="p-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg border border-gray-200"
+                            title="Export Categories JSON"
+                        >
+                            <ArrowUp size={18} className="rotate-45" />
+                        </button>
+                        <label className="p-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg border border-gray-200 cursor-pointer" title="Import Categories JSON">
+                            <ArrowDown size={18} className="rotate-45" />
+                            {importing ? <span className="animate-spin ml-2">...</span> : null}
+                            <input
+                                type="file"
+                                accept=".json"
+                                className="hidden"
+                                onChange={handleImportFile}
+                            />
+                        </label>
+                    </div>
+
+                    <button
+                        onClick={() => setIsAdding(!isAdding)}
+                        className="flex items-center gap-2 bg-[#2874F0] text-white px-4 py-2 rounded-lg hover:bg-[#1e5bbf]"
+                    >
+                        <Plus size={18} />
+                        Add New Icon
+                    </button>
+                </div>
             </div>
 
             {isAdding && (

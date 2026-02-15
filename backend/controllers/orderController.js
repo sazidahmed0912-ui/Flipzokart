@@ -714,6 +714,7 @@ const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status, note } = req.body; // Destructure note
+    const io = req.app.get('socketio');
 
     console.log(`Updating order ${id} to status: ${status} with note: ${note}`);
 

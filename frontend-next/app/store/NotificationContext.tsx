@@ -91,29 +91,41 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   }, [fetchNotifications]);
 
   /* ---------- REAL-TIME SOCKET LISTENER ---------- */
+  /* ---------- REAL-TIME SOCKET LISTENER ---------- */
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    // 1. Polling Fallback (Robustness)
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 15000); // 15 seconds
 
-    // We use a direct socket connection or reuse useSocket if possible.
-    // Since we are in a Provider, we might create a dedicated listener.
-    // For simplicity, we can assume the Global Socket (if exists) or create a temporary one.
-    // Ideally we should use the useSocket hook, but let's check imports.
-    // Importing useSocket requires ensuring it doesn't create circular deps or multiple connections.
-    // Let's rely on the fact that existing app puts socket in `window` or similar? No.
-    // Let's use `io` directly here just for the event listener if useSocket isn't available in Context.
-    // Actually, let's use the import if available.
-    // Check imports... useApp is there.
+    // 2. Socket Listener (if global socket exists)
+    const socket = (window as any).socket;
+    if (socket) {
+      const handleNotification = (data: any) => {
+        console.log("SOCKET: New Notification Recieved", data);
+        fetchNotifications(); // Refresh list
 
-    // To avoid complexity, we'll try to listen if we can access the socket instance.
-    // If not, we will rely on `Layout.tsx` which typically handles global sockets in Next.js apps.
-    // BUT user says it works in real-time. So someone IS listening.
-    // Adding a second listener is safe.
+        // Show Toast
+        showToast({
+          _id: Date.now().toString(),
+          message: data.message,
+          type: data.type || 'info',
+          recipient: (user as any)?._id || (user as any)?.id || '',
+          isRead: false,
+          createdAt: new Date().toISOString(),
+          status: data.status
+        });
+      };
 
-    // Let's SKIP adding a new socket connection here to avoid duplicates/auth issues.
-    // Instead, rely on fetch.
+      socket.on('notification', handleNotification);
+      return () => {
+        clearInterval(interval);
+        socket.off('notification', handleNotification);
+      };
+    }
 
-  }, []);
+    return () => clearInterval(interval);
+  }, [fetchNotifications, user]);
 
   /* ---------- API ACTIONS ---------- */
   const markNotificationAsRead = async (_id: string) => {

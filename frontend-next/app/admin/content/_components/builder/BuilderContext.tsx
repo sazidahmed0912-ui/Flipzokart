@@ -96,7 +96,7 @@ export const BuilderProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const loadLayout = async (slug: string) => {
         setLoading(true);
         try {
-            const { data } = await API.get(`/api/content/admin/categories/${slug}/layout`);
+            const { data } = await API.get(`/api/admin/categories/${slug}/layout`);
             // Prefer draft if exists and not empty, otherwise published
             const loaded = data.draft && data.draft.length > 0 ? data.draft : (data.published || []);
             setSections(loaded);
@@ -111,7 +111,7 @@ export const BuilderProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const saveDraft = async (slug: string) => {
         setSaving(true);
         try {
-            await API.post(`/api/content/admin/categories/${slug}/layout`, { layout: sections });
+            await API.post(`/api/admin/categories/${slug}/layout`, { layout: sections });
             addToast('success', 'Draft Saved');
         } catch (error) {
             addToast('error', 'Failed to save draft');
@@ -124,7 +124,7 @@ export const BuilderProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (!confirm('Publish this layout to the live site?')) return;
         setSaving(true);
         try {
-            await API.post(`/api/content/admin/categories/${slug}/publish`, {});
+            await API.post(`/api/admin/categories/${slug}/publish`, {});
             addToast('success', 'Layout Published!');
         } catch (error) {
             addToast('error', 'Failed to publish');

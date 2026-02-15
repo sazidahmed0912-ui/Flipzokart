@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import API from '@/app/services/api';
+import axios from 'axios';
 import { useApp } from '@/app/store/Context';
 import { ProductCard } from '@/app/components/ProductCard';
 import { GrocerySection } from '@/app/components/GrocerySection';
@@ -27,15 +27,31 @@ export const HomePage: React.FC = () => {
     const [displayCategories, setDisplayCategories] = useState(initialCategories);
 
     useEffect(() => {
+        fetchContent();
+
+        // Real-time Sync
+        const socket = (window as any).socket;
+        if (socket) {
+            const handleUpdate = (data: { type: string }) => {
+                if (data.type === 'banners' || data.type === 'home-categories') {
+                    fetchContent();
+                }
+            };
+            socket.on('content:update', handleUpdate);
+            return () => socket.off('content:update', handleUpdate);
+        }
+    }, []);
+
+    const fetchContent = () => {
         // Fetch Banners
-        API.get('/api/content/banners').then(res => {
+        axios.get('/api/content/banners').then(res => {
             if (res.data && res.data.length > 0) {
                 setBanners(res.data);
             }
         }).catch(err => console.error(err));
 
         // Fetch Categories
-        API.get('/api/content/home-categories').then(res => {
+        axios.get('/api/content/home-categories').then(res => {
             if (res.data && res.data.length > 0) {
                 const mapped = res.data.map((c: any) => ({
                     name: c.categoryName,
@@ -45,7 +61,7 @@ export const HomePage: React.FC = () => {
                 setDisplayCategories(mapped);
             }
         }).catch(err => console.error(err));
-    }, []);
+    };
 
 
     // Filter out groceries from general homepage sections
