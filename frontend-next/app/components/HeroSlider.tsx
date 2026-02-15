@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import LazyImage from '@/app/components/LazyImage';
-;
 import { motion, AnimatePresence } from 'framer-motion';
 
 const slides = [
@@ -56,14 +55,15 @@ const slides = [
     }
 ];
 
-// ... imports
-// Keep existing slides array as fallback (lines 8-57)
-
 interface HeroSliderProps {
     banners?: Array<{
         _id: string;
-        imageUrl: string;
+        imageUrl: string; // Desktop
+        mobileImageUrl?: string; // Mobile
         redirectUrl: string;
+        title?: string;
+        subtitle?: string;
+        ctaText?: string;
     }>;
 }
 
@@ -78,7 +78,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
             setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
         }, 5000);
         return () => clearInterval(timer);
-    }, [activeSlides.length]);
+    }, [activeSlides.length, banners.length]);
 
     const touchStartX = React.useRef(0);
     const touchEndX = React.useRef(0);
@@ -128,22 +128,67 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                         transition={{ duration: 0.5 }}
                         className="absolute inset-0"
                     >
-                        <Link href={(activeSlides[currentIndex] as any).redirectUrl || '#'} className="block w-full h-full relative">
-                            <LazyImage
-                                src={(activeSlides[currentIndex] as any).imageUrl}
-                                alt="Banner"
-                                fill={true}
-                                priority={true}
-                                className="object-cover w-full h-full"
-                                sizes="100vw"
-                            />
+                        <Link href={(activeSlides[currentIndex] as any).redirectUrl || '#'} className="block w-full h-full relative group">
+                            {/* Desktop Image */}
+                            <div className="hidden md:block w-full h-full relative">
+                                <LazyImage
+                                    src={(activeSlides[currentIndex] as any).imageUrl}
+                                    alt="Banner"
+                                    fill={true}
+                                    priority={true}
+                                    className="object-cover w-full h-full"
+                                    sizes="100vw"
+                                />
+                            </div>
+                            {/* Mobile Image - Fallback to Desktop */}
+                            <div className="block md:hidden w-full h-full relative">
+                                <LazyImage
+                                    src={(activeSlides[currentIndex] as any).mobileImageUrl || (activeSlides[currentIndex] as any).imageUrl}
+                                    alt="Banner"
+                                    fill={true}
+                                    priority={true}
+                                    className="object-cover w-full h-full"
+                                    sizes="100vw"
+                                />
+                            </div>
+
+                            {/* Dynamic Text Overlay (If title exists) */}
+                            {((activeSlides[currentIndex] as any).title) && (
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div className="text-center w-full md:max-w-4xl px-4 pointer-events-auto">
+                                        <motion.h2
+                                            initial={{ y: 20, opacity: 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] mb-2 md:mb-4 tracking-tight"
+                                        >
+                                            {(activeSlides[currentIndex] as any).title}
+                                        </motion.h2>
+                                        <motion.p
+                                            initial={{ y: 20, opacity: 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            transition={{ delay: 0.3 }}
+                                            className="text-sm sm:text-lg md:text-2xl text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] mb-4 md:mb-8 font-medium tracking-wide"
+                                        >
+                                            {(activeSlides[currentIndex] as any).subtitle}
+                                        </motion.p>
+                                        <motion.span
+                                            initial={{ y: 20, opacity: 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            transition={{ delay: 0.4 }}
+                                            className="inline-block bg-white text-gray-900 px-6 py-2 md:px-8 md:py-3 rounded-full font-bold text-xs md:text-base uppercase tracking-wider hover:scale-105 transition-transform shadow-lg cursor-pointer"
+                                        >
+                                            {(activeSlides[currentIndex] as any).ctaText || 'Shop Now'}
+                                        </motion.span>
+                                    </div>
+                                </div>
+                            )}
                         </Link>
                     </motion.div>
                 ) : (
                     // STATIC FALLBACK RENDER (Existing Logic)
                     <motion.div
                         key={currentIndex}
-                        // ... existing motion props
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

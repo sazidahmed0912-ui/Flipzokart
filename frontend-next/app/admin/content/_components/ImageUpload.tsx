@@ -12,6 +12,7 @@ interface ImageUploadProps {
     width?: string;
     height?: string;
     className?: string;
+    minimal?: boolean;
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -21,7 +22,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     label = 'Upload Image',
     width = 'w-full',
     height = 'h-48',
-    className = ''
+    className = '',
+    minimal = false
 }) => {
     const [loading, setLoading] = useState(false);
 
@@ -76,11 +78,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         <div className={`${width} ${height} ${className}`}>
             <label className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors relative">
                 {loading ? (
-                    <Loader2 className="animate-spin text-blue-500" size={24} />
+                    <Loader2 className="animate-spin text-blue-500" size={minimal ? 16 : 24} />
                 ) : (
                     <>
-                        <Upload className="text-gray-400 mb-2" size={24} />
-                        <span className="text-sm text-gray-500">{label}</span>
+                        <Upload className={`text-gray-400 ${minimal ? 'mb-1' : 'mb-2'}`} size={minimal ? 16 : 24} />
+                        {!minimal && <span className="text-sm text-gray-500">{label}</span>}
                     </>
                 )}
                 <input

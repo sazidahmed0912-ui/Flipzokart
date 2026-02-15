@@ -10,6 +10,7 @@ import { CATEGORIES } from '@/app/constants';
 import { AnimatePresence, motion } from 'framer-motion';
 import LazyImage from '@/app/components/LazyImage';
 import Link from 'next/link';
+import { CategoryPageRenderer } from '@/app/components/renderer/CategoryPageRenderer';
 
 export const ShopPage: React.FC = () => {
   const { products } = useApp();
@@ -27,13 +28,17 @@ export const ShopPage: React.FC = () => {
 
   // Dynamic Content State
   const [categoryBanner, setCategoryBanner] = useState('');
+  const [mobileCategoryBanner, setMobileCategoryBanner] = useState('');
   const [subcategories, setSubcategories] = useState<any[]>([]);
+  const [pageLayout, setPageLayout] = useState<any[]>([]);
 
   // Fetch Category Content
   useEffect(() => {
     if (selectedCategory === 'All') {
       setCategoryBanner('');
+      setMobileCategoryBanner('');
       setSubcategories([]);
+      setPageLayout([]);
       return;
     }
 
@@ -42,15 +47,28 @@ export const ShopPage: React.FC = () => {
       .then(res => {
         if (res.data) {
           if (res.data.category?.bannerUrl) setCategoryBanner(res.data.category.bannerUrl);
+          if (res.data.category?.mobileBannerUrl) setMobileCategoryBanner(res.data.category.mobileBannerUrl);
+          if (res.data.category?.pageLayout) setPageLayout(res.data.category.pageLayout);
           if (res.data.subcategories) setSubcategories(res.data.subcategories);
         }
       })
       .catch(err => {
         console.error("No content for category", err);
         setCategoryBanner('');
+        setMobileCategoryBanner('');
         setSubcategories([]);
+        setPageLayout([]);
       });
   }, [selectedCategory]);
+
+  // Render Custom Layout if Exists
+  if (pageLayout && pageLayout.length > 0) {
+    return (
+      <div className="bg-[#F1F3F6] min-h-screen font-sans pb-10">
+        <CategoryPageRenderer layout={pageLayout} />
+      </div>
+    );
+  }
 
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
@@ -84,9 +102,18 @@ export const ShopPage: React.FC = () => {
       <div className="max-w-[1400px] mx-auto px-2 lg:px-6 py-2 lg:py-4">
 
         {/* Category Banner */}
-        {categoryBanner && (
+        {(categoryBanner || mobileCategoryBanner) && (
           <div className="mb-4 w-full h-[150px] md:h-[250px] relative rounded-xl overflow-hidden shadow-sm">
-            <LazyImage src={categoryBanner} alt={selectedCategory} fill className="object-cover" />
+            {/* Desktop Image */}
+            <div className={`${mobileCategoryBanner ? 'hidden md:block' : 'block'} w-full h-full relative`}>
+              <LazyImage src={categoryBanner || mobileCategoryBanner} alt={selectedCategory} fill className="object-cover" />
+            </div>
+            {/* Mobile Image */}
+            {mobileCategoryBanner && (
+              <div className="block md:hidden w-full h-full relative">
+                <LazyImage src={mobileCategoryBanner} alt={selectedCategory} fill className="object-cover" />
+              </div>
+            )}
           </div>
         )}
 

@@ -5,16 +5,12 @@ import axios from 'axios';
 import { useParams } from 'next/navigation';
 import { ImageUpload } from '../../_components/ImageUpload';
 import { SUBCATEGORIES } from '@/app/constants';
-import { Save, ArrowLeft, Loader2 } from 'lucide-react';
+import { Save, ArrowLeft, Loader2, Smartphone, Monitor, Layout } from 'lucide-react';
 import Link from 'next/link';
 
 // Helper to reverse slugify to find matching constant key if needed, 
 // or just use backend data. 
-// For now, we rely on backend having distinct data.
-
 const findCategoryNameBySlug = (slug: string) => {
-    // Simple deslugify attempt or matching with constants
-    // This is purely for UI display if backend doesn't return name immediately
     return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 };
 
@@ -29,13 +25,10 @@ export default function CategoryDetailPage() {
 
     // Local state for edits
     const [bannerUrl, setBannerUrl] = useState('');
+    const [mobileBannerUrl, setMobileBannerUrl] = useState('');
 
     // Need to map subcategories from constants to "potential" subcategories
     // and merge with DB data.
-    // BUT the user prompt says: "Subcategory Icons... Admin must: Upload icon per subcategory... subcategories defined in constants"
-    // So we should fetch DB subcategories, and also overlay with constants if they are not in DB yet?
-    // Let's rely on constants as the "Source of Truth" for existence, and attributes from DB.
-
     const [mergedSubcats, setMergedSubcats] = useState<{ name: string, slug: string, iconUrl: string, _id?: string }[]>([]);
 
     useEffect(() => {
@@ -48,12 +41,11 @@ export default function CategoryDetailPage() {
             const res = await axios.get(`/api/content/categories/${slug}`);
             setCategoryData(res.data.category || {});
             setBannerUrl(res.data.category?.bannerUrl || '');
+            setMobileBannerUrl(res.data.category?.mobileBannerUrl || '');
             setSubcats(res.data.subcategories || []);
 
             // Merge with Constants
             // 1. Find the Key in SUBCATEGORIES that matches this slug
-            // We need to hunt down which key in SUBCATEGORIES produces this slug.
-            // Since we don't have a direct map, we iterate.
             const categoryKey = Object.keys(SUBCATEGORIES).find(
                 k => k.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-') === slug
             );
@@ -93,7 +85,8 @@ export default function CategoryDetailPage() {
             await axios.post('/api/admin/content/categories', {
                 name: displayName, // Ideally correct case
                 slug: slug,
-                bannerUrl: bannerUrl
+                bannerUrl: bannerUrl,
+                mobileBannerUrl: mobileBannerUrl
             }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
             alert('Banner saved!');
         } catch (e) {
@@ -107,17 +100,14 @@ export default function CategoryDetailPage() {
         setMergedSubcats(newMerged);
 
         try {
-            // We need categoryId. If categoryData doesn't exist yet, we must ensure it exists first?
-            // The upsertCategory should be called first or upsertSubcategory should handle it?
-            // Our upsertSubcategory requires categoryId.
-            // So we should enforce Category creation first.
+            // Need categoryId. If categoryData doesn't exist yet, ensure it exists first
             let catId = categoryData?._id;
             if (!catId) {
-                // Auto-create category if missing
                 const catRes = await axios.post('/api/admin/content/categories', {
                     name: displayName,
                     slug: slug,
-                    bannerUrl: bannerUrl // Might be empty
+                    bannerUrl: bannerUrl,
+                    mobileBannerUrl: mobileBannerUrl
                 }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
                 catId = catRes.data._id;
                 setCategoryData(catRes.data);
@@ -139,7 +129,7 @@ export default function CategoryDetailPage() {
     if (loading) return <div className="p-8 text-center flex justify-center"><Loader2 className="animate-spin" /></div>;
 
     return (
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
             <div className="mb-6 flex items-center gap-4">
                 <Link href="/admin/content/categories" className="p-2 hover:bg-gray-100 rounded-full">
                     <ArrowLeft size={20} />
@@ -150,44 +140,80 @@ export default function CategoryDetailPage() {
                 </div>
             </div>
 
+            <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl flex justify-between items-center shadow-sm">
+                <div>
+                    <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2"><Layout size={20} className="text-blue-600" /> Landing Page Builder</h3>
+                    <p className="text-sm text-gray-600">Design a custom layout for this category page using the drag-and-drop builder.</p>
+                </div>
+                <Link
+                    href={`/admin/content/categories/${slug}/builder`}
+                    className="px-6 py-2.5 bg-[#2874F0] text-white font-bold rounded-lg shadow hover:bg-blue-600 transition-colors flex items-center gap-2"
+                >
+                    <Layout size={18} />
+                    Open Builder
+                </Link>
+            </div>
+
             <div className="space-y-8">
                 {/* Banner Section */}
                 <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-semibold text-gray-700">Category Banner</h3>
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="font-semibold text-gray-700">Category Banners</h3>
                         <button
                             onClick={saveCategoryBanner}
                             className="flex items-center gap-2 px-4 py-2 bg-[#2874F0] text-white rounded-lg hover:bg-[#1e5bbf]"
                         >
                             <Save size={18} />
-                            Save Banner
+                            Save Banners
                         </button>
                     </div>
-                    <ImageUpload
-                        value={bannerUrl}
-                        onChange={setBannerUrl}
-                        onRemove={() => setBannerUrl('')}
-                        label="Upload Banner (Header for Category Page)"
-                        height="h-48"
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-2">
+                                <Monitor size={16} /> Desktop Banner
+                            </label>
+                            <ImageUpload
+                                value={bannerUrl}
+                                onChange={setBannerUrl}
+                                onRemove={() => setBannerUrl('')}
+                                label="Upload Desktop Banner"
+                                height="h-48"
+                            />
+                        </div>
+                        <div>
+                            <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-2">
+                                <Smartphone size={16} /> Mobile Banner
+                            </label>
+                            <ImageUpload
+                                value={mobileBannerUrl}
+                                onChange={setMobileBannerUrl}
+                                onRemove={() => setMobileBannerUrl('')}
+                                label="Upload Mobile Banner"
+                                height="h-48"
+                            />
+                        </div>
+                    </div>
                 </section>
 
                 {/* Subcategories Section */}
                 <section>
                     <h3 className="font-semibold text-gray-700 mb-4">Subcategory Icons</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                         {mergedSubcats.map((sub) => (
-                            <div key={sub.slug} className="bg-white p-4 rounded-xl border flex flex-col items-center gap-3">
+                            <div key={sub.slug} className="bg-white p-4 rounded-xl border flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-all">
                                 <span className="font-medium text-sm text-center min-h-[40px] flex items-center">{sub.name}</span>
-                                <ImageUpload
-                                    value={sub.iconUrl}
-                                    onChange={(url) => saveSubcategoryIcon(sub, url)}
-                                    onRemove={() => saveSubcategoryIcon(sub, '')}
-                                    label="Icon"
-                                    width="w-24"
-                                    height="h-24"
-                                    className="rounded-full"
-                                />
+                                <div className="w-full aspect-square relative">
+                                    <ImageUpload
+                                        value={sub.iconUrl}
+                                        onChange={(url) => saveSubcategoryIcon(sub, url)}
+                                        onRemove={() => saveSubcategoryIcon(sub, '')}
+                                        label="Icon"
+                                        height="h-full"
+                                        width="w-full"
+                                        className="rounded-lg"
+                                        minimal
+                                    />
+                                </div>
                             </div>
                         ))}
                     </div>

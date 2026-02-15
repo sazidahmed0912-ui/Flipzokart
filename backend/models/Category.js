@@ -15,9 +15,21 @@ const categorySchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    mobileBannerUrl: {
+        type: String,
+        default: ''
+    },
     isActive: {
         type: Boolean,
         default: true
+    },
+    pageLayout: {
+        type: Array,
+        default: []
+    },
+    draftLayout: {
+        type: Array,
+        default: []
     }
 }, {
     timestamps: true

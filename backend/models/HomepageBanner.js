@@ -5,6 +5,10 @@ const homepageBannerSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    mobileImageUrl: {
+        type: String,
+        required: false // Optional, fallback to desktop if missing
+    },
     redirectUrl: {
         type: String,
         default: ''

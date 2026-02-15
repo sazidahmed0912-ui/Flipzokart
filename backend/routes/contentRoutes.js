@@ -6,16 +6,22 @@ const {
     createHomepageBanner,
     updateHomepageBanner,
     deleteHomepageBanner,
+    seedHomepageBanners,
+    reorderBanners,
+    getContentStats,
 
     getHomepageCategoryIcons,
-    createHomepageCategoryIcon, // This was missing in the controller export check
+    createHomepageCategoryIcon,
     updateHomepageCategoryIcon,
     deleteHomepageCategoryIcon,
 
     getCategoryContent,
     getAdminCategories,
     upsertCategory,
-    upsertSubcategory
+    upsertSubcategory,
+    getCategoryLayout,
+    saveCategoryLayout,
+    publishCategoryLayout
 } = require('../controllers/contentController');
 
 const { protect, admin } = require('../middleware/authMiddleware');
@@ -26,6 +32,10 @@ router.get('/home-categories', getHomepageCategoryIcons);
 router.get('/categories/:slug', getCategoryContent);
 
 // Admin Routes (Management)
+router.get('/admin/stats', protect, admin, getContentStats); // Dashboard Stats
+router.post('/admin/banners/seed', protect, admin, seedHomepageBanners);
+router.put('/admin/banners/reorder', protect, admin, reorderBanners); // Bulk Reorder
+
 router.get('/admin/banners', protect, admin, getAdminHomepageBanners);
 router.post('/admin/banners', protect, admin, createHomepageBanner);
 router.put('/admin/banners/:id', protect, admin, updateHomepageBanner);
@@ -38,5 +48,10 @@ router.delete('/admin/home-categories/:id', protect, admin, deleteHomepageCatego
 router.get('/admin/categories', protect, admin, getAdminCategories);
 router.post('/admin/categories', protect, admin, upsertCategory);
 router.post('/admin/subcategories', protect, admin, upsertSubcategory);
+
+// Layout Builders
+router.get('/admin/categories/:slug/layout', protect, admin, getCategoryLayout);
+router.post('/admin/categories/:slug/layout', protect, admin, saveCategoryLayout);
+router.post('/admin/categories/:slug/publish', protect, admin, publishCategoryLayout);
 
 module.exports = router;

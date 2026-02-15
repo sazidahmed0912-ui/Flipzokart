@@ -34,11 +34,15 @@ const getAdminHomepageBanners = async (req, res) => {
 // @access  Private/Admin
 const createHomepageBanner = async (req, res) => {
     try {
-        const { imageUrl, redirectUrl } = req.body;
+        const { imageUrl, mobileImageUrl, redirectUrl, title, subtitle, ctaText } = req.body;
         const count = await HomepageBanner.countDocuments();
         const banner = await HomepageBanner.create({
             imageUrl,
+            mobileImageUrl,
             redirectUrl,
+            title,
+            subtitle,
+            ctaText,
             position: count + 1
         });
         res.status(201).json(banner);
@@ -56,7 +60,13 @@ const updateHomepageBanner = async (req, res) => {
         if (!banner) return res.status(404).json({ message: 'Banner not found' });
 
         banner.imageUrl = req.body.imageUrl || banner.imageUrl;
+        banner.mobileImageUrl = req.body.mobileImageUrl !== undefined ? req.body.mobileImageUrl : banner.mobileImageUrl;
         banner.redirectUrl = req.body.redirectUrl !== undefined ? req.body.redirectUrl : banner.redirectUrl;
+
+        banner.title = req.body.title !== undefined ? req.body.title : banner.title;
+        banner.subtitle = req.body.subtitle !== undefined ? req.body.subtitle : banner.subtitle;
+        banner.ctaText = req.body.ctaText !== undefined ? req.body.ctaText : banner.ctaText;
+
         banner.isActive = req.body.isActive !== undefined ? req.body.isActive : banner.isActive;
         banner.position = req.body.position || banner.position;
 
@@ -78,6 +88,54 @@ const deleteHomepageBanner = async (req, res) => {
         await banner.deleteOne();
         res.json({ message: 'Banner removed' });
     } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+// @desc    Admin: Seed default banners if empty
+// @route   POST /api/admin/content/banners/seed
+// @access  Private/Admin
+const seedHomepageBanners = async (req, res) => {
+    try {
+        const count = await HomepageBanner.countDocuments();
+        if (count > 0) {
+            return res.status(400).json({ message: 'Banners already exist. Cannot seed.' });
+        }
+
+        const defaultBanners = [
+            {
+                title: "Start Selling for Everyone",
+                subtitle: "Sell your products online and reach more customers with Fzokart",
+                ctaText: "Join as a Seller",
+                redirectUrl: "/sell",
+                imageUrl: "/assets/banner_seller.png",
+                mobileImageUrl: "/assets/banner_seller.png",
+                position: 1
+            },
+            {
+                title: "The Big Fashion Sale",
+                subtitle: "Up to 50% OFF on Top Brands",
+                ctaText: "Shop Now",
+                redirectUrl: "/shop?tag=offer",
+                imageUrl: "/assets/banner_offer_new.png",
+                mobileImageUrl: "/assets/banner_offer_new.png",
+                position: 2
+            },
+            {
+                title: "Mega Savings Deal",
+                subtitle: "Flat 50% OFF on Kids Collection & More",
+                ctaText: "Shop Now",
+                redirectUrl: "/shop?category=Kids",
+                imageUrl: "/assets/banner_kids_new.jpg",
+                mobileImageUrl: "/assets/banner_kids_new.jpg",
+                position: 3
+            }
+        ];
+
+        await HomepageBanner.insertMany(defaultBanners);
+        res.status(201).json({ message: 'Default banners seeded successfully', banners: defaultBanners });
+    } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
@@ -162,8 +220,6 @@ const getCategoryContent = async (req, res) => {
     try {
         const category = await Category.findOne({ slug: req.params.slug });
         if (!category) {
-            // Fallback: If category not found in DB, return empty/defaults so frontend doesn't crash
-            // Or specific 404 if we want strictness. Let's return nulls.
             return res.json({ banner: null, subcategories: [] });
         }
 
@@ -195,7 +251,7 @@ const getAdminCategories = async (req, res) => {
 // @access Private/Admin
 const upsertCategory = async (req, res) => {
     try {
-        const { name, slug, bannerUrl, isActive } = req.body;
+        const { name, slug, bannerUrl, mobileBannerUrl, isActive } = req.body;
 
         // Check if exists
         let category = await Category.findOne({ slug });
@@ -203,16 +259,16 @@ const upsertCategory = async (req, res) => {
         if (category) {
             // Update
             category.bannerUrl = bannerUrl || category.bannerUrl;
+            category.mobileBannerUrl = mobileBannerUrl || category.mobileBannerUrl;
             category.isActive = isActive !== undefined ? isActive : category.isActive;
-            // Name update if needed? Usually name/slug are tied.
-            // category.name = name || category.name; 
             await category.save();
         } else {
             // Create
             category = await Category.create({
                 name,
                 slug,
-                bannerUrl
+                bannerUrl,
+                mobileBannerUrl
             });
         }
         res.json(category);
@@ -259,6 +315,7 @@ module.exports = {
     createHomepageBanner,
     updateHomepageBanner,
     deleteHomepageBanner,
+    seedHomepageBanners,
 
     getHomepageCategoryIcons,
     createHomepageCategoryIcon,
@@ -268,5 +325,46 @@ module.exports = {
     getCategoryContent,
     getAdminCategories,
     upsertCategory,
-    upsertSubcategory
+    upsertSubcategory,
+
+    // Layout Management
+    getCategoryLayout: async (req, res) => {
+        try {
+            const category = await Category.findOne({ slug: req.params.slug });
+            if (!category) return res.status(404).json({ message: 'Category not found' });
+            res.json({
+                draft: category.draftLayout || [],
+                published: category.pageLayout || []
+            });
+        } catch (error) {
+            res.status(500).json({ message: 'Server Error' });
+        }
+    },
+
+    saveCategoryLayout: async (req, res) => {
+        try {
+            const { layout } = req.body; // Array of sections
+            const category = await Category.findOne({ slug: req.params.slug });
+            if (!category) return res.status(404).json({ message: 'Category not found' });
+
+            category.draftLayout = layout;
+            await category.save();
+            res.json({ message: 'Draft saved', layout: category.draftLayout });
+        } catch (error) {
+            res.status(500).json({ message: 'Server Error' });
+        }
+    },
+
+    publishCategoryLayout: async (req, res) => {
+        try {
+            const category = await Category.findOne({ slug: req.params.slug });
+            if (!category) return res.status(404).json({ message: 'Category not found' });
+
+            category.pageLayout = category.draftLayout;
+            await category.save();
+            res.json({ message: 'Layout published', layout: category.pageLayout });
+        } catch (error) {
+            res.status(500).json({ message: 'Server Error' });
+        }
+    }
 };
