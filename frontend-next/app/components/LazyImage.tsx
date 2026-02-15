@@ -64,7 +64,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
                 }}
                 className={`
                     transition-opacity duration-300 ease-in-out
-                    ${isLoaded ? 'opacity-100' : 'opacity-0'}
+                    opacity-100
                     ${className}
                 `}
                 {...finalProps}

@@ -63,7 +63,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
             priority={priority}
             width={300}
             height={300}
-            className={`w-full h-full object-contain transition-transform duration-300 hover:scale-105 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+            className={`w-full h-full object-contain transition-transform duration-300 hover:scale-105 opacity-100`}
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             onLoad={() => setIsLoading(false)}
             onError={() => {
