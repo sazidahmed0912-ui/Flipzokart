@@ -29,28 +29,28 @@ const BANNERS: Record<Tab, { id: number; image: string; title: string; link: str
 
 const SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: string }[]> = {
     Men: [
-        { name: "Shirts", icon: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Shirts" },
-        { name: "T-Shirts", icon: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=TShirts" },
-        { name: "Jeans", icon: "https://images.unsplash.com/photo-1542272454315-4c01d7abdf4a?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Jeans" },
-        { name: "Shoes", icon: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Shoes" },
-        { name: "Watches", icon: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Watches" },
-        { name: "Activewear", icon: "https://images.unsplash.com/photo-1517466787929-bc90951d6dbb?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Activewear" },
+        { name: "Shirts", icon: "https://images.unsplash.com/photo-1620799140408-ed5341cd2458?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Shirts" },
+        { name: "T-Shirts", icon: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=TShirts" },
+        { name: "Jeans", icon: "https://images.unsplash.com/photo-1542272454315-4c01d7abdf4a?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Jeans" },
+        { name: "Shoes", icon: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Shoes" },
+        { name: "Watches", icon: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Watches" },
+        { name: "Activewear", icon: "https://images.unsplash.com/photo-1517466787929-bc90951d6dbb?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Activewear" },
     ],
     Women: [
-        { name: "Kurti", icon: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Kurti" },
-        { name: "Saree", icon: "https://images.unsplash.com/photo-1610030469983-98e55041d04f?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Saree" },
-        { name: "Dresses", icon: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Dresses" },
-        { name: "Tops", icon: "https://images.unsplash.com/photo-1551163943-3f6a29e39454?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Tops" },
-        { name: "Sandals", icon: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Sandals" },
-        { name: "Jewelry", icon: "https://images.unsplash.com/photo-1599643478518-17488fbbcd75?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Jewelry" },
+        { name: "Kurti", icon: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Kurti" },
+        { name: "Saree", icon: "https://images.unsplash.com/photo-1610030469983-98e55041d04f?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Saree" },
+        { name: "Dresses", icon: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Dresses" },
+        { name: "Handbags", icon: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Handbags" },
+        { name: "Heels", icon: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Heels" },
+        { name: "Jewelry", icon: "https://images.unsplash.com/photo-1599643478518-17488fbbcd75?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Jewelry" },
     ],
     Kids: [
-        { name: "Boys Wear", icon: "https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Boys" },
-        { name: "Girls Wear", icon: "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Girls" },
-        { name: "Kids Shoes", icon: "https://images.unsplash.com/photo-1514989940723-e8872778802d?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=KidsShoes" },
-        { name: "Toys", icon: "https://images.unsplash.com/photo-1558877385-81a1c7e67d72?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Toys" },
-        { name: "School Bags", icon: "https://images.unsplash.com/photo-1588058365815-c9692dd15949?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=Bags" },
-        { name: "Watches", icon: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=100&q=60", link: "/shop?category=Fashion&sub=KidsWatches" },
+        { name: "Boys Wear", icon: "https://images.unsplash.com/photo-1519457431-44ccd64a579b?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Boys" },
+        { name: "Girls Wear", icon: "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Girls" },
+        { name: "Kids Shoes", icon: "https://images.unsplash.com/photo-1514989940723-e8872778802d?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=KidsShoes" },
+        { name: "Toys", icon: "https://images.unsplash.com/photo-1558877385-81a1c7e67d72?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Toys" },
+        { name: "School Bags", icon: "https://images.unsplash.com/photo-1588058365815-c9692dd15949?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Bags" },
+        { name: "Accessories", icon: "https://images.unsplash.com/photo-1614030636278-f77d33b497cb?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Fashion&sub=Accessories" },
     ]
 };
 
@@ -196,16 +196,16 @@ export const FashionPage: React.FC = () => {
             <div className="bg-white py-4 md:py-8 px-3 md:px-8 mb-4 shadow-sm">
                 <div className="max-w-7xl mx-auto">
                     <h3 className="text-xs md:text-lg font-bold text-gray-800 mb-3 md:mb-6 uppercase tracking-wider">Explore {activeTab}</h3>
-                    <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-6">
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-6">
                         {SUBCATEGORIES[activeTab].map((sub, idx) => (
                             <Link key={idx} href={sub.link} className="flex flex-col items-center group">
-                                <div className="w-full aspect-square relative rounded-lg overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:border-blue-400 transition-colors">
+                                <div className="w-full aspect-square relative rounded-xl overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:border-blue-400 transition-colors">
                                     <LazyImage
                                         src={sub.icon}
                                         alt={sub.name}
                                         fill
-                                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                                        sizes="(max-width: 768px) 33vw, 16vw"
+                                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                        sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
                                     />
                                 </div>
                                 <span className="text-[10px] md:text-sm font-medium text-gray-700 text-center">{sub.name}</span>
