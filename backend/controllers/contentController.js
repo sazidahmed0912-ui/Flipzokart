@@ -135,8 +135,8 @@ const seedHomepageBanners = async (req, res) => {
         await HomepageBanner.insertMany(defaultBanners);
         res.status(201).json({ message: 'Default banners seeded successfully', banners: defaultBanners });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        console.error("seedHomepageBanners Error:", error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
 
@@ -325,7 +325,8 @@ const getContentStats = async (req, res) => {
             subcategories: subcategoriesCount
         });
     } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
+        console.error("getContentStats Error:", error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
 
@@ -375,8 +376,8 @@ const getUnifiedAdminContent = async (req, res) => {
             subcategories
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        console.error("getUnifiedAdminContent Error:", error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
 
