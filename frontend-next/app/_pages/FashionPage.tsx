@@ -7,7 +7,6 @@ import { useApp } from '@/app/store/Context';
 import { ProductCard } from '@/app/components/ProductCard';
 import LazyImage from '@/app/components/LazyImage';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
-import { MensSummerBanner } from '@/app/components/MensSummerBanner';
 
 // --- Types ---
 type Tab = 'Men' | 'Women' | 'Kids';
@@ -111,23 +110,30 @@ export const FashionPage: React.FC = () => {
 
             {/* 1. STICKY NAV STRIP */}
             <div className="sticky top-[56px] md:top-[72px] z-20 bg-white shadow-sm border-b border-gray-100">
-                <div className="flex justify-between items-center max-w-7xl mx-auto overflow-x-auto no-scrollbar px-3 md:px-8">
-                    {/* Tabs */}
-                    <div className="flex space-x-2 md:space-x-8 w-full md:w-auto">
+                <div className="w-full max-w-7xl mx-auto px-0 md:px-8">
+                    {/* Premium Tabs */}
+                    <div className="flex w-full">
                         {(['Men', 'Women', 'Kids'] as Tab[]).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`
-                                    relative px-4 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wide whitespace-nowrap flex-1 md:flex-none text-center transition-colors
-                                    ${activeTab === tab ? 'text-[#2874F0]' : 'text-gray-500 hover:text-gray-800'}
+                                    relative flex-1 py-3 md:py-4 text-sm md:text-base font-bold uppercase tracking-wide text-center transition-all duration-200 outline-none select-none
+                                    ${activeTab === tab
+                                        ? 'text-black bg-gradient-to-b from-white to-yellow-50'
+                                        : 'text-gray-600 hover:text-black hover:bg-yellow-50'
+                                    }
                                 `}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
                                 {tab}
+
+                                {/* Active Indicator (Sliding) */}
                                 {activeTab === tab && (
                                     <motion.div
                                         layoutId="activeTabIndicator"
-                                        className="absolute bottom-0 left-0 right-0 h-0.5 md:h-1 bg-[#2874F0] rounded-t-full"
+                                        className="absolute bottom-0 left-0 right-0 h-1 bg-[#FACC15] shadow-[0_-2px_6px_rgba(250,204,21,0.4)]"
+                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
                                     />
                                 )}
                             </button>
@@ -207,9 +213,6 @@ export const FashionPage: React.FC = () => {
                     </div>
                 </div>
             </div>
-
-            {/* 3.5. MEN'S SUMMER BANNER */}
-            <MensSummerBanner activeTab={activeTab} />
 
             {/* 4. PRODUCT SHOWCASE SECTIONS */}
             <div className="max-w-7xl mx-auto spaee-y-4 md:space-y-8 pb-8">
