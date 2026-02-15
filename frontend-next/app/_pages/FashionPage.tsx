@@ -61,12 +61,12 @@ const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: str
         { name: "Activewear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771164274/WhatsApp_Image_2026-02-15_at_7.34.13_PM_kdf4gi.jpg", link: "/shop?category=Fashion&sub=Activewear" },
     ],
     Women: [
-        { name: "Kurti", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Kurti" },
-        { name: "Saree", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Saree" },
-        { name: "Dresses", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Dresses" },
-        { name: "Handbags", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Handbags" },
-        { name: "Heels", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Heels" },
-        { name: "Jewelry", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Jewelry" },
+        { name: "Kurti", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771165309/WhatsApp_Image_2026-02-15_at_7.50.26_PM_fsfcla.jpg", link: "/shop?category=Fashion&sub=Kurti" },
+        { name: "Saree", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771165271/WhatsApp_Image_2026-02-15_at_7.50.44_PM_vpsgfj.jpg", link: "/shop?category=Fashion&sub=Saree" },
+        { name: "Dresses", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167063/WhatsApp_Image_2026-02-15_at_8.18.49_PM_oa0rrp.jpg", link: "/shop?category=Fashion&sub=Dresses" },
+        { name: "Handbags", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167019/WhatsApp_Image_2026-02-15_at_8.19.40_PM_fjfx5a.jpg", link: "/shop?category=Fashion&sub=Handbags" },
+        { name: "Heels", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167139/WhatsApp_Image_2026-02-15_at_8.22.00_PM_rkd8of.jpg", link: "/shop?category=Fashion&sub=Heels" },
+        { name: "Jewelry", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167235/WhatsApp_Image_2026-02-15_at_8.23.36_PM_gvxim0.jpg", link: "/shop?category=Fashion&sub=Jewelry" },
     ],
     Kids: [
         { name: "Boys Wear", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Boys" },
