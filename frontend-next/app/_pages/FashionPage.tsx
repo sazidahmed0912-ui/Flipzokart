@@ -14,7 +14,7 @@ type Tab = 'Men' | 'Women' | 'Kids';
 // --- Mock Data ---
 const BANNERS: Record<Tab, { id: number; image: string; title: string; link: string }[]> = {
     Men: [
-        { id: 1, image: "https://images.unsplash.com/photo-1490578474895-699cd4d2ff5f?auto=format&fit=crop&q=80&w=1000", title: "Men's Summer Collection", link: "/shop?category=Fashion&gender=Men" },
+        { id: 1, image: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771138164/Men_s_Summer_Collection_ygcqln.jpg", title: "Men's Summer Collection", link: "/shop?category=Fashion&gender=Men" },
         { id: 2, image: "https://images.unsplash.com/photo-1617137968427-85924c809a10?auto=format&fit=crop&q=80&w=1000", title: "Formal Wear Sale", link: "/shop?category=Fashion&gender=Men" },
     ],
     Women: [
