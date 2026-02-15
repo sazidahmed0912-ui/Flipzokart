@@ -69,12 +69,12 @@ const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: str
         { name: "Jewelry", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167235/WhatsApp_Image_2026-02-15_at_8.23.36_PM_gvxim0.jpg", link: "/shop?category=Fashion&sub=Jewelry" },
     ],
     Kids: [
-        { name: "Boys Wear", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Boys" },
-        { name: "Girls Wear", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Girls" },
-        { name: "Kids Shoes", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=KidsShoes" },
-        { name: "Toys", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Toys" },
-        { name: "School Bags", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Bags" },
-        { name: "Accessories", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Accessories" },
+        { name: "Boys Wear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.13_PM_ghtqpc.jpg", link: "/shop?category=Fashion&sub=Boys" },
+        { name: "Girls Wear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.14_PM_livxev.jpg", link: "/shop?category=Fashion&sub=Girls" },
+        { name: "Kids Shoes", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.14_PM_1_gyko9v.jpg", link: "/shop?category=Fashion&sub=KidsShoes" },
+        { name: "Toys", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169130/WhatsApp_Image_2026-02-15_at_8.54.45_PM_ro7nbb.jpg", link: "/shop?category=Fashion&sub=Toys" },
+        { name: "School Bags", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169132/WhatsApp_Image_2026-02-15_at_8.54.44_PM_1_rtf3vg.jpg", link: "/shop?category=Fashion&sub=Bags" },
+        { name: "Accessories", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169130/WhatsApp_Image_2026-02-15_at_8.54.44_PM_otyzko.jpg", link: "/shop?category=Fashion&sub=Accessories" },
     ]
 };
 
