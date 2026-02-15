@@ -2,8 +2,119 @@ const HomepageBanner = require('../models/HomepageBanner');
 const HomepageCategoryIcon = require('../models/HomepageCategoryIcon');
 const Category = require('../models/Category');
 const Subcategory = require('../models/Subcategory');
+const SubMenu = require('../models/SubMenu');
 
-// --- Homepage Banners ---
+// ... existing imports ...
+
+// @desc    Get Full Category Tree (Category -> Subcategory -> SubMenu)
+// @route   GET /api/content/categories/full-tree
+// @access  Public
+const getFullCategoryTree = async (req, res) => {
+    try {
+        // Fetch all active categories
+        const categories = await Category.find({ isActive: true }).sort({ name: 1 }).lean();
+
+        // Fetch all active subcategories
+        const subcategories = await Subcategory.find({ isActive: true }).sort({ position: 1 }).lean();
+
+        // Fetch all active submenus
+        const submenus = await SubMenu.find({ isActive: true }).sort({ order: 1 }).lean();
+
+        // Build the tree
+        const tree = categories.map(cat => {
+            // Find subs for this cat
+            const catSubs = subcategories.filter(sub => sub.categoryId.toString() === cat._id.toString());
+
+            // Map subs to include their submenus
+            const subsWithMenu = catSubs.map(sub => {
+                const subMenu = submenus.filter(menu => menu.subcategoryId.toString() === sub._id.toString());
+                return {
+                    ...sub,
+                    submenu: subMenu
+                };
+            });
+
+            return {
+                ...cat,
+                subcategories: subsWithMenu
+            };
+        });
+
+        res.json(tree);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+// @desc    Admin: Upsert SubMenu Item
+// @route   POST /api/admin/content/submenu
+// @access  Private/Admin
+const upsertSubMenu = async (req, res) => {
+    try {
+        const { subcategoryId, name, slug, icon, isActive, order } = req.body;
+
+        let submenu = await SubMenu.findOne({ subcategoryId, slug });
+
+        if (submenu) {
+            submenu.name = name || submenu.name;
+            submenu.icon = icon !== undefined ? icon : submenu.icon;
+            submenu.isActive = isActive !== undefined ? isActive : submenu.isActive;
+            submenu.order = order !== undefined ? order : submenu.order;
+            await submenu.save();
+        } else {
+            submenu = await SubMenu.create({
+                subcategoryId,
+                name,
+                slug,
+                icon,
+                isActive: isActive !== undefined ? isActive : true,
+                order: order || 0
+            });
+        }
+
+        const io = req.app.get('socketio');
+        if (io) io.emit('content:update', { type: 'submenu-update', data: submenu });
+
+        res.json(submenu);
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({ message: 'Invalid data' });
+    }
+};
+
+// ... existing functions ...
+
+module.exports = {
+    getUnifiedAdminContent,
+    getHomepageBanners,
+    getAdminHomepageBanners,
+    createHomepageBanner,
+    updateHomepageBanner,
+    deleteHomepageBanner,
+    seedHomepageBanners,
+    getContentStats,
+    reorderBanners,
+
+    getHomepageCategoryIcons,
+    createHomepageCategoryIcon,
+    updateHomepageCategoryIcon,
+    deleteHomepageCategoryIcon,
+
+    getCategoryContent,
+    getAdminCategories,
+    upsertCategory,
+    upsertSubcategory,
+    upsertSubMenu, // Check export
+    getFullCategoryTree, // Check export
+
+    getCategoryLayout,
+    saveCategoryLayout,
+    publishCategoryLayout,
+
+    exportContent,
+    importContent
+};
 
 // @desc    Get all homepage banners
 // @route   GET /api/content/banners

@@ -20,6 +20,8 @@ const {
     getAdminCategories,
     upsertCategory,
     upsertSubcategory,
+    upsertSubMenu, // NEW
+    getFullCategoryTree, // NEW
     getCategoryLayout,
     saveCategoryLayout,
     publishCategoryLayout,
@@ -32,6 +34,7 @@ const { protect, admin } = require('../middleware/authMiddleware');
 // Public Routes (Frontend Fetch)
 router.get('/banners', getHomepageBanners);
 router.get('/home-categories', getHomepageCategoryIcons);
+router.get('/categories/full-tree', getFullCategoryTree); // NEW: Dynamic Tree
 router.get('/categories/:slug', getCategoryContent);
 
 // Admin Routes (Management)
@@ -54,6 +57,7 @@ router.delete('/admin/home-categories/:id', protect, admin, deleteHomepageCatego
 router.get('/admin/categories', protect, admin, getAdminCategories);
 router.post('/admin/categories', protect, admin, upsertCategory);
 router.post('/admin/subcategories', protect, admin, upsertSubcategory);
+router.post('/admin/submenu', protect, admin, upsertSubMenu); // NEW: Submenu Management
 
 // Layout Builders
 router.get('/admin/categories/:slug/layout', protect, admin, getCategoryLayout);
