@@ -1,31 +1,55 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Filter, TrendingUp, Star, ShoppingBag } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ChevronRight, TrendingUp, Star, ShoppingBag } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { ProductCard } from '@/app/components/ProductCard';
 import LazyImage from '@/app/components/LazyImage';
-import { SmoothReveal } from '@/app/components/SmoothReveal';
+
+// --- Swiper Imports ---
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 
 // --- Types ---
 type Tab = 'Men' | 'Women' | 'Kids';
 
-// --- Mock Data ---
-const BANNERS: Record<Tab, { id: number; image: string; title: string; link: string }[]> = {
-    Men: [
-        { id: 1, image: "https://res.cloudinary.com/drfyr8hlb/image/upload/f_auto,q_auto,w_1600/v1771138164/Men_s_Summer_Collection_ygcqln.jpg", title: "Men's Summer Collection", link: "/shop?category=Fashion&gender=Men" },
-        { id: 2, image: "https://images.unsplash.com/photo-1593030761757-71bd90dbe3e4?q=80&w=1600&auto=format&fit=crop", title: "Formal Wear Sale", link: "/shop?category=Fashion&gender=Men" },
-    ],
-    Women: [
-        { id: 1, image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=1000", title: "Women's Ethnic Wear", link: "/shop?category=Fashion&gender=Women" },
-        { id: 2, image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=1000", title: "Trending Dresses", link: "/shop?category=Fashion&gender=Women" },
-    ],
-    Kids: [
-        { id: 1, image: "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&q=80&w=1000", title: "Kids Party Wear", link: "/shop?category=Fashion&gender=Kids" },
-        { id: 2, image: "https://images.unsplash.com/photo-1622290291314-883f94739770?q=80&w=1600&auto=format&fit=crop", title: "Cute Outfits", link: "/shop?category=Fashion&gender=Kids" },
-    ]
+interface BannerConfig {
+    title: string;
+    images: string[];
+    link: string;
+}
+
+// --- Mock Data (Strict Real Images) ---
+const BANNERS: Record<Tab, BannerConfig> = {
+    Men: {
+        title: "Men's Summer Collection",
+        images: [
+            "https://res.cloudinary.com/drfyr8hlb/image/upload/f_auto,q_auto,w_1600/v1771138164/Men_s_Summer_Collection_ygcqln.jpg",
+            "https://images.unsplash.com/photo-1593030761757-71bd90dbe3e4?q=80&w=1600&auto=format&fit=crop"
+        ],
+        link: "/shop?category=Fashion&gender=Men"
+    },
+    Women: {
+        title: "Women's Ethnic Wear",
+        images: [
+            "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=1600",
+            "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=1600"
+        ],
+        link: "/shop?category=Fashion&gender=Women"
+    },
+    Kids: {
+        title: "Kids Party Wear",
+        images: [
+            "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&q=80&w=1600",
+            "https://images.unsplash.com/photo-1622290291314-883f94739770?q=80&w=1600&auto=format&fit=crop"
+        ],
+        link: "/shop?category=Fashion&gender=Kids"
+    }
 };
 
 const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: string }[]> = {
@@ -58,10 +82,9 @@ const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: str
 export const FashionPage: React.FC = () => {
     const { products } = useApp();
     const [activeTab, setActiveTab] = useState<Tab>('Men');
-    const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
     const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
 
-    // Fetch dynamic subcategory icons
+    // Fetch dynamic subcategory icons (optional enhancement, kept for backward compat)
     useEffect(() => {
         const fetchContent = async () => {
             try {
@@ -92,51 +115,17 @@ export const FashionPage: React.FC = () => {
         fetchContent();
     }, []);
 
-    // Filter Products based on Tab (Basic filtering logic for demo)
-    // accessible via search terms or category matching
+    // Filter Products based on Tab
     const tabProducts = products.filter(p =>
         p.category === 'Fashion' ||
         p.name.toLowerCase().includes(activeTab.toLowerCase()) ||
         p.description.toLowerCase().includes(activeTab.toLowerCase())
     );
 
-    const trendingProducts = tabProducts.slice(0, 8); // Mock trending
-    const bestOfProducts = tabProducts.slice(8, 16); // Mock best of
+    const trendingProducts = tabProducts.slice(0, 8);
+    const bestOfProducts = tabProducts.slice(8, 16);
 
-    // Reset banner on tab change
-    useEffect(() => {
-        setCurrentBannerIndex(0);
-    }, [activeTab]);
-
-    // Auto-slide banner
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentBannerIndex(prev => (prev + 1) % BANNERS[activeTab].length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, [activeTab]);
-
-    // Swipe handlers
-    const touchStartX = useRef(0);
-    const touchEndX = useRef(0);
-
-    const handleTouchStart = (e: React.TouchEvent) => {
-        touchStartX.current = e.targetTouches[0].clientX;
-    };
-    const handleTouchMove = (e: React.TouchEvent) => {
-        touchEndX.current = e.targetTouches[0].clientX;
-    };
-    const handleTouchEnd = () => {
-        if (!touchStartX.current || !touchEndX.current) return;
-        const distance = touchStartX.current - touchEndX.current;
-        if (distance > 50) {
-            setCurrentBannerIndex(prev => (prev + 1) % BANNERS[activeTab].length);
-        } else if (distance < -50) {
-            setCurrentBannerIndex(prev => (prev - 1 + BANNERS[activeTab].length) % BANNERS[activeTab].length);
-        }
-        touchStartX.current = 0;
-        touchEndX.current = 0;
-    };
+    const currentBanner = BANNERS[activeTab];
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
@@ -144,7 +133,6 @@ export const FashionPage: React.FC = () => {
             {/* 1. STICKY NAV STRIP */}
             <div className="sticky top-[56px] md:top-[72px] z-20 bg-white shadow-sm border-b border-gray-100">
                 <div className="w-full max-w-7xl mx-auto px-0 md:px-8">
-                    {/* Premium Tabs */}
                     <div className="flex w-full">
                         {(['Men', 'Women', 'Kids'] as Tab[]).map((tab) => (
                             <button
@@ -160,8 +148,6 @@ export const FashionPage: React.FC = () => {
                                 style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
                                 {tab}
-
-                                {/* Active Indicator (Sliding) */}
                                 {activeTab === tab && (
                                     <motion.div
                                         layoutId="activeTabIndicator"
@@ -175,58 +161,49 @@ export const FashionPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* 2. HERO BANNER CAROUSEL */}
-            <div
-                className="relative w-full h-[180px] md:h-[400px] overflow-hidden bg-gray-200 group touch-pan-y"
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-            >
-                <AnimatePresence mode='wait'>
-                    <motion.div
-                        key={`${activeTab}-${currentBannerIndex}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="absolute inset-0"
-                    >
-                        <img
-                            src={BANNERS[activeTab][currentBannerIndex].image}
-                            alt={BANNERS[activeTab][currentBannerIndex].title}
-                            className="absolute inset-0 w-full h-full object-cover"
-                        />
-                        {/* Gradient Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12">
-                            <div className="text-white">
-                                <h2 className="text-xl md:text-5xl font-bold mb-1 md:mb-3">{BANNERS[activeTab][currentBannerIndex].title}</h2>
-                                <Link
-                                    href={BANNERS[activeTab][currentBannerIndex].link}
-                                    className="text-xs md:text-base font-semibold bg-white text-black px-3 py-1.5 md:px-6 md:py-2.5 rounded-full inline-flex items-center gap-1 hover:bg-opacity-90 transition-colors"
-                                >
-                                    Shop Now <ChevronRight size={12} className="md:w-4 md:h-4" />
-                                </Link>
+            {/* 2. SWIPER HERO BANNER */}
+            <div className="w-full h-[180px] md:h-[400px] bg-gray-200">
+                <Swiper
+                    key={activeTab} // Force re-render on tab change
+                    modules={[Autoplay, Pagination, Navigation]}
+                    spaceBetween={0}
+                    slidesPerView={1}
+                    loop={currentBanner.images.length > 1}
+                    autoplay={{ delay: 4000, disableOnInteraction: false }}
+                    pagination={{ clickable: true }}
+                    navigation={true}
+                    className="w-full h-full group"
+                >
+                    {currentBanner.images.map((img, index) => (
+                        <SwiperSlide key={`${activeTab}-${index}`} className="relative w-full h-full">
+                            <img
+                                src={img}
+                                alt={`${currentBanner.title} - Slide ${index + 1}`}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                loading={index === 0 ? "eager" : "lazy"}
+                            />
+                            {/* Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12 pointer-events-none">
+                                <div className="text-white pointer-events-auto">
+                                    <h2 className="text-xl md:text-5xl font-bold mb-1 md:mb-3">{currentBanner.title}</h2>
+                                    <Link
+                                        href={currentBanner.link}
+                                        className="text-xs md:text-base font-semibold bg-white text-black px-3 py-1.5 md:px-6 md:py-2.5 rounded-full inline-flex items-center gap-1 hover:bg-opacity-90 transition-colors"
+                                    >
+                                        Shop Now <ChevronRight size={12} className="md:w-4 md:h-4" />
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
-                    </motion.div>
-                </AnimatePresence>
-
-                {/* Banner Indicators */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {BANNERS[activeTab].map((_, idx) => (
-                        <div
-                            key={idx}
-                            className={`h-1 rounded-full transition-all ${idx === currentBannerIndex ? 'w-4 bg-white' : 'w-1 bg-white/50'}`}
-                        />
+                        </SwiperSlide>
                     ))}
-                </div>
+                </Swiper>
             </div>
 
-            {/* 3. SUBCATEGORY GRID */}
+            {/* 3. RESPONSIVE SUBCATEGORY GRID */}
             <div className="bg-white py-4 md:py-8 px-3 md:px-8 mb-4 shadow-sm">
                 <div className="max-w-7xl mx-auto">
                     <h3 className="text-xs md:text-lg font-bold text-gray-800 mb-3 md:mb-6 uppercase tracking-wider">Explore {activeTab}</h3>
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6">
                         {subcategories[activeTab].map((sub, idx) => (
                             <Link key={idx} href={sub.link} className="flex flex-col items-center group">
                                 <div className="w-full aspect-square relative rounded-xl overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:border-blue-400 transition-colors">
@@ -235,10 +212,10 @@ export const FashionPage: React.FC = () => {
                                         alt={sub.name}
                                         fill
                                         className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                        sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+                                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
                                     />
                                 </div>
-                                <span className="text-[10px] md:text-sm font-medium text-gray-700 text-center">{sub.name}</span>
+                                <span className="text-xs md:text-sm font-medium text-gray-700 text-center">{sub.name}</span>
                             </Link>
                         ))}
                     </div>
