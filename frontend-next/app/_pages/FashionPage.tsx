@@ -14,7 +14,7 @@ type Tab = 'Men' | 'Women' | 'Kids';
 // --- Mock Data ---
 const BANNERS: Record<Tab, { id: number; image: string; title: string; link: string }[]> = {
     Men: [
-        { id: 1, image: "https://images.unsplash.com/photo-1490578474895-699cd4d2ff5f?auto=format&fit=crop&q=80&w=1000", title: "Men's Summer Collection", link: "/shop?category=Fashion&gender=Men" },
+        { id: 1, image: "/images/men_summer_collection.jpg", title: "", link: "/shop?category=Fashion&gender=Men" },
         { id: 2, image: "https://images.unsplash.com/photo-1617137968427-85924c809a10?auto=format&fit=crop&q=80&w=1000", title: "Formal Wear Sale", link: "/shop?category=Fashion&gender=Men" },
     ],
     Women: [
@@ -161,7 +161,9 @@ export const FashionPage: React.FC = () => {
                         {/* Gradient Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12">
                             <div className="text-white">
-                                <h2 className="text-xl md:text-5xl font-bold mb-1 md:mb-3">{BANNERS[activeTab][currentBannerIndex].title}</h2>
+                                {BANNERS[activeTab][currentBannerIndex].title && (
+                                    <h2 className="text-xl md:text-5xl font-bold mb-1 md:mb-3">{BANNERS[activeTab][currentBannerIndex].title}</h2>
+                                )}
                                 <Link
                                     href={BANNERS[activeTab][currentBannerIndex].link}
                                     className="text-xs md:text-base font-semibold bg-white text-black px-3 py-1.5 md:px-6 md:py-2.5 rounded-full inline-flex items-center gap-1 hover:bg-opacity-90 transition-colors"
