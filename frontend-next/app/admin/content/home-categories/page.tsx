@@ -32,7 +32,7 @@ export default function HomeCategoriesPage() {
     const fetchCategories = async () => {
         try {
             setLoading(true);
-            const res = await API.get('/api/admin/content/home-categories');
+            const res = await API.get('/api/content/admin/home-categories');
             setCategories(res.data);
         } catch (error) {
             console.error('Failed to fetch categories', error);
@@ -45,7 +45,7 @@ export default function HomeCategoriesPage() {
         if (!newIcon || !newName) return alert('Please provide name and icon');
 
         try {
-            await API.post('/api/admin/content/home-categories', {
+            await API.post('/api/content/admin/home-categories', {
                 categoryName: newName,
                 iconUrl: newIcon,
                 redirectUrl: newLink
@@ -64,7 +64,7 @@ export default function HomeCategoriesPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure?')) return;
         try {
-            await API.delete(`/api/admin/content/home-categories/${id}`);
+            await API.delete(`/api/content/admin/home-categories/${id}`);
             fetchCategories();
         } catch (error) {
             alert('Failed to delete');
@@ -85,8 +85,8 @@ export default function HomeCategoriesPage() {
 
         try {
             await Promise.all([
-                API.put(`/api/admin/content/home-categories/${current._id}`, { position: target.position }),
-                API.put(`/api/admin/content/home-categories/${target._id}`, { position: current.position })
+                API.put(`/api/content/admin/home-categories/${current._id}`, { position: target.position }),
+                API.put(`/api/content/admin/home-categories/${target._id}`, { position: current.position })
             ]);
             fetchCategories();
         } catch (err) {

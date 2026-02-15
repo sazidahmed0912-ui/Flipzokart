@@ -25,7 +25,7 @@ export default function ContentLayout({ children }: { children: React.ReactNode 
     const fetchStats = async () => {
         try {
             setLoading(true);
-            const res = await API.get('/api/admin/content/stats');
+            const res = await API.get('/api/content/admin/stats');
             setStats(res.data);
         } catch (error) {
             console.error(error);

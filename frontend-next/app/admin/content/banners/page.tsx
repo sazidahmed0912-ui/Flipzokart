@@ -42,7 +42,7 @@ export default function BannersPage() {
     const fetchBanners = async () => {
         try {
             setLoading(true);
-            const res = await API.get('/api/admin/content/banners');
+            const res = await API.get('/api/content/admin/banners');
             setBanners(res.data);
         } catch (error) {
             console.error('Failed to fetch banners', error);
@@ -54,7 +54,7 @@ export default function BannersPage() {
     const handleImportDefaults = async () => {
         try {
             setImporting(true);
-            await API.post('/api/admin/content/banners/seed', {});
+            await API.post('/api/content/admin/banners/seed', {});
             alert('Default banners imported successfully!');
             fetchBanners();
         } catch (error: any) {
@@ -68,7 +68,7 @@ export default function BannersPage() {
         if (!newBannerImage) return alert('Please upload a desktop banner image');
 
         try {
-            await API.post('/api/admin/content/banners', {
+            await API.post('/api/content/admin/banners', {
                 imageUrl: newBannerImage,
                 mobileImageUrl: newBannerMobileImage || newBannerImage,
                 redirectUrl: newBannerLink,
@@ -93,7 +93,7 @@ export default function BannersPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure?')) return;
         try {
-            await API.delete(`/api/admin/content/banners/${id}`);
+            await API.delete(`/api/content/admin/banners/${id}`);
             fetchBanners();
         } catch (error) {
             alert('Failed to delete');
@@ -102,7 +102,7 @@ export default function BannersPage() {
 
     const handleUpdate = async (id: string, data: Partial<Banner>) => {
         try {
-            await API.put(`/api/admin/content/banners/${id}`, data);
+            await API.put(`/api/content/admin/banners/${id}`, data);
             // Update local state without full refetch if possible for smoother toggle
             setBanners(prev => prev.map(b => b._id === id ? { ...b, ...data } : b));
         } catch (error) {
@@ -115,7 +115,7 @@ export default function BannersPage() {
         setBanners(newOrder); // Optimistic Update
 
         try {
-            await API.put('/api/admin/content/banners/reorder', {
+            await API.put('/api/content/admin/banners/reorder', {
                 orderedIds: newOrder.map(b => b._id)
             });
         } catch (error) {

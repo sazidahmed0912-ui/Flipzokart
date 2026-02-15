@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import axios from 'axios';
+import API from '@/app/services/api';
 import { useApp } from '@/app/store/Context';
 import { ProductCard } from '@/app/components/ProductCard';
 import { GrocerySection } from '@/app/components/GrocerySection';
@@ -28,14 +28,14 @@ export const HomePage: React.FC = () => {
 
     useEffect(() => {
         // Fetch Banners
-        axios.get('/api/content/banners').then(res => {
+        API.get('/api/content/banners').then(res => {
             if (res.data && res.data.length > 0) {
                 setBanners(res.data);
             }
         }).catch(err => console.error(err));
 
         // Fetch Categories
-        axios.get('/api/content/home-categories').then(res => {
+        API.get('/api/content/home-categories').then(res => {
             if (res.data && res.data.length > 0) {
                 const mapped = res.data.map((c: any) => ({
                     name: c.categoryName,
