@@ -53,7 +53,7 @@ const BANNERS: Record<Tab, BannerConfig> = {
 
 const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: string }[]> = {
     Men: [
-        { name: "Shirts", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Shirts" },
+        { name: "Shirts", icon: "/expert-023d4b3e-5b64-4061-b018-f52223faa9de.jpg", link: "/shop?category=Fashion&sub=Shirts" },
         { name: "T-Shirts", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=TShirts" },
         { name: "Jeans", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Jeans" },
         { name: "Shoes", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Shoes" },
