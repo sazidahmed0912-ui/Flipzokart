@@ -54,11 +54,11 @@ const BANNERS: Record<Tab, BannerConfig> = {
 const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: string }[]> = {
     Men: [
         { name: "Shirts", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771162918/expert-023d4b3e-5b64-4061-b018-f52223faa9de_ulp28f.jpg", link: "/shop?category=Fashion&sub=Shirts" },
-        { name: "T-Shirts", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=TShirts" },
-        { name: "Jeans", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Jeans" },
-        { name: "Shoes", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Shoes" },
+        { name: "T-Shirts", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771163570/expert-926e4b5d-a4b2-4a74-8c1b-0550ae534081_jde77w.jpg", link: "/shop?category=Fashion&sub=TShirts" },
+        { name: "Jeans", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771164135/WhatsApp_Image_2026-02-15_at_7.31.40_PM_t5afmz.jpg", link: "/shop?category=Fashion&sub=Jeans" },
+        { name: "Shoes", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771163760/expert-d3f96149-9062-469a-880c-81f29df29022_leyoct.jpg", link: "/shop?category=Fashion&sub=Shoes" },
         { name: "Watches", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1770388041/samples/ecommerce/analog-classic.jpg", link: "/shop?category=Fashion&sub=Watches" },
-        { name: "Activewear", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Activewear" },
+        { name: "Activewear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771164274/WhatsApp_Image_2026-02-15_at_7.34.13_PM_kdf4gi.jpg", link: "/shop?category=Fashion&sub=Activewear" },
     ],
     Women: [
         { name: "Kurti", icon: "/placeholder.png", link: "/shop?category=Fashion&sub=Kurti" },
