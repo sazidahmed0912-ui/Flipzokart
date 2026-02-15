@@ -83,41 +83,37 @@ export const FashionPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<Tab>('Men');
     const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
 
-    // Fetch dynamic subcategory icons (optional enhancement, kept for backward compat)
-    // Fetch dynamic subcategory icons (optional enhancement, kept for backward compat)
-    // TEMPORARILY DISABLED: To ensure hardcoded Unsplash images are shown and not overwritten by potential empty DB values
-    /*
+    // Safe Sync: Fetch dynamic subcategories but fallback to initial if empty/error
     useEffect(() => {
-        const fetchContent = async () => {
+        const syncCategories = async () => {
             try {
-                const res = await axios.get('/api/content/categories/fashion');
-                if (res.data && res.data.subcategories) {
-                    const dbSubcats = res.data.subcategories;
+                const { data } = await axios.get('/api/content/categories/tree-safe', {
+                    headers: { 'Cache-Control': 'no-store' } // Ensure fresh data
+                });
 
+                if (data && data.Fashion) {
                     setSubcategories(prev => {
                         const next = { ...prev };
+                        // Only update keys that actually have data from backend
                         (['Men', 'Women', 'Kids'] as Tab[]).forEach(tab => {
-                            next[tab] = next[tab].map(item => {
-                                // Find match in DB
-                                const slug = item.name.toLowerCase().replace(/ /g, '-');
-                                const match = dbSubcats.find((s: any) => s.slug === slug);
-                                if (match && match.iconUrl) {
-                                    return { ...item, icon: match.iconUrl };
-                                }
-                                return item;
-                            });
+                            if (data.Fashion[tab] && data.Fashion[tab].length > 0) {
+                                // Merge logic: If backend has items, use them. 
+                                // To persist icons if backend is text-only (though our API returns icons), we could merge.
+                                // But here we trust the API to return the full object structure as per plan.
+                                next[tab] = data.Fashion[tab];
+                            }
                         });
                         return next;
                     });
                 }
             } catch (error) {
-                console.error("Failed to fetch fashion content", error);
+                // Silent Error: Keep showing INITIAL_SUBCATEGORIES
+                console.warn("Category Sync Failed - Using Fallback", error);
             }
         };
-        fetchContent();
-    }, []);
-    */
 
+        syncCategories();
+    }, []);
     // Filter Products based on Tab
     const tabProducts = products.filter(p =>
         p.category === 'Fashion' ||

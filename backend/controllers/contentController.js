@@ -519,6 +519,85 @@ const importContent = async (req, res) => {
     }
 };
 
+const Submenu = require('../models/submenu');
+
+// ... existing imports ...
+
+// @desc    Get Safe Category Tree (Fashion -> Gender -> Subcats)
+// @route   GET /api/content/categories/tree-safe
+// @access  Public
+const getCategoryTreeSafe = async (req, res) => {
+    try {
+        // 1. Fetch "Fashion" Category
+        // We use a flexible regex or exact match to find the main category
+        const fashionCat = await Category.findOne({
+            slug: { $in: ['fashion', 'Fashion'] },
+            isActive: true
+        });
+
+        if (!fashionCat) {
+            return res.json({}); // Return empty object safely if not found
+        }
+
+        // 2. Fetch Subcategories (Men, Women, Kids)
+        const subcategories = await Subcategory.find({
+            categoryId: fashionCat._id,
+            isActive: true
+        }).sort({ position: 1 });
+
+        // 3. Fetch All Active Submenus for these subcategories
+        const subcategoryIds = subcategories.map(s => s._id);
+        const submenus = await Submenu.find({
+            subcategoryId: { $in: subcategoryIds },
+            isActive: true
+        }).sort({ position: 1 });
+
+        // 4. Construct Tree
+        // Target Structure: { Fashion: { Men: [ {name, icon, link}, ... ], Women: [...], Kids: [...] } }
+        const tree = {
+            Fashion: {
+                Men: [],
+                Women: [],
+                Kids: []
+            }
+        };
+
+        subcategories.forEach(sub => {
+            // Map DB name to Tab key (Men's -> Men, etc. via simple inclusion check or exact match)
+            // We'll normalize to Title Case to match Tabs: "Men", "Women", "Kids"
+            let tabKey = null;
+            if (/Men/i.test(sub.name) && !/Women/i.test(sub.name)) tabKey = 'Men';
+            else if (/Women/i.test(sub.name)) tabKey = 'Women';
+            else if (/Kid/i.test(sub.name) || /Boy/i.test(sub.name) || /Girl/i.test(sub.name)) tabKey = 'Kids';
+
+            if (tabKey) {
+                // Find submenus for this subcategory
+                const relatedSubmenus = submenus.filter(sm => sm.subcategoryId.toString() === sub._id.toString());
+
+                // If submenus exist, mapping them. 
+                // IF NO submenus exist (legacy structure), we might treat subcategories themselves as items if the structure was different, 
+                // BUT the prompt explicitly asked for this 3-level structure.
+                // We will map submenus to the frontend item structure.
+
+                const items = relatedSubmenus.map(sm => ({
+                    name: sm.name,
+                    icon: sm.iconUrl || '', // Fallback to empty string (frontend handles placeholders if needed, but we want to avoid breaking)
+                    link: sm.link || `/shop?category=Fashion&sub=${encodeURIComponent(sm.name)}`
+                }));
+
+                if (tree.Fashion[tabKey]) {
+                    tree.Fashion[tabKey].push(...items);
+                }
+            }
+        });
+
+        res.json(tree);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({}); // Return empty on error to trigger frontend fallback
+    }
+};
+
 module.exports = {
     getUnifiedAdminContent,
     getHomepageBanners,
@@ -539,6 +618,9 @@ module.exports = {
     getAdminCategories,
     upsertCategory,
     upsertSubcategory,
+
+    // safe tree export
+    getCategoryTreeSafe,
 
     getCategoryLayout,
     saveCategoryLayout,

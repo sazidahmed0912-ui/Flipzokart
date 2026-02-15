@@ -51,8 +51,9 @@ router.post('/admin/home-categories', protect, admin, createHomepageCategoryIcon
 router.put('/admin/home-categories/:id', protect, admin, updateHomepageCategoryIcon);
 router.delete('/admin/home-categories/:id', protect, admin, deleteHomepageCategoryIcon);
 
-router.get('/admin/categories', protect, admin, getAdminCategories);
-router.post('/admin/categories', protect, admin, upsertCategory);
+// Categories
+router.get('/admin/content/categories', protect, admin, getAdminCategories);
+router.post('/admin/content/categories', protect, admin, upsertCategory);
 router.post('/admin/subcategories', protect, admin, upsertSubcategory);
 
 // Layout Builders
