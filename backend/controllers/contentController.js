@@ -85,36 +85,7 @@ const upsertSubMenu = async (req, res) => {
 
 // ... existing functions ...
 
-module.exports = {
-    getUnifiedAdminContent,
-    getHomepageBanners,
-    getAdminHomepageBanners,
-    createHomepageBanner,
-    updateHomepageBanner,
-    deleteHomepageBanner,
-    seedHomepageBanners,
-    getContentStats,
-    reorderBanners,
 
-    getHomepageCategoryIcons,
-    createHomepageCategoryIcon,
-    updateHomepageCategoryIcon,
-    deleteHomepageCategoryIcon,
-
-    getCategoryContent,
-    getAdminCategories,
-    upsertCategory,
-    upsertSubcategory,
-    upsertSubMenu, // Check export
-    getFullCategoryTree, // Check export
-
-    getCategoryLayout,
-    saveCategoryLayout,
-    publishCategoryLayout,
-
-    exportContent,
-    importContent
-};
 
 // @desc    Get all homepage banners
 // @route   GET /api/content/banners
