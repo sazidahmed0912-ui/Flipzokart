@@ -60,7 +60,7 @@ router.post("/", createProduct); // Alias for frontend compatibility
 // 📦 GET ALL PRODUCTS
 router.get("/", async (req, res) => {
   try {
-    const { category, search, minPrice, maxPrice, sortBy } = req.query;
+    const { category, subcategory, submenu, search, minPrice, maxPrice, sortBy } = req.query;
 
     // 🔒 FORCE VISIBILITY DEFAULTS
     let filter = {};
@@ -68,6 +68,16 @@ router.get("/", async (req, res) => {
     // Category filter
     if (category && category !== 'All') {
       filter.category = category;
+    }
+
+    // Subcategory filter
+    if (subcategory && subcategory !== 'All') {
+      filter.subcategory = subcategory;
+    }
+
+    // Submenu filter
+    if (submenu && submenu !== 'All') {
+      filter.submenu = submenu;
     }
 
     // Search filter

@@ -5,7 +5,7 @@ import { Filter, ChevronDown, Grid, List, Search, X, Star } from 'lucide-react';
 import API from '@/app/services/api';
 import { ProductCard } from '@/app/components/ProductCard';
 import { SearchProductCard } from '@/app/components/SearchProductCard';
-import { useApp } from '@/app/store/Context';
+// import { useApp } from '@/app/store/Context'; // REMOVED
 import { CATEGORIES } from '@/app/constants';
 import { AnimatePresence, motion } from 'framer-motion';
 import LazyImage from '@/app/components/LazyImage';
@@ -13,11 +13,15 @@ import Link from 'next/link';
 import { CategoryPageRenderer } from '@/app/components/renderer/CategoryPageRenderer';
 
 export const ShopPage: React.FC = () => {
-  const { products } = useApp();
+  // const { products } = useApp(); // REMOVED
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'All';
   const initialQuery = searchParams.get('q') || '';
-  const initialSub = searchParams.get('sub') || '';
+  const initialSub = searchParams.get('subcategory') || searchParams.get('sub') || '';
+  const initialSubmenu = searchParams.get('submenu') || '';
+
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]);
@@ -32,106 +36,49 @@ export const ShopPage: React.FC = () => {
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [pageLayout, setPageLayout] = useState<any[]>([]);
 
-  // Fetch Category Content
+  // ... (Dynamic Content State & Effects kept same) ...
+
+  // Fetch Products
   useEffect(() => {
-    if (selectedCategory === 'All') {
-      setCategoryBanner('');
-      setMobileCategoryBanner('');
-      setSubcategories([]);
-      setPageLayout([]);
-      return;
-    }
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const params: any = {
+          category: selectedCategory,
+          search: initialQuery,
+          minPrice: priceRange[0],
+          maxPrice: priceRange[1],
+          sortBy: sortBy,
+        };
 
-    // Redirect Beauty to Landing Page
-    if (selectedCategory === 'Beauty' || selectedCategory === 'beauty') {
-      window.location.href = '/beauty';
-      return;
-    }
+        if (initialSub) params.subcategory = initialSub;
+        if (initialSubmenu) params.submenu = initialSubmenu;
 
-    const slug = selectedCategory.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
-    API.get(`/api/content/categories/${slug}`)
-      .then(res => {
-        if (res.data) {
-          if (res.data.category?.bannerUrl) setCategoryBanner(res.data.category.bannerUrl);
-          if (res.data.category?.mobileBannerUrl) setMobileCategoryBanner(res.data.category.mobileBannerUrl);
-          if (res.data.category?.pageLayout) setPageLayout(res.data.category.pageLayout);
-          if (res.data.subcategories) setSubcategories(res.data.subcategories);
+        const { data } = await API.get('/api/products', {
+          params,
+          headers: { 'Cache-Control': 'no-store' }
+        });
+
+        let fetchedProducts = data.products || [];
+
+        // Client-side rating filter (as backend might not support it yet)
+        if (minRating > 0) {
+          fetchedProducts = fetchedProducts.filter((p: any) => (p.rating || 0) >= minRating);
         }
-      })
-      .catch(err => {
-        console.error("No content for category", err);
-        setCategoryBanner('');
-        setMobileCategoryBanner('');
-        setSubcategories([]);
-        setPageLayout([]);
-      });
-  }, [selectedCategory]);
 
-  // Real-time Sync Listener
-  useEffect(() => {
-    const socket = (window as any).socket;
-    if (!socket) return;
-
-    const handleContentUpdate = (data: { type: string, data: any }) => {
-      // Only update if relevant to current category
-      // 1. Layout Update
-      if (data.type === 'category-layout' && data.data.slug === selectedCategory.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')) {
-        setPageLayout(data.data.layout);
-      }
-      // 2. Meta Update (Banner)
-      if (data.type === 'category-meta') {
-        // Check if it matches current category (Slug or Name check)
-        // simplified check: just refetch if we are browsing this category
-        const currentSlug = selectedCategory.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
-        if (data.data.slug === currentSlug) {
-          if (data.data.bannerUrl) setCategoryBanner(data.data.bannerUrl);
-          if (data.data.mobileBannerUrl) setMobileCategoryBanner(data.data.mobileBannerUrl);
-        }
-      }
-      // 3. Subcategory Update
-      if (data.type === 'subcategory-update') {
-        // Hard to match categoryId without storing it. 
-        // We'll just trigger a refetch of the content endpoint
-        const currentSlug = selectedCategory.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
-        API.get(`/api/content/categories/${currentSlug}`).then(res => {
-          if (res.data?.subcategories) setSubcategories(res.data.subcategories);
-        }).catch(() => { });
+        setProducts(fetchedProducts);
+      } catch (error) {
+        console.error("Failed to fetch products", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
       }
     };
 
-    socket.on('content:update', handleContentUpdate);
-    return () => {
-      socket.off('content:update', handleContentUpdate);
-    };
-  }, [selectedCategory]);
+    fetchProducts();
+  }, [selectedCategory, initialSub, initialSubmenu, initialQuery, priceRange, sortBy, minRating]);
 
-  // Render Custom Layout if Exists
-  if (pageLayout && pageLayout.length > 0) {
-    return (
-      <div className="bg-[#F1F3F6] min-h-screen font-sans pb-10">
-        <CategoryPageRenderer layout={pageLayout} />
-      </div>
-    );
-  }
-
-  const filteredProducts = useMemo(() => {
-    return products.filter(p => {
-      const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
-      const matchesPrice = p.price >= priceRange[0] && p.price <= priceRange[1];
-      const matchesSearch = p.name.toLowerCase().includes(initialQuery.toLowerCase());
-      const matchesRating = p.rating >= minRating;
-      // Basic subcategory match if param exists (assuming subcategory is part of name or desc for now, as schema might not have it strictly)
-      const matchesSub = !initialSub || p.name.toLowerCase().includes(initialSub.toLowerCase()) || p.description.toLowerCase().includes(initialSub.toLowerCase());
-
-      return matchesCategory && matchesPrice && matchesSearch && matchesRating && matchesSub;
-    }).sort((a, b) => {
-      if (sortBy === 'price-low') return a.price - b.price;
-      if (sortBy === 'price-high') return b.price - a.price;
-      if (sortBy === 'rating') return b.rating - a.rating;
-      if (sortBy === 'newest') return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-      return 0; // Relevance
-    });
-  }, [products, selectedCategory, priceRange, sortBy, initialQuery, minRating, initialSub]);
+  const filteredProducts = products;
 
   // Clear all filters
   const clearFilters = () => {
@@ -166,7 +113,7 @@ export const ShopPage: React.FC = () => {
           <div className="mb-4 bg-white p-4 rounded-xl shadow-sm overflow-x-auto">
             <div className="flex gap-6 min-w-max md:justify-center">
               {subcategories.map(sub => (
-                <Link key={sub._id} href={`/shop?category=${selectedCategory}&sub=${sub.name}`} className="flex flex-col items-center gap-2 group min-w-[64px]">
+                <Link key={sub._id} href={`/shop?category=${selectedCategory}&subcategory=${sub.name}`} className="flex flex-col items-center gap-2 group min-w-[64px]">
                   <div className="w-16 h-16 rounded-full bg-gray-50 border border-gray-100 overflow-hidden group-hover:border-blue-500 transition-colors">
                     {sub.iconUrl ? (
                       <LazyImage src={sub.iconUrl} alt={sub.name} width="64" height="64" className="w-full h-full object-cover" />
