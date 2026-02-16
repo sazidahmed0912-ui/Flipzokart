@@ -346,6 +346,18 @@ const updateOrderStatus = async (req, res) => {
 
     const updatedOrder = await order.save();
 
+    // Create Notification Persistence
+    const message = `Your order #${order._id.toString().slice(-6)} is now ${status}`;
+    console.log(`[Admin Notif Debug] Creating notification for User: ${order.user._id || order.user} | Status: ${status} | Note: ${note}`);
+
+    await Notification.create({
+      recipient: order.user._id || order.user,
+      message: message,
+      note: note || '',
+      type: 'orderStatusUpdate',
+      relatedId: order._id
+    });
+
     // Socket.IO
     const io = req.app.get('socketio');
     if (io) {
@@ -355,7 +367,8 @@ const updateOrderStatus = async (req, res) => {
         status: status,
         location: order.currentLocation,
         updatedAt: new Date(),
-        message: `Your order #${order._id.toString().slice(-6)} is now ${status}`
+        message: message,
+        note: note || ''
       };
 
       // Emit to specific Order Room (Mongo ID)
@@ -367,7 +380,11 @@ const updateOrderStatus = async (req, res) => {
       }
 
       // Also support legacy user room for notifications list if needed
-      io.to(order.user.toString()).emit('notification', { type: 'orderStatusUpdate', ...payload });
+      io.to(order.user.toString()).emit('notification', {
+        type: 'orderStatusUpdate',
+        ...payload,
+        status: 'info' // Ensure toast status
+      });
 
       // Admin Monitor
       io.to('admin-monitor').emit('ORDER_LIVE_UPDATE', { ...payload, updatedBy: 'Admin' });
