@@ -24,7 +24,8 @@ const {
     saveCategoryLayout,
     publishCategoryLayout,
     exportContent,
-    importContent
+    importContent,
+    getCategoryTreeSafe // Imported
 } = require('../controllers/contentController');
 
 const { protect, admin } = require('../middleware/authMiddleware');
@@ -32,6 +33,7 @@ const { protect, admin } = require('../middleware/authMiddleware');
 // Public Routes (Frontend Fetch)
 router.get('/banners', getHomepageBanners);
 router.get('/home-categories', getHomepageCategoryIcons);
+router.get('/categories/tree-safe', getCategoryTreeSafe); // New Endpoint
 router.get('/categories/:slug', getCategoryContent);
 
 // Admin Routes (Management)
