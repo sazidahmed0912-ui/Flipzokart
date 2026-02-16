@@ -22,6 +22,10 @@ const getNotifications = async (req, res) => {
 // @access  Private
 const markAsRead = async (req, res) => {
   try {
+    if (!req.params.id || !req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: 'Invalid ID format' });
+    }
+
     const notification = await Notification.findOneAndUpdate(
       { _id: req.params.id, recipient: req.user.id },
       { isRead: true },
@@ -43,6 +47,10 @@ const markAsRead = async (req, res) => {
 // @access  Private
 const deleteNotification = async (req, res) => {
   try {
+    if (!req.params.id || !req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: 'Invalid ID format' });
+    }
+
     const notification = await Notification.findOneAndDelete({ _id: req.params.id, recipient: req.user.id });
 
     if (!notification) {

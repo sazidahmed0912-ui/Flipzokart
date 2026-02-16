@@ -135,6 +135,12 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
       prev.map((n) => (n._id === _id ? { ...n, isRead: true } : n))
     );
 
+    // Skip API call for temporary IDs (timestamps)
+    if (!/^[0-9a-fA-F]{24}$/.test(_id)) {
+      console.log("Skipping API call for temporary ID:", _id);
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       await axios.put(
@@ -150,6 +156,12 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   const deleteNotification = async (_id: string) => {
     // Optimistic Update [Task: Delete Function]
     setNotifications((prev) => prev.filter((n) => n._id !== _id));
+
+    // Skip API call for temporary IDs
+    if (!/^[0-9a-fA-F]{24}$/.test(_id)) {
+      console.log("Skipping delete API call for temporary ID:", _id);
+      return;
+    }
 
     try {
       const token = localStorage.getItem("token");
