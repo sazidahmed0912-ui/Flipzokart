@@ -39,6 +39,12 @@ const createProduct = async (req, res) => {
       }
     }
 
+    // 🛡️ NORMALIZE DATA (Trim & Default)
+    if (req.body.category) req.body.category = req.body.category.trim();
+    if (req.body.subcategory) req.body.subcategory = req.body.subcategory.trim();
+    if (req.body.submenu) req.body.submenu = req.body.submenu.trim();
+    req.body.isActive = true; // Force Active on Creation
+
     console.log("👉 [POST /add] Payload:", JSON.stringify(req.body, null, 2));
     const product = new Product(req.body);
     const savedProduct = await product.save();
@@ -63,21 +69,24 @@ router.get("/", async (req, res) => {
     const { category, subcategory, submenu, search, minPrice, maxPrice, sortBy } = req.query;
 
     // 🔒 FORCE VISIBILITY DEFAULTS
-    let filter = {};
+    let filter = {
+      isActive: true, // 🛡️ MANDATORY: Only Active Products
+      published: true // 🛡️ MANDATORY: Only Published Products
+    };
 
-    // Category filter
+    // Category filter (Case Insensitive)
     if (category && category !== 'All') {
-      filter.category = category;
+      filter.category = { $regex: new RegExp(`^${category.trim()}$`, 'i') };
     }
 
-    // Subcategory filter
+    // Subcategory filter (Case Insensitive)
     if (subcategory && subcategory !== 'All') {
-      filter.subcategory = subcategory;
+      filter.subcategory = { $regex: new RegExp(`^${subcategory.trim()}$`, 'i') };
     }
 
-    // Submenu filter
+    // Submenu filter (Case Insensitive)
     if (submenu && submenu !== 'All') {
-      filter.submenu = submenu;
+      filter.submenu = { $regex: new RegExp(`^${submenu.trim()}$`, 'i') };
     }
 
     // Search filter
@@ -391,6 +400,11 @@ router.put("/:id", async (req, res) => {
         console.warn("⚠️ [Product-Put] Failed to parse metadata:", e.message);
       }
     }
+
+    // 🛡️ NORMALIZE DATA (Trim & Default)
+    if (req.body.category) req.body.category = req.body.category.trim();
+    if (req.body.subcategory) req.body.subcategory = req.body.subcategory.trim();
+    if (req.body.submenu) req.body.submenu = req.body.submenu.trim();
 
     console.log(`👉 [PUT /${req.params.id}] Payload:`, JSON.stringify(req.body, null, 2));
     const product = await Product.findByIdAndUpdate(

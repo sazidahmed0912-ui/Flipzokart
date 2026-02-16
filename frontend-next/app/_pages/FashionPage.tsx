@@ -137,6 +137,7 @@ export const FashionPage: React.FC = () => {
         fetchProducts();
     }, [activeTab]);
 
+    // 🛡️ TRUST API: API now handles filtering perfectly
     const trendingProducts = products.slice(0, 8);
     const bestOfProducts = products.slice(8, 16);
 

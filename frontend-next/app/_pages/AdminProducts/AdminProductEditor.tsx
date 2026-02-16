@@ -498,6 +498,9 @@ export const AdminProductEditor: React.FC = () => {
                 // inventory: undefined,  // REMOVED legacy field
                 specifications: specifications,
                 sku: skuBase,
+                isActive: true, // 🛡️ MANDATORY: Force Active
+                status: 'approved',
+                published: true,
                 description: formData.description + `\n<!-- METADATA:${JSON.stringify(richData)}-->`
             };
 
