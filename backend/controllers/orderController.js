@@ -773,13 +773,15 @@ const updateOrderStatus = async (req, res) => {
         const message = `Your order #${order._id.toString().slice(-6)} is now ${status}`;
 
         // Persist
-        await Notification.create({
+        console.log(`[Notification Debug] Creating notification for User: ${order.user} | Status: ${status} | Note: ${note}`);
+        const newNotif = await Notification.create({
           recipient: order.user,
           message: message,
           note: note || '', // Explicitly save note
           type: 'orderStatusUpdate',
           relatedId: order._id
         });
+        console.log(`[Notification Debug] Notification Created Successfully: ${newNotif._id}`);
 
         // Emit
         if (io) {
