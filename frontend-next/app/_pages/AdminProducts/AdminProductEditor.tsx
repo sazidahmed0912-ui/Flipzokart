@@ -138,9 +138,7 @@ export const AdminProductEditor: React.FC = () => {
                 originalPrice: data.originalPrice || '',
                 image: data.image,
                 category: data.category,
-                subcategory: (data.category === 'Fashion' && data.submenu)
-                    ? `${data.subcategory} > ${data.submenu}`
-                    : (data.subcategory || ''),
+                subcategory: data.subcategory || '', // Fix for missing property
                 countInStock: data.countInStock || 0,
                 description: cleanDescription, // Load ONLY clean text
                 isFeatured: data.isFeatured || false,
@@ -472,20 +470,8 @@ export const AdminProductEditor: React.FC = () => {
                 section: { title: sectionTitle, color: sectionColor, size: sectionSize }
             };
 
-            // 4. Handle Fashion Hierarchy Splitting
-            let finalSubcategory = formData.subcategory;
-            let finalSubmenu = '';
-
-            if (formData.category === 'Fashion' && formData.subcategory.includes(' > ')) {
-                const parts = formData.subcategory.split(' > ');
-                finalSubcategory = parts[0].trim();
-                finalSubmenu = parts[1].trim();
-            }
-
             const payload = {
                 ...formData,
-                subcategory: finalSubcategory,
-                submenu: finalSubmenu,
                 price: finalPrice,
                 originalPrice: finalOriginalPrice,
                 countInStock: totalStock,

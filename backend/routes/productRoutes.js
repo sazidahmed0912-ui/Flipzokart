@@ -3,84 +3,51 @@ const Product = require("../models/Product");
 
 const router = express.Router();
 
-const Category = require("../models/Category");
-const Subcategory = require("../models/Subcategory");
-const Submenu = require("../models/submenu");
-
-// 🔄 Helper to Auto-Sync Content Hierarchy
-const syncFashionHierarchy = async (category, subcategory, submenu) => {
-  if (category !== 'Fashion' || !subcategory || !submenu) return;
-
-  try {
-    // 1. Ensure Fashion Category Exists
-    let cat = await Category.findOne({ slug: 'fashion' });
-    if (!cat) {
-      cat = await Category.create({ name: 'Fashion', slug: 'fashion' });
-    }
-
-    // 2. Ensure Subcategory Exists (e.g., Men)
-    const subSlug = subcategory.toLowerCase();
-    let sub = await Subcategory.findOne({ categoryId: cat._id, slug: subSlug });
-    if (!sub) {
-      sub = await Subcategory.create({
-        categoryId: cat._id,
-        name: subcategory,
-        slug: subSlug,
-        isActive: true
-      });
-      console.log(`[Sync] Created Subcategory: ${subcategory}`);
-    }
-
-    // 3. Ensure Submenu Exists (e.g., Shirts)
-    const menuSlug = submenu.toLowerCase().replace(/ /g, '-');
-    let menu = await Submenu.findOne({ subcategoryId: sub._id, slug: menuSlug });
-    if (!menu) {
-      menu = await Submenu.create({
-        subcategoryId: sub._id,
-        name: submenu,
-        slug: menuSlug,
-        isActive: true
-      });
-      console.log(`[Sync] Created Submenu: ${submenu}`);
-    }
-  } catch (error) {
-    console.error("[Sync] Failed to sync hierarchy:", error.message);
-  }
-};
-
+// ➕ ADD PRODUCT
+// ➕ ADD PRODUCT
 const createProduct = async (req, res) => {
   try {
-    // ... (Existing Metadata Unpacking Logic) ...
     // 🛠️ DATA HYDRATION: Unpack Metadata from Description
+    // The Admin Panel packs rich data (gallery, variants) into description.
+    // We must unpack this to top-level fields for the Storefront to work.
     if (req.body.description && req.body.description.includes('<!-- METADATA:')) {
       try {
         const metaStr = req.body.description.split('<!-- METADATA:')[1].split('-->')[0];
         const meta = JSON.parse(metaStr);
 
+        // Map Metadata to Schema Fields
         if (meta.gallery && Array.isArray(meta.gallery)) req.body.images = meta.gallery;
+
+        // Transform Rich Variants (Admin format) to Simple Variants (DB Schema)
         if (meta.variants && Array.isArray(meta.variants)) {
           req.body.variants = meta.variants.map(v => ({
             name: v.name,
             options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
           }));
         }
+
         if (meta.matrix) req.body.inventory = meta.matrix;
         if (meta.specifications) req.body.specifications = meta.specifications;
         if (meta.sku) req.body.sku = meta.sku;
-      } catch (e) { }
+
+        console.log("✅ [Product] Unpacked Metadata:", {
+          images: req.body.images?.length,
+          variants: req.body.variants?.length
+        });
+      } catch (e) {
+        console.warn("⚠️ [Product] Failed to parse metadata:", e.message);
+      }
     }
 
     console.log("👉 [POST /add] Payload:", JSON.stringify(req.body, null, 2));
     const product = new Product(req.body);
     const savedProduct = await product.save();
 
-    // 🔄 Auto-Sync Content Hierarchy
-    await syncFashionHierarchy(req.body.category, req.body.subcategory, req.body.submenu);
-
     // Socket Emit
     const io = req.app.get('socketio');
     if (io) io.emit('newProduct', savedProduct);
 
+    // Return wrapped format to match AdminProducts.tsx: data.data.product
     res.status(201).json({ success: true, data: { product: savedProduct } });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -88,12 +55,12 @@ const createProduct = async (req, res) => {
 };
 
 router.post("/add", createProduct);
-router.post("/", createProduct);
+router.post("/", createProduct); // Alias for frontend compatibility
 
 // 📦 GET ALL PRODUCTS
 router.get("/", async (req, res) => {
   try {
-    const { category, subcategory, submenu, search, minPrice, maxPrice, sortBy } = req.query;
+    const { category, search, minPrice, maxPrice, sortBy } = req.query;
 
     // 🔒 FORCE VISIBILITY DEFAULTS
     let filter = {};
@@ -101,16 +68,6 @@ router.get("/", async (req, res) => {
     // Category filter
     if (category && category !== 'All') {
       filter.category = category;
-    }
-
-    // Subcategory filter
-    if (subcategory && subcategory !== 'All') {
-      filter.subcategory = subcategory;
-    }
-
-    // Submenu filter
-    if (submenu && submenu !== 'All') {
-      filter.submenu = submenu;
     }
 
     // Search filter
@@ -438,9 +395,6 @@ router.put("/:id", async (req, res) => {
     // Socket Emit
     const io = req.app.get('socketio');
     if (io) io.emit('productUpdated', product);
-
-    // 🔄 Auto-Sync Content Hierarchy
-    await syncFashionHierarchy(req.body.category, req.body.subcategory, req.body.submenu);
 
     res.status(200).json({ success: true, data: { product } });
   } catch (error) {

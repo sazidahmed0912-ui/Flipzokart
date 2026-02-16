@@ -775,7 +775,8 @@ const updateOrderStatus = async (req, res) => {
         // Persist
         await Notification.create({
           recipient: order.user,
-          message: note ? `${message}: ${note}` : message, // Include note in notification text if present
+          message: message,
+          note: note || '', // Explicitly save note
           type: 'orderStatusUpdate',
           relatedId: order._id
         });
@@ -784,7 +785,8 @@ const updateOrderStatus = async (req, res) => {
         if (io) {
           io.to(order.user.toString()).emit('notification', {
             type: 'orderStatusUpdate',
-            message: note ? `${message}: ${note}` : message,
+            message: message,
+            note: note || '', // Explicitly emit note
             orderId: order._id,
             status: 'info'
           });

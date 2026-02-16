@@ -15,6 +15,10 @@ const notificationSchema = new mongoose.Schema({
     enum: ['newOrder', 'orderStatusUpdate', 'lowStock', 'adminNewOrder', 'userRegistration', 'general', 'adminNotice'],
     default: 'general',
   },
+  note: {
+    type: String,
+    required: false,
+  },
   relatedId: { // To link to an order, product, or user
     type: mongoose.Schema.Types.ObjectId,
     required: false,

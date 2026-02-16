@@ -535,30 +535,33 @@ const Header: React.FC = () => {
                         <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
                           {notif.message}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {new Date(notif.createdAt).toLocaleString('en-IN', {
-                            day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
                           })}
+                      </p>
+                      {notif.note && (
+                        <p className="text-xs text-gray-500 italic mt-1 border-l-2 border-gray-300 pl-2">
+                          Note: {notif.note}
                         </p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotification(notif._id);
-                        }}
-                        className="p-2 text-gray-300 hover:text-red-500"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      )}
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteNotification(notif._id);
+                      }}
+                      className="p-2 text-gray-300 hover:text-red-500"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
-                ))}
-              </div>
-            )}
+                  </div>
+            ))}
           </div>
+            )}
         </div>
-      )}
-    </header>
+        </div>
+  )
+}
+    </header >
   );
 };
 

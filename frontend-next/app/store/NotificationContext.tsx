@@ -22,6 +22,7 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
   status?: ToastStatus;
+  note?: string;
 }
 
 export interface ToastNotification extends Notification {
