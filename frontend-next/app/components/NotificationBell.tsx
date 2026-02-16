@@ -87,6 +87,7 @@ const NotificationBell: React.FC = () => {
                     <p className={`text-sm ${notif.isRead ? 'text-gray-600' : 'font-semibold text-gray-800'}`}>
                       {notif.message}
                     </p>
+                    <span className="text-xs text-gray-500 block mt-1">
                       {new Date(notif.createdAt).toLocaleString('en-IN', {
                         hour: 'numeric',
                         minute: '2-digit',
@@ -127,12 +128,12 @@ const NotificationBell: React.FC = () => {
                     </button>
                   </div>
                 </div>
-          ))
+              ))
             )}
+          </div>
         </div>
-        </div>
-  )
-}
+      )
+      }
     </div >
   );
 };
