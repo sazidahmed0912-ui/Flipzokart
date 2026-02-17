@@ -81,7 +81,12 @@ const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: str
 export const FashionPage: React.FC = () => {
     const { products } = useApp(); // Use Context products (already loaded)
     const [activeTab, setActiveTab] = useState<Tab>('Men');
-    const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
+    // Start with EMPTY - only show products from database
+    const [subcategories, setSubcategories] = useState<Record<Tab, { name: string; icon: string; link: string }[]>>({
+        Men: [],
+        Women: [],
+        Kids: []
+    });
 
     // Build submenu map from Context products on mount and when products change
     useEffect(() => {
