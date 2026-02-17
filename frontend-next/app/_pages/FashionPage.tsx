@@ -79,12 +79,13 @@ const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: str
 };
 
 export const FashionPage: React.FC = () => {
+    const { products } = useApp(); // Fallback to Context if API fails
     const [activeTab, setActiveTab] = useState<Tab>('Men');
     const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
     const [fashionProducts, setFashionProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Fetch random Fashion products from backend
+    // Fetch random Fashion products from backend (with fallback)
     useEffect(() => {
         const fetchRandomFashionProducts = async () => {
             try {
@@ -99,14 +100,20 @@ export const FashionPage: React.FC = () => {
                     buildSubmenuMap(res.data);
                 }
             } catch (error) {
-                console.error('Failed to fetch random Fashion products:', error);
+                console.warn('Random API not available yet, using Context fallback:', error);
+                // FALLBACK: Use Context products if random API fails (during deployment)
+                const contextFashionProducts = products.filter(p => p.category === 'Fashion');
+                setFashionProducts(contextFashionProducts);
+                if (contextFashionProducts.length > 0) {
+                    buildSubmenuMap(contextFashionProducts);
+                }
             } finally {
                 setLoading(false);
             }
         };
 
         fetchRandomFashionProducts();
-    }, []); // Run once on mount
+    }, [products]); // Add products as dependency for fallback
 
     // Build Dynamic Submenu Map from Products
     const buildSubmenuMap = (products: any[]) => {
