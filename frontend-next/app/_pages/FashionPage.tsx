@@ -137,8 +137,26 @@ export const FashionPage: React.FC = () => {
             }
         });
 
-        // FORCE REPLACE with dynamic submenus (NO FALLBACK to hardcoded)
-        setSubcategories(newSubcategories);
+        // MERGE hardcoded submenus WITH dynamic product-based submenus
+        setSubcategories(prev => {
+            const merged: Record<Tab, { name: string; icon: string; link: string }[]> = {
+                Men: [...INITIAL_SUBCATEGORIES.Men],
+                Women: [...INITIAL_SUBCATEGORIES.Women],
+                Kids: [...INITIAL_SUBCATEGORIES.Kids]
+            };
+
+            // Add dynamic submenus from products (avoid duplicates)
+            (['Men', 'Women', 'Kids'] as Tab[]).forEach(tab => {
+                newSubcategories[tab].forEach(newSub => {
+                    const exists = merged[tab].find(s => s.name === newSub.name);
+                    if (!exists) {
+                        merged[tab].push(newSub);
+                    }
+                });
+            });
+
+            return merged;
+        });
     };
 
     // Filter Products based on Tab from Context
