@@ -137,16 +137,8 @@ export const FashionPage: React.FC = () => {
             }
         });
 
-        // Merge with initial categories (fallback if no products)
-        setSubcategories(prev => {
-            const merged: Record<Tab, { name: string; icon: string; link: string }[]> = { ...prev };
-            (['Men', 'Women', 'Kids'] as Tab[]).forEach(tab => {
-                if (newSubcategories[tab].length > 0) {
-                    merged[tab] = newSubcategories[tab];
-                }
-            });
-            return merged;
-        });
+        // FORCE REPLACE with dynamic submenus (NO FALLBACK to hardcoded)
+        setSubcategories(newSubcategories);
     };
 
     // Filter Products based on Tab from Context
