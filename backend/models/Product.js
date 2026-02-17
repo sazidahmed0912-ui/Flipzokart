@@ -22,9 +22,8 @@ const productSchema = new mongoose.Schema(
       index: true
     },
     submenu: {
-      type: String, // e.g., "Blazers", "T-Shirts"
-      index: true,
-      trim: true
+      type: String,
+      index: true
     },
     image: {
       type: String,
