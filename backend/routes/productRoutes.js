@@ -253,6 +253,103 @@ router.get("/category/:categoryId", async (req, res) => {
   }
 });
 
+// 🎲 GET RANDOM PRODUCTS (Homepage)
+// CRITICAL: Must be BEFORE /:id route or Express treats "random" as an ID
+router.get("/random", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 20;
+
+    const products = await Product.aggregate([
+      { $match: { isActive: { $ne: false } } }, // Only active products
+      { $sample: { size: limit } }
+    ]);
+
+    // Apply same hydration logic as main GET /
+    const hydratedProducts = products.map(p => {
+      // Unpack metadata if exists
+      if (p.description && p.description.includes('<!-- METADATA:')) {
+        try {
+          const metaStr = p.description.split('<!-- METADATA:')[1].split('-->')[0];
+          const meta = JSON.parse(metaStr);
+          if (meta.gallery && Array.isArray(meta.gallery) && (!p.images || p.images.length === 0)) {
+            p.images = meta.gallery;
+          }
+          if (meta.variants && (!p.variants || p.variants.length === 0)) {
+            p.variants = meta.variants.map(v => ({
+              name: v.name,
+              options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
+            }));
+          }
+        } catch (e) { }
+      }
+
+      // Legacy fallback
+      if ((!p.images || p.images.length === 0) && p.image) {
+        p.images = [p.image];
+      }
+
+      // Mandatory mainImage
+      p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
+
+      return p;
+    });
+
+    res.status(200).json(hydratedProducts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 🎲 GET RANDOM PRODUCTS BY CATEGORY
+// CRITICAL: Must be BEFORE /:id route
+router.get("/random/:category", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 20;
+    const category = req.params.category;
+
+    const products = await Product.aggregate([
+      {
+        $match: {
+          category: category,
+          isActive: { $ne: false }
+        }
+      },
+      { $sample: { size: limit } }
+    ]);
+
+    // Apply hydration
+    const hydratedProducts = products.map(p => {
+      if (p.description && p.description.includes('<!-- METADATA:')) {
+        try {
+          const metaStr = p.description.split('<!-- METADATA:')[1].split('-->')[0];
+          const meta = JSON.parse(metaStr);
+          if (meta.gallery && Array.isArray(meta.gallery) && (!p.images || p.images.length === 0)) {
+            p.images = meta.gallery;
+          }
+          if (meta.variants && (!p.variants || p.variants.length === 0)) {
+            p.variants = meta.variants.map(v => ({
+              name: v.name,
+              options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
+            }));
+          }
+        } catch (e) { }
+      }
+
+      if ((!p.images || p.images.length === 0) && p.image) {
+        p.images = [p.image];
+      }
+
+      p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
+
+      return p;
+    });
+
+    res.status(200).json(hydratedProducts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // GET SINGLE PRODUCT
 router.get("/:id", async (req, res) => {
   try {
@@ -415,101 +512,6 @@ router.delete("/:id", async (req, res) => {
     if (io) io.emit('deleteProduct', req.params.id);
 
     res.status(200).json({ success: true, message: "Product deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// 🎲 GET RANDOM PRODUCTS (Homepage)
-router.get("/random", async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit) || 20;
-
-    const products = await Product.aggregate([
-      { $match: { isActive: { $ne: false } } }, // Only active products
-      { $sample: { size: limit } }
-    ]);
-
-    // Apply same hydration logic as main GET /
-    const hydratedProducts = products.map(p => {
-      // Unpack metadata if exists
-      if (p.description && p.description.includes('<!-- METADATA:')) {
-        try {
-          const metaStr = p.description.split('<!-- METADATA:')[1].split('-->')[0];
-          const meta = JSON.parse(metaStr);
-          if (meta.gallery && Array.isArray(meta.gallery) && (!p.images || p.images.length === 0)) {
-            p.images = meta.gallery;
-          }
-          if (meta.variants && (!p.variants || p.variants.length === 0)) {
-            p.variants = meta.variants.map(v => ({
-              name: v.name,
-              options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
-            }));
-          }
-        } catch (e) { }
-      }
-
-      // Legacy fallback
-      if ((!p.images || p.images.length === 0) && p.image) {
-        p.images = [p.image];
-      }
-
-      // Mandatory mainImage
-      p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
-
-      return p;
-    });
-
-    res.status(200).json(hydratedProducts);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// 🎲 GET RANDOM PRODUCTS BY CATEGORY
-router.get("/random/:category", async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit) || 20;
-    const category = req.params.category;
-
-    const products = await Product.aggregate([
-      {
-        $match: {
-          category: category,
-          isActive: { $ne: false }
-        }
-      },
-      { $sample: { size: limit } }
-    ]);
-
-    // Apply hydration
-    const hydratedProducts = products.map(p => {
-      if (p.description && p.description.includes('<!-- METADATA:')) {
-        try {
-          const metaStr = p.description.split('<!-- METADATA:')[1].split('-->')[0];
-          const meta = JSON.parse(metaStr);
-          if (meta.gallery && Array.isArray(meta.gallery) && (!p.images || p.images.length === 0)) {
-            p.images = meta.gallery;
-          }
-          if (meta.variants && (!p.variants || p.variants.length === 0)) {
-            p.variants = meta.variants.map(v => ({
-              name: v.name,
-              options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
-            }));
-          }
-        } catch (e) { }
-      }
-
-      if ((!p.images || p.images.length === 0) && p.image) {
-        p.images = [p.image];
-      }
-
-      p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
-
-      return p;
-    });
-
-    res.status(200).json(hydratedProducts);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
