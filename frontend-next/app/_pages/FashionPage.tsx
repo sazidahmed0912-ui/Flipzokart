@@ -163,38 +163,6 @@ export const FashionPage: React.FC = () => {
         });
     };
 
-    // Safe Sync: Fetch dynamic subcategories but fallback to initial if empty/error
-    useEffect(() => {
-        const syncCategories = async () => {
-            try {
-                const { data } = await axios.get('/api/content/categories/tree-safe', {
-                    headers: { 'Cache-Control': 'no-store' } // Ensure fresh data
-                });
-
-                if (data && data.Fashion) {
-                    setSubcategories(prev => {
-                        const next = { ...prev };
-                        // Only update keys that actually have data from backend
-                        (['Men', 'Women', 'Kids'] as Tab[]).forEach(tab => {
-                            if (data.Fashion[tab] && data.Fashion[tab].length > 0) {
-                                // Merge logic: If backend has items, use them. 
-                                // To persist icons if backend is text-only (though our API returns icons), we could merge.
-                                // But here we trust the API to return the full object structure as per plan.
-                                next[tab] = data.Fashion[tab];
-                            }
-                        });
-                        return next;
-                    });
-                }
-            } catch (error) {
-                // Silent Error: Keep showing INITIAL_SUBCATEGORIES
-                console.warn("Category Sync Failed - Using Fallback", error);
-            }
-        };
-
-        syncCategories();
-    }, []);
-
     // Filter Products based on Tab
     const tabProducts = fashionProducts.filter(p => {
         // Match by subcategory parsing
