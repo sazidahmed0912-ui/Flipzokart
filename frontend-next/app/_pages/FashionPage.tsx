@@ -3,10 +3,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { ChevronRight, TrendingUp, Star, ShoppingBag } from 'lucide-react';
+import { ChevronRight, TrendingUp, Star, ShoppingBag, Folder } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { ProductCard } from '@/app/components/ProductCard';
-
 
 // --- Swiper Versions ---
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -16,6 +15,11 @@ import 'swiper/css/pagination';
 
 // --- Types ---
 type Tab = 'Men' | 'Women' | 'Kids';
+
+interface SubmenuGroup {
+    name: string;
+    products: any[];
+}
 
 interface BannerConfig {
     title: string;
@@ -51,80 +55,79 @@ const BANNERS: Record<Tab, BannerConfig> = {
     }
 };
 
-const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: string }[]> = {
-    Men: [
-        { name: "Shirts", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771162918/expert-023d4b3e-5b64-4061-b018-f52223faa9de_ulp28f.jpg", link: "/shop?category=Fashion&sub=Shirts" },
-        { name: "T-Shirts", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771163570/expert-926e4b5d-a4b2-4a74-8c1b-0550ae534081_jde77w.jpg", link: "/shop?category=Fashion&sub=TShirts" },
-        { name: "Jeans", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771164135/WhatsApp_Image_2026-02-15_at_7.31.40_PM_t5afmz.jpg", link: "/shop?category=Fashion&sub=Jeans" },
-        { name: "Shoes", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771163760/expert-d3f96149-9062-469a-880c-81f29df29022_leyoct.jpg", link: "/shop?category=Fashion&sub=Shoes" },
-        { name: "Watches", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1770388041/samples/ecommerce/analog-classic.jpg", link: "/shop?category=Fashion&sub=Watches" },
-        { name: "Activewear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771164274/WhatsApp_Image_2026-02-15_at_7.34.13_PM_kdf4gi.jpg", link: "/shop?category=Fashion&sub=Activewear" },
-    ],
-    Women: [
-        { name: "Kurti", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771165309/WhatsApp_Image_2026-02-15_at_7.50.26_PM_fsfcla.jpg", link: "/shop?category=Fashion&sub=Kurti" },
-        { name: "Saree", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771165271/WhatsApp_Image_2026-02-15_at_7.50.44_PM_vpsgfj.jpg", link: "/shop?category=Fashion&sub=Saree" },
-        { name: "Dresses", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167063/WhatsApp_Image_2026-02-15_at_8.18.49_PM_oa0rrp.jpg", link: "/shop?category=Fashion&sub=Dresses" },
-        { name: "Handbags", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167019/WhatsApp_Image_2026-02-15_at_8.19.40_PM_fjfx5a.jpg", link: "/shop?category=Fashion&sub=Handbags" },
-        { name: "Heels", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167139/WhatsApp_Image_2026-02-15_at_8.22.00_PM_rkd8of.jpg", link: "/shop?category=Fashion&sub=Heels" },
-        { name: "Jewellery", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167235/WhatsApp_Image_2026-02-15_at_8.23.36_PM_gvxim0.jpg", link: "/shop?category=Fashion&sub=Jewelry" },
-    ],
-    Kids: [
-        { name: "Boys Wear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.13_PM_ghtqpc.jpg", link: "/shop?category=Fashion&sub=Boys" },
-        { name: "Girls Wear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.14_PM_livxev.jpg", link: "/shop?category=Fashion&sub=Girls" },
-        { name: "Kids Shoes", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.14_PM_1_gyko9v.jpg", link: "/shop?category=Fashion&sub=KidsShoes" },
-        { name: "Toys", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169130/WhatsApp_Image_2026-02-15_at_8.54.45_PM_ro7nbb.jpg", link: "/shop?category=Fashion&sub=Toys" },
-        { name: "School Bags", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169132/WhatsApp_Image_2026-02-15_at_8.54.44_PM_1_rtf3vg.jpg", link: "/shop?category=Fashion&sub=Bags" },
-        { name: "Accessories", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169130/WhatsApp_Image_2026-02-15_at_8.54.44_PM_otyzko.jpg", link: "/shop?category=Fashion&sub=Accessories" },
-    ]
-};
-
 export const FashionPage: React.FC = () => {
-    const { products } = useApp();
+    // We will bypass useApp().products for the core logic to ensure FRESH DB data,
+    // but we can use it for initial placeholder if needed.
+    // Ideally, we fetch fresh data on mount.
     const [activeTab, setActiveTab] = useState<Tab>('Men');
-    const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
+    const [loading, setLoading] = useState(true);
 
-    // Safe Sync: Fetch dynamic subcategories but fallback to initial if empty/error
+    // Structure: { Men: [{name: 'Blazers', products: [...]}, ...], Women: [], Kids: [] }
+    const [hierarchy, setHierarchy] = useState<Record<Tab, SubmenuGroup[]>>({
+        Men: [],
+        Women: [],
+        Kids: []
+    });
+
     useEffect(() => {
-        const syncCategories = async () => {
+        const fetchFashionProducts = async () => {
             try {
-                const { data } = await axios.get('/api/content/categories/tree-safe', {
-                    headers: { 'Cache-Control': 'no-store' } // Ensure fresh data
+                setLoading(true);
+                // 1. Fetch ALL Fashion Products (No Cache)
+                const { data } = await axios.get('/api/products?category=Fashion', {
+                    headers: { 'Cache-Control': 'no-store', 'Pragma': 'no-cache' }
                 });
 
-                if (data && data.Fashion) {
-                    setSubcategories(prev => {
-                        const next = { ...prev };
-                        // Only update keys that actually have data from backend
-                        (['Men', 'Women', 'Kids'] as Tab[]).forEach(tab => {
-                            if (data.Fashion[tab] && data.Fashion[tab].length > 0) {
-                                // Merge logic: If backend has items, use them. 
-                                // To persist icons if backend is text-only (though our API returns icons), we could merge.
-                                // But here we trust the API to return the full object structure as per plan.
-                                next[tab] = data.Fashion[tab];
+                if (Array.isArray(data)) {
+                    const newHierarchy: Record<Tab, SubmenuGroup[]> = { Men: [], Women: [], Kids: [] };
+
+                    // 2. Build Hierarchy
+                    // Loop through all products and organize them
+                    const tempGroups: Record<string, Record<string, any[]>> = {
+                        Men: {}, Women: {}, Kids: {}
+                    };
+
+                    data.forEach((p: any) => {
+                        const sub = p.subcategory; // "Men", "Women", "Kids"
+                        const submenu = p.submenu ? p.submenu.trim() : 'Others'; // "Blazers", "Shirts"
+
+                        if (['Men', 'Women', 'Kids'].includes(sub)) {
+                            if (!tempGroups[sub][submenu]) {
+                                tempGroups[sub][submenu] = [];
                             }
-                        });
-                        return next;
+                            tempGroups[sub][submenu].push(p);
+                        }
                     });
+
+                    // 3. Convert to Array Format for Rendering
+                    (['Men', 'Women', 'Kids'] as Tab[]).forEach(tab => {
+                        const submenus = Object.keys(tempGroups[tab]).map(key => ({
+                            name: key,
+                            products: tempGroups[tab][key]
+                        }));
+                        newHierarchy[tab] = submenus;
+                    });
+
+                    setHierarchy(newHierarchy);
                 }
+
             } catch (error) {
-                // Silent Error: Keep showing INITIAL_SUBCATEGORIES
-                console.warn("Category Sync Failed - Using Fallback", error);
+                console.error("Failed to fetch fashion products", error);
+            } finally {
+                setLoading(false);
             }
         };
 
-        syncCategories();
+        fetchFashionProducts();
     }, []);
-    // Filter Products based on Tab
-    const tabProducts = products.filter(p =>
-        p.category === 'Fashion' ||
-        p.name.toLowerCase().includes(activeTab.toLowerCase()) ||
-        p.description.toLowerCase().includes(activeTab.toLowerCase())
-    );
-
-    const trendingProducts = tabProducts.slice(0, 8);
-    const bestOfProducts = tabProducts.slice(8, 16);
 
     const currentBanner = BANNERS[activeTab];
+    const currentSubmenus = hierarchy[activeTab] || [];
+
+    // Prioritize sections with most products? Or just alphabetical? 
+    // Let's keep extraction order (usually insertion order of keys) or sort? 
+    // Requirement implies "newest" products first in backend, so data order is meaningful.
+    // We will render sections in the order they were processed (which tracks insertion mostly).
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
@@ -160,7 +163,7 @@ export const FashionPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* 2. SWIPER HERO BANNER (ULTRA LOCK FIX) */}
+            {/* 2. SWIPER HERO BANNER */}
             <div className="w-full h-[220px] md:h-[420px] lg:h-[420px] xl:h-[520px] 2xl:h-[580px] bg-gray-100 overflow-hidden lg:max-w-[1400px] xl:max-w-[1500px] mx-auto rounded-none lg:rounded-2xl lg:mt-4 lg:shadow-xl relative">
                 <Swiper
                     key={activeTab} // Force re-render on activeTab change
@@ -180,13 +183,11 @@ export const FashionPage: React.FC = () => {
                     {currentBanner.images.map((img, index) => (
                         <SwiperSlide key={`${activeTab}-${index}`}>
                             <div className="relative w-full h-full">
-                                {/* PURE IMG TAG to avoid Next.js Image lifestyle conflicts in Swiper */}
                                 <img
                                     src={img}
                                     alt={`${currentBanner.title} - Slide ${index + 1}`}
                                     className="absolute inset-0 w-full h-full object-cover object-center"
                                 />
-
                                 {/* Gradient Overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12 pointer-events-none">
                                     <div className="text-white pointer-events-auto max-w-[600px] lg:max-w-[800px]">
@@ -205,93 +206,92 @@ export const FashionPage: React.FC = () => {
                 </Swiper>
             </div>
 
-            {/* 3. RESPONSIVE SUBCATEGORY GRID (Flipkart Style) */}
-            <div className="bg-white py-4 md:py-8 px-3 md:px-8 mb-4 shadow-sm">
-                <div className="max-w-7xl mx-auto">
-                    <h3 className="text-xs md:text-lg font-bold text-gray-800 mb-3 md:mb-6 uppercase tracking-wider">Explore {activeTab}</h3>
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-6">
-                        {subcategories[activeTab].map((sub, idx) => (
-                            <Link key={idx} href={sub.link} className="flex flex-col items-center group">
-                                <div className="w-full aspect-square relative rounded-lg overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:border-blue-400 transition-colors">
-                                    <img
-                                        src={sub.icon}
-                                        alt={sub.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                    />
-                                </div>
-                                <span className="text-[11px] md:text-sm font-medium text-gray-700 text-center">{sub.name}</span>
-                            </Link>
-                        ))}
+            {/* 3. DYNAMIC EXPLORE GRID (Submenus) */}
+            {/* Show icons for each Submenu found in DB */}
+            {currentSubmenus.length > 0 && (
+                <div className="bg-white py-4 md:py-8 px-3 md:px-8 mb-4 shadow-sm">
+                    <div className="max-w-7xl mx-auto">
+                        <h3 className="text-xs md:text-lg font-bold text-gray-800 mb-3 md:mb-6 uppercase tracking-wider">Explore {activeTab}</h3>
+                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-6">
+                            {currentSubmenus.map((group, idx) => (
+                                <Link
+                                    key={idx}
+                                    href={`#section-${group.name.replace(/\s+/g, '-').toLowerCase()}`}
+                                    className="flex flex-col items-center group scroll-smooth"
+                                    onClick={(e) => {
+                                        // Optional: Smooth scroll manually if needed, but native anchor works usually.
+                                        const el = document.getElementById(`section-${group.name.replace(/\s+/g, '-').toLowerCase()}`);
+                                        if (el) {
+                                            e.preventDefault();
+                                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }
+                                    }}
+                                >
+                                    <div className="w-full aspect-square relative rounded-lg overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:border-blue-400 transition-colors flex items-center justify-center">
+                                        {/* Use first product's image as Representative Icon for the Submenu */}
+                                        {group.products[0]?.mainImage || group.products[0]?.image ? (
+                                            <img
+                                                src={group.products[0]?.mainImage || group.products[0]?.image}
+                                                alt={group.name}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <Folder className="text-gray-300 w-8 h-8" />
+                                        )}
+                                    </div>
+                                    <span className="text-[11px] md:text-sm font-medium text-gray-700 text-center">{group.name}</span>
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
-            {/* 4. PRODUCT SHOWCASE SECTIONS */}
-            <div className="max-w-7xl mx-auto spaee-y-4 md:space-y-8 pb-8">
-
-                {/* Trending Section */}
-                {trendingProducts.length > 0 && (
-                    <section className="bg-white py-4 md:py-6 px-3 md:px-8 mt-2 shadow-sm">
-                        <div className="flex justify-between items-end mb-3 md:mb-6">
-                            <div>
-                                <h3 className="text-sm md:text-xl font-bold text-gray-800 flex items-center gap-2">
-                                    <TrendingUp size={16} className="text-[#2874F0]" />
-                                    Trending in {activeTab}
-                                </h3>
-                                <p className="text-[10px] md:text-sm text-gray-400">Fresh styles just for you</p>
-                            </div>
-                            <Link href={`/shop?category=Fashion&gender=${activeTab}&sort=newest`} className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5 ">
-                                <ChevronRight size={16} className="md:hidden" />
-                                <span className="hidden md:inline text-sm font-bold">View All</span>
-                            </Link>
-                        </div>
-
-                        <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-4 md:gap-6 no-scrollbar snap-x">
-                            {trendingProducts.map((product) => (
-                                <div key={product.id} className="min-w-[140px] md:min-w-0 snap-start">
-                                    <ProductCard product={product} />
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {/* Best Of Section */}
-                {bestOfProducts.length > 0 && (
-                    <section className="bg-white py-4 md:py-6 px-3 md:px-8 mt-2 shadow-sm">
-                        <div className="flex justify-between items-end mb-3 md:mb-6">
-                            <div>
-                                <h3 className="text-sm md:text-xl font-bold text-gray-800 flex items-center gap-2">
-                                    <Star size={16} className="text-yellow-500" />
-                                    Best of {activeTab}
-                                </h3>
-                                <p className="text-[10px] md:text-sm text-gray-400">Top rated by customers</p>
-                            </div>
-                            <Link href={`/shop?category=Fashion&gender=${activeTab}&sort=rating`} className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5 ">
-                                <ChevronRight size={16} className="md:hidden" />
-                                <span className="hidden md:inline text-sm font-bold">View All</span>
-                            </Link>
-                        </div>
-
-                        <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-4 md:gap-6 no-scrollbar snap-x">
-                            {bestOfProducts.map((product) => (
-                                <div key={product.id} className="min-w-[140px] md:min-w-0 snap-start">
-                                    <ProductCard product={product} />
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {/* Fallback if no products */}
-                {tabProducts.length === 0 && (
+            {/* 4. DYNAMIC PRODUCT SECTIONS */}
+            <div className="max-w-7xl mx-auto space-y-4 md:space-y-8 pb-8">
+                {loading ? (
+                    <div className="p-12 text-center text-gray-400">Loading fashion catalog...</div>
+                ) : currentSubmenus.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 bg-white m-3 rounded-xl border border-dashed text-center">
                         <ShoppingBag size={48} className="text-gray-200 mb-4" />
                         <h3 className="text-gray-500 font-bold">Coming Soon</h3>
                         <p className="text-xs text-gray-400 mt-1">We are stocking up {activeTab}'s collection!</p>
                     </div>
-                )}
+                ) : (
+                    currentSubmenus.map((group) => (
+                        <section
+                            key={group.name}
+                            id={`section-${group.name.replace(/\s+/g, '-').toLowerCase()}`}
+                            className="bg-white py-4 md:py-6 px-3 md:px-8 mt-2 shadow-sm scroll-mt-[180px]"
+                        >
+                            <div className="flex justify-between items-end mb-3 md:mb-6">
+                                <div>
+                                    <h3 className="text-sm md:text-xl font-bold text-gray-800 flex items-center gap-2">
+                                        <TrendingUp size={16} className="text-[#2874F0]" />
+                                        {group.name}
+                                    </h3>
+                                    <p className="text-[10px] md:text-sm text-gray-400">{group.products.length} Products</p>
+                                </div>
+                                <Link
+                                    // Clicking "View All" could go to a filtered Shop page
+                                    href={`/shop?category=Fashion&gender=${activeTab}&search=${group.name}`} // Simple hack for now since we don't have strict 'submenu' filter on backend search yet, but 'search' works by name/desc. 
+                                    className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5 "
+                                >
+                                    <ChevronRight size={16} className="md:hidden" />
+                                    <span className="hidden md:inline text-sm font-bold">View All</span>
+                                </Link>
+                            </div>
 
+                            <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-4 lg:grid-cols-5 md:gap-6 no-scrollbar snap-x">
+                                {group.products.slice(0, 10).map((product) => (
+                                    <div key={product._id || product.id} className="min-w-[140px] md:min-w-0 snap-start">
+                                        <ProductCard product={product} />
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    ))
+                )}
             </div>
         </div>
     );

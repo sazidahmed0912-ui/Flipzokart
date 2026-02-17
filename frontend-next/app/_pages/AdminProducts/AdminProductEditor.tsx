@@ -59,6 +59,7 @@ export const AdminProductEditor: React.FC = () => {
         image: '',
         category: 'Mobiles',
         subcategory: '',
+        submenu: '', // Dynamic Submenu (e.g., "Blazers")
         countInStock: '',
         description: '',
         isFeatured: false,
@@ -138,7 +139,8 @@ export const AdminProductEditor: React.FC = () => {
                 originalPrice: data.originalPrice || '',
                 image: data.image,
                 category: data.category,
-                subcategory: data.subcategory || '', // Fix for missing property
+                subcategory: data.subcategory || '',
+                submenu: data.submenu || '', // Load submenu
                 countInStock: data.countInStock || 0,
                 description: cleanDescription, // Load ONLY clean text
                 isFeatured: data.isFeatured || false,
@@ -224,6 +226,7 @@ export const AdminProductEditor: React.FC = () => {
             // Reset subcategory if category changes
             if (name === 'category') {
                 updates.subcategory = '';
+                updates.submenu = '';
             }
 
             return { ...prev, ...updates };
@@ -419,10 +422,17 @@ export const AdminProductEditor: React.FC = () => {
             }
 
             // Validation: Strict Fashion Subcategory
-            if (formData.category === 'Fashion' && !formData.subcategory) {
-                addToast('error', 'Please select a valid Fashion subcategory (e.g. Men > Shirts)');
-                setSaving(false);
-                return;
+            if (formData.category === 'Fashion') {
+                if (!formData.subcategory) {
+                    addToast('error', 'Please select a valid Fashion subcategory (Men/Women/Kids)');
+                    setSaving(false);
+                    return;
+                }
+                if (!formData.submenu || formData.submenu.trim() === '') {
+                    addToast('error', 'Please enter a Submenu (e.g. Blazers)');
+                    setSaving(false);
+                    return;
+                }
             }
 
             if (finalSalePrice > finalOriginalPrice) {
@@ -484,6 +494,7 @@ export const AdminProductEditor: React.FC = () => {
                 // inventory: undefined,  // REMOVED legacy field
                 specifications: specifications,
                 sku: skuBase,
+                submenu: formData.category === 'Fashion' ? formData.submenu.trim() : undefined, // SAVE SUBMENU
                 description: formData.description + `\n<!-- METADATA:${JSON.stringify(richData)}-->`
             };
 
@@ -707,14 +718,37 @@ export const AdminProductEditor: React.FC = () => {
                                     </div>
 
                                     {/* Subcategory - Dependent Dropdown */}
-                                    {/* Subcategory - Dependent Dropdown OR Custom Fashion Selector */}
+                                    {/* Fashion: Subcategory (Men/Women/Kids) + Submenu (Text) */}
                                     <div>
                                         {formData.category === 'Fashion' ? (
-                                            <FashionSubcategorySelector
-                                                value={formData.subcategory}
-                                                onChange={(val) => setFormData(prev => ({ ...prev, subcategory: val }))}
-                                                error={(!formData.subcategory && saving) ? "Required" : undefined}
-                                            />
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="text-xs font-bold text-gray-500">Gender (Subcategory)</label>
+                                                    <select
+                                                        name="subcategory"
+                                                        value={formData.subcategory}
+                                                        onChange={handleChange}
+                                                        className="w-full mt-1 px-4 py-2 border rounded-xl text-sm"
+                                                    >
+                                                        <option value="">Select Gender</option>
+                                                        <option value="Men">Men</option>
+                                                        <option value="Women">Women</option>
+                                                        <option value="Kids">Kids</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="text-xs font-bold text-gray-500">Submenu (Section)</label>
+                                                    <input
+                                                        type="text"
+                                                        name="submenu"
+                                                        value={formData.submenu}
+                                                        onChange={handleChange}
+                                                        className="w-full mt-1 px-4 py-2 border rounded-xl text-sm font-bold text-gray-800"
+                                                        placeholder="e.g. Blazers, T-Shirts, Kurtis"
+                                                    />
+                                                    <p className="text-[10px] text-gray-400 mt-1">This will create a new section on Fashion Page.</p>
+                                                </div>
+                                            </div>
                                         ) : (
                                             <>
                                                 <label className="text-xs font-bold text-gray-500">Subcategory</label>
