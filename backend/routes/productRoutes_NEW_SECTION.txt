@@ -1,0 +1,240 @@
+const express = require("express");
+const Product = require("../models/Product");
+
+const router = express.Router();
+
+// ➕ ADD PRODUCT
+// ➕ ADD PRODUCT
+const createProduct = async (req, res) => {
+  try {
+    // 🛠️ DATA HYDRATION: Unpack Metadata from Description
+    // The Admin Panel packs rich data (gallery, variants) into description.
+    // We must unpack this to top-level fields for the Storefront to work.
+    if (req.body.description && req.body.description.includes('<!-- METADATA:')) {
+      try {
+        const metaStr = req.body.description.split('<!-- METADATA:')[1].split('-->')[0];
+        const meta = JSON.parse(metaStr);
+
+        // Map Metadata to Schema Fields
+        if (meta.gallery && Array.isArray(meta.gallery)) req.body.images = meta.gallery;
+
+        // Transform Rich Variants (Admin format) to Simple Variants (DB Schema)
+        if (meta.variants && Array.isArray(meta.variants)) {
+          req.body.variants = meta.variants.map(v => ({
+            name: v.name,
+            options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
+          }));
+        }
+
+        if (meta.matrix) req.body.inventory = meta.matrix;
+        if (meta.specifications) req.body.specifications = meta.specifications;
+        if (meta.sku) req.body.sku = meta.sku;
+
+        console.log("✅ [Product] Unpacked Metadata:", {
+          images: req.body.images?.length,
+          variants: req.body.variants?.length
+        });
+      } catch (e) {
+        console.warn("⚠️ [Product] Failed to parse metadata:", e.message);
+      }
+    }
+
+    console.log("👉 [POST /add] Payload:", JSON.stringify(req.body, null, 2));
+    const product = new Product(req.body);
+    const savedProduct = await product.save();
+
+    // Socket Emit
+    const io = req.app.get('socketio');
+    if (io) io.emit('newProduct', savedProduct);
+
+    // Return wrapped format to match AdminProducts.tsx: data.data.product
+    res.status(201).json({ success: true, data: { product: savedProduct } });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+router.post("/add", createProduct);
+router.post("/", createProduct); // Alias for frontend compatibility
+
+// 📦 GET ALL PRODUCTS
+router.get("/", async (req, res) => {
+  try {
+    const { category, search, minPrice, maxPrice, sortBy } = req.query;
+
+    // 🔒 FORCE VISIBILITY DEFAULTS
+    let filter = {};
+
+    // Category filter
+    if (category && category !== 'All') {
+      filter.category = category;
+    }
+
+    // Search filter
+    if (search) {
+      filter.name = { $regex: search, $options: 'i' };
+    }
+
+    // Price range filter
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = parseFloat(minPrice);
+      if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
+    }
+
+
+    let query = Product.find(filter);
+
+    // Sorting
+    if (sortBy) {
+      switch (sortBy) {
+        case 'price-low':
+          query = query.sort('price');
+          break;
+        case 'price-high':
+          query = query.sort('-price');
+          break;
+        case 'newest':
+          query = query.sort('-createdAt');
+          break;
+        default:
+          query = query.sort('-createdAt');
+      }
+    } else {
+      query = query.sort('-createdAt');
+    }
+
+    const products = await query;
+    const hydratedProducts = products.map(p => {
+      const pObj = p.toObject();
+
+      // 1. Unpack Metadata
+      if (pObj.description && pObj.description.includes('<!-- METADATA:')) {
+        try {
+          const metaStr = pObj.description.split('<!-- METADATA:')[1].split('-->')[0];
+          const meta = JSON.parse(metaStr);
+          if (meta.gallery && Array.isArray(meta.gallery) && (!pObj.images || pObj.images.length === 0)) {
+            pObj.images = meta.gallery;
+          }
+          if (meta.variants && (!pObj.variants || pObj.variants.length === 0)) {
+            // Transform Rich Variants to Simple Schema for consistency
+            pObj.variants = meta.variants.map(v => ({
+              name: v.name,
+              options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
+            }));
+          }
+        } catch (e) { }
+      }
+
+      // 2. Legacy Fallback
+      if ((!pObj.images || pObj.images.length === 0) && pObj.image) {
+        pObj.images = [pObj.image];
+      }
+
+      // 3. 🛡️ MANDATORY FIX: Ensure mainImage is always present
+      pObj.mainImage = pObj.mainImage || pObj.image || (pObj.images && pObj.images[0]) || '/placeholder.png';
+
+      return pObj;
+    });
+    res.status(200).json(hydratedProducts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 🎲 GET RANDOM PRODUCTS (Homepage)
+router.get("/random", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 20;
+    
+    const products = await Product.aggregate([
+      { $match: { isActive: { $ne: false } } }, // Only active products
+      { $sample: { size: limit } }
+    ]);
+
+    // Apply same hydration logic as main GET /
+    const hydratedProducts = products.map(p => {
+      // Unpack metadata if exists
+      if (p.description && p.description.includes('<!-- METADATA:')) {
+        try {
+          const metaStr = p.description.split('<!-- METADATA:')[1].split('-->')[0];
+          const meta = JSON.parse(metaStr);
+          if (meta.gallery && Array.isArray(meta.gallery) && (!p.images || p.images.length === 0)) {
+            p.images = meta.gallery;
+          }
+          if (meta.variants && (!p.variants || p.variants.length === 0)) {
+            p.variants = meta.variants.map(v => ({
+              name: v.name,
+              options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
+            }));
+          }
+        } catch (e) { }
+      }
+      
+      // Legacy fallback
+      if ((!p.images || p.images.length === 0) && p.image) {
+        p.images = [p.image];
+      }
+      
+      // Mandatory mainImage
+      p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
+      
+      return p;
+    });
+
+    res.status(200).json(hydratedProducts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 🎲 GET RANDOM PRODUCTS BY CATEGORY
+router.get("/random/:category", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 20;
+    const category = req.params.category;
+
+    const products = await Product.aggregate([
+      { 
+        $match: { 
+          category: category,
+          isActive: { $ne: false }
+        }
+      },
+      { $sample: { size: limit } }
+    ]);
+
+    // Apply hydration
+    const hydratedProducts = products.map(p => {
+      if (p.description && p.description.includes('<!-- METADATA:')) {
+        try {
+          const metaStr = p.description.split('<!-- METADATA:')[1].split('-->')[0];
+          const meta = JSON.parse(metaStr);
+          if (meta.gallery && Array.isArray(meta.gallery) && (!p.images || p.images.length === 0)) {
+            p.images = meta.gallery;
+          }
+          if (meta.variants && (!p.variants || p.variants.length === 0)) {
+            p.variants = meta.variants.map(v => ({
+              name: v.name,
+              options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
+            }));
+          }
+        } catch (e) { }
+      }
+      
+      if ((!p.images || p.images.length === 0) && p.image) {
+        p.images = [p.image];
+      }
+      
+      p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
+      
+      return p;
+    });
+
+    res.status(200).json(hydratedProducts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Continue with rest of the file...

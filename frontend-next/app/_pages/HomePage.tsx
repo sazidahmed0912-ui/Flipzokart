@@ -22,12 +22,15 @@ const initialCategories = [
 ];
 
 export const HomePage: React.FC = () => {
-    const { products } = useApp();
+    const { products } = useApp(); // Fallback to Context if API fails
     const [banners, setBanners] = useState<any[]>([]);
     const [displayCategories, setDisplayCategories] = useState(initialCategories);
+    const [randomProducts, setRandomProducts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchContent();
+        fetchRandomProducts();
 
         // Real-time Sync
         const socket = (window as any).socket;
@@ -41,6 +44,22 @@ export const HomePage: React.FC = () => {
             return () => socket.off('content:update', handleUpdate);
         }
     }, []);
+
+    const fetchRandomProducts = async () => {
+        try {
+            setLoading(true);
+            const res = await axios.get('/api/products/random?limit=30', {
+                headers: { 'Cache-Control': 'no-store' }
+            });
+            setRandomProducts(res.data);
+        } catch (error) {
+            console.warn('Random API not available yet, using Context fallback:', error);
+            // FALLBACK: Use Context products if random API fails
+            setRandomProducts(products.filter(p => p.category !== 'Groceries'));
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchContent = () => {
         // Fetch Banners
@@ -64,10 +83,10 @@ export const HomePage: React.FC = () => {
     };
 
 
-    // Filter out groceries from general homepage sections
-    const nonGroceryProducts = products.filter(p => p.category !== 'Groceries');
-    const topDeals = nonGroceryProducts.slice(0, 8);
-    const featuredProducts = nonGroceryProducts.filter(p => p.isFeatured).slice(0, 8);
+    // Use random products (fallback to context if API failed)
+    const displayProducts = randomProducts.length > 0 ? randomProducts : products.filter(p => p.category !== 'Groceries');
+    const topDeals = displayProducts.slice(0, 8);
+    const featuredProducts = displayProducts.filter(p => p.isFeatured).slice(0, 8);
 
     // --- Dynamic Section Logic ---
     const getProductMetadata = (product: any) => {
@@ -84,7 +103,7 @@ export const HomePage: React.FC = () => {
     const customSections = React.useMemo(() => {
         const sections: Record<string, { title: string, color: string, size: string, products: any[] }> = {};
 
-        products.forEach(p => {
+        displayProducts.forEach(p => {
             const meta = getProductMetadata(p);
             if (meta?.section?.title) {
                 const title = meta.section.title;
@@ -100,7 +119,7 @@ export const HomePage: React.FC = () => {
             }
         });
         return Object.values(sections);
-    }, [products]);
+    }, [displayProducts]);
 
     const toggleFaq = (button: HTMLElement) => {
         const content = button.nextElementSibling as HTMLElement;

@@ -52,11 +52,15 @@ const productSchema = new mongoose.Schema(
     // Maintain inventory if needed for legacy/backup, though variants is strict source now
     inventory: [
       {
-        options: { type: Map, of: String },
+        id: String,              // Admin matrix ID
+        combination: String,     // e.g. "Black/S"
+        options: { type: Map, of: String },  // e.g. { Color: "Black", Size: "S" }
         stock: Number,
         price: Number,
         sku: String,
-        image: String
+        image: String,
+        isDefault: Boolean,      // Is this the default variant
+        variantIds: [String]     // Array of variant option IDs
       }
     ],
     images: [String],

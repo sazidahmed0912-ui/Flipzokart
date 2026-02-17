@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import axios from 'axios';
 import { ChevronRight, Star, ShoppingBag, TrendingUp, Sparkles } from 'lucide-react';
 import { useApp } from '@/app/store/Context'; // Assuming Context access
 import { ProductCard } from '@/app/components/ProductCard'; // Reusing your existing component
@@ -36,21 +37,37 @@ const BEAUTY_CATEGORIES = [
 ];
 
 export const BeautyPage = () => {
-    const { products } = useApp(); // Access global products from Context
+    const { products } = useApp(); // Fallback to Context if API fails
     const [mounted, setMounted] = useState(false);
-
-    // Filter Beauty Products
-    // Fallback to all products if no specific "Beauty" category items exist yet to avoid empty page during dev
-    const beautyProducts = products.filter(p => p.category === 'Beauty' || p.category === 'beauty');
-    const displayProducts = beautyProducts.length > 0 ? beautyProducts : products.slice(0, 10);
-
-    // Specific Lists
-    const trendingProducts = [...displayProducts].sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0)).slice(0, 8);
-    const bestOfBeauty = [...displayProducts].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 8);
+    const [beautyProducts, setBeautyProducts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         setMounted(true);
+        fetchRandomBeautyProducts();
     }, []);
+
+    const fetchRandomBeautyProducts = async () => {
+        try {
+            setLoading(true);
+            const res = await axios.get('/api/products/random/Beauty?limit=20', {
+                headers: { 'Cache-Control': 'no-store' }
+            });
+            setBeautyProducts(res.data);
+        } catch (error) {
+            console.warn('Random API not available yet, using Context fallback:', error);
+            // FALLBACK: Use Context products
+            const contextBeauty = products.filter(p => p.category === 'Beauty' || p.category === 'beauty');
+            setBeautyProducts(contextBeauty.length > 0 ? contextBeauty : products.slice(0, 10));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Specific Lists
+    const displayProducts = beautyProducts;
+    const trendingProducts = [...displayProducts].sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0)).slice(0, 8);
+    const bestOfBeauty = [...displayProducts].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 8);
 
     if (!mounted) return null; // Prevent hydration mismatch
 
