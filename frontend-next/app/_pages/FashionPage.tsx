@@ -26,7 +26,7 @@ interface BannerConfig {
 // --- Mock Data (Strict Real Images) ---
 const BANNERS: Record<Tab, BannerConfig> = {
     Men: {
-        title: "Men's Summer Collection",
+        title: "Men's Summer Collections",
         images: [
             "https://res.cloudinary.com/drfyr8hlb/image/upload/f_auto,q_auto,w_1600/v1771138164/Men_s_Summer_Collection_ygcqln.jpg",
             "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169316/WhatsApp_Image_2026-02-15_at_8.55.41_PM_utjlhk.jpg"
