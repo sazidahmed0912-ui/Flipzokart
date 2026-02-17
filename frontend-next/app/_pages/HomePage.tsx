@@ -48,7 +48,8 @@ export const HomePage: React.FC = () => {
     const fetchRandomProducts = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('/api/products/random?limit=30', {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+            const res = await axios.get(`${API_URL}/api/products/random?limit=30`, {
                 headers: { 'Cache-Control': 'no-store' }
             });
             setRandomProducts(res.data);

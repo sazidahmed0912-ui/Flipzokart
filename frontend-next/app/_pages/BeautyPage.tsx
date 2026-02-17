@@ -50,7 +50,8 @@ export const BeautyPage = () => {
     const fetchRandomBeautyProducts = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('/api/products/random/Beauty?limit=20', {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+            const res = await axios.get(`${API_URL}/api/products/random/Beauty?limit=20`, {
                 headers: { 'Cache-Control': 'no-store' }
             });
             setBeautyProducts(res.data);
