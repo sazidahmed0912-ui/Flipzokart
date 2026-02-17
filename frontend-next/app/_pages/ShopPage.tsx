@@ -18,6 +18,8 @@ export const ShopPage: React.FC = () => {
   const initialCategory = searchParams.get('category') || 'All';
   const initialQuery = searchParams.get('q') || '';
   const initialSub = searchParams.get('sub') || '';
+  const urlSubcategory = searchParams.get('subcategory') || '';
+  const urlSubmenu = searchParams.get('submenu') || '';
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]);
@@ -120,10 +122,19 @@ export const ShopPage: React.FC = () => {
       const matchesPrice = p.price >= priceRange[0] && p.price <= priceRange[1];
       const matchesSearch = p.name.toLowerCase().includes(initialQuery.toLowerCase());
       const matchesRating = p.rating >= minRating;
-      // Basic subcategory match if param exists (assuming subcategory is part of name or desc for now, as schema might not have it strictly)
-      const matchesSub = !initialSub || p.name.toLowerCase().includes(initialSub.toLowerCase()) || p.description.toLowerCase().includes(initialSub.toLowerCase());
 
-      return matchesCategory && matchesPrice && matchesSearch && matchesRating && matchesSub;
+      // Filter by subcategory and submenu from URL params
+      let matchesSubcategory = true;
+      if (urlSubcategory && urlSubmenu) {
+        // Match "Men > Shirts" format in product.subcategory
+        const expectedFormat = `${urlSubcategory} > ${urlSubmenu}`;
+        matchesSubcategory = p.subcategory === expectedFormat;
+      } else if (initialSub) {
+        // Legacy 'sub' parameter - match by name/description
+        matchesSubcategory = p.name.toLowerCase().includes(initialSub.toLowerCase()) || p.description.toLowerCase().includes(initialSub.toLowerCase());
+      }
+
+      return matchesCategory && matchesPrice && matchesSearch && matchesRating && matchesSubcategory;
     }).sort((a, b) => {
       if (sortBy === 'price-low') return a.price - b.price;
       if (sortBy === 'price-high') return b.price - a.price;
