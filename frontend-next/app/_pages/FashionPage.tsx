@@ -79,18 +79,34 @@ const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: str
 };
 
 export const FashionPage: React.FC = () => {
-    const { products } = useApp(); // Use Context products (already loaded)
     const [activeTab, setActiveTab] = useState<Tab>('Men');
     const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
+    const [fashionProducts, setFashionProducts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Build submenu map from Context products on mount and when products change
+    // Fetch random Fashion products from backend
     useEffect(() => {
-        const fashionProducts = products.filter(p => p.category === 'Fashion');
+        const fetchRandomFashionProducts = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get('/api/products/random/Fashion?limit=20', {
+                    headers: { 'Cache-Control': 'no-store' }
+                });
+                setFashionProducts(res.data);
 
-        if (fashionProducts.length > 0) {
-            buildSubmenuMap(fashionProducts);
-        }
-    }, [products]); // Re-run when products change
+                // Build submenu map from fetched products
+                if (res.data && res.data.length > 0) {
+                    buildSubmenuMap(res.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch random Fashion products:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRandomFashionProducts();
+    }, []); // Run once on mount
 
     // Build Dynamic Submenu Map from Products
     const buildSubmenuMap = (products: any[]) => {
@@ -159,11 +175,8 @@ export const FashionPage: React.FC = () => {
         });
     };
 
-    // Filter Products based on Tab from Context
-    const tabProducts = products.filter(p => {
-        // Only Fashion category
-        if (p.category !== 'Fashion') return false;
-
+    // Filter Products based on Tab from fetched fashionProducts
+    const tabProducts = fashionProducts.filter((p: any) => {
         // Match by subcategory parsing
         if (p.subcategory && p.subcategory.includes('>')) {
             const parts = p.subcategory.split('>').map((s: string) => s.trim());
