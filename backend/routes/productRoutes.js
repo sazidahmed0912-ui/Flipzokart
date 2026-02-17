@@ -26,18 +26,7 @@ const createProduct = async (req, res) => {
           }));
         }
 
-        if (meta.matrix && Array.isArray(meta.matrix)) {
-          // 🛡️ SANITIZE INVENTORY (Fix 500 CastError)
-          // The frontend matrix has extra UI fields (variantIds, combination, isDefault, id)
-          // We must strip them and keep only Schema fields: options, stock, price, sku, image
-          req.body.inventory = meta.matrix.map(m => ({
-            options: m.options,
-            stock: Number(m.stock),
-            price: Number(m.price),
-            sku: m.sku,
-            image: m.image
-          }));
-        }
+        if (meta.matrix) req.body.inventory = meta.matrix;
         if (meta.specifications) req.body.specifications = meta.specifications;
         if (meta.sku) req.body.sku = meta.sku;
 
@@ -384,16 +373,7 @@ router.put("/:id", async (req, res) => {
           }));
         }
 
-        if (meta.matrix && Array.isArray(meta.matrix)) {
-          // 🛡️ SANITIZE INVENTORY (Fix 500 CastError)
-          req.body.inventory = meta.matrix.map(m => ({
-            options: m.options,
-            stock: Number(m.stock),
-            price: Number(m.price),
-            sku: m.sku,
-            image: m.image
-          }));
-        }
+        if (meta.matrix) req.body.inventory = meta.matrix;
         if (meta.specifications) req.body.specifications = meta.specifications;
         if (meta.sku) req.body.sku = meta.sku;
 

@@ -29,6 +29,8 @@ export interface Product {
   thumbnail?: string;
   images: string[];
   category: string;
+  subcategory?: string;
+  submenu?: string;
   rating: number;
   reviewsCount: number;
   createdAt?: string;

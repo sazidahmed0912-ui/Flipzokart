@@ -79,37 +79,21 @@ const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: str
 };
 
 export const FashionPage: React.FC = () => {
+    const { products } = useApp(); // Use Context products (already loaded)
     const [activeTab, setActiveTab] = useState<Tab>('Men');
     const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
-    const [fashionProducts, setFashionProducts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
 
-    // Fetch Fashion Products directly from API (NO-STORE for auto-sync)
+    // Build submenu map from Context products on mount and when products change
     useEffect(() => {
-        const fetchFashionProducts = async () => {
-            try {
-                setLoading(true);
-                const { data } = await axios.get('/api/products?category=Fashion', {
-                    headers: { 'Cache-Control': 'no-store' }
-                });
-                setFashionProducts(data);
+        const fashionProducts = products.filter(p => p.category === 'Fashion');
 
-                // Build dynamic submenu map from real products
-                buildSubmenuMap(data);
-            } catch (error) {
-                console.warn('Failed to fetch Fashion products, using fallback', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchFashionProducts();
-    }, []);
+        if (fashionProducts.length > 0) {
+            buildSubmenuMap(fashionProducts);
+        }
+    }, [products]); // Re-run when products change
 
     // Build Dynamic Submenu Map from Products
     const buildSubmenuMap = (products: any[]) => {
-        console.log('🔧 [FashionPage] Building submenu map from products:', products.length);
-
         const newSubcategories: Record<Tab, { name: string; icon: string; link: string }[]> = {
             Men: [],
             Women: [],
@@ -121,13 +105,10 @@ export const FashionPage: React.FC = () => {
             let gender: Tab | null = null;
             let submenu = '';
 
-            console.log('📦 Product:', product.name, 'Category:', product.category, 'Subcategory:', product.subcategory, 'Submenu:', product.submenu);
-
             if (product.subcategory && product.subcategory.includes('>')) {
                 const parts = product.subcategory.split('>').map((s: string) => s.trim());
                 gender = parts[0] as Tab;
                 submenu = parts[1];
-                console.log('✅ Parsed from subcategory:', { gender, submenu });
             } else if (product.submenu) {
                 // Direct submenu field (new schema)
                 submenu = product.submenu;
@@ -137,7 +118,6 @@ export const FashionPage: React.FC = () => {
                         gender = product.subcategory as Tab;
                     }
                 }
-                console.log('✅ Parsed from submenu field:', { gender, submenu });
             }
 
             if (gender && submenu && ['Men', 'Women', 'Kids'].includes(gender)) {
@@ -153,14 +133,9 @@ export const FashionPage: React.FC = () => {
                         icon: icon,
                         link: link
                     });
-                    console.log('➕ Added submenu:', gender, '->', submenu);
                 }
-            } else {
-                console.warn('⚠️ Could not parse gender/submenu for product:', product.name);
             }
         });
-
-        console.log('📊 Final submenu map:', newSubcategories);
 
         // Merge with initial categories (fallback if no products)
         setSubcategories(prev => {
@@ -168,15 +143,17 @@ export const FashionPage: React.FC = () => {
             (['Men', 'Women', 'Kids'] as Tab[]).forEach(tab => {
                 if (newSubcategories[tab].length > 0) {
                     merged[tab] = newSubcategories[tab];
-                    console.log(`✅ Updated ${tab} subcategories:`, merged[tab].length, 'items');
                 }
             });
             return merged;
         });
     };
 
-    // Filter Products based on Tab
-    const tabProducts = fashionProducts.filter(p => {
+    // Filter Products based on Tab from Context
+    const tabProducts = products.filter(p => {
+        // Only Fashion category
+        if (p.category !== 'Fashion') return false;
+
         // Match by subcategory parsing
         if (p.subcategory && p.subcategory.includes('>')) {
             const parts = p.subcategory.split('>').map((s: string) => s.trim());
