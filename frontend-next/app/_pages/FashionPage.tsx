@@ -53,28 +53,28 @@ const BANNERS: Record<Tab, BannerConfig> = {
 
 const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: string }[]> = {
     Men: [
-        { name: "Shirts", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771162918/expert-023d4b3e-5b64-4061-b018-f52223faa9de_ulp28f.jpg", link: "/shop?category=Fashion&sub=Shirts" },
-        { name: "T-Shirts", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771163570/expert-926e4b5d-a4b2-4a74-8c1b-0550ae534081_jde77w.jpg", link: "/shop?category=Fashion&sub=TShirts" },
-        { name: "Jeans", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771164135/WhatsApp_Image_2026-02-15_at_7.31.40_PM_t5afmz.jpg", link: "/shop?category=Fashion&sub=Jeans" },
-        { name: "Shoes", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771163760/expert-d3f96149-9062-469a-880c-81f29df29022_leyoct.jpg", link: "/shop?category=Fashion&sub=Shoes" },
-        { name: "Watches", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1770388041/samples/ecommerce/analog-classic.jpg", link: "/shop?category=Fashion&sub=Watches" },
-        { name: "Activewear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771164274/WhatsApp_Image_2026-02-15_at_7.34.13_PM_kdf4gi.jpg", link: "/shop?category=Fashion&sub=Activewear" },
+        { name: "Shirts", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771162918/expert-023d4b3e-5b64-4061-b018-f52223faa9de_ulp28f.jpg", link: "/shop?category=Fashion&subcategory=Men&submenu=Shirts" },
+        { name: "T-Shirts", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771163570/expert-926e4b5d-a4b2-4a74-8c1b-0550ae534081_jde77w.jpg", link: "/shop?category=Fashion&subcategory=Men&submenu=T-Shirts" },
+        { name: "Jeans", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771164135/WhatsApp_Image_2026-02-15_at_7.31.40_PM_t5afmz.jpg", link: "/shop?category=Fashion&subcategory=Men&submenu=Jeans" },
+        { name: "Shoes", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771163760/expert-d3f96149-9062-469a-880c-81f29df29022_leyoct.jpg", link: "/shop?category=Fashion&subcategory=Men&submenu=Shoes" },
+        { name: "Watches", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1770388041/samples/ecommerce/analog-classic.jpg", link: "/shop?category=Fashion&subcategory=Men&submenu=Watches" },
+        { name: "Activewear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771164274/WhatsApp_Image_2026-02-15_at_7.34.13_PM_kdf4gi.jpg", link: "/shop?category=Fashion&subcategory=Men&submenu=Activewear" },
     ],
     Women: [
-        { name: "Kurti", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771165309/WhatsApp_Image_2026-02-15_at_7.50.26_PM_fsfcla.jpg", link: "/shop?category=Fashion&sub=Kurti" },
-        { name: "Saree", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771165271/WhatsApp_Image_2026-02-15_at_7.50.44_PM_vpsgfj.jpg", link: "/shop?category=Fashion&sub=Saree" },
-        { name: "Dresses", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167063/WhatsApp_Image_2026-02-15_at_8.18.49_PM_oa0rrp.jpg", link: "/shop?category=Fashion&sub=Dresses" },
-        { name: "Handbags", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167019/WhatsApp_Image_2026-02-15_at_8.19.40_PM_fjfx5a.jpg", link: "/shop?category=Fashion&sub=Handbags" },
-        { name: "Heels", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167139/WhatsApp_Image_2026-02-15_at_8.22.00_PM_rkd8of.jpg", link: "/shop?category=Fashion&sub=Heels" },
-        { name: "Jewellery", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167235/WhatsApp_Image_2026-02-15_at_8.23.36_PM_gvxim0.jpg", link: "/shop?category=Fashion&sub=Jewelry" },
+        { name: "Kurti", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771165309/WhatsApp_Image_2026-02-15_at_7.50.26_PM_fsfcla.jpg", link: "/shop?category=Fashion&subcategory=Women&submenu=Kurti" },
+        { name: "Saree", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771165271/WhatsApp_Image_2026-02-15_at_7.50.44_PM_vpsgfj.jpg", link: "/shop?category=Fashion&subcategory=Women&submenu=Saree" },
+        { name: "Dresses", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167063/WhatsApp_Image_2026-02-15_at_8.18.49_PM_oa0rrp.jpg", link: "/shop?category=Fashion&subcategory=Women&submenu=Dresses" },
+        { name: "Handbags", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167019/WhatsApp_Image_2026-02-15_at_8.19.40_PM_fjfx5a.jpg", link: "/shop?category=Fashion&subcategory=Women&submenu=Handbags" },
+        { name: "Heels", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167139/WhatsApp_Image_2026-02-15_at_8.22.00_PM_rkd8of.jpg", link: "/shop?category=Fashion&subcategory=Women&submenu=Heels" },
+        { name: "Jewellery", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771167235/WhatsApp_Image_2026-02-15_at_8.23.36_PM_gvxim0.jpg", link: "/shop?category=Fashion&subcategory=Women&submenu=Jewellery" },
     ],
     Kids: [
-        { name: "Boys Wear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.13_PM_ghtqpc.jpg", link: "/shop?category=Fashion&sub=Boys" },
-        { name: "Girls Wear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.14_PM_livxev.jpg", link: "/shop?category=Fashion&sub=Girls" },
-        { name: "Kids Shoes", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.14_PM_1_gyko9v.jpg", link: "/shop?category=Fashion&sub=KidsShoes" },
-        { name: "Toys", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169130/WhatsApp_Image_2026-02-15_at_8.54.45_PM_ro7nbb.jpg", link: "/shop?category=Fashion&sub=Toys" },
-        { name: "School Bags", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169132/WhatsApp_Image_2026-02-15_at_8.54.44_PM_1_rtf3vg.jpg", link: "/shop?category=Fashion&sub=Bags" },
-        { name: "Accessories", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169130/WhatsApp_Image_2026-02-15_at_8.54.44_PM_otyzko.jpg", link: "/shop?category=Fashion&sub=Accessories" },
+        { name: "Boys Wear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.13_PM_ghtqpc.jpg", link: "/shop?category=Fashion&subcategory=Kids&submenu=Boys Wear" },
+        { name: "Girls Wear", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.14_PM_livxev.jpg", link: "/shop?category=Fashion&subcategory=Kids&submenu=Girls Wear" },
+        { name: "Kids Shoes", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771168867/WhatsApp_Image_2026-02-15_at_8.50.14_PM_1_gyko9v.jpg", link: "/shop?category=Fashion&subcategory=Kids&submenu=Kids Shoes" },
+        { name: "Toys", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169130/WhatsApp_Image_2026-02-15_at_8.54.45_PM_ro7nbb.jpg", link: "/shop?category=Fashion&subcategory=Kids&submenu=Toys" },
+        { name: "School Bags", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169132/WhatsApp_Image_2026-02-15_at_8.54.44_PM_1_rtf3vg.jpg", link: "/shop?category=Fashion&subcategory=Kids&submenu=School Bags" },
+        { name: "Accessories", icon: "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169130/WhatsApp_Image_2026-02-15_at_8.54.44_PM_otyzko.jpg", link: "/shop?category=Fashion&subcategory=Kids&submenu=Accessories" },
     ]
 };
 
