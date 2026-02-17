@@ -8,6 +8,8 @@ import { GrocerySection } from '@/app/components/GrocerySection';
 import LazyImage from '@/app/components/LazyImage';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import { HeroSlider } from '@/app/components/HeroSlider';
+import { RecentlyViewed } from '@/app/components/RecentlyViewed';
+import { SuggestedForYou } from '@/app/components/SuggestedForYou';
 
 // Fallback data
 const initialCategories = [
@@ -156,6 +158,20 @@ export const HomePage: React.FC = () => {
                         </div>
                     </div>
                 </SmoothReveal>
+            </section>
+
+            {/* Recently Viewed Products */}
+            <section className="py-4 md:py-8 px-4 md:px-8">
+                <div className="max-w-7xl mx-auto">
+                    <RecentlyViewed />
+                </div>
+            </section>
+
+            {/* Suggested For You */}
+            <section className="py-4 md:py-8 px-4 md:px-8 bg-gray-50">
+                <div className="max-w-7xl mx-auto">
+                    <SuggestedForYou />
+                </div>
             </section>
 
             {/* Dynamic Custom Sections from Admin */}

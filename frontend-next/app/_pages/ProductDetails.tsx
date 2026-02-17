@@ -93,6 +93,53 @@ export const ProductDetails: React.FC = () => {
     }
   }, [product]);
 
+  // Track Recently Viewed Products
+  useEffect(() => {
+    if (!product || !product.id) return;
+
+    const trackView = async () => {
+      const token = localStorage.getItem('token');
+
+      if (token) {
+        // Logged in: Post to backend
+        try {
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/recently-viewed`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ productId: product.id })
+          });
+        } catch (error) {
+          console.warn('Failed to track viewed product:', error);
+        }
+      } else {
+        // Guest: Use localStorage (max 5, no duplicates)
+        try {
+          let viewed: string[] = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+
+          // Remove duplicate if exists
+          viewed = viewed.filter(id => id !== product.id);
+
+          // Add to front
+          viewed.unshift(product.id);
+
+          // Keep only 5
+          if (viewed.length > 5) {
+            viewed = viewed.slice(0, 5);
+          }
+
+          localStorage.setItem('recentlyViewed', JSON.stringify(viewed));
+        } catch (error) {
+          console.warn('Failed to update localStorage:', error);
+        }
+      }
+    };
+
+    trackView();
+  }, [product]);
+
   // Socket Listeners
   useEffect(() => {
     if (!socket || !id) return;
