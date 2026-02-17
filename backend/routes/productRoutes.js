@@ -350,6 +350,83 @@ router.get("/random/:category", async (req, res) => {
   }
 });
 
+// 🎯 GET SUGGESTED PRODUCTS (Based on Order History)
+router.get("/suggested", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 20;
+
+    // If user is logged in, get their order history
+    let categories = [];
+    if (req.user && req.user.id) {
+      const Order = require('../models/Order');
+      const orders = await Order.find({ userId: req.user.id });
+
+      // Extract unique categories from order items
+      categories = [
+        ...new Set(
+          orders.flatMap(order =>
+            order.items
+              .map(item => item.category || item.categorySlug)
+              .filter(cat => cat) // Remove undefined/null
+          )
+        )
+      ];
+    }
+
+    let products;
+
+    if (categories.length > 0) {
+      // Random products from user's ordered categories
+      products = await Product.aggregate([
+        {
+          $match: {
+            category: { $in: categories },
+            isActive: { $ne: false }
+          }
+        },
+        { $sample: { size: limit } }
+      ]);
+    } else {
+      // Fallback: trending random (all categories)
+      products = await Product.aggregate([
+        { $match: { isActive: { $ne: false } } },
+        { $sample: { size: limit } }
+      ]);
+    }
+
+    // Apply hydration
+    const hydratedProducts = products.map(p => {
+      if (p.description && p.description.includes('<!-- METADATA:')) {
+        try {
+          const metaStr = p.description.split('<!-- METADATA:')[1].split('-->')[0];
+          const meta = JSON.parse(metaStr);
+          if (meta.gallery && Array.isArray(meta.gallery) && (!p.images || p.images.length === 0)) {
+            p.images = meta.gallery;
+          }
+          if (meta.variants && (!p.variants || p.variants.length === 0)) {
+            p.variants = meta.variants.map(v => ({
+              name: v.name,
+              options: v.options.map(o => (typeof o === 'object' && o.name) ? o.name : o)
+            }));
+          }
+        } catch (e) { }
+      }
+
+      if ((!p.images || p.images.length === 0) && p.image) {
+        p.images = [p.image];
+      }
+
+      p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
+
+      return p;
+    });
+
+    res.status(200).json(hydratedProducts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // GET SINGLE PRODUCT
 router.get("/:id", async (req, res) => {
   try {

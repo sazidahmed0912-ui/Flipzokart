@@ -67,6 +67,11 @@ const userSchema = new mongoose.Schema(
         type: { type: String, enum: ["Home", "Work", "Other"], default: "Home" },
       }
     ],
+    // Recently Viewed Products (max 5, latest first)
+    recentlyViewed: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product'
+    }],
     // Real-Time Location Fields
     lastIp: String,
     latitude: Number,
