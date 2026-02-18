@@ -12,6 +12,7 @@ const normalizeProduct = (p: any): Product => ({
     id: p.id || p._id?.toString() || '',
 });
 
+// Compact card for mobile horizontal swipe
 const CompactCard: React.FC<{ product: Product }> = ({ product }) => {
     const imgSrc = getProductImage(product);
     const discount = product.originalPrice > product.price
@@ -53,7 +54,7 @@ const CompactCard: React.FC<{ product: Product }> = ({ product }) => {
 export const RecentlyViewed: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showAll, setShowAll] = useState(false);
+    const [expanded, setExpanded] = useState(false);
 
     useEffect(() => {
         const fetchRecentlyViewed = async () => {
@@ -99,8 +100,8 @@ export const RecentlyViewed: React.FC = () => {
 
     if (!loading && products.length === 0) return null;
 
-    const displayProducts = showAll ? products.slice(0, 5) : products.slice(0, 5);
-    const showViewAll = products.length >= 3; // Only show View All if 3+ products
+    // Show View All only when 3+ products and not yet expanded
+    const showViewAll = products.length >= 3 && !expanded;
 
     return (
         <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 my-2 sm:my-6">
@@ -109,14 +110,23 @@ export const RecentlyViewed: React.FC = () => {
                 <h2 className="text-base sm:text-2xl font-bold text-gray-900">
                     Recently Viewed
                 </h2>
-                {/* View All - mobile only, only when 3+ products */}
+                {/* View All - mobile only, only when 3+ products and not expanded */}
                 {!loading && showViewAll && (
-                    <Link
-                        href="/shop"
+                    <button
+                        onClick={() => setExpanded(true)}
                         className="sm:hidden text-xs font-semibold text-[#f5a623] border border-[#f5a623] rounded-full px-3 py-1 active:bg-[#f5a623] active:text-white transition-colors"
                     >
                         View All
-                    </Link>
+                    </button>
+                )}
+                {/* Show Less when expanded */}
+                {!loading && expanded && (
+                    <button
+                        onClick={() => setExpanded(false)}
+                        className="sm:hidden text-xs font-semibold text-gray-500 border border-gray-300 rounded-full px-3 py-1 transition-colors"
+                    >
+                        Show Less
+                    </button>
                 )}
             </div>
 
@@ -135,18 +145,28 @@ export const RecentlyViewed: React.FC = () => {
                 </>
             ) : (
                 <>
-                    {/* Mobile: horizontal swipe, 3 visible, 1 row */}
-                    <div
-                        className="flex gap-2 sm:hidden overflow-x-auto pb-1"
-                        style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}
-                    >
-                        {displayProducts.map((product) => (
-                            <CompactCard key={product.id || (product as any)._id} product={product} />
-                        ))}
-                    </div>
+                    {/* Mobile: swipe row OR expanded grid */}
+                    {expanded ? (
+                        /* Expanded: show all in 3-col grid, mobile only */
+                        <div className="grid grid-cols-3 gap-2 sm:hidden">
+                            {products.slice(0, 5).map((product) => (
+                                <CompactCard key={product.id || (product as any)._id} product={product} />
+                            ))}
+                        </div>
+                    ) : (
+                        /* Default: horizontal swipe, 3 visible */
+                        <div
+                            className="flex gap-2 sm:hidden overflow-x-auto pb-1"
+                            style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}
+                        >
+                            {products.slice(0, 5).map((product) => (
+                                <CompactCard key={product.id || (product as any)._id} product={product} />
+                            ))}
+                        </div>
+                    )}
                     {/* Desktop: normal grid */}
                     <div className="hidden sm:grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-                        {displayProducts.map((product) => (
+                        {products.slice(0, 5).map((product) => (
                             <ProductCard key={product.id || (product as any)._id} product={product} />
                         ))}
                     </div>
