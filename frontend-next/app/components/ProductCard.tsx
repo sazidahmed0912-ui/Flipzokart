@@ -39,6 +39,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
 
   return (
     <div className={`group bg-white rounded-lg md:rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-transform duration-300 transform-origin-center will-change-transform hover:scale-[1.02] md:hover:scale-[1.03] flex flex-col glass-card-effect ${animationClass}`}>
+      <div className="glass-shine"></div>
       <div className="relative w-full aspect-[4/5] overflow-hidden bg-white flex items-center justify-center p-4 mb-1.5">
         <Link href={`/product/${product.id}`} className="block w-full h-full relative">
           {isLoading && (
