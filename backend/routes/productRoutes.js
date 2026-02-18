@@ -291,6 +291,9 @@ router.get("/random", async (req, res) => {
       // Mandatory mainImage
       p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
 
+      // ✅ CRITICAL: Aggregate bypasses Mongoose virtuals - must set id manually
+      p.id = p._id?.toString();
+
       return p;
     });
 
@@ -340,6 +343,9 @@ router.get("/random/:category", async (req, res) => {
       }
 
       p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
+
+      // ✅ CRITICAL: Aggregate bypasses Mongoose virtuals - must set id manually
+      p.id = p._id?.toString();
 
       return p;
     });
@@ -417,6 +423,9 @@ router.get("/suggested", async (req, res) => {
       }
 
       p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
+
+      // ✅ CRITICAL: Aggregate bypasses Mongoose virtuals - must set id manually
+      p.id = p._id?.toString();
 
       return p;
     });

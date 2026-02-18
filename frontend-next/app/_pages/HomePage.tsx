@@ -30,6 +30,12 @@ export const HomePage: React.FC = () => {
     const [randomProducts, setRandomProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Normalize MongoDB _id to id for ProductCard compatibility
+    const normalizeProduct = (p: any) => ({
+        ...p,
+        id: p.id || p._id?.toString() || '',
+    });
+
     useEffect(() => {
         fetchContent();
         fetchRandomProducts();
@@ -54,11 +60,11 @@ export const HomePage: React.FC = () => {
             const res = await axios.get(`${API_URL}/api/products/random?limit=30`, {
                 headers: { 'Cache-Control': 'no-store' }
             });
-            setRandomProducts(res.data);
+            setRandomProducts((res.data || []).map(normalizeProduct));
         } catch (error) {
             console.warn('Random API not available yet, using Context fallback:', error);
             // FALLBACK: Use Context products if random API fails
-            setRandomProducts(products.filter(p => p.category !== 'Groceries'));
+            setRandomProducts(products.filter(p => p.category !== 'Groceries').map(normalizeProduct));
         } finally {
             setLoading(false);
         }
