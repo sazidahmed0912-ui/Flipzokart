@@ -365,18 +365,26 @@ router.get("/suggested", async (req, res) => {
     let categories = [];
     if (req.user && req.user.id) {
       const Order = require('../models/Order');
-      const orders = await Order.find({ userId: req.user.id });
 
-      // Extract unique categories from order items
+      // Populate productId to get category from Product documents
+      // Order schema uses: order.products[].productId (ref: 'Product')
+      // Order schema uses: order.user (not userId)
+      const orders = await Order.find({ user: req.user.id })
+        .populate('products.productId', 'category')
+        .lean();
+
+      // Extract unique categories from populated products
       categories = [
         ...new Set(
           orders.flatMap(order =>
-            order.items
-              .map(item => item.category || item.categorySlug)
-              .filter(cat => cat) // Remove undefined/null
+            (order.products || [])
+              .map(item => item.productId?.category)
+              .filter(cat => cat && cat.trim()) // Remove undefined/null/empty
           )
         )
       ];
+
+      console.log(`[Suggested] User ${req.user.id} - Orders: ${orders.length}, Categories: ${categories}`);
     }
 
     let products;
