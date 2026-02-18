@@ -45,7 +45,8 @@ export const ShopPage: React.FC = () => {
     }
 
     // Redirect Beauty to Landing Page
-    if (selectedCategory === 'Beauty' || selectedCategory === 'beauty') {
+    // Redirect Beauty to Landing Page ONLY if no specific filter/search is active
+    if ((selectedCategory === 'Beauty' || selectedCategory === 'beauty') && !initialSub && !urlSubcategory && !initialQuery) {
       window.location.href = '/beauty';
       return;
     }

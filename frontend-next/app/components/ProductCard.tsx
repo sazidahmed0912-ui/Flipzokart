@@ -38,7 +38,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
   const animationClass = rank === 1 ? 'subtle-animate-strong' : (rank && rank <= 3 ? 'subtle-animate' : '');
 
   return (
-    <div className={`group rounded-lg md:rounded-xl overflow-hidden hover:shadow-lg transition-transform duration-300 transform-origin-center will-change-transform hover:scale-[1.02] md:hover:scale-[1.03] flex flex-col realme-glass-card product-card ${animationClass}`}>
+    <div className={`group rounded-lg md:rounded-xl overflow-hidden hover:shadow-lg transition-transform duration-300 transform-origin-center will-change-transform hover:scale-[1.02] md:hover:scale-[1.03] flex flex-col realme-glass-card ${animationClass}`}>
       <div className="glass-layer"></div>
       <div className="card-content flex flex-col w-full h-full">
         <div className="relative w-full aspect-[4/5] overflow-hidden bg-transparent flex items-center justify-center p-4 mb-1.5">
