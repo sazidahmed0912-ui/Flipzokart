@@ -7,6 +7,7 @@ import { Store, ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashbo
 import { useApp } from '@/app/store/Context';
 import { useNotifications } from '@/app/store/NotificationContext';
 import NotificationBell from './NotificationBell';
+import ThemeToggle from './ThemeToggle';
 
 
 const Header: React.FC = () => {
@@ -160,6 +161,7 @@ const Header: React.FC = () => {
           </form>
 
           <div className="flex items-center space-x-6">
+            <ThemeToggle />
             <Link href="/" className="flex items-center space-x-1 text-gray-700 hover:text-[#f28c28]">
               <Home className="w-6 h-6" />
               <span className="text-sm font-medium">Home</span>
@@ -434,6 +436,12 @@ const Header: React.FC = () => {
                     </Link>
                   </div>
 
+                  {/* Theme Toggle Mobile */}
+                  <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <span className="font-medium text-sm text-gray-700">Appearance</span>
+                    <ThemeToggle />
+                  </div>
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 border-b border-gray-100 transition-colors w-full text-left"
@@ -448,6 +456,11 @@ const Header: React.FC = () => {
                 <>
                   {/* Pages Group for Guests */}
                   <div className="flex flex-col bg-gray-50/50">
+                    {/* Theme Toggle Mobile Guest */}
+                    <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                      <span className="font-medium text-xs text-gray-600">Appearance</span>
+                      <ThemeToggle />
+                    </div>
                     <Link href="/about"
                       onClick={closeMenus}
                       className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"

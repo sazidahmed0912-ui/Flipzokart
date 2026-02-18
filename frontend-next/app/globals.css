@@ -554,3 +554,68 @@
         backdrop-filter: blur(18px) saturate(160%);
     }
 }
+
+/* 🌑 Safe Light/Dark Mode Toggle */
+/* Default: Light (No changes to existing styles) */
+
+/* Active Dark Mode (Only applied when body has .dark-mode class) */
+body.dark-mode {
+    --bg: #0f1115;
+    --surface: #161a22;
+    --card-bg: rgba(255, 255, 255, 0.06);
+    --text-primary: #ffffff;
+    --text-secondary: #b8c0cc;
+    --border-color: rgba(255, 255, 255, 0.12);
+    --neon-accent: #00e0ff;
+
+    background: var(--bg);
+    color: var(--text-primary);
+}
+
+body.dark-mode .bg-white {
+    background-color: var(--surface) !important;
+    color: var(--text-primary);
+}
+
+body.dark-mode .text-gray-800,
+body.dark-mode .text-gray-900 {
+    color: var(--text-primary) !important;
+}
+
+body.dark-mode .text-gray-400,
+body.dark-mode .text-gray-500,
+body.dark-mode .text-gray-600 {
+    color: var(--text-secondary) !important;
+}
+
+body.dark-mode .border-gray-100,
+body.dark-mode .border-gray-200 {
+    border-color: var(--border-color) !important;
+}
+
+/* Section Backgrounds */
+body.dark-mode section,
+body.dark-mode .bg-gray-50 {
+    background-color: var(--bg) !important;
+}
+
+/* Product Card Dark Mode */
+body.dark-mode .realme-glass-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 224, 255, 0.05);
+    /* Soft Blue Tint */
+}
+
+/* Dark Mode Hover Glow (Neon) */
+body.dark-mode .realme-glass-card:hover {
+    box-shadow: 0 0 12px rgba(0, 224, 255, 0.4), 0 0 22px rgba(0, 224, 255, 0.25);
+    border-color: var(--neon-accent);
+}
+
+/* Headers / Text Glow Adjustment */
+body.dark-mode .glow-text {
+    color: var(--neon-accent);
+    /* Blue/Cyan for dark mode */
+    text-shadow: 0 0 8px rgba(0, 224, 255, 0.6);
+}
