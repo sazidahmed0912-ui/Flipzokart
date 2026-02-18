@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from "next/image";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import type { Swiper as SwiperType } from 'swiper';
@@ -11,123 +11,68 @@ interface ProductGalleryProps {
     images?: string[];
 }
 
-// 2. DEVICE DETECTION (MANDATORY)
-// Placed outside component to avoid re-evaluation on every render, 
-// but inside a check for window to support SSR.
-const isTouchDevice = typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
-
 export default function ProductGallery({ product, images }: ProductGalleryProps) {
     const [allImages, setAllImages] = useState<string[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [activeIndex, setActiveIndex] = useState(0);
-
-    // Swiper Ref
     const swiperRef = useRef<SwiperType | null>(null);
 
-    // Zoom State
-    const [isZoomed, setIsZoomed] = useState<boolean>(false);
-    const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+    // Desktop zoom state
+    const [showZoom, setShowZoom] = useState(false);
+    const [lensPos, setLensPos] = useState({ x: 0, y: 0 });       // lens top-left in px
+    const [zoomBg, setZoomBg] = useState({ x: 0, y: 0 });         // background-position %
+    const imageContainerRef = useRef<HTMLDivElement>(null);
 
-    // 5. MOBILE DOUBLE-TAP ZOOM (SAFE)
-    const lastTap = useRef<number>(0);
+    const LENS_SIZE = 120;   // px — size of the magnifier lens square
+    const ZOOM_FACTOR = 3;   // how much the zoomed panel magnifies
 
-    // Initialize Images
+    // Initialize images
     useEffect(() => {
         if (!product) return;
-
-        let validImages: string[] = [];
-
-        // 1. Priority: Prop images (Variant specific)
-        if (images && images.length > 0) {
-            validImages = images;
-        }
-        // 2. Fallback: Universal helper (Product default)
-        else {
-            validImages = getAllProductImages(product);
-        }
+        const validImages = (images && images.length > 0)
+            ? images
+            : getAllProductImages(product);
 
         setAllImages(prev => {
-            const isSame = prev.length === validImages.length && prev.every((url, i) => url === validImages[i]);
+            const isSame = prev.length === validImages.length && prev.every((u, i) => u === validImages[i]);
             if (isSame) return prev;
-
             setActiveIndex(0);
             setIsLoading(true);
-            setIsZoomed(false);
-            if (swiperRef.current) {
-                swiperRef.current.slideTo(0, 0);
-            }
+            setShowZoom(false);
+            if (swiperRef.current) swiperRef.current.slideTo(0, 0);
             return validImages;
         });
     }, [product, images]);
 
-    // 4. DESKTOP HOVER ZOOM ONLY
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isLoading) return; // Allow mouse events even on touch devices (for hybrid)
+    // ─── DESKTOP: Hover Magnifier Lens ───────────────────────────────────────
+    const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        const container = imageContainerRef.current;
+        if (!container || isLoading) return;
 
-        const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-        const x = ((e.clientX - left) / width) * 100;
-        const y = ((e.clientY - top) / height) * 100;
-        setZoomPos({ x, y });
-        setIsZoomed(true);
-    };
+        const rect = container.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
 
-    const handleMouseLeave = () => {
-        // if (isTouchDevice) return; // Allow mouse leave to clear zoom on hybrid devices
-        setIsZoomed(false);
-    };
+        // Clamp lens so it stays inside the image container
+        const lensX = Math.max(0, Math.min(mouseX - LENS_SIZE / 2, rect.width - LENS_SIZE));
+        const lensY = Math.max(0, Math.min(mouseY - LENS_SIZE / 2, rect.height - LENS_SIZE));
 
-    // 5. MOBILE DOUBLE-TAP ZOOM (SAFE)
-    const handleTouchStart = (e: React.TouchEvent) => {
-        const now = Date.now();
-        const diff = now - lastTap.current;
+        // Background position for the zoomed panel (percentage)
+        const bgX = ((mouseX - LENS_SIZE / 2) / (rect.width - LENS_SIZE)) * 100;
+        const bgY = ((mouseY - LENS_SIZE / 2) / (rect.height - LENS_SIZE)) * 100;
 
-        if (diff < 300 && diff > 0) {
-            e.preventDefault(); // Prevent default double-tap zoom behavior of browser if any
+        setLensPos({ x: lensX, y: lensY });
+        setZoomBg({ x: Math.max(0, Math.min(bgX, 100)), y: Math.max(0, Math.min(bgY, 100)) });
+        setShowZoom(true);
+    }, [isLoading]);
 
-            // Calculate zoom position on double tap
-            if (!isZoomed) {
-                // If we are zooming in, try to center on the tap if possible, or just default center
-                // Finding exact tap coordinates relative to image can be tricky here without the event persisting
-                // But we can try using the changedTouches if available
-                if (e.changedTouches && e.changedTouches.length > 0) {
-                    const touch = e.changedTouches[0];
-                    const target = e.currentTarget as HTMLElement; // The wrapper div
-                    const rect = target.getBoundingClientRect();
-                    const x = ((touch.clientX - rect.left) / rect.width) * 100;
-                    const y = ((touch.clientY - rect.top) / rect.height) * 100;
-                    setZoomPos({ x, y });
-                }
-            }
+    const handleMouseLeave = useCallback(() => {
+        setShowZoom(false);
+    }, []);
 
-            setIsZoomed((z) => !z);
-        }
-
-        lastTap.current = now;
-    };
-
-    const handleTouchMove = (e: React.TouchEvent) => {
-        if (isZoomed) {
-            // Panning Logic when zoomed
-            const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-            const touch = e.targetTouches[0];
-            const x = ((touch.clientX - left) / width) * 100;
-            const y = ((touch.clientY - top) / height) * 100;
-
-            // Allow full pan
-            setZoomPos({ x, y });
-
-            // Critical: Don't stop propagation aggressively unless necessary, 
-            // but for panning inside a zoomed image we usually want to prevent swiping the slide.
-            // However, the requirements say "Swiper allowTouchMove must stay true on mobile".
-            // So we let the user control it. If they hit the edge, Swiper might take over.
-            e.stopPropagation();
-        }
-    };
-
+    // ─── Thumbnail / dot click ────────────────────────────────────────────────
     const handleDotClick = (index: number) => {
-        if (swiperRef.current) {
-            swiperRef.current.slideTo(index);
-        }
+        if (swiperRef.current) swiperRef.current.slideTo(index);
     };
 
     if (!product) {
@@ -138,132 +83,198 @@ export default function ProductGallery({ product, images }: ProductGalleryProps)
         );
     }
 
+    const currentImage = allImages[activeIndex] || '/placeholder.png';
+
     return (
-        <div className="w-full flex flex-col gap-4">
-            {/* Main Image Container */}
-            <div className="relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100">
-                {/* Loading Spinner */}
-                {isLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/50 pointer-events-none h-[400px]">
-                        <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-full flex flex-col gap-3">
+
+            {/* ── DESKTOP LAYOUT: image + zoom panel side-by-side ── */}
+            <div className="hidden md:flex gap-4 items-start">
+
+                {/* Thumbnail strip (left, vertical) */}
+                {allImages.length > 1 && (
+                    <div className="flex flex-col gap-2 flex-shrink-0">
+                        {allImages.map((img, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => handleDotClick(idx)}
+                                className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all duration-200 flex-shrink-0
+                                    ${idx === activeIndex
+                                        ? 'border-[#2874F0] ring-1 ring-[#2874F0] scale-105'
+                                        : 'border-gray-200 opacity-60 hover:opacity-100 hover:border-gray-400'
+                                    }`}
+                            >
+                                <Image src={img} alt={`Thumb ${idx + 1}`} fill className="object-contain p-1" sizes="56px" draggable={false} />
+                            </button>
+                        ))}
                     </div>
                 )}
 
-                {/* 3. SWIPER CONFIG (FLIPKART STYLE) */}
-                <Swiper
-                    onSwiper={(swiper) => (swiperRef.current = swiper)}
-                    slidesPerView={1}
-                    spaceBetween={0}
-                    speed={300}
-                    allowTouchMove={true}   // NEVER disable on mobile
-                    resistanceRatio={0.85}
-                    autoHeight={true}
-                    onSlideChange={(swiper) => {
-                        setActiveIndex(swiper.activeIndex);
-                        setIsZoomed(false);
-                    }}
-                    className="w-full"
-                >
-                    {allImages.map((img, idx) => (
-                        <SwiperSlide key={idx}>
-                            {/* 6. CSS FIX FOR SWIPE CONFLICT */}
+                {/* Main image + lens overlay */}
+                <div className="flex gap-4 flex-1 items-start">
+                    <div
+                        ref={imageContainerRef}
+                        className="relative flex-1 bg-white rounded-2xl border border-gray-100 overflow-hidden cursor-crosshair select-none"
+                        style={{ aspectRatio: '1 / 1', maxHeight: 520 }}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
+                    >
+                        {/* Loading spinner */}
+                        {isLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/60">
+                                <div className="w-8 h-8 border-4 border-[#2874F0] border-t-transparent rounded-full animate-spin" />
+                            </div>
+                        )}
+
+                        <Image
+                            src={currentImage}
+                            alt={`Product image ${activeIndex + 1}`}
+                            fill
+                            priority
+                            draggable={false}
+                            className="object-contain p-4 pointer-events-none"
+                            sizes="(max-width: 1200px) 50vw, 33vw"
+                            onLoad={() => setIsLoading(false)}
+                            onError={() => {
+                                const imgs = [...allImages];
+                                if (imgs[activeIndex] !== '/placeholder.png') {
+                                    imgs[activeIndex] = '/placeholder.png';
+                                    setAllImages(imgs);
+                                }
+                                setIsLoading(false);
+                            }}
+                        />
+
+                        {/* Magnifier Lens */}
+                        {showZoom && !isLoading && (
                             <div
-                                className={`relative w-full flex items-center justify-center select-none
-                                    ${isZoomed ? 'touch-none cursor-grab' : 'touch-pan-y cursor-zoom-in'}
-                                    ${isZoomed ? 'cursor-zoom-out' : ''}
-                                `}
+                                className="absolute border-2 border-[#2874F0]/60 bg-white/20 pointer-events-none z-10"
                                 style={{
-                                    touchAction: isZoomed ? 'none' : 'pan-y'
+                                    width: LENS_SIZE,
+                                    height: LENS_SIZE,
+                                    left: lensPos.x,
+                                    top: lensPos.y,
+                                    boxShadow: '0 0 0 1px rgba(40,116,240,0.3)',
+                                    borderRadius: 4
                                 }}
-                                onTouchStart={handleTouchStart}
-                                onTouchMove={isZoomed ? handleTouchMove : undefined}
-                                onMouseMove={handleMouseMove}
-                                onMouseLeave={handleMouseLeave}
-                            >
-                                <div className="relative w-full aspect-square md:h-[600px] max-h-[70vh]">
+                            />
+                        )}
+
+                        {/* Zoom hint */}
+                        {!showZoom && !isLoading && (
+                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded-full pointer-events-none select-none opacity-70">
+                                Hover to zoom
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Zoomed Panel (right side) */}
+                    {showZoom && !isLoading && (
+                        <div
+                            className="flex-shrink-0 rounded-2xl border border-gray-200 shadow-xl overflow-hidden bg-white z-30"
+                            style={{
+                                width: 380,
+                                height: 380,
+                                backgroundImage: `url(${currentImage})`,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundSize: `${ZOOM_FACTOR * 100}%`,
+                                backgroundPosition: `${zoomBg.x}% ${zoomBg.y}%`,
+                            }}
+                        />
+                    )}
+                </div>
+            </div>
+
+            {/* ── MOBILE LAYOUT: Swiper with native pinch-to-zoom ── */}
+            <div className="md:hidden">
+                <div className="relative w-full bg-white rounded-2xl overflow-hidden border border-gray-100">
+                    {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/60 h-[360px]">
+                            <div className="w-8 h-8 border-4 border-[#2874F0] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    )}
+
+                    <Swiper
+                        onSwiper={(swiper) => (swiperRef.current = swiper)}
+                        slidesPerView={1}
+                        spaceBetween={0}
+                        speed={280}
+                        allowTouchMove={true}
+                        resistanceRatio={0.85}
+                        onSlideChange={(swiper) => {
+                            setActiveIndex(swiper.activeIndex);
+                            setIsLoading(true);
+                        }}
+                        className="w-full"
+                    >
+                        {allImages.map((img, idx) => (
+                            <SwiperSlide key={idx}>
+                                {/* touch-action: pinch-zoom allows native browser pinch zoom without conflicting with swipe */}
+                                <div
+                                    className="relative w-full"
+                                    style={{ aspectRatio: '1 / 1', touchAction: 'pinch-zoom' }}
+                                >
                                     <Image
                                         src={img}
-                                        alt={`Product View ${idx + 1}`}
+                                        alt={`Product image ${idx + 1}`}
                                         fill
                                         priority={idx === 0}
                                         draggable={false}
-                                        className={`object-contain p-2 md:p-4 transition-transform duration-200 ease-out pointer-events-none`}
-                                        style={{
-                                            transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
-                                            transform: isZoomed && !isLoading ? 'scale(2.5)' : 'scale(1)',
-                                            opacity: 1,
-                                            willChange: 'transform',
-                                            backfaceVisibility: 'hidden',
-                                            WebkitBackfaceVisibility: 'hidden',
-                                            transformStyle: 'preserve-3d'
-                                        }}
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                        onLoad={() => {
-                                            if (swiperRef.current) swiperRef.current.update();
-                                            if (idx === activeIndex) setIsLoading(false);
-                                        }}
+                                        className="object-contain p-3 pointer-events-none"
+                                        sizes="100vw"
+                                        onLoad={() => { if (idx === activeIndex) setIsLoading(false); }}
                                         onError={(e) => {
-                                            const newImages = [...allImages];
-                                            if (newImages[idx] !== '/placeholder.png') {
-                                                newImages[idx] = '/placeholder.png';
-                                                setAllImages(newImages);
+                                            const imgs = [...allImages];
+                                            if (imgs[idx] !== '/placeholder.png') {
+                                                imgs[idx] = '/placeholder.png';
+                                                setAllImages(imgs);
                                             }
                                             if (idx === activeIndex) setIsLoading(false);
                                         }}
                                     />
                                 </div>
-                            </div>
-                        </SwiperSlide>
-                    ))}
-                </Swiper>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
 
-                {/* Custom Dot Indicator (Below Image) */}
-                {
-                    allImages.length > 1 && (
-                        <div className="flex justify-center items-center gap-2 mt-4 pb-2">
-                            {allImages.map((_, index) => {
-                                const isActive = index === activeIndex;
-                                return (
-                                    <button
-                                        key={index}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            handleDotClick(index);
-                                        }}
-                                        className={`rounded-full transition-all duration-300 ease-out focus:outline-none cursor-pointer
-                                        ${isActive
-                                                ? 'w-2 h-2 bg-[#2874F0] shadow-sm scale-110'
-                                                : 'w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400'
-                                            }
-                                    `}
-                                        aria-label={`View image ${index + 1}`}
-                                    />
-                                );
-                            })}
+                    {/* Dot indicators */}
+                    {allImages.length > 1 && (
+                        <div className="flex justify-center items-center gap-1.5 py-2">
+                            {allImages.map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleDotClick(index)}
+                                    className={`rounded-full transition-all duration-300 focus:outline-none
+                                        ${index === activeIndex
+                                            ? 'w-4 h-1.5 bg-[#2874F0]'
+                                            : 'w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400'
+                                        }`}
+                                    aria-label={`View image ${index + 1}`}
+                                />
+                            ))}
                         </div>
-                    )
-                }
-            </div>
-
-            {/* Thumbnails (Desktop) */}
-            {allImages.length > 1 && (
-                <div className="hidden md:flex gap-3 overflow-x-auto pb-2 px-1 snap-x no-scrollbar justify-center">
-                    {allImages.map((img, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => handleDotClick(idx)}
-                            className={`relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200
-                                ${idx === activeIndex
-                                    ? 'border-orange-500 ring-1 ring-orange-500 scale-105'
-                                    : 'border-gray-100 opacity-70 hover:opacity-100 hover:border-gray-300'
-                                }`}
-                        >
-                            <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" sizes="100px" draggable={false} />
-                        </button>
-                    ))}
+                    )}
                 </div>
-            )}
+
+                {/* Mobile thumbnail strip */}
+                {allImages.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-1 px-1 no-scrollbar mt-2">
+                        {allImages.map((img, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => handleDotClick(idx)}
+                                className={`relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all
+                                    ${idx === activeIndex
+                                        ? 'border-[#2874F0]'
+                                        : 'border-gray-200 opacity-60'
+                                    }`}
+                            >
+                                <Image src={img} alt={`Thumb ${idx + 1}`} fill className="object-contain p-0.5" sizes="48px" draggable={false} />
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
