@@ -503,3 +503,61 @@
         text-shadow: 0 0 2px rgba(40, 116, 240, 0.2), 0 0 4px rgba(40, 116, 240, 0.1);
     }
 }
+
+/* 💎 Ultra Luxury Glass Glow (Product Card) */
+/* Note: Base .product-card styles are in Tailwind, these are enhancements */
+.glass-card-effect {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 0 12px rgba(255, 255, 255, 0.05);
+    /* Soft Luxury Glow */
+}
+
+/* Static Glass Layer */
+.glass-card-effect::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(255, 255, 255, 0.02) 60%);
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 1;
+    /* Ensure above bg but below content if needed, though usually overlay on top */
+}
+
+/* Moving Shine Animation */
+.glass-card-effect::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
+    transform: rotate(25deg);
+    animation: glassShine 6s linear infinite;
+    pointer-events: none;
+    opacity: 0.25;
+    z-index: 2;
+}
+
+@keyframes glassShine {
+    0% {
+        left: -60%;
+    }
+
+    100% {
+        left: 130%;
+    }
+}
+
+@media (max-width: 768px) {
+    .glass-card-effect::after {
+        animation-duration: 8s;
+        opacity: 0.18;
+    }
+}
