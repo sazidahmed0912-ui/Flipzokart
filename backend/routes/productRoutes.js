@@ -511,7 +511,7 @@ router.get("/trending/:gender/:days", async (req, res) => {
       ]
     }).lean();
 
-    // Step 3: Attach totalSold from the time window, sort, limit
+    // Step 3: Attach totalSold from the time window, sort, limit, inject rank
     const ranked = products
       .map(p => ({
         ...p,
@@ -521,7 +521,13 @@ router.get("/trending/:gender/:days", async (req, res) => {
         _trendScore: soldById[p._id?.toString()] || 0
       }))
       .sort((a, b) => b._trendScore - a._trendScore)
-      .slice(0, limit);
+      .slice(0, limit)
+      .map((p, index) => ({
+        ...p,
+        totalSold: p._trendScore,
+        rank: index + 1,
+        showRankBadge: index < 5   // Only top 5 get a badge
+      }));
 
     res.json(ranked);
   } catch (error) {

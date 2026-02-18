@@ -368,8 +368,8 @@ export const FashionPage: React.FC = () => {
                                             key={d}
                                             onClick={() => setTrendingDays(d)}
                                             className={`text-[10px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-full transition-all ${trendingDays === d
-                                                    ? 'bg-[#2874F0] text-white shadow-sm'
-                                                    : 'text-gray-500 hover:text-gray-700'
+                                                ? 'bg-[#2874F0] text-white shadow-sm'
+                                                : 'text-gray-500 hover:text-gray-700'
                                                 }`}
                                         >
                                             {d}D
@@ -392,12 +392,33 @@ export const FashionPage: React.FC = () => {
                         ) : (
                             <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-4 md:gap-6 no-scrollbar snap-x">
                                 {trendingProducts.map((product) => (
-                                    <div key={product.id} className="min-w-[140px] md:min-w-0 snap-start">
+                                    <div key={product.id} className="relative min-w-[140px] md:min-w-0 snap-start">
+                                        {/* 🏆 RANK BADGE — top 5 only, from backend */}
+                                        {product.showRankBadge && (
+                                            <div
+                                                className="absolute top-2 left-2 z-10 flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full text-white text-xs md:text-sm font-black shadow-lg select-none"
+                                                style={{
+                                                    background: [
+                                                        'linear-gradient(135deg,#FFD700,#FFA500)', // #1 Gold
+                                                        'linear-gradient(135deg,#C0C0C0,#A9A9A9)', // #2 Silver
+                                                        'linear-gradient(135deg,#CD7F32,#8B4513)', // #3 Bronze
+                                                        'linear-gradient(135deg,#ff416c,#ff4b2b)', // #4 Red
+                                                        'linear-gradient(135deg,#36d1dc,#5b86e5)', // #5 Blue
+                                                    ][product.rank - 1],
+                                                    animation: 'rankPopIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both',
+                                                    animationDelay: `${(product.rank - 1) * 60}ms`,
+                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.25)'
+                                                }}
+                                            >
+                                                #{product.rank}
+                                            </div>
+                                        )}
                                         <ProductCard product={product} />
                                     </div>
                                 ))}
                             </div>
                         )}
+
                     </section>
                 )}
 
