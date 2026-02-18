@@ -3,11 +3,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { Store, ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag, ChevronRight, Bell, CheckCircle, XCircle, AlertTriangle, Info, Clock, Trash2 } from 'lucide-react';
+import { Store, ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag, ChevronRight, Bell, CheckCircle, XCircle, AlertTriangle, Info, Clock, Trash2, Droplet } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { useNotifications } from '@/app/store/NotificationContext';
 import NotificationBell from './NotificationBell';
-import ThemeToggle from './ThemeToggle';
 
 
 const Header: React.FC = () => {
@@ -44,6 +43,26 @@ const Header: React.FC = () => {
       }
     }
   }, []);
+
+  // Jellyfish Theme Logic
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "jellyfish") {
+      document.body.classList.add("jellyfish-theme");
+      setTheme('jellyfish');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    document.body.classList.toggle("jellyfish-theme");
+    const active = document.body.classList.contains("jellyfish-theme");
+    const newTheme = active ? "jellyfish" : "light";
+    localStorage.setItem("theme", newTheme);
+    setTheme(newTheme);
+  };
+
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,7 +180,6 @@ const Header: React.FC = () => {
           </form>
 
           <div className="flex items-center space-x-6">
-            <ThemeToggle />
             <Link href="/" className="flex items-center space-x-1 text-gray-700 hover:text-[#f28c28]">
               <Home className="w-6 h-6" />
               <span className="text-sm font-medium">Home</span>
@@ -400,6 +418,31 @@ const Header: React.FC = () => {
                     <ChevronRight size={14} className="ml-auto text-gray-400" />
                   </button>
 
+
+                  {/* Theme Toggle (Jellyfish) - Between Notifications and Sell */}
+                  <button
+                    onClick={() => {
+                      toggleTheme();
+                      // Keep menu open to see effect? Or close? User didn't specify. Usually toggle stays open.
+                      // User said "Load on start... Toggle Logic".
+                      // I'll keep it open or just toggle.
+                    }}
+                    className="w-full flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                  >
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${theme === 'jellyfish' ? 'bg-cyan-50 text-cyan-500' : 'bg-gray-100 text-gray-500'}`}>
+                      <Droplet size={16} className={theme === 'jellyfish' ? 'fill-current' : ''} />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium text-sm">Jellyfish Theme</span>
+                      <span className="text-[10px] text-gray-400">{theme === 'jellyfish' ? 'On' : 'Off'}</span>
+                    </div>
+
+                    {/* Switch Visual */}
+                    <div className={`ml-auto w-8 h-4 rounded-full p-0.5 transition-colors ${theme === 'jellyfish' ? 'bg-cyan-500' : 'bg-gray-300'}`}>
+                      <div className={`w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${theme === 'jellyfish' ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                    </div>
+                  </button>
+
                   {/* Sell on Flipzokart Link */}
                   <Link href="/sell"
                     onClick={closeMenus}
@@ -436,12 +479,6 @@ const Header: React.FC = () => {
                     </Link>
                   </div>
 
-                  {/* Theme Toggle Mobile */}
-                  <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-                    <span className="font-medium text-sm text-gray-700">Appearance</span>
-                    <ThemeToggle />
-                  </div>
-
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 border-b border-gray-100 transition-colors w-full text-left"
@@ -456,11 +493,6 @@ const Header: React.FC = () => {
                 <>
                   {/* Pages Group for Guests */}
                   <div className="flex flex-col bg-gray-50/50">
-                    {/* Theme Toggle Mobile Guest */}
-                    <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-                      <span className="font-medium text-xs text-gray-600">Appearance</span>
-                      <ThemeToggle />
-                    </div>
                     <Link href="/about"
                       onClick={closeMenus}
                       className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
@@ -498,84 +530,86 @@ const Header: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* Mobile Notification Panel Overlay */}
-      {showMobileNotifications && (
-        <div className="md:hidden fixed inset-0 z-[110] bg-white flex flex-col animate-in slide-in-from-right duration-300">
-          <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowMobileNotifications(false)}
-                className="p-2 -ml-2 hover:bg-gray-100 rounded-full"
-              >
-                <ChevronRight className="rotate-180" size={24} />
-              </button>
-              <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
+      {
+        showMobileNotifications && (
+          <div className="md:hidden fixed inset-0 z-[110] bg-white flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowMobileNotifications(false)}
+                  className="p-2 -ml-2 hover:bg-gray-100 rounded-full"
+                >
+                  <ChevronRight className="rotate-180" size={24} />
+                </button>
+                <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
+              </div>
+              {notifications.length > 0 && (
+                <button
+                  onClick={clearAllNotifications}
+                  className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full"
+                >
+                  Clear
+                </button>
+              )}
             </div>
-            {notifications.length > 0 && (
-              <button
-                onClick={clearAllNotifications}
-                className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full"
-              >
-                Clear
-              </button>
-            )}
-          </div>
 
-          <div className="flex-1 overflow-y-auto bg-gray-50">
-            {notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full p-8 text-center text-gray-500">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <Bell size={32} className="text-gray-400" />
-                </div>
-                <p className="font-medium">No notifications yet</p>
-                <p className="text-sm mt-1">We'll let you know when something update arrives.</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {notifications.map((notif) => (
-                  <div
-                    key={notif._id}
-                    className={`p-4 bg-white ${!notif.isRead ? 'bg-blue-50/50' : ''}`}
-                    onClick={() => markNotificationAsRead(notif._id)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1 flex-shrink-0">
-                        {getNotificationIcon(notif.status)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
-                          {notif.message}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {new Date(notif.createdAt).toLocaleString('en-IN', {
-                            day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
-                          })}
-                        </p>
-                        {notif.note && (
-                          <p className="text-xs text-gray-500 italic mt-1 border-l-2 border-gray-300 pl-2">
-                            Note: {notif.note}
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotification(notif._id);
-                        }}
-                        className="p-2 text-gray-300 hover:text-red-500"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+            <div className="flex-1 overflow-y-auto bg-gray-50">
+              {notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full p-8 text-center text-gray-500">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Bell size={32} className="text-gray-400" />
                   </div>
-                ))}
-              </div>
-            )}
+                  <p className="font-medium">No notifications yet</p>
+                  <p className="text-sm mt-1">We'll let you know when something update arrives.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {notifications.map((notif) => (
+                    <div
+                      key={notif._id}
+                      className={`p-4 bg-white ${!notif.isRead ? 'bg-blue-50/50' : ''}`}
+                      onClick={() => markNotificationAsRead(notif._id)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 flex-shrink-0">
+                          {getNotificationIcon(notif.status)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+                            {notif.message}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(notif.createdAt).toLocaleString('en-IN', {
+                              day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
+                            })}
+                          </p>
+                          {notif.note && (
+                            <p className="text-xs text-gray-500 italic mt-1 border-l-2 border-gray-300 pl-2">
+                              Note: {notif.note}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteNotification(notif._id);
+                          }}
+                          className="p-2 text-gray-300 hover:text-red-500"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )
+        )
       }
     </header >
   );
