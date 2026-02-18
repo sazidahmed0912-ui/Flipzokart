@@ -25,10 +25,23 @@ export const RecentlyViewed: React.FC = () => {
                     // Guest: Fetch from localStorage IDs
                     const viewedIds: string[] = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
 
-                    if (viewedIds.length > 0) {
+                    // Filter out invalid IDs (undefined, null, empty strings)
+                    const validIds = viewedIds.filter(id =>
+                        id &&
+                        id !== 'undefined' &&
+                        id !== 'null' &&
+                        id.length > 10
+                    );
+
+                    // Clean up localStorage if there were invalid IDs
+                    if (validIds.length !== viewedIds.length) {
+                        localStorage.setItem('recentlyViewed', JSON.stringify(validIds));
+                    }
+
+                    if (validIds.length > 0) {
                         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
                         // Fetch products by IDs
-                        const promises = viewedIds.map(id =>
+                        const promises = validIds.map(id =>
                             axios.get(`${API_URL}/api/products/${id}`).catch(() => null)
                         );
                         const results = await Promise.all(promises);

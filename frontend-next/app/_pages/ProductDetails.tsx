@@ -95,7 +95,7 @@ export const ProductDetails: React.FC = () => {
 
   // Track Recently Viewed Products
   useEffect(() => {
-    if (!product || !product.id) return;
+    if (!id) return; // Use URL param id - always reliable
 
     const trackView = async () => {
       const token = localStorage.getItem('token');
@@ -109,7 +109,7 @@ export const ProductDetails: React.FC = () => {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ productId: product.id })
+            body: JSON.stringify({ productId: id })
           });
         } catch (error) {
           console.warn('Failed to track viewed product:', error);
@@ -120,10 +120,10 @@ export const ProductDetails: React.FC = () => {
           let viewed: string[] = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
 
           // Remove duplicate if exists
-          viewed = viewed.filter(id => id !== product.id);
+          viewed = viewed.filter(existingId => existingId !== id);
 
           // Add to front
-          viewed.unshift(product.id);
+          viewed.unshift(id);
 
           // Keep only 5
           if (viewed.length > 5) {
@@ -138,7 +138,7 @@ export const ProductDetails: React.FC = () => {
     };
 
     trackView();
-  }, [product]);
+  }, [id]); // Depend on id (URL param), not product
 
   // Socket Listeners
   useEffect(() => {
