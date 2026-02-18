@@ -372,6 +372,28 @@
     }
 }
 
+/* 🌬️ Subtle Breath Animation (Product Card Micro Scale) */
+.subtle-animate {
+    animation: softBreath 5s ease-in-out infinite;
+    will-change: transform;
+    transform-origin: center;
+}
+
+@keyframes softBreath {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.015);
+    }
+
+    /* Max 1.015 as per safety limit */
+    100% {
+        transform: scale(1);
+    }
+}
+
 @media (max-width: 768px) {
     .live-dot {
         width: 6px;

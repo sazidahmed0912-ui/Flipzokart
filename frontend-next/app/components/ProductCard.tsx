@@ -33,8 +33,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
     toggleWishlist(product.id);
   }
 
+  // Cast product to any to access rank injected by FashionPage
+  const isTopTrending = (product as any).rank && (product as any).rank <= 3;
+
   return (
-    <div className="group bg-white rounded-lg md:rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col">
+    <div className={`group bg-white rounded-lg md:rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-transform duration-300 transform-origin-center will-change-transform hover:scale-[1.02] md:hover:scale-[1.03] flex flex-col ${isTopTrending ? 'subtle-animate' : ''}`}>
       <div className="relative w-full aspect-[4/5] overflow-hidden bg-white flex items-center justify-center p-4">
         <Link href={`/product/${product.id}`} className="block w-full h-full relative">
           {isLoading && (
