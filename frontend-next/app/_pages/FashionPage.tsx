@@ -32,7 +32,7 @@ const BANNERS: Record<Tab, BannerConfig> = {
             "https://res.cloudinary.com/drfyr8hlb/image/upload/f_auto,q_auto,w_1600/v1771138164/Men_s_Summer_Collection_ygcqln.jpg",
             "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169316/WhatsApp_Image_2026-02-15_at_8.55.41_PM_utjlhk.jpg"
         ],
-        link: "/shop?category=Fashion&gender=Men"
+        link: "/shop?category=Fashion&subcategory=Men"
     },
     Women: {
         title: "Women's Ethnic Wear",
@@ -40,7 +40,7 @@ const BANNERS: Record<Tab, BannerConfig> = {
             "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=1600",
             "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=1600"
         ],
-        link: "/shop?category=Fashion&gender=Women"
+        link: "/shop?category=Fashion&subcategory=Women"
     },
     Kids: {
         title: "Kids Party Wear",
@@ -48,7 +48,7 @@ const BANNERS: Record<Tab, BannerConfig> = {
             "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&q=80&w=1600",
             "https://res.cloudinary.com/drfyr8hlb/image/upload/v1771169942/WhatsApp_Image_2026-02-15_at_9.07.12_PM_usbnjn.jpg"
         ],
-        link: "/shop?category=Fashion&gender=Kids"
+        link: "/shop?category=Fashion&subcategory=Kids"
     }
 };
 
@@ -330,7 +330,7 @@ export const FashionPage: React.FC = () => {
                                 </h3>
                                 <p className="text-[10px] md:text-sm text-gray-400">Fresh styles just for you</p>
                             </div>
-                            <Link href={`/shop?category=Fashion&gender=${activeTab}&sort=newest`} className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5 ">
+                            <Link href={`/shop?category=Fashion&subcategory=${activeTab}&sort=newest`} className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5 ">
                                 <ChevronRight size={16} className="md:hidden" />
                                 <span className="hidden md:inline text-sm font-bold">View All</span>
                             </Link>
@@ -357,7 +357,7 @@ export const FashionPage: React.FC = () => {
                                 </h3>
                                 <p className="text-[10px] md:text-sm text-gray-400">Top rated by customers</p>
                             </div>
-                            <Link href={`/shop?category=Fashion&gender=${activeTab}&sort=rating`} className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5 ">
+                            <Link href={`/shop?category=Fashion&subcategory=${activeTab}&sort=rating`} className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5 ">
                                 <ChevronRight size={16} className="md:hidden" />
                                 <span className="hidden md:inline text-sm font-bold">View All</span>
                             </Link>

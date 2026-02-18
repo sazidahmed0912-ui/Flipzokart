@@ -125,10 +125,15 @@ export const ShopPage: React.FC = () => {
 
       // Filter by subcategory and submenu from URL params
       let matchesSubcategory = true;
-      if (urlSubcategory && urlSubmenu) {
-        // Match "Men > Shirts" format in product.subcategory
-        const expectedFormat = `${urlSubcategory} > ${urlSubmenu}`;
-        matchesSubcategory = p.subcategory === expectedFormat;
+      if (urlSubcategory) {
+        if (urlSubmenu) {
+          // Match "Men > Shirts" format in product.subcategory
+          const expectedFormat = `${urlSubcategory} > ${urlSubmenu}`;
+          matchesSubcategory = p.subcategory === expectedFormat;
+        } else {
+          // Match "Men" or "Men > ..."
+          matchesSubcategory = (p.subcategory === urlSubcategory) || (!!p.subcategory?.startsWith(`${urlSubcategory} >`));
+        }
       } else if (initialSub) {
         // Legacy 'sub' parameter - match by name/description
         matchesSubcategory = p.name.toLowerCase().includes(initialSub.toLowerCase()) || p.description.toLowerCase().includes(initialSub.toLowerCase());
