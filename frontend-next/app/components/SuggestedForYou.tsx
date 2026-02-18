@@ -8,13 +8,11 @@ import axios from 'axios';
 import { useApp } from '@/app/store/Context';
 import { getProductImage } from '@/app/utils/imageHelper';
 
-// Normalize MongoDB _id to id for ProductCard compatibility
 const normalizeProduct = (p: any): Product => ({
     ...p,
     id: p.id || p._id?.toString() || '',
 });
 
-// Compact card for mobile horizontal swipe
 const CompactCard: React.FC<{ product: Product }> = ({ product }) => {
     const imgSrc = getProductImage(product);
     const discount = product.originalPrice > product.price
@@ -88,21 +86,33 @@ export const SuggestedForYou: React.FC = () => {
 
     if (!loading && products.length === 0) return null;
 
+    const showViewAll = products.length >= 3; // Only show View All if 3+ products
+
     return (
-        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 my-6">
-            <h2 className="text-base sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
-                Suggested For You
-            </h2>
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 my-3 sm:my-6">
+            {/* Header row */}
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h2 className="text-base sm:text-2xl font-bold text-gray-900">
+                    Suggested For You
+                </h2>
+                {/* View All - mobile only, only when 3+ products */}
+                {!loading && showViewAll && (
+                    <Link
+                        href="/shop"
+                        className="sm:hidden text-xs font-semibold text-[#f5a623] border border-[#f5a623] rounded-full px-3 py-1 active:bg-[#f5a623] active:text-white transition-colors"
+                    >
+                        View All
+                    </Link>
+                )}
+            </div>
 
             {loading ? (
                 <>
-                    {/* Mobile skeleton */}
                     <div className="flex gap-2 sm:hidden overflow-hidden">
                         {[...Array(3)].map((_, i) => (
                             <div key={i} className="flex-none w-[30vw] max-w-[120px] bg-gray-100 rounded-xl h-[160px] animate-pulse" />
                         ))}
                     </div>
-                    {/* Desktop skeleton */}
                     <div className="hidden sm:grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                         {[...Array(5)].map((_, i) => (
                             <div key={i} className="bg-gray-100 rounded-xl h-[280px] animate-pulse" />
@@ -111,7 +121,7 @@ export const SuggestedForYou: React.FC = () => {
                 </>
             ) : (
                 <>
-                    {/* Mobile: horizontal swipe, 3 visible, 1 row only */}
+                    {/* Mobile: horizontal swipe, 3 visible, 1 row */}
                     <div
                         className="flex gap-2 sm:hidden overflow-x-auto pb-1"
                         style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}
