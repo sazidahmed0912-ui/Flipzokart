@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { FashionPage } from '@/app/_pages/FashionPage';
 
 export const metadata = {
@@ -7,5 +7,9 @@ export const metadata = {
 };
 
 export default function Page() {
-    return <FashionPage />;
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+            <FashionPage />
+        </Suspense>
+    );
 }

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { ChevronRight, TrendingUp, Star, ShoppingBag } from 'lucide-react';
@@ -79,8 +80,20 @@ const INITIAL_SUBCATEGORIES: Record<Tab, { name: string; icon: string; link: str
 };
 
 export const FashionPage: React.FC = () => {
-    const { products } = useApp(); // Fallback to Context if API fails
-    const [activeTab, setActiveTab] = useState<Tab>('Men');
+    const { products } = useApp();
+    const searchParams = useSearchParams();
+    const router = useRouter();
+
+    // Read tab from URL on mount (preserves tab on refresh)
+    const getInitialTab = (): Tab => {
+        const tabParam = searchParams.get('tab');
+        if (tabParam && ['Men', 'Women', 'Kids'].includes(tabParam)) {
+            return tabParam as Tab;
+        }
+        return 'Men';
+    };
+
+    const [activeTab, setActiveTab] = useState<Tab>(getInitialTab);
     const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
     const [fashionProducts, setFashionProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -209,7 +222,11 @@ export const FashionPage: React.FC = () => {
                         {(['Men', 'Women', 'Kids'] as Tab[]).map((tab) => (
                             <button
                                 key={tab}
-                                onClick={() => setActiveTab(tab)}
+                                onClick={() => {
+                                    setActiveTab(tab);
+                                    // Update URL so refresh preserves the tab
+                                    router.replace(`/fashion?tab=${tab}`, { scroll: false });
+                                }}
                                 className={`
                                     relative flex-1 py-3 md:py-4 text-sm md:text-base font-bold uppercase tracking-wide text-center transition-all duration-200 outline-none select-none
                                     ${activeTab === tab
