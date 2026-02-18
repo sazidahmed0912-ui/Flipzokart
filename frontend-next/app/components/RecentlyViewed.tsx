@@ -104,7 +104,7 @@ export const RecentlyViewed: React.FC = () => {
     const showViewAll = products.length >= 3 && !expanded;
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 my-2 sm:my-6">
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 my-1 sm:my-6">
             {/* Header row */}
             <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h2 className="text-base sm:text-2xl font-bold text-gray-900">
