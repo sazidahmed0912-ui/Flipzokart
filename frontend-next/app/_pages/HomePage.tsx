@@ -167,14 +167,14 @@ export const HomePage: React.FC = () => {
             </section>
 
             {/* Recently Viewed Products */}
-            <section className="py-3 md:py-6 px-4 md:px-8">
+            <section className="py-2 md:py-4 px-4 md:px-8">
                 <div className="max-w-7xl mx-auto">
                     <RecentlyViewed />
                 </div>
             </section>
 
             {/* Suggested For You */}
-            <section className="py-3 md:py-6 px-4 md:px-8 bg-gray-50">
+            <section className="py-2 md:py-4 px-4 md:px-8 bg-gray-50">
                 <div className="max-w-7xl mx-auto">
                     <SuggestedForYou />
                 </div>

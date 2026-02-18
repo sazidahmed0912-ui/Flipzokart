@@ -112,7 +112,7 @@ export const RecentlyViewed: React.FC = () => {
                 {/* View All - mobile only, only when 3+ products */}
                 {!loading && showViewAll && (
                     <Link
-                        href="/recently-viewed"
+                        href="/shop"
                         className="sm:hidden text-xs font-semibold text-[#f5a623] border border-[#f5a623] rounded-full px-3 py-1 active:bg-[#f5a623] active:text-white transition-colors"
                     >
                         View All
