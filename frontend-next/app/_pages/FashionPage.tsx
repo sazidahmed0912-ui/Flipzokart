@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -101,6 +101,10 @@ export const FashionPage: React.FC = () => {
     const [trendingDays, setTrendingDays] = useState<7 | 15 | 30>(7);
     const [loading, setLoading] = useState(true);
 
+    // 🧠 Dynamic Rank Movement System (using Refs for stability)
+    const previousRanksRef = useRef<Record<string, number>>({});
+    const isRankFirstLoadRef = useRef(true);
+
     // Fetch random Fashion products from backend (with fallback)
     useEffect(() => {
         const fetchRandomFashionProducts = async () => {
@@ -129,44 +133,94 @@ export const FashionPage: React.FC = () => {
         };
 
         fetchRandomFashionProducts();
-    }, [products]); // Add products as dependency for fallback
+    }, [products]);
 
-    // Fetch trending products for the active tab from the ranking API
+    // Reset tracking when context changes (e.g. switching Men -> Women)
     useEffect(() => {
-        const fetchTrending = async () => {
+        isRankFirstLoadRef.current = true;
+        previousRanksRef.current = {};
+        setTrendingByGender([]); // Clear old list to prevent hydration mismatch/flash
+    }, [activeTab, trendingDays]);
+
+    // Fetch & Process Trending Data
+    useEffect(() => {
+        const fetchTrending = async (silent = false) => {
             try {
-                setTrendingLoading(true);
+                if (!silent) setTrendingLoading(true);
+
                 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
                 const res = await axios.get(`${API_URL}/api/products/trending/${activeTab}/${trendingDays}?limit=16`);
+
+                let newData = [];
                 if (res.data && res.data.length > 0) {
-                    setTrendingByGender(res.data);
+                    newData = res.data;
                 } else {
-                    // Fallback: filter from already-fetched fashionProducts
-                    const fallback = fashionProducts.filter((p: any) => {
+                    // Fallback logic
+                    newData = fashionProducts.filter((p: any) => {
                         if (p.genderCategory === activeTab) return true;
                         if (p.subcategory?.includes('>')) {
                             return p.subcategory.split('>')[0].trim() === activeTab;
                         }
                         return false;
                     });
-                    setTrendingByGender(fallback);
                 }
-            } catch {
-                // Fallback: filter locally
-                const fallback = fashionProducts.filter((p: any) => {
-                    if (p.genderCategory === activeTab) return true;
-                    if (p.subcategory?.includes('>')) {
-                        return p.subcategory.split('>')[0].trim() === activeTab;
+
+                // 🧠 Process Rank Movement Logic
+                const processRankMovement = (data: any[]) => {
+                    if (isRankFirstLoadRef.current) {
+                        isRankFirstLoadRef.current = false;
+                        const initialMap: Record<string, number> = {};
+                        data.forEach(p => initialMap[p._id || p.id] = p.rank);
+                        previousRanksRef.current = initialMap;
+                        return data.map(p => ({ ...p, movement: 'same' }));
                     }
-                    return false;
-                });
-                setTrendingByGender(fallback);
+
+                    const updated = data.map(p => {
+                        const pid = p._id || p.id;
+                        const prevRank = previousRanksRef.current[pid];
+                        let movement = 'same';
+
+                        if (prevRank !== undefined) {
+                            if (p.rank < prevRank) movement = 'up';
+                            else if (p.rank > prevRank) movement = 'down';
+                        }
+                        return { ...p, movement };
+                    });
+
+                    // Update ref map for next compare
+                    const newMap: Record<string, number> = {};
+                    updated.forEach(p => newMap[p._id || p.id] = p.rank);
+                    previousRanksRef.current = newMap;
+
+                    return updated;
+                };
+
+                const processedData = processRankMovement(newData);
+                setTrendingByGender(processedData);
+
+            } catch (error) {
+                console.error("Error fetching trending:", error);
+                // Fallback handling if API fails
             } finally {
-                setTrendingLoading(false);
+                if (!silent) setTrendingLoading(false);
             }
         };
-        fetchTrending();
+
+        fetchTrending(); // Initial fetch
+
+        // 🔄 Auto-Poll for updates every 10 seconds (silent refresh)
+        const interval = setInterval(() => fetchTrending(true), 10000);
+        return () => clearInterval(interval);
+
     }, [activeTab, trendingDays, fashionProducts]);
+
+    // 🧠 Auto-Hide Movement Animation after 2 seconds
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setTrendingByGender(prev => prev.map(p => ({ ...p, movement: 'same' })));
+        }, 2000);
+        return () => clearTimeout(timer);
+    }, [trendingByGender]); // Re-run when products update (so usage of 'same' resets animation)
 
     // Build Dynamic Submenu Map from Products
     const buildSubmenuMap = (products: any[]) => {
@@ -392,17 +446,32 @@ export const FashionPage: React.FC = () => {
                         ) : (
                             <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-4 md:gap-6 no-scrollbar snap-x">
                                 {trendingProducts.map((product) => (
-                                    <div key={product.id} className="relative min-w-[140px] md:min-w-0 snap-start">
-                                        {/* 🏆 ULTRA PREMIUM RANK BADGE */}
+                                    <div key={product.id} className="flex flex-col min-w-[140px] md:min-w-0 snap-start">
+                                        <ProductCard product={product} />
+                                        {/* 🏆 RANK BADGE — below image, top 5 only */}
                                         {product.showRankBadge && (
-                                            <div className={`rank-badge rank-${product.rank}`}>
-                                                {product.rank === 1 && (
-                                                    <div className="crown">👑</div>
-                                                )}
-                                                <span>#{product.rank}</span>
+                                            <div
+                                                className="flex items-center justify-center gap-1.5 mx-1 -mt-1 mb-1 py-1 px-3 rounded-b-xl text-white text-[11px] md:text-xs font-black select-none"
+                                                style={{
+                                                    background: [
+                                                        'linear-gradient(90deg,#FFD700,#FFA500)', // #1 Gold
+                                                        'linear-gradient(90deg,#C0C0C0,#A9A9A9)', // #2 Silver
+                                                        'linear-gradient(90deg,#CD7F32,#8B4513)', // #3 Bronze
+                                                        'linear-gradient(90deg,#ff416c,#ff4b2b)', // #4 Red
+                                                        'linear-gradient(90deg,#36d1dc,#5b86e5)', // #5 Blue
+                                                    ][product.rank - 1],
+                                                    animation: 'rankPopIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both',
+                                                    animationDelay: `${(product.rank - 1) * 60}ms`,
+                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.18)'
+                                                }}
+                                            >
+                                                <span className="flex items-center">
+                                                    #{product.rank} Trending
+                                                    {product.movement === 'up' && <span className="rank-move up ml-1">⬆</span>}
+                                                    {product.movement === 'down' && <span className="rank-move down ml-1">⬇</span>}
+                                                </span>
                                             </div>
                                         )}
-                                        <ProductCard product={product} />
                                     </div>
                                 ))}
 
