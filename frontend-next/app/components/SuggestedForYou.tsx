@@ -5,6 +5,12 @@ import { Product } from '@/app/types';
 import axios from 'axios';
 import { useApp } from '@/app/store/Context';
 
+// Normalize MongoDB _id to id for ProductCard compatibility
+const normalizeProduct = (p: any): Product => ({
+    ...p,
+    id: p.id || p._id?.toString() || '',
+});
+
 export const SuggestedForYou: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,7 +32,7 @@ export const SuggestedForYou: React.FC = () => {
                     headers
                 });
 
-                setProducts(res.data || []);
+                setProducts((res.data || []).map(normalizeProduct));
             } catch (error) {
                 console.warn('Failed to fetch suggested products:', error);
                 // Fallback: empty or could use Context products
@@ -57,7 +63,7 @@ export const SuggestedForYou: React.FC = () => {
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                     {products.map((product) => (
-                        <ProductCard key={product.id} product={product} />
+                        <ProductCard key={product.id || (product as any)._id} product={product} />
                     ))}
                 </div>
             )}

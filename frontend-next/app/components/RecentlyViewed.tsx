@@ -4,6 +4,12 @@ import { ProductCard } from '@/app/components/ProductCard';
 import { Product } from '@/app/types';
 import axios from 'axios';
 
+// Normalize MongoDB _id to id for ProductCard compatibility
+const normalizeProduct = (p: any): Product => ({
+    ...p,
+    id: p.id || p._id?.toString() || '',
+});
+
 export const RecentlyViewed: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -20,7 +26,7 @@ export const RecentlyViewed: React.FC = () => {
                     const res = await axios.get(`${API_URL}/api/user/recently-viewed`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
-                    setProducts(res.data || []);
+                    setProducts((res.data || []).map(normalizeProduct));
                 } else {
                     // Guest: Fetch from localStorage IDs
                     const viewedIds: string[] = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
@@ -47,7 +53,7 @@ export const RecentlyViewed: React.FC = () => {
                         const results = await Promise.all(promises);
                         const validProducts = results
                             .filter((res): res is Exclude<typeof res, null> => res !== null && res.data !== null)
-                            .map(res => res.data?.data?.product || res.data);
+                            .map(res => normalizeProduct(res.data?.data?.product || res.data));
                         setProducts(validProducts);
                     }
                 }
@@ -79,7 +85,7 @@ export const RecentlyViewed: React.FC = () => {
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                     {products.slice(0, 5).map((product) => (
-                        <ProductCard key={product.id} product={product} />
+                        <ProductCard key={product.id || (product as any)._id} product={product} />
                     ))}
                 </div>
             )}
