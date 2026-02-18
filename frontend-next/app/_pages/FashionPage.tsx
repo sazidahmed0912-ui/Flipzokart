@@ -409,7 +409,10 @@ export const FashionPage: React.FC = () => {
                             <div>
                                 <h3 className="text-sm md:text-xl font-bold text-gray-800 flex items-center gap-2">
                                     <TrendingUp size={16} className="text-[#2874F0]" />
-                                    Trending in {activeTab}
+                                    <span className="flex items-center">
+                                        Trending in {activeTab}
+                                        <span className="live-dot"></span>
+                                    </span>
                                 </h3>
                                 <p className="text-[10px] md:text-sm text-gray-400">Based on real orders</p>
                             </div>
