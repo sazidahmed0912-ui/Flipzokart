@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { ChevronRight, TrendingUp, Star, ShoppingBag } from 'lucide-react';
+import { ChevronRight, TrendingUp, Star, ShoppingBag, Clock } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { ProductCard } from '@/app/components/ProductCard';
 
@@ -98,6 +98,7 @@ export const FashionPage: React.FC = () => {
     const [fashionProducts, setFashionProducts] = useState<any[]>([]);
     const [trendingByGender, setTrendingByGender] = useState<any[]>([]);
     const [trendingLoading, setTrendingLoading] = useState(true);
+    const [trendingDays, setTrendingDays] = useState<7 | 15 | 30>(7);
     const [loading, setLoading] = useState(true);
 
     // Fetch random Fashion products from backend (with fallback)
@@ -136,7 +137,7 @@ export const FashionPage: React.FC = () => {
             try {
                 setTrendingLoading(true);
                 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-                const res = await axios.get(`${API_URL}/api/products/trending/${activeTab}?limit=16`);
+                const res = await axios.get(`${API_URL}/api/products/trending/${activeTab}/${trendingDays}?limit=16`);
                 if (res.data && res.data.length > 0) {
                     setTrendingByGender(res.data);
                 } else {
@@ -165,7 +166,7 @@ export const FashionPage: React.FC = () => {
             }
         };
         fetchTrending();
-    }, [activeTab, fashionProducts]);
+    }, [activeTab, trendingDays, fashionProducts]);
 
     // Build Dynamic Submenu Map from Products
     const buildSubmenuMap = (products: any[]) => {
@@ -348,29 +349,55 @@ export const FashionPage: React.FC = () => {
             <div className="max-w-7xl mx-auto spaee-y-4 md:space-y-8 pb-8">
 
                 {/* Trending Section */}
-                {trendingProducts.length > 0 && (
+                {(trendingProducts.length > 0 || trendingLoading) && (
                     <section className="bg-white py-4 md:py-6 px-3 md:px-8 mt-2 shadow-sm">
-                        <div className="flex justify-between items-end mb-3 md:mb-6">
+                        <div className="flex justify-between items-start mb-3 md:mb-4">
                             <div>
                                 <h3 className="text-sm md:text-xl font-bold text-gray-800 flex items-center gap-2">
                                     <TrendingUp size={16} className="text-[#2874F0]" />
                                     Trending in {activeTab}
                                 </h3>
-                                <p className="text-[10px] md:text-sm text-gray-400">Fresh styles just for you</p>
+                                <p className="text-[10px] md:text-sm text-gray-400">Based on real orders</p>
                             </div>
-                            <Link href={`/shop?category=Fashion&subcategory=${activeTab}&sort=newest`} className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5 ">
-                                <ChevronRight size={16} className="md:hidden" />
-                                <span className="hidden md:inline text-sm font-bold">View All</span>
-                            </Link>
+                            <div className="flex flex-col items-end gap-2">
+                                {/* Time Filter Pills */}
+                                <div className="flex items-center gap-1 bg-gray-100 rounded-full p-0.5">
+                                    <Clock size={11} className="text-gray-400 ml-1.5" />
+                                    {([7, 15, 30] as const).map(d => (
+                                        <button
+                                            key={d}
+                                            onClick={() => setTrendingDays(d)}
+                                            className={`text-[10px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-full transition-all ${trendingDays === d
+                                                    ? 'bg-[#2874F0] text-white shadow-sm'
+                                                    : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                        >
+                                            {d}D
+                                        </button>
+                                    ))}
+                                </div>
+                                <Link href={`/shop?category=Fashion&subcategory=${activeTab}&sort=newest`} className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5">
+                                    <ChevronRight size={16} className="md:hidden" />
+                                    <span className="hidden md:inline text-sm font-bold">View All</span>
+                                </Link>
+                            </div>
                         </div>
 
-                        <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-4 md:gap-6 no-scrollbar snap-x">
-                            {trendingProducts.map((product) => (
-                                <div key={product.id} className="min-w-[140px] md:min-w-0 snap-start">
-                                    <ProductCard product={product} />
-                                </div>
-                            ))}
-                        </div>
+                        {trendingLoading ? (
+                            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+                                {[...Array(4)].map((_, i) => (
+                                    <div key={i} className="min-w-[140px] md:min-w-0 md:flex-1 h-52 bg-gray-100 rounded-xl animate-pulse" />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-4 md:gap-6 no-scrollbar snap-x">
+                                {trendingProducts.map((product) => (
+                                    <div key={product.id} className="min-w-[140px] md:min-w-0 snap-start">
+                                        <ProductCard product={product} />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </section>
                 )}
 

@@ -1,5 +1,6 @@
 const express = require("express");
 const Product = require("../models/Product");
+const Order = require("../models/Order");
 
 const router = express.Router();
 
@@ -459,9 +460,78 @@ router.get("/suggested", async (req, res) => {
   }
 });
 
-// 📊 TRENDING BY GENDER CATEGORY
-// CRITICAL: Must be BEFORE /:id route or Express treats 'Men'/'Women'/'Kids' as a product ID
-// GET /api/products/trending/:gender?limit=10
+// 📊 TRENDING BY GENDER + TIME RANGE
+// CRITICAL: Must be BEFORE /:id route
+// GET /api/products/trending/:gender/:days  (days = 7 | 15 | 30)
+router.get("/trending/:gender/:days", async (req, res) => {
+  try {
+    const { gender, days } = req.params;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const validGenders = ["Men", "Women", "Kids"];
+    const validDays = [7, 15, 30];
+    const daysInt = parseInt(days);
+
+    if (!validGenders.includes(gender)) {
+      return res.status(400).json({ message: "Invalid gender. Must be Men, Women, or Kids." });
+    }
+    if (!validDays.includes(daysInt)) {
+      return res.status(400).json({ message: "Invalid days. Must be 7, 15, or 30." });
+    }
+
+    const since = new Date();
+    since.setDate(since.getDate() - daysInt);
+
+    // Step 1: Aggregate orders in the time window to get totalSold per product
+    const soldMap = await Order.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      { $unwind: "$products" },
+      {
+        $group: {
+          _id: "$products.productId",
+          totalSold: { $sum: "$products.quantity" }
+        }
+      }
+    ]);
+
+    // Build a map: productId -> totalSold
+    const soldById = {};
+    soldMap.forEach(item => {
+      if (item._id) soldById[item._id.toString()] = item.totalSold;
+    });
+
+    // Step 2: Fetch Fashion products matching this gender (by genderCategory OR subcategory prefix)
+    const products = await Product.find({
+      category: "Fashion",
+      isDeleted: { $ne: true },
+      countInStock: { $gt: 0 },
+      $or: [
+        { genderCategory: gender },
+        { subcategory: { $regex: `^${gender}`, $options: "i" } }
+      ]
+    }).lean();
+
+    // Step 3: Attach totalSold from the time window, sort, limit
+    const ranked = products
+      .map(p => ({
+        ...p,
+        id: p._id?.toString(),
+        mainImage: p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png',
+        images: (p.images && p.images.length > 0) ? p.images : (p.image ? [p.image] : []),
+        _trendScore: soldById[p._id?.toString()] || 0
+      }))
+      .sort((a, b) => b._trendScore - a._trendScore)
+      .slice(0, limit);
+
+    res.json(ranked);
+  } catch (error) {
+    console.error("Error fetching trending products:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 📊 TRENDING BY GENDER (no time filter - fallback / legacy)
+// CRITICAL: Must be BEFORE /:id route
 router.get("/trending/:gender", async (req, res) => {
   try {
     const { gender } = req.params;
@@ -472,8 +542,6 @@ router.get("/trending/:gender", async (req, res) => {
       return res.status(400).json({ message: "Invalid gender. Must be Men, Women, or Kids." });
     }
 
-    // Match products by genderCategory field OR by subcategory prefix (e.g. "Men > Shirts")
-    // This ensures the endpoint works even for products that don't have genderCategory set yet
     const products = await Product.find({
       category: "Fashion",
       isDeleted: { $ne: true },
@@ -487,15 +555,12 @@ router.get("/trending/:gender", async (req, res) => {
       .limit(limit)
       .lean();
 
-    // Hydrate: ensure images array and id field are set
-    const result = products.map(p => {
-      if ((!p.images || p.images.length === 0) && p.image) {
-        p.images = [p.image];
-      }
-      p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
-      p.id = p._id?.toString();
-      return p;
-    });
+    const result = products.map(p => ({
+      ...p,
+      id: p._id?.toString(),
+      mainImage: p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png',
+      images: (p.images && p.images.length > 0) ? p.images : (p.image ? [p.image] : [])
+    }));
 
     res.json(result);
   } catch (error) {
