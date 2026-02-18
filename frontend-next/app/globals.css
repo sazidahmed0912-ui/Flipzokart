@@ -372,23 +372,54 @@
     }
 }
 
-/* 🌬️ Subtle Breath Animation (Product Card Micro Scale) */
+/* 🌬️ Enhanced Breath Animation (Product Card Micro Scale) */
 .subtle-animate {
-    animation: softBreath 5s ease-in-out infinite;
+    animation: enhancedBreath 4s ease-in-out infinite;
     will-change: transform;
     transform-origin: center;
+    transition: box-shadow 0.3s ease;
 }
 
-@keyframes softBreath {
+.subtle-animate:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    /* Premium Micro Shadow Lift */
+}
+
+/* 🔥 Strong Version for Rank #1 (Extra Attention) */
+.subtle-animate-strong {
+    animation: enhancedBreathStrong 3.5s ease-in-out infinite;
+    will-change: transform;
+    transform-origin: center;
+    transition: box-shadow 0.3s ease;
+}
+
+.subtle-animate-strong:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+@keyframes enhancedBreath {
     0% {
         transform: scale(1);
     }
 
     50% {
-        transform: scale(1.015);
+        transform: scale(1.022);
     }
 
-    /* Max 1.015 as per safety limit */
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes enhancedBreathStrong {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.028);
+    }
+
     100% {
         transform: scale(1);
     }
@@ -399,6 +430,35 @@
         width: 6px;
         height: 6px;
         margin-left: 6px;
+    }
+
+    @keyframes enhancedBreath {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.018);
+        }
+
+        /* Safer Mobile Warning Limit */
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @keyframes enhancedBreathStrong {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.022);
+        }
+
+        100% {
+            transform: scale(1);
+        }
     }
 }
 
