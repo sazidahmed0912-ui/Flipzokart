@@ -407,9 +407,9 @@ export const FashionPage: React.FC = () => {
                     <section className="bg-white py-4 md:py-6 px-3 md:px-8 mt-2 shadow-sm">
                         <div className="flex justify-between items-start mb-3 md:mb-4">
                             <div>
-                                <h3 className="text-sm md:text-xl font-bold text-gray-800 flex items-center gap-2">
+                                <h3 className="text-sm md:text-xl font-bold flex items-center gap-2">
                                     <TrendingUp size={16} className="text-[#2874F0]" />
-                                    <span className="flex items-center">
+                                    <span className="flex items-center glow-text">
                                         Trending in {activeTab}
                                         <span className="live-dot"></span>
                                     </span>

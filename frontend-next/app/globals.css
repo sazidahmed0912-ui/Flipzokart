@@ -478,3 +478,28 @@
         opacity: 1;
     }
 }
+
+/* ✨ Premium Text Glow Animation (Blue for visibility on white) */
+.glow-text {
+    position: relative;
+    color: #2874F0;
+    /* Flipkart Blue instead of White */
+    font-weight: 700;
+    /* Boost weight for impact */
+    letter-spacing: 0.5px;
+    animation: blueGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes blueGlow {
+    0% {
+        text-shadow: 0 0 4px rgba(40, 116, 240, 0.4), 0 0 8px rgba(40, 116, 240, 0.2);
+    }
+
+    50% {
+        text-shadow: 0 0 8px rgba(40, 116, 240, 0.8), 0 0 16px rgba(40, 116, 240, 0.4);
+    }
+
+    100% {
+        text-shadow: 0 0 4px rgba(40, 116, 240, 0.4), 0 0 8px rgba(40, 116, 240, 0.2);
+    }
+}
