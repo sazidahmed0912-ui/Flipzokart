@@ -25,27 +25,26 @@ router.post('/recently-viewed', async (req, res) => {
         }
 
         const User = require('../models/User');
+        const mongoose = require('mongoose');
 
-        // Remove duplicate if exists
+        // Validate productId is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ message: 'Invalid product ID' });
+        }
+
+        const objectId = new mongoose.Types.ObjectId(productId);
+
+        // Step 1: Remove duplicate if exists
         await User.findByIdAndUpdate(userId, {
-            $pull: { recentlyViewed: productId }
+            $pull: { recentlyViewed: objectId }
         });
 
-        // Add to position 0 (front)
+        // Step 2: Add to front AND slice to 5 in one operation
         await User.findByIdAndUpdate(userId, {
             $push: {
                 recentlyViewed: {
-                    $each: [productId],
-                    $position: 0
-                }
-            }
-        });
-
-        // Keep only 5 items
-        await User.findByIdAndUpdate(userId, {
-            $push: {
-                recentlyViewed: {
-                    $each: [],
+                    $each: [objectId],
+                    $position: 0,
                     $slice: 5
                 }
             }
