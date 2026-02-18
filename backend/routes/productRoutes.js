@@ -626,4 +626,36 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// 📊 TRENDING BY GENDER CATEGORY
+// GET /api/products/trending/:gender?limit=10
+router.get("/trending/:gender", async (req, res) => {
+  try {
+    const { gender } = req.params;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const validGenders = ["Men", "Women", "Kids"];
+    if (!validGenders.includes(gender)) {
+      return res.status(400).json({ message: "Invalid gender. Must be Men, Women, or Kids." });
+    }
+
+    const products = await Product.find({
+      genderCategory: gender,
+      isActive: true,
+      isDeleted: { $ne: true },
+      countInStock: { $gt: 0 }
+    })
+      .sort({ totalOrders: -1 })
+      .limit(limit)
+      .lean();
+
+    // Ensure id field is set (lean() bypasses virtuals)
+    const result = products.map(p => ({ ...p, id: p._id?.toString() }));
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error fetching trending products:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

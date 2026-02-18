@@ -59,6 +59,7 @@ export const AdminProductEditor: React.FC = () => {
         image: '',
         category: 'Mobiles',
         subcategory: '',
+        genderCategory: '' as '' | 'Men' | 'Women' | 'Kids',
         countInStock: '',
         description: '',
         isFeatured: false,
@@ -139,6 +140,7 @@ export const AdminProductEditor: React.FC = () => {
                 image: data.image,
                 category: data.category,
                 subcategory: data.subcategory || '', // Fix for missing property
+                genderCategory: data.genderCategory || '',
                 countInStock: data.countInStock || 0,
                 description: cleanDescription, // Load ONLY clean text
                 isFeatured: data.isFeatured || false,
@@ -482,6 +484,7 @@ export const AdminProductEditor: React.FC = () => {
             const payload = {
                 ...formData,
                 submenu: submenuValue, // Add submenu field
+                genderCategory: formData.genderCategory || null,
                 price: finalPrice,
                 originalPrice: finalOriginalPrice,
                 countInStock: totalStock,
@@ -746,6 +749,26 @@ export const AdminProductEditor: React.FC = () => {
                                             </>
                                         )}
                                     </div>
+
+                                    {/* Gender Category — only for Fashion */}
+                                    {formData.category === 'Fashion' && (
+                                        <div className="col-span-2">
+                                            <label className="text-xs font-bold text-gray-500">Gender Category <span className="text-blue-500">(Trending Ranking)</span></label>
+                                            <select
+                                                name="genderCategory"
+                                                value={formData.genderCategory}
+                                                onChange={handleChange}
+                                                className="w-full mt-1 px-4 py-2 border rounded-xl text-sm"
+                                            >
+                                                <option value="">-- Select Gender --</option>
+                                                <option value="Men">Men</option>
+                                                <option value="Women">Women</option>
+                                                <option value="Kids">Kids</option>
+                                            </select>
+                                            <p className="text-[10px] text-gray-400 mt-1">Used for Trending in Men / Women / Kids ranking on Fashion page.</p>
+                                        </div>
+                                    )}
+
                                     <div>
                                         <label className="text-xs font-bold text-gray-500">Stock</label>
                                         <input

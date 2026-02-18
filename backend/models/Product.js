@@ -91,6 +91,18 @@ const productSchema = new mongoose.Schema(
     published: {
       type: Boolean,
       default: true
+    },
+    // 📊 TRENDING RANKING FIELDS
+    totalOrders: {
+      type: Number,
+      default: 0,
+      index: true  // Index for fast sort by popularity
+    },
+    genderCategory: {
+      type: String,
+      enum: ["Men", "Women", "Kids", null],
+      default: null,
+      index: true  // Index for fast gender-based filtering
     }
   },
   {

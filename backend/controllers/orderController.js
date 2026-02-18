@@ -16,6 +16,15 @@ const updateStock = async (products) => {
   }
 };
 
+// Helper: Increment totalOrders for trending ranking
+const updateTrendingOrders = async (products) => {
+  for (const item of products) {
+    await Product.findByIdAndUpdate(item.productId, {
+      $inc: { totalOrders: item.quantity }
+    });
+  }
+};
+
 // Initialize Razorpay
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -199,6 +208,8 @@ const createOrder = async (req, res) => {
 
     // Update stock
     await updateStock(validatedProducts);
+    // 📈 Update trending order counts
+    await updateTrendingOrders(validatedProducts);
 
     for (const item of validatedProducts) {
       const product = await Product.findById(item.productId);
@@ -463,6 +474,8 @@ const verifyPayment = async (req, res) => {
 
     // Update stock
     await updateStock(products);
+    // 📈 Update trending order counts
+    await updateTrendingOrders(products);
 
     for (const item of products) {
       const product = await Product.findById(item.productId);

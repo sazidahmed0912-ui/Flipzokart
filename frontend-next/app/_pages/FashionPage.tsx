@@ -96,6 +96,8 @@ export const FashionPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<Tab>(getInitialTab);
     const [subcategories, setSubcategories] = useState(INITIAL_SUBCATEGORIES);
     const [fashionProducts, setFashionProducts] = useState<any[]>([]);
+    const [trendingByGender, setTrendingByGender] = useState<any[]>([]);
+    const [trendingLoading, setTrendingLoading] = useState(true);
     const [loading, setLoading] = useState(true);
 
     // Fetch random Fashion products from backend (with fallback)
@@ -127,6 +129,43 @@ export const FashionPage: React.FC = () => {
 
         fetchRandomFashionProducts();
     }, [products]); // Add products as dependency for fallback
+
+    // Fetch trending products for the active tab from the ranking API
+    useEffect(() => {
+        const fetchTrending = async () => {
+            try {
+                setTrendingLoading(true);
+                const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+                const res = await axios.get(`${API_URL}/api/products/trending/${activeTab}?limit=16`);
+                if (res.data && res.data.length > 0) {
+                    setTrendingByGender(res.data);
+                } else {
+                    // Fallback: filter from already-fetched fashionProducts
+                    const fallback = fashionProducts.filter((p: any) => {
+                        if (p.genderCategory === activeTab) return true;
+                        if (p.subcategory?.includes('>')) {
+                            return p.subcategory.split('>')[0].trim() === activeTab;
+                        }
+                        return false;
+                    });
+                    setTrendingByGender(fallback);
+                }
+            } catch {
+                // Fallback: filter locally
+                const fallback = fashionProducts.filter((p: any) => {
+                    if (p.genderCategory === activeTab) return true;
+                    if (p.subcategory?.includes('>')) {
+                        return p.subcategory.split('>')[0].trim() === activeTab;
+                    }
+                    return false;
+                });
+                setTrendingByGender(fallback);
+            } finally {
+                setTrendingLoading(false);
+            }
+        };
+        fetchTrending();
+    }, [activeTab, fashionProducts]);
 
     // Build Dynamic Submenu Map from Products
     const buildSubmenuMap = (products: any[]) => {
@@ -195,20 +234,9 @@ export const FashionPage: React.FC = () => {
         });
     };
 
-    // Filter Products based on Tab from fetched fashionProducts
-    const tabProducts = fashionProducts.filter((p: any) => {
-        // Match by subcategory parsing
-        if (p.subcategory && p.subcategory.includes('>')) {
-            const parts = p.subcategory.split('>').map((s: string) => s.trim());
-            return parts[0] === activeTab;
-        }
-        // Fallback to name/description matching
-        return p.name.toLowerCase().includes(activeTab.toLowerCase()) ||
-            p.description?.toLowerCase().includes(activeTab.toLowerCase());
-    });
-
-    const trendingProducts = tabProducts.slice(0, 8);
-    const bestOfProducts = tabProducts.slice(8, 16);
+    // Products for display: use trending API data
+    const trendingProducts = trendingByGender.slice(0, 8);
+    const bestOfProducts = trendingByGender.slice(8, 16);
 
     const currentBanner = BANNERS[activeTab];
 
@@ -374,7 +402,7 @@ export const FashionPage: React.FC = () => {
                 )}
 
                 {/* Fallback if no products */}
-                {tabProducts.length === 0 && (
+                {trendingByGender.length === 0 && !trendingLoading && (
                     <div className="flex flex-col items-center justify-center py-20 bg-white m-3 rounded-xl border border-dashed text-center">
                         <ShoppingBag size={48} className="text-gray-200 mb-4" />
                         <h3 className="text-gray-500 font-bold">Coming Soon</h3>
