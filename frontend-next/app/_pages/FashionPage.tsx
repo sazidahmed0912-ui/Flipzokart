@@ -135,7 +135,7 @@ export const FashionPage: React.FC = () => {
         const fetchTrending = async () => {
             try {
                 setTrendingLoading(true);
-                const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
                 const res = await axios.get(`${API_URL}/api/products/trending/${activeTab}?limit=16`);
                 if (res.data && res.data.length > 0) {
                     setTrendingByGender(res.data);

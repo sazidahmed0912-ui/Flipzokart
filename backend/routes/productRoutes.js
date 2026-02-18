@@ -472,17 +472,31 @@ router.get("/trending/:gender", async (req, res) => {
       return res.status(400).json({ message: "Invalid gender. Must be Men, Women, or Kids." });
     }
 
+    // Match products by genderCategory field OR by subcategory prefix (e.g. "Men > Shirts")
+    // This ensures the endpoint works even for products that don't have genderCategory set yet
     const products = await Product.find({
-      genderCategory: gender,
-      isActive: true,
+      category: "Fashion",
       isDeleted: { $ne: true },
-      countInStock: { $gt: 0 }
+      countInStock: { $gt: 0 },
+      $or: [
+        { genderCategory: gender },
+        { subcategory: { $regex: `^${gender}`, $options: "i" } }
+      ]
     })
       .sort({ totalOrders: -1 })
       .limit(limit)
       .lean();
 
-    const result = products.map(p => ({ ...p, id: p._id?.toString() }));
+    // Hydrate: ensure images array and id field are set
+    const result = products.map(p => {
+      if ((!p.images || p.images.length === 0) && p.image) {
+        p.images = [p.image];
+      }
+      p.mainImage = p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png';
+      p.id = p._id?.toString();
+      return p;
+    });
+
     res.json(result);
   } catch (error) {
     console.error("Error fetching trending products:", error);
