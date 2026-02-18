@@ -504,83 +504,53 @@
     }
 }
 
-/* 💎 Realme UI 7.0 Frosted Glass (Product Card) */
-.glass-card-effect {
+/* 💎 Realme Style Reverse Frosted Glass */
+.realme-glass-card {
     position: relative;
     overflow: hidden;
-
-    background: rgba(255, 255, 255, 0.08);
-
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
-
-    border-radius: 14px;
-
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 255, 255, 0.06);
-
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.08), 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
-/* Inner Glass Depth Layer */
-.glass-card-effect::before {
+/* Glass Background Layer (Behind Content) */
+.glass-layer {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 0;
+}
+
+/* Top Light Highlight */
+.glass-layer::before {
     content: "";
     position: absolute;
     inset: 0;
-
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.10) 40%, rgba(255, 255, 255, 0.04) 70%);
-
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 20%, transparent 50%);
     pointer-events: none;
-    z-index: 1;
 }
 
-/* Top Light Edge Highlight */
-.glass-card-effect::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.08) 25%, transparent 50%);
-
-    pointer-events: none;
+/* Content Layer (Clear & Sharp) */
+.card-content {
+    position: relative;
     z-index: 2;
 }
 
-/* Moving Shine Animation Element */
-.glass-card-effect .glass-shine {
-    position: absolute;
-    top: -60%;
-    left: -70%;
-    width: 50%;
-    height: 220%;
-
-    background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
-
-    transform: rotate(25deg);
-    animation: realmeShine 7s linear infinite;
-
-    pointer-events: none;
-    opacity: 0.35;
-    z-index: 3;
-}
-
-@keyframes realmeShine {
-    0% {
-        left: -70%;
-    }
-
-    100% {
-        left: 140%;
-    }
+/* Safety: Prevent double blur on content */
+.realme-glass-card img,
+.realme-glass-card h3,
+.realme-glass-card span,
+.realme-glass-card p,
+.realme-glass-card a {
+    filter: none !important;
+    backdrop-filter: none !important;
 }
 
 @media (max-width: 768px) {
-    .glass-card-effect {
-        backdrop-filter: blur(16px) saturate(150%);
-        -webkit-backdrop-filter: blur(16px) saturate(150%);
-    }
-
-    .glass-card-effect .glass-shine {
-        animation-duration: 9s;
-        opacity: 0.25;
+    .glass-layer {
+        backdrop-filter: blur(18px) saturate(160%);
     }
 }
