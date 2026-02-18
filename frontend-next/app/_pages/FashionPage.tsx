@@ -404,62 +404,54 @@ export const FashionPage: React.FC = () => {
 
                 {/* Trending Section */}
                 {(trendingProducts.length > 0 || trendingLoading) && (
-                    <div className={`trending-section trending-${activeTab} mt-6 mb-8 shadow-xl`}>
-                        {/* Live Header Animation */}
-                        <div className="section-header-anim flex items-center justify-between mb-5 px-1 md:px-0">
+                    <section className="bg-white py-4 md:py-6 px-3 md:px-8 mt-2 shadow-sm">
+                        <div className="flex justify-between items-start mb-3 md:mb-4">
                             <div>
-                                <div className="live-indicator">
-                                    <span className="pulse-dot"></span>
-                                    <span className="live-text">Trending Now</span>
-                                </div>
-                                <h2 className="text-xl md:text-3xl font-black text-gray-900 leading-tight tracking-tight">
+                                <h3 className="text-sm md:text-xl font-bold text-gray-800 flex items-center gap-2">
+                                    <TrendingUp size={16} className="text-[#2874F0]" />
                                     Trending in {activeTab}
-                                </h2>
-                                <p className="text-[10px] md:text-xs text-gray-400 font-medium ml-0.5 mt-0.5">Real-time purchase data</p>
+                                </h3>
+                                <p className="text-[10px] md:text-sm text-gray-400">Based on real orders</p>
                             </div>
-
-                            {/* Filter Pills + View All */}
                             <div className="flex flex-col items-end gap-2">
-                                <div className="flex items-center gap-1 bg-gray-50/80 backdrop-blur-sm rounded-full p-1 border border-gray-100 shadow-sm">
-                                    <Clock size={12} className="text-gray-400 ml-1.5" />
+                                {/* Time Filter Pills */}
+                                <div className="flex items-center gap-1 bg-gray-100 rounded-full p-0.5">
+                                    <Clock size={11} className="text-gray-400 ml-1.5" />
                                     {([7, 15, 30] as const).map(d => (
                                         <button
                                             key={d}
                                             onClick={() => setTrendingDays(d)}
-                                            className={`text-[10px] md:text-xs font-bold px-3 py-1 rounded-full transition-all duration-300 ${trendingDays === d
-                                                ? 'bg-gray-900 text-white shadow-md scale-105'
-                                                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'
+                                            className={`text-[10px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-full transition-all ${trendingDays === d
+                                                ? 'bg-[#2874F0] text-white shadow-sm'
+                                                : 'text-gray-500 hover:text-gray-700'
                                                 }`}
                                         >
                                             {d}D
                                         </button>
                                     ))}
                                 </div>
-                                <Link href={`/shop?category=Fashion&subcategory=${activeTab}&sort=newest`} className="hidden md:flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-blue-600 transition-colors uppercase tracking-wide">
-                                    View All <ChevronRight size={14} />
+                                <Link href={`/shop?category=Fashion&subcategory=${activeTab}&sort=newest`} className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5">
+                                    <ChevronRight size={16} className="md:hidden" />
+                                    <span className="hidden md:inline text-sm font-bold">View All</span>
                                 </Link>
                             </div>
                         </div>
 
-                        {/* Product Grid */}
                         {trendingLoading ? (
-                            <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
                                 {[...Array(4)].map((_, i) => (
-                                    <div key={i} className="min-w-[140px] md:min-w-0 md:flex-1 h-64 bg-gray-100 rounded-xl animate-pulse" />
+                                    <div key={i} className="min-w-[140px] md:min-w-0 md:flex-1 h-52 bg-gray-100 rounded-xl animate-pulse" />
                                 ))}
                             </div>
                         ) : (
-                            <div className="flex overflow-x-auto gap-3 pb-4 md:grid md:grid-cols-4 md:gap-6 no-scrollbar snap-x px-1">
+                            <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-4 md:gap-6 no-scrollbar snap-x">
                                 {trendingProducts.map((product) => (
-                                    <div
-                                        key={product.id}
-                                        className={`flex flex-col min-w-[150px] md:min-w-0 snap-start transition-transform duration-500 ${product.rank <= 3 ? "product-card-pulse" : ""}`}
-                                    >
+                                    <div key={product.id} className="flex flex-col min-w-[140px] md:min-w-0 snap-start">
                                         <ProductCard product={product} />
-                                        {/* 🏆 RANK BADGE */}
+                                        {/* 🏆 RANK BADGE — below image, top 5 only */}
                                         {product.showRankBadge && (
                                             <div
-                                                className="flex items-center justify-center gap-1.5 mx-1 -mt-2 mb-1 py-1 px-3 rounded-b-xl text-white text-[11px] md:text-xs font-black select-none shadow-md z-10 relative"
+                                                className="flex items-center justify-center gap-1.5 mx-1 -mt-1 mb-1 py-1 px-3 rounded-b-xl text-white text-[11px] md:text-xs font-black select-none"
                                                 style={{
                                                     background: [
                                                         'linear-gradient(90deg,#FFD700,#FFA500)', // #1 Gold
@@ -470,20 +462,23 @@ export const FashionPage: React.FC = () => {
                                                     ][product.rank - 1],
                                                     animation: 'rankPopIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both',
                                                     animationDelay: `${(product.rank - 1) * 60}ms`,
+                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.18)'
                                                 }}
                                             >
-                                                <span className="flex items-center tracking-wide">
+                                                <span className="flex items-center">
                                                     #{product.rank} Trending
-                                                    {product.movement === 'up' && <span className="rank-move up ml-1 filter drop-shadow-sm">⬆</span>}
-                                                    {product.movement === 'down' && <span className="rank-move down ml-1 filter drop-shadow-sm">⬇</span>}
+                                                    {product.movement === 'up' && <span className="rank-move up ml-1">⬆</span>}
+                                                    {product.movement === 'down' && <span className="rank-move down ml-1">⬇</span>}
                                                 </span>
                                             </div>
                                         )}
                                     </div>
                                 ))}
+
                             </div>
                         )}
-                    </div>
+
+                    </section>
                 )}
 
                 {/* Best Of Section */}
