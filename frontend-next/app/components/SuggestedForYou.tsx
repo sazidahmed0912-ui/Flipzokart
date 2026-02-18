@@ -28,7 +28,7 @@ export const SuggestedForYou: React.FC = () => {
                     headers['Authorization'] = `Bearer ${token}`;
                 }
 
-                const res = await axios.get(`${API_URL}/api/products/suggested?limit=20`, {
+                const res = await axios.get(`${API_URL}/api/products/suggested?limit=5`, {
                     headers
                 });
 
@@ -56,13 +56,13 @@ export const SuggestedForYou: React.FC = () => {
 
             {loading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-                    {[...Array(10)].map((_, i) => (
+                    {[...Array(5)].map((_, i) => (
                         <div key={i} className="bg-gray-100 rounded-xl h-[280px] animate-pulse" />
                     ))}
                 </div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-                    {products.map((product) => (
+                    {products.slice(0, 5).map((product) => (
                         <ProductCard key={product.id || (product as any)._id} product={product} />
                     ))}
                 </div>

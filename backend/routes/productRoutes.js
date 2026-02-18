@@ -361,15 +361,30 @@ router.get("/suggested", async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 20;
 
+    // ✅ Optional JWT decode - productRoutes has no auth middleware
+    // We manually decode the token if present (non-blocking)
+    let userId = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.id;
+      } catch (e) {
+        // Token invalid/expired - treat as guest
+        console.log('[Suggested] Token decode failed, treating as guest');
+      }
+    }
+
     // If user is logged in, get their order history
     let categories = [];
-    if (req.user && req.user.id) {
+    if (userId) {
       const Order = require('../models/Order');
 
       // Populate productId to get category from Product documents
-      // Order schema uses: order.products[].productId (ref: 'Product')
-      // Order schema uses: order.user (not userId)
-      const orders = await Order.find({ user: req.user.id })
+      // Order schema: order.user (ObjectId), order.products[].productId (ref: 'Product')
+      const orders = await Order.find({ user: userId })
         .populate('products.productId', 'category')
         .lean();
 
@@ -384,7 +399,7 @@ router.get("/suggested", async (req, res) => {
         )
       ];
 
-      console.log(`[Suggested] User ${req.user.id} - Orders: ${orders.length}, Categories: ${categories}`);
+      console.log(`[Suggested] User ${userId} - Orders: ${orders.length}, Categories: [${categories.join(', ')}]`);
     }
 
     let products;
