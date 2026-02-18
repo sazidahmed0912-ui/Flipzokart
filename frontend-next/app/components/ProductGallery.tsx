@@ -59,7 +59,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ product, images }) => {
         setZoomPos({ x: 50, y: 50 });
     }, []);
 
-    // ── Mobile: pinch-to-zoom via touch events ──
+    // ── Mobile: pinch-to-zoom AND single-finger "hover" zoom ──
     const getTouchDist = (t1: React.Touch, t2: React.Touch) => {
         const dx = t1.clientX - t2.clientX;
         const dy = t1.clientY - t2.clientY;
@@ -73,40 +73,64 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ product, images }) => {
     };
 
     const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
         if (e.touches.length === 2) {
+            // PINCH MODE
             e.preventDefault();
             lastDist.current = getTouchDist(e.touches[0], e.touches[1]);
-            const rect = containerRef.current?.getBoundingClientRect();
-            if (rect) {
-                lastMidpoint.current = getTouchMidpoint(e.touches[0], e.touches[1], rect);
-            }
+            lastMidpoint.current = getTouchMidpoint(e.touches[0], e.touches[1], rect);
+        } else if (e.touches.length === 1) {
+            // HOVER MODE (Single finger touch-and-drag)
+            // Don't preventDefault immediately to allow scroll, but if they hold/zoom we might want to.
+            // For now, let's treat it like hover: immediate zoom at touch point
+            const t = e.touches[0];
+            const x = ((t.clientX - rect.left) / rect.width) * 100;
+            const y = ((t.clientY - rect.top) / rect.height) * 100;
+            setIsZoomed(true);
+            setZoomPos({ x, y });
         }
     }, []);
 
     const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
         if (e.touches.length === 2 && lastDist.current !== null) {
+            // PINCH LOGIC
             e.preventDefault();
             const newDist = getTouchDist(e.touches[0], e.touches[1]);
             const ratio = newDist / lastDist.current;
             const newScale = Math.min(MOBILE_MAX_ZOOM, Math.max(MOBILE_MIN_ZOOM, lastScale.current * ratio));
 
-            const rect = containerRef.current?.getBoundingClientRect();
-            if (rect) {
-                const mid = getTouchMidpoint(e.touches[0], e.touches[1], rect);
-                setMobileOrigin(mid);
-                lastMidpoint.current = mid;
-            }
+            const mid = getTouchMidpoint(e.touches[0], e.touches[1], rect);
+            setMobileOrigin(mid);
+            lastMidpoint.current = mid;
 
             setMobileScale(newScale);
             lastScale.current = newScale;
             lastDist.current = newDist;
+        } else if (e.touches.length === 1 && isZoomed) {
+            // HOVER LOGIC (Single finger move)
+            // Prevent scrolling while zooming/panning
+            if (e.cancelable) e.preventDefault();
+
+            const t = e.touches[0];
+            const x = ((t.clientX - rect.left) / rect.width) * 100;
+            const y = ((t.clientY - rect.top) / rect.height) * 100;
+            setZoomPos({ x, y });
         }
-    }, []);
+    }, [isZoomed]);
 
     const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-        if (e.touches.length < 2) {
+        // If no fingers left, reset everything
+        if (e.touches.length === 0) {
+            setIsZoomed(false); // Turn off hover zoom
+            setZoomPos({ x: 50, y: 50 });
+
             lastDist.current = null;
-            // Snap back to 1 if nearly at 1
+            // Snap back pinch zoom if nearly at 1
             if (lastScale.current < 1.1) {
                 setMobileScale(1);
                 setMobileOrigin({ x: 50, y: 50 });
@@ -116,7 +140,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ product, images }) => {
     }, []);
 
     // Determine if we're on mobile (for conditional style)
-    const isMobileZoomed = mobileScale > 1;
+    const isMobileZoomed = mobileScale > 1 || (isZoomed && typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches);
 
     return (
         <div className="flex flex-col gap-3 select-none">
@@ -147,7 +171,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ product, images }) => {
                         height: "100%",
                         objectFit: "contain",
                         display: "block",
-                        // Desktop zoom (mouse) takes priority over mobile
+                        // Desktop/Mobile Hover zoom takes priority
                         transform: isZoomed
                             ? `scale(${DESKTOP_ZOOM})`
                             : mobileScale > 1
@@ -176,14 +200,15 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ product, images }) => {
                 </div>
 
                 {/* Mobile zoom hint */}
-                {mobileScale <= 1 && (
+                {!isZoomed && mobileScale <= 1 && (
                     <div className="absolute bottom-2 right-2 text-[10px] text-gray-400 bg-white/80 px-2 py-0.5 rounded-full pointer-events-none md:hidden">
-                        Pinch to zoom
+                        Touch & Drag / Pinch
                     </div>
                 )}
             </div>
 
             {/* ── Thumbnail Strip ── */}
+
             {allImages.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                     {allImages.map((img, idx) => (
