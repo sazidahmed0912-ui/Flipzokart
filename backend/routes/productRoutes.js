@@ -460,6 +460,85 @@ router.get("/suggested", async (req, res) => {
   }
 });
 
+// 📊 TRENDING BY CATEGORY + TIME RANGE (Generic — works for Beauty, Electronics, etc.)
+// CRITICAL: Must be BEFORE /:id route and BEFORE /:gender/:days to avoid routing collision
+// GET /api/products/trending/category/:category/:days  (days = 7 | 15 | 30)
+router.get("/trending/category/:category/:days", async (req, res) => {
+  try {
+    const { category, days } = req.params;
+    const { subcategory, limit: limitQuery } = req.query;
+    const limit = parseInt(limitQuery) || 16;
+
+    const validDays = [7, 15, 30];
+    const daysInt = parseInt(days);
+
+    if (!validDays.includes(daysInt)) {
+      return res.status(400).json({ message: "Invalid days. Must be 7, 15, or 30." });
+    }
+
+    const since = new Date();
+    since.setDate(since.getDate() - daysInt);
+
+    // Step 1: Aggregate orders in time window -> totalSold per productId
+    const soldMap = await Order.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      { $unwind: "$products" },
+      {
+        $group: {
+          _id: "$products.productId",
+          totalSold: { $sum: "$products.quantity" }
+        }
+      }
+    ]);
+
+    const soldById = {};
+    soldMap.forEach(item => {
+      if (item._id) soldById[item._id.toString()] = item.totalSold;
+    });
+
+    // Step 2: Build product filter
+    const productFilter = {
+      category: { $regex: new RegExp(`^${category}$`, "i") },
+      isDeleted: { $ne: true },
+      countInStock: { $gt: 0 }
+    };
+
+    // Optional subcategory filter (e.g. "Skincare", "Makeup")
+    if (subcategory && subcategory !== 'All') {
+      productFilter.$or = [
+        { subcategory: { $regex: subcategory, $options: "i" } },
+        { submenu: { $regex: subcategory, $options: "i" } }
+      ];
+    }
+
+    // Step 3: Fetch products
+    const products = await Product.find(productFilter).lean();
+
+    // Step 4: Score by totalSold, sort, rank
+    const ranked = products
+      .map(p => ({
+        ...p,
+        id: p._id?.toString(),
+        mainImage: p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png',
+        images: (p.images && p.images.length > 0) ? p.images : (p.image ? [p.image] : []),
+        _trendScore: soldById[p._id?.toString()] || 0
+      }))
+      .sort((a, b) => b._trendScore - a._trendScore)
+      .slice(0, limit)
+      .map((p, index) => ({
+        ...p,
+        totalSold: p._trendScore,
+        rank: index + 1,
+        showRankBadge: index < 5   // Only top 5 get a badge
+      }));
+
+    res.json(ranked);
+  } catch (error) {
+    console.error("Error fetching category trending products:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // 📊 TRENDING BY GENDER + TIME RANGE
 // CRITICAL: Must be BEFORE /:id route
 // GET /api/products/trending/:gender/:days  (days = 7 | 15 | 30)

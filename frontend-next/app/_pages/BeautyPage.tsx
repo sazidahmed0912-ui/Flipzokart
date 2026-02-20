@@ -1,214 +1,467 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
-import { ChevronRight, Star, ShoppingBag, TrendingUp, Sparkles } from 'lucide-react';
-import { useApp } from '@/app/store/Context'; // Assuming Context access
-import { ProductCard } from '@/app/components/ProductCard'; // Reusing your existing component
+import { motion } from 'framer-motion';
+import { ChevronRight, TrendingUp, Star, ShoppingBag, Clock } from 'lucide-react';
+import { useApp } from '@/app/store/Context';
+import { ProductCard } from '@/app/components/ProductCard';
+
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
-// --- DATA CONSTANTS ---
+// --- Types ---
+type BeautyTab = 'All' | 'Skincare' | 'Makeup' | 'Hair Care' | 'Fragrance' | 'Bath & Body' | 'Tools';
 
-// 1. Hero Banner Data
-const HERO_BANNER = {
-    title: "Beauty Essentials",
-    subtitle: "Glow Needs No Filter",
-    cta: "Shop Now",
-    // Unsplash Beauty Images (High Quality)
-    images: [
-        "https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=1600&auto=format&fit=crop", // Makeup/Skincare Spread
-        "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?q=80&w=1600&auto=format&fit=crop", // Skincare Bottles
-        "https://images.unsplash.com/photo-1522335789203-abd1ac5fd425?q=80&w=1600&auto=format&fit=crop"  // Spa/Relax
-    ]
+interface BannerConfig {
+    title: string;
+    images: string[];
+    link: string;
+}
+
+// --- Banner Data ---
+const BANNERS: Record<BeautyTab, BannerConfig> = {
+    All: {
+        title: "Beauty Essentials",
+        images: [
+            "https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=1600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1522335789203-abd1ac5fd425?q=80&w=1600&auto=format&fit=crop"
+        ],
+        link: "/shop?category=Beauty"
+    },
+    Skincare: {
+        title: "Glow Up — Skincare",
+        images: [
+            "https://images.unsplash.com/photo-1570172619643-c3912166d494?q=80&w=1600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1556228578-8c89e6adf883?q=80&w=1600&auto=format&fit=crop"
+        ],
+        link: "/shop?category=Beauty&subcategory=Skincare"
+    },
+    Makeup: {
+        title: "Bold Looks — Makeup",
+        images: [
+            "https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=1600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1600&auto=format&fit=crop"
+        ],
+        link: "/shop?category=Beauty&subcategory=Makeup"
+    },
+    "Hair Care": {
+        title: "Healthy Hair — Hair Care",
+        images: [
+            "https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=1600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1519735777090-ec97162dc266?q=80&w=1600&auto=format&fit=crop"
+        ],
+        link: "/shop?category=Beauty&subcategory=Hair Care"
+    },
+    Fragrance: {
+        title: "Signature Scents",
+        images: [
+            "https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=1600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=1600&auto=format&fit=crop"
+        ],
+        link: "/shop?category=Beauty&subcategory=Fragrance"
+    },
+    "Bath & Body": {
+        title: "Luxe Bath & Body",
+        images: [
+            "https://images.unsplash.com/photo-1542384557-0e1dcbef43f0?q=80&w=1600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?q=80&w=1600&auto=format&fit=crop"
+        ],
+        link: "/shop?category=Beauty&subcategory=Bath & Body"
+    },
+    Tools: {
+        title: "Beauty Tools & Devices",
+        images: [
+            "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?q=80&w=1600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1617220370437-33b24efed47a?q=80&w=1600&auto=format&fit=crop"
+        ],
+        link: "/shop?category=Beauty&subcategory=Tools"
+    }
 };
 
-// 2. Subcategories Data (Strict List)
-const BEAUTY_CATEGORIES = [
-    { name: "Skincare", image: "https://images.unsplash.com/photo-1570172619643-c3912166d494?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&sub=Skincare" },
-    { name: "Makeup", image: "https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&sub=Makeup" },
-    { name: "Hair Care", image: "https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&sub=Hair Care" },
-    { name: "Fragrance", image: "https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&sub=Fragrance" },
-    { name: "Bath & Body", image: "https://images.unsplash.com/photo-1542384557-0e1dcbef43f0?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&sub=Bath & Body" },
-    { name: "Beauty Tools", image: "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&sub=Beauty Tools" }
+// --- Subcategory Grid Data ---
+const BEAUTY_SUBCATEGORIES = [
+    { name: "Skincare", icon: "https://images.unsplash.com/photo-1570172619643-c3912166d494?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&subcategory=Skincare" },
+    { name: "Makeup", icon: "https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&subcategory=Makeup" },
+    { name: "Hair Care", icon: "https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&subcategory=Hair Care" },
+    { name: "Fragrance", icon: "https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&subcategory=Fragrance" },
+    { name: "Bath & Body", icon: "https://images.unsplash.com/photo-1542384557-0e1dcbef43f0?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&subcategory=Bath & Body" },
+    { name: "Tools", icon: "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?q=80&w=600&auto=format&fit=crop", link: "/shop?category=Beauty&subcategory=Tools" },
 ];
 
-export const BeautyPage = () => {
-    const { products } = useApp(); // Fallback to Context if API fails
-    const [mounted, setMounted] = useState(false);
-    const [beautyProducts, setBeautyProducts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+const TABS: BeautyTab[] = ['All', 'Skincare', 'Makeup', 'Hair Care', 'Fragrance', 'Bath & Body', 'Tools'];
 
-    useEffect(() => {
-        setMounted(true);
-        fetchRandomBeautyProducts();
-    }, []);
+export const BeautyPage: React.FC = () => {
+    const { products } = useApp();
+    const searchParams = useSearchParams();
+    const router = useRouter();
 
-    const fetchRandomBeautyProducts = async () => {
-        try {
-            setLoading(true);
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-            const res = await axios.get(`${API_URL}/api/products/random/Beauty?limit=20`, {
-                headers: { 'Cache-Control': 'no-store' }
-            });
-            setBeautyProducts(res.data);
-        } catch (error) {
-            console.warn('Random API not available yet, using Context fallback:', error);
-            // FALLBACK: Use Context products
-            const contextBeauty = products.filter(p => p.category === 'Beauty' || p.category === 'beauty');
-            setBeautyProducts(contextBeauty.length > 0 ? contextBeauty : products.slice(0, 10));
-        } finally {
-            setLoading(false);
+    // Read tab from URL on mount (preserves tab on refresh)
+    const getInitialTab = (): BeautyTab => {
+        const tabParam = searchParams.get('tab');
+        if (tabParam && TABS.includes(tabParam as BeautyTab)) {
+            return tabParam as BeautyTab;
         }
+        return 'All';
     };
 
-    // Specific Lists
-    const displayProducts = beautyProducts;
-    const trendingProducts = [...displayProducts].sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0)).slice(0, 8);
-    const bestOfBeauty = [...displayProducts].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 8);
+    const [activeTab, setActiveTab] = useState<BeautyTab>(getInitialTab);
+    const [beautyProducts, setBeautyProducts] = useState<any[]>([]);
+    const [trendingByTab, setTrendingByTab] = useState<any[]>([]);
+    const [trendingLoading, setTrendingLoading] = useState(true);
+    const [trendingDays, setTrendingDays] = useState<7 | 15 | 30>(7);
+    const [loading, setLoading] = useState(true);
 
-    if (!mounted) return null; // Prevent hydration mismatch
+    // 🧠 Dynamic Rank Movement System (using Refs for stability)
+    const previousRanksRef = useRef<Record<string, number>>({});
+    const isRankFirstLoadRef = useRef(true);
+
+    // Fetch random Beauty products from backend (with fallback)
+    useEffect(() => {
+        const fetchRandomBeautyProducts = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get('/api/products/random/Beauty?limit=20', {
+                    headers: { 'Cache-Control': 'no-store' }
+                });
+                setBeautyProducts(res.data);
+            } catch (error) {
+                console.warn('Random API not available yet, using Context fallback:', error);
+                const contextBeautyProducts = products.filter(
+                    (p: any) => p.category === 'Beauty' || p.category === 'beauty'
+                );
+                setBeautyProducts(contextBeautyProducts);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRandomBeautyProducts();
+    }, [products]);
+
+    // Reset tracking when tab or period changes
+    useEffect(() => {
+        isRankFirstLoadRef.current = true;
+        previousRanksRef.current = {};
+        setTrendingByTab([]); // Clear old list to prevent flash
+    }, [activeTab, trendingDays]);
+
+    // Fetch & Process Trending Data
+    useEffect(() => {
+        const fetchTrending = async (silent = false) => {
+            try {
+                if (!silent) setTrendingLoading(true);
+
+                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+                const subcategoryParam = activeTab !== 'All' ? `&subcategory=${encodeURIComponent(activeTab)}` : '';
+                const res = await axios.get(
+                    `${API_URL}/api/products/trending/category/Beauty/${trendingDays}?limit=16${subcategoryParam}`
+                );
+
+                let newData: any[] = [];
+                if (res.data && res.data.length > 0) {
+                    newData = res.data;
+                } else {
+                    // Fallback: filter from locally fetched beauty products
+                    newData = beautyProducts.filter((p: any) => {
+                        if (activeTab === 'All') return true;
+                        return (
+                            p.subcategory?.toLowerCase().includes(activeTab.toLowerCase()) ||
+                            p.submenu?.toLowerCase().includes(activeTab.toLowerCase())
+                        );
+                    });
+                }
+
+                // 🧠 Process Rank Movement Logic
+                const processRankMovement = (data: any[]) => {
+                    if (isRankFirstLoadRef.current) {
+                        isRankFirstLoadRef.current = false;
+                        const initialMap: Record<string, number> = {};
+                        data.forEach(p => initialMap[p._id || p.id] = p.rank);
+                        previousRanksRef.current = initialMap;
+                        return data.map(p => ({ ...p, movement: 'same' }));
+                    }
+
+                    const updated = data.map(p => {
+                        const pid = p._id || p.id;
+                        const prevRank = previousRanksRef.current[pid];
+                        let movement = 'same';
+
+                        if (prevRank !== undefined) {
+                            if (p.rank < prevRank) movement = 'up';
+                            else if (p.rank > prevRank) movement = 'down';
+                        }
+                        return { ...p, movement };
+                    });
+
+                    // Update ref map for next compare
+                    const newMap: Record<string, number> = {};
+                    updated.forEach(p => newMap[p._id || p.id] = p.rank);
+                    previousRanksRef.current = newMap;
+
+                    return updated;
+                };
+
+                const processedData = processRankMovement(newData);
+                setTrendingByTab(processedData);
+
+            } catch (error) {
+                console.error("Error fetching trending:", error);
+            } finally {
+                if (!silent) setTrendingLoading(false);
+            }
+        };
+
+        fetchTrending(); // Initial fetch
+
+        // 🔄 Auto-Poll for updates every 10 seconds (silent refresh)
+        const interval = setInterval(() => fetchTrending(true), 10000);
+        return () => clearInterval(interval);
+
+    }, [activeTab, trendingDays, beautyProducts]);
+
+    // 🧠 Auto-Hide Movement Animation after 2 seconds
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setTrendingByTab(prev => prev.map(p => ({ ...p, movement: 'same' })));
+        }, 2000);
+        return () => clearTimeout(timer);
+    }, [trendingByTab]);
+
+    // Products for display: trending split into two sections
+    const trendingProducts = trendingByTab.slice(0, 8);
+    const bestOfProducts = trendingByTab.slice(8, 16);
+
+    const currentBanner = BANNERS[activeTab];
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
-            {/* 1. HERO BANNER */}
-            {/* Mobile: 180-220px | Desktop 420-520px */}
-            <div className="w-full h-[200px] md:h-[300px] lg:h-[420px] xl:h-[500px] bg-gray-200 relative overflow-hidden group">
+        <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
+
+            {/* 1. STICKY TAB NAV */}
+            <div className="sticky top-[56px] md:top-[72px] z-20 bg-white shadow-sm border-b border-gray-100">
+                <div className="w-full max-w-7xl mx-auto px-0 md:px-8">
+                    <div className="flex w-full overflow-x-auto no-scrollbar">
+                        {TABS.map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => {
+                                    setActiveTab(tab);
+                                    router.replace(`/beauty?tab=${encodeURIComponent(tab)}`, { scroll: false });
+                                }}
+                                className={`
+                                    relative flex-shrink-0 flex-1 min-w-[72px] py-3 md:py-4 text-[11px] md:text-base font-bold uppercase tracking-wide text-center transition-all duration-200 outline-none select-none
+                                    ${activeTab === tab
+                                        ? 'text-black bg-gradient-to-b from-white to-pink-50'
+                                        : 'text-gray-600 hover:text-black hover:bg-pink-50'
+                                    }
+                                `}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
+                            >
+                                {tab}
+                                {activeTab === tab && (
+                                    <motion.div
+                                        layoutId="beautyTabIndicator"
+                                        className="absolute bottom-0 left-0 right-0 h-1 bg-[#FACC15] shadow-[0_-2px_6px_rgba(250,204,21,0.4)]"
+                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                    />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* 2. SWIPER HERO BANNER */}
+            <div className="w-full h-[220px] md:h-[420px] lg:h-[420px] xl:h-[520px] 2xl:h-[580px] bg-gray-100 overflow-hidden lg:max-w-[1400px] xl:max-w-[1500px] mx-auto rounded-none lg:rounded-2xl lg:mt-4 lg:shadow-xl relative">
                 <Swiper
+                    key={activeTab}
                     modules={[Autoplay, Pagination]}
+                    spaceBetween={0}
+                    slidesPerView={1}
                     loop={true}
-                    autoplay={{ delay: 4000, disableOnInteraction: false }}
-                    pagination={{ clickable: true, dynamicBullets: true }}
+                    autoplay={{ delay: 3500, disableOnInteraction: false }}
+                    pagination={{ clickable: true }}
+                    observer={true}
+                    observeParents={true}
                     className="w-full h-full"
                 >
-                    {HERO_BANNER.images.map((img, idx) => (
-                        <SwiperSlide key={idx}>
+                    {currentBanner.images.map((img, index) => (
+                        <SwiperSlide key={`${activeTab}-${index}`}>
                             <div className="relative w-full h-full">
                                 <img
                                     src={img}
-                                    alt={`Beauty Banner ${idx + 1}`}
+                                    alt={`${currentBanner.title} - Slide ${index + 1}`}
                                     className="absolute inset-0 w-full h-full object-cover object-center"
                                 />
-                                <div className="absolute inset-0 bg-black/20 md:bg-black/10"></div> {/* Subtle Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12 pointer-events-none">
+                                    <div className="text-white pointer-events-auto max-w-[600px] lg:max-w-[800px]">
+                                        <h2 className="text-xl md:text-5xl lg:text-5xl xl:text-6xl font-bold mb-1 md:mb-3 lg:mb-4">{currentBanner.title}</h2>
+                                        <Link
+                                            href={currentBanner.link}
+                                            className="text-xs md:text-base lg:text-lg font-semibold bg-white text-black px-3 py-1.5 md:px-6 md:py-2.5 lg:px-8 lg:py-3 rounded-full inline-flex items-center gap-1 hover:bg-opacity-90 transition-transform hover:scale-105 shadow-lg"
+                                        >
+                                            Shop Now <ChevronRight size={16} className="md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                         </SwiperSlide>
                     ))}
                 </Swiper>
+            </div>
 
-                {/* Text Overlay (Centered) */}
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center pointer-events-none px-4">
-                    <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-white drop-shadow-lg mb-2 md:mb-4 tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        {HERO_BANNER.title}
-                    </h1>
-                    <p className="text-sm md:text-xl text-white/90 font-medium mb-4 md:mb-8 drop-shadow-md animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-                        {HERO_BANNER.subtitle}
-                    </p>
-                    <Link
-                        href="/shop?category=Beauty"
-                        className="pointer-events-auto bg-white text-black px-6 py-2 md:px-8 md:py-3 rounded-full text-xs md:text-sm font-bold uppercase tracking-wider hover:scale-105 hover:shadow-xl transition-all duration-300 animate-in fade-in zoom-in duration-500 delay-200"
-                    >
-                        {HERO_BANNER.cta}
-                    </Link>
+            {/* 3. SUBCATEGORY GRID */}
+            <div className="bg-white py-4 md:py-8 px-3 md:px-8 mb-4 shadow-sm">
+                <div className="max-w-7xl mx-auto">
+                    <h3 className="text-xs md:text-lg font-bold text-gray-800 mb-3 md:mb-6 uppercase tracking-wider">Shop by Category</h3>
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-6">
+                        {BEAUTY_SUBCATEGORIES.map((sub, idx) => (
+                            <Link key={idx} href={sub.link} className="flex flex-col items-center group">
+                                <div className="w-full aspect-square relative rounded-lg overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:border-pink-400 transition-colors">
+                                    <img
+                                        src={sub.icon}
+                                        alt={sub.name}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                </div>
+                                <span className="text-[11px] md:text-sm font-medium text-gray-700 text-center">{sub.name}</span>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            {/* 2. SUBCATEGORY GRID (CRITICAL) */}
-            {/* Mobile: 3 cols | Desktop: 6 cols */}
-            <div className="max-w-[1400px] mx-auto px-4 py-8 md:py-12">
-                <div className="flex items-center gap-2 mb-6">
-                    <Sparkles className="text-pink-500" size={20} />
-                    <h2 className="text-lg md:text-2xl font-bold text-gray-800 uppercase tracking-wide">Shop by Category</h2>
-                </div>
+            {/* 4. PRODUCT SHOWCASE SECTIONS */}
+            <div className="max-w-7xl mx-auto space-y-4 md:space-y-8 pb-8">
 
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-6 lg:gap-8">
-                    {BEAUTY_CATEGORIES.map((cat, idx) => (
-                        <Link
-                            key={idx}
-                            href={cat.link}
-                            className="group flex flex-col items-center gap-3"
-                        >
-                            <div className="w-full aspect-square relative rounded-full md:rounded-2xl overflow-hidden border border-gray-100 shadow-sm md:shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-105 bg-white">
-                                <img
-                                    src={cat.image}
-                                    alt={cat.name}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                    loading="lazy"
-                                />
+                {/* Trending Section */}
+                {(trendingProducts.length > 0 || trendingLoading) && (
+                    <section className="bg-white py-4 md:py-6 px-3 md:px-8 mt-2 shadow-sm">
+                        <div className="flex justify-between items-start mb-3 md:mb-4">
+                            <div>
+                                <h3 className="text-sm md:text-xl font-bold flex items-center gap-2">
+                                    <TrendingUp size={16} className="text-[#2874F0]" />
+                                    <span className="flex items-center glow-text">
+                                        Trending in {activeTab === 'All' ? 'Beauty' : activeTab}
+                                        <span className="live-dot"></span>
+                                    </span>
+                                </h3>
+                                <p className="text-[10px] md:text-sm text-gray-400">Based on real orders</p>
                             </div>
-                            <span className="text-xs md:text-sm font-semibold text-gray-700 text-center group-hover:text-pink-600 transition-colors">
-                                {cat.name}
-                            </span>
-                        </Link>
-                    ))}
-                </div>
-            </div>
-
-            {/* 3. TRENDING IN BEAUTY */}
-            <div className="bg-white py-8 md:py-12 border-t border-gray-100">
-                <div className="max-w-[1400px] mx-auto px-4">
-                    <div className="flex justify-between items-center mb-6">
-                        <div className="flex items-center gap-2">
-                            <TrendingUp className="text-purple-500" size={20} />
-                            <h2 className="text-lg md:text-2xl font-bold text-gray-800">Trending in Beauty</h2>
+                            <div className="flex flex-col items-end gap-2">
+                                {/* Time Filter Pills */}
+                                <div className="flex items-center gap-1 bg-gray-100 rounded-full p-0.5">
+                                    <Clock size={11} className="text-gray-400 ml-1.5" />
+                                    {([7, 15, 30] as const).map(d => (
+                                        <button
+                                            key={d}
+                                            onClick={() => setTrendingDays(d)}
+                                            className={`text-[10px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-full transition-all ${trendingDays === d
+                                                ? 'bg-[#2874F0] text-white shadow-sm'
+                                                : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                        >
+                                            {d}D
+                                        </button>
+                                    ))}
+                                </div>
+                                <Link
+                                    href={`/shop?category=Beauty${activeTab !== 'All' ? `&subcategory=${encodeURIComponent(activeTab)}` : ''}&sort=newest`}
+                                    className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5"
+                                >
+                                    <ChevronRight size={16} className="md:hidden" />
+                                    <span className="hidden md:inline text-sm font-bold">View All</span>
+                                </Link>
+                            </div>
                         </div>
-                        <Link href="/shop?category=Beauty" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                            View All <ChevronRight size={14} />
-                        </Link>
-                    </div>
 
-                    {/* Horizontal Scroll on Mobile, Grid on Desktop */}
-                    {trendingProducts.length > 0 ? (
-                        <div className="flex overflow-x-auto pb-6 -mx-4 px-4 md:grid md:grid-cols-4 lg:grid-cols-5 md:gap-6 md:pb-0 md:mx-0 md:px-0 scrollbar-hide snap-x">
-                            {trendingProducts.map((product) => (
-                                <div key={product.id} className="min-w-[160px] max-w-[160px] md:min-w-0 md:max-w-none snap-start mr-3 md:mr-0">
+                        {trendingLoading ? (
+                            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+                                {[...Array(4)].map((_, i) => (
+                                    <div key={i} className="min-w-[140px] md:min-w-0 md:flex-1 h-52 bg-gray-100 rounded-xl animate-pulse" />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-4 md:gap-6 no-scrollbar snap-x">
+                                {trendingProducts.map((product) => (
+                                    <div key={product.id} className="flex flex-col min-w-[140px] md:min-w-0 snap-start">
+                                        <ProductCard product={product} />
+                                        {/* 🏆 RANK BADGE — below image, top 5 only */}
+                                        {product.showRankBadge && (
+                                            <div
+                                                className="flex items-center justify-center gap-1.5 mx-1 -mt-1 mb-1 py-1 px-3 rounded-b-xl text-white text-[11px] md:text-xs font-black select-none"
+                                                style={{
+                                                    background: [
+                                                        'linear-gradient(90deg,#FFD700,#FFA500)', // #1 Gold
+                                                        'linear-gradient(90deg,#C0C0C0,#A9A9A9)', // #2 Silver
+                                                        'linear-gradient(90deg,#CD7F32,#8B4513)', // #3 Bronze
+                                                        'linear-gradient(90deg,#ff416c,#ff4b2b)', // #4 Red
+                                                        'linear-gradient(90deg,#36d1dc,#5b86e5)', // #5 Blue
+                                                    ][product.rank - 1],
+                                                    animation: 'rankPopIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both',
+                                                    animationDelay: `${(product.rank - 1) * 60}ms`,
+                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.18)'
+                                                }}
+                                            >
+                                                <span className="flex items-center">
+                                                    #{product.rank} Trending
+                                                    {product.movement === 'up' && <span className="rank-move up ml-1">⬆</span>}
+                                                    {product.movement === 'down' && <span className="rank-move down ml-1">⬇</span>}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
+                )}
+
+                {/* Best Of Section */}
+                {bestOfProducts.length > 0 && (
+                    <section className="bg-white py-4 md:py-6 px-3 md:px-8 mt-2 shadow-sm">
+                        <div className="flex justify-between items-end mb-3 md:mb-6">
+                            <div>
+                                <h3 className="text-sm md:text-xl font-bold text-gray-800 flex items-center gap-2">
+                                    <Star size={16} className="text-yellow-500" />
+                                    Best of {activeTab === 'All' ? 'Beauty' : activeTab}
+                                </h3>
+                                <p className="text-[10px] md:text-sm text-gray-400">Top rated by customers</p>
+                            </div>
+                            <Link
+                                href={`/shop?category=Beauty${activeTab !== 'All' ? `&subcategory=${encodeURIComponent(activeTab)}` : ''}&sort=rating`}
+                                className="bg-[#2874F0] text-white rounded-full p-1 md:px-4 md:py-1.5"
+                            >
+                                <ChevronRight size={16} className="md:hidden" />
+                                <span className="hidden md:inline text-sm font-bold">View All</span>
+                            </Link>
+                        </div>
+
+                        <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-4 md:gap-6 no-scrollbar snap-x">
+                            {bestOfProducts.map((product) => (
+                                <div key={product.id} className="min-w-[140px] md:min-w-0 snap-start">
                                     <ProductCard product={product} />
                                 </div>
                             ))}
                         </div>
-                    ) : (
-                        <EmptyStateSection title="Trending Products" />
-                    )}
-                </div>
-            </div>
+                    </section>
+                )}
 
-            {/* 4. BEST OF BEAUTY */}
-            <div className="py-8 md:py-12">
-                <div className="max-w-[1400px] mx-auto px-4">
-                    <div className="flex justify-between items-center mb-6">
-                        <div className="flex items-center gap-2">
-                            <Star className="text-yellow-500 fill-yellow-500" size={20} />
-                            <h2 className="text-lg md:text-2xl font-bold text-gray-800">Best of Beauty</h2>
-                        </div>
-                        <Link href="/shop?category=Beauty" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                            View All <ChevronRight size={14} />
-                        </Link>
+                {/* Fallback if no products */}
+                {trendingByTab.length === 0 && !trendingLoading && (
+                    <div className="flex flex-col items-center justify-center py-20 bg-white m-3 rounded-xl border border-dashed text-center">
+                        <ShoppingBag size={48} className="text-gray-200 mb-4" />
+                        <h3 className="text-gray-500 font-bold">Coming Soon</h3>
+                        <p className="text-xs text-gray-400 mt-1">
+                            We are stocking up {activeTab === 'All' ? 'Beauty' : activeTab}'s collection!
+                        </p>
                     </div>
+                )}
 
-                    {/* Horizontal Scroll on Mobile, Grid on Desktop */}
-                    {bestOfBeauty.length > 0 ? (
-                        <div className="flex overflow-x-auto pb-6 -mx-4 px-4 md:grid md:grid-cols-4 lg:grid-cols-5 md:gap-6 md:pb-0 md:mx-0 md:px-0 scrollbar-hide snap-x">
-                            {bestOfBeauty.map((product) => (
-                                <div key={product.id} className="min-w-[160px] max-w-[160px] md:min-w-0 md:max-w-none snap-start mr-3 md:mr-0">
-                                    <ProductCard product={product} />
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <EmptyStateSection title="Best Rated Products" />
-                    )}
-                </div>
             </div>
         </div>
     );
 };
-
-// Helper: Empty State
-const EmptyStateSection = ({ title }: { title: string }) => (
-    <div className="w-full h-40 flex flex-col items-center justify-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
-        <ShoppingBag className="text-gray-300 mb-2" size={32} />
-        <p className="text-sm text-gray-400 font-medium">Coming Soon in {title}</p>
-    </div>
-);
