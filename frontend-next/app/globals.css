@@ -555,17 +555,13 @@
     }
 }
 
-/* ============================================
-   📱 SELL ON FZOKART — MOBILE COMPACT FIT
-   ULTRA LOCK: Only @media (max-width: 768px)
-   Desktop untouched.
-   ============================================ */
-
+/* Sell on Fzokart – Mobile Compact Fit System */
 @media (max-width: 768px) {
 
-    /* STEP 1 – Reduce Page Padding */
+    /* STEP 1 & 9 – Reduce Page Padding & Ensure proper width */
     .sell-page-container {
         padding: 16px 14px;
+        max-width: 100%;
     }
 
     /* STEP 2 – Heading Size Optimize */
@@ -620,9 +616,5 @@
     /* STEP 9 – Ensure No Horizontal Scroll */
     body {
         overflow-x: hidden;
-    }
-
-    .sell-page-container {
-        max-width: 100%;
     }
 }
