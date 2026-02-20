@@ -1,6 +1,11 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SellerWizard from '@/app/components/Seller/SellerWizard';
+import { OtpInput } from '@/app/components/OtpInput';
+import authService from '@/app/services/authService';
+import { useApp } from '@/app/store/Context';
+import { useToast } from '@/app/components/toast';
+import { useRouter } from 'next/navigation';
 import {
     ArrowRight,
     TrendingUp,
@@ -9,15 +14,85 @@ import {
     ShieldCheck,
     Headphones,
     FileText,
-    UploadCloud
+    UploadCloud,
+    Mail,
+    LogIn,
+    Loader2,
+    CheckCircle2,
+    ChevronRight
 } from 'lucide-react';
 
 const SellOnFlipzokart: React.FC = () => {
     const [startWizard, setStartWizard] = useState(false);
 
+    // ─── Seller Login State ────────────────────────────────────────────────
+    const [loginEmail, setLoginEmail] = useState('');
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const [otpSent, setOtpSent] = useState(false);
+    const [timer, setTimer] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    const { loginSequence } = useApp();
+    const { addToast } = useToast();
+    const router = useRouter();
+
+    // Countdown timer for OTP resend
+    useEffect(() => {
+        if (timer <= 0) return;
+        const interval = setInterval(() => setTimer(t => t - 1), 1000);
+        return () => clearInterval(interval);
+    }, [timer]);
+
+    const handleSendOtp = async () => {
+        if (!loginEmail.includes('@')) {
+            addToast('error', 'Please enter a valid email address');
+            return;
+        }
+        setIsLoading(true);
+        try {
+            await authService.sendEmailOtp(loginEmail);
+            setOtpSent(true);
+            setTimer(300);
+            addToast('success', 'OTP sent to your email!');
+        } catch (err: any) {
+            addToast('error', err.message || 'Failed to send OTP');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const otpCode = otp.join('');
+        if (otpCode.length < 6) {
+            addToast('error', 'Please enter the 6-digit OTP');
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const user = await authService.verifyEmailOtp(loginEmail, otpCode);
+            const token = localStorage.getItem('token');
+            if (token && user) {
+                await loginSequence(token, user);
+            }
+            addToast('success', '✅ Login successful! Redirecting...');
+            setTimeout(() => router.push('/dashboard'), 800);
+        } catch (err: any) {
+            if (err.message?.includes('Sign Up first') || err.response?.status === 404) {
+                addToast('error', '🚫 No seller account found. Please register first.');
+            } else {
+                addToast('error', err.response?.data?.message || err.message || 'Login failed');
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     if (startWizard) {
         return <SellerWizard />;
     }
+
+    // Formatted timer: MM:SS
+    const timerDisplay = `${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, '0')}`;
 
     // Landing Page
     return (
@@ -59,33 +134,157 @@ const SellOnFlipzokart: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Hero Image Concept - Abstract Illustration of Growth */}
-                        <div className="hidden md:flex justify-center relative">
-                            <div className="relative w-full max-w-md aspect-square">
-                                <div className="absolute inset-0 bg-white/10 backdrop-blur-lg rounded-full animate-pulse-slow"></div>
-                                <div className="absolute inset-4 bg-white/20 backdrop-blur-md rounded-full"></div>
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="grid grid-cols-2 gap-4 p-4">
-                                        <div className="bg-white p-6 rounded-2xl shadow-xl transform rotate-[-6deg] hover:rotate-0 transition-all duration-500">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <div className="p-2 bg-green-100 rounded-lg text-green-600"><TrendingUp size={24} /></div>
-                                                <div className="text-sm font-bold text-gray-500">Review</div>
-                                            </div>
-                                            <div className="text-2xl font-bold text-gray-800">4.8/5</div>
-                                            <div className="text-xs text-green-600 font-semibold">+12% this week</div>
-                                        </div>
-                                        <div className="bg-white p-6 rounded-2xl shadow-xl transform rotate-[6deg] hover:rotate-0 transition-all duration-500 mt-8">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><IndianRupee size={24} /></div>
-                                                <div className="text-sm font-bold text-gray-500">Revenue</div>
-                                            </div>
-                                            <div className="text-2xl font-bold text-gray-800">₹1.2L</div>
-                                            <div className="text-xs text-green-600 font-semibold">Today's earning</div>
+                        {/* ─── Existing Seller Login Card ──────────────────────────────── */}
+                        <div className="flex justify-center">
+                            <div
+                                className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
+                                style={{
+                                    background: 'rgba(255,255,255,0.12)',
+                                    backdropFilter: 'blur(20px)',
+                                    WebkitBackdropFilter: 'blur(20px)',
+                                    border: '1px solid rgba(255,255,255,0.25)',
+                                }}
+                            >
+                                {/* Card Header */}
+                                <div className="px-7 pt-7 pb-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <LogIn size={18} className="text-yellow-300" />
+                                        <h2 className="text-white font-bold text-lg">Existing Seller Login</h2>
+                                    </div>
+                                    <p className="text-blue-200 text-sm">
+                                        Apna seller account access karo via Email &amp; OTP
+                                    </p>
+                                </div>
+
+                                {/* Divider */}
+                                <div className="h-px bg-white/15 mx-7" />
+
+                                {/* Form */}
+                                <form onSubmit={handleVerifyOtp} className="px-7 py-6 space-y-4">
+                                    {/* Email Input */}
+                                    <div>
+                                        <label className="text-blue-100 text-xs font-semibold mb-1.5 block uppercase tracking-wider">
+                                            Registered Email
+                                        </label>
+                                        <div className="relative flex items-center">
+                                            <Mail size={16} className="absolute left-3.5 text-blue-300 pointer-events-none" />
+                                            <input
+                                                type="email"
+                                                placeholder="seller@email.com"
+                                                value={loginEmail}
+                                                onChange={e => setLoginEmail(e.target.value)}
+                                                disabled={isLoading || otpSent}
+                                                className="w-full pl-10 pr-4 py-3 rounded-xl text-sm font-medium outline-none transition-all"
+                                                style={{
+                                                    background: 'rgba(255,255,255,0.15)',
+                                                    border: '1px solid rgba(255,255,255,0.3)',
+                                                    color: '#fff',
+                                                }}
+                                                onFocus={e => {
+                                                    e.target.style.background = 'rgba(255,255,255,0.22)';
+                                                    e.target.style.borderColor = '#F9C74F';
+                                                }}
+                                                onBlur={e => {
+                                                    e.target.style.background = 'rgba(255,255,255,0.15)';
+                                                    e.target.style.borderColor = 'rgba(255,255,255,0.3)';
+                                                }}
+                                            />
+                                            {otpSent && (
+                                                <CheckCircle2 size={16} className="absolute right-3.5 text-green-400" />
+                                            )}
                                         </div>
                                     </div>
-                                </div>
+
+                                    {/* OTP Section */}
+                                    {!otpSent ? (
+                                        <button
+                                            type="button"
+                                            onClick={handleSendOtp}
+                                            disabled={isLoading || !loginEmail.includes('@')}
+                                            className="w-full py-3 rounded-xl font-bold text-blue-900 text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-105 active:scale-[0.98]"
+                                            style={{ background: '#F9C74F' }}
+                                        >
+                                            {isLoading ? (
+                                                <><Loader2 size={16} className="animate-spin" /> Sending OTP...</>
+                                            ) : (
+                                                <><Mail size={16} /> Send OTP to Email</>
+                                            )}
+                                        </button>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {/* OTP label + resend */}
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-blue-100 text-xs font-semibold uppercase tracking-wider">
+                                                    Enter OTP
+                                                </label>
+                                                <div className="text-xs">
+                                                    {timer > 0 ? (
+                                                        <span className="text-yellow-300 font-mono font-semibold">{timerDisplay}</span>
+                                                    ) : (
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleSendOtp}
+                                                            disabled={isLoading}
+                                                            className="text-yellow-300 font-bold hover:underline bg-transparent border-none p-0 cursor-pointer disabled:opacity-50"
+                                                        >
+                                                            Resend OTP
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* OTP Input Boxes */}
+                                            <div style={{ '--otp-color': '#1F2937' } as React.CSSProperties}>
+                                                <OtpInput
+                                                    length={6}
+                                                    value={otp}
+                                                    onChange={setOtp}
+                                                    disabled={isLoading}
+                                                />
+                                            </div>
+
+                                            {/* Verify Button */}
+                                            <button
+                                                type="submit"
+                                                disabled={isLoading || otp.join('').length < 6}
+                                                className="w-full py-3 rounded-xl font-bold text-blue-900 text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-105 active:scale-[0.98]"
+                                                style={{ background: '#F9C74F' }}
+                                            >
+                                                {isLoading ? (
+                                                    <><Loader2 size={16} className="animate-spin" /> Verifying...</>
+                                                ) : (
+                                                    <><LogIn size={16} /> Login to Seller Panel</>
+                                                )}
+                                            </button>
+
+                                            {/* Change email */}
+                                            <button
+                                                type="button"
+                                                onClick={() => { setOtpSent(false); setOtp(['', '', '', '', '', '']); setTimer(0); }}
+                                                className="w-full text-xs text-blue-200 hover:text-white transition-colors text-center bg-transparent border-none cursor-pointer"
+                                            >
+                                                ← Change email address
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Divider */}
+                                    <div className="flex items-center gap-3 text-blue-300 text-xs font-medium before:h-px before:flex-1 before:bg-white/20 after:h-px after:flex-1 after:bg-white/20">
+                                        New Seller?
+                                    </div>
+
+                                    {/* Register CTA */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setStartWizard(true)}
+                                        className="w-full py-3 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-all border-2 border-white/30 hover:bg-white/10 active:scale-[0.98]"
+                                    >
+                                        Register as Seller <ChevronRight size={16} />
+                                    </button>
+                                </form>
                             </div>
                         </div>
+                        {/* ─── End Login Card ──────────────────────────────────────────── */}
                     </div>
                 </div>
 
@@ -117,7 +316,7 @@ const SellOnFlipzokart: React.FC = () => {
                             <FileText size={40} className="text-blue-600" />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">1. Register Account</h3>
-                        <p className="text-gray-600 px-6">Enter your GST & PAN details. Verified in minutes.</p>
+                        <p className="text-gray-600 px-6">Enter your GST &amp; PAN details. Verified in minutes.</p>
                     </div>
 
                     {/* Step 2 */}
