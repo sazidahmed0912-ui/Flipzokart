@@ -21,7 +21,7 @@ const SellOnFlipzokart: React.FC = () => {
 
     // Landing Page
     return (
-        <div className="sell-page min-h-screen bg-white font-sans">
+        <div className="min-h-screen bg-white font-sans">
             {/* Hero Section */}
             <div className="relative bg-[#2874F0] overflow-hidden">
                 {/* Decorative Pattern Background */}

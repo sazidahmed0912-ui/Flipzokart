@@ -56,7 +56,7 @@ const SellerWizard: React.FC = () => {
     }
 
     return (
-        <div className="sell-page min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans">
             <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
                 {/* Wizard Header */}
                 <div className="bg-[#2874F0] p-6 text-white flex items-center justify-between">

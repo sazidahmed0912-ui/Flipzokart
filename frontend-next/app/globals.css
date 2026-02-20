@@ -555,71 +555,54 @@
     }
 }
 
-/* ✅ Ultra Lock Prompt: Mobile Layout Fit Fix for Sell Page */
+/* --- Help Centre System (Shared with Contact & About) --- */
+:root {
+    --surface-bg: #ffffff;
+    --border-color: #e5e7eb;
+}
+
+.help-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.help-card {
+    background: var(--surface-bg, #ffffff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.contact-page,
+.about-page {
+    /* no new layout */
+    display: block;
+}
+
 @media (max-width: 768px) {
-
-    /* STEP 1 - Full Page Mobile Reset */
-    .sell-page {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 16px !important;
-        margin: 0 auto !important;
-        box-sizing: border-box;
+    .help-centre-page {
+        padding: 16px;
     }
 
-    body {
-        overflow-x: hidden;
-    }
-
-    /* STEP 2 - Force Vertical Stack */
-    .sell-page .row,
-    .sell-page .flex,
-    .sell-page .grid {
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    /* STEP 3 - Text Center Fix */
-    .sell-page h1,
-    .sell-page h2,
-    .sell-page p,
-    .sell-page .learn-more {
-        text-align: center !important;
-    }
-
-    /* STEP 4 - Input + Get OTP Proper Center */
-    .sell-page .otp-container {
-        width: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 10px;
-    }
-
-    .sell-page input {
-        width: 100% !important;
-    }
-
-    .sell-page button {
-        width: 100% !important;
-    }
-
-    /* STEP 5 - Bottom Component Fix */
-    .sell-page .bottom-section,
-    .sell-page .extra-component {
-        width: 100% !important;
-        margin-top: 20px !important;
-        text-align: center !important;
-    }
-
-    /* STEP 6 - Remove Fixed Width Containers */
-    .sell-page * {
-        max-width: 100% !important;
-    }
-
-    /* STEP 7 - Remove Side Padding From Parent */
-    .container,
-    .wrapper {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+    .help-card {
+        padding: 16px;
+        border-radius: 12px;
     }
 }
+
+.help-centre-page h1 {
+    font-size: 24px;
+    margin-bottom: 16px;
+}
+
+.help-centre-page p {
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.help-centre-page section {
+    margin-bottom: 24px;
+}
+
+/* -------------------------------------------------------- */
