@@ -21,9 +21,9 @@ const SellOnFlipzokart: React.FC = () => {
 
     // Landing Page
     return (
-        <div className="min-h-screen bg-white font-sans">
+        <div className="min-h-screen bg-white font-sans sell-page-container">
             {/* Hero Section */}
-            <div className="relative bg-[#2874F0] overflow-hidden">
+            <div className="relative bg-[#2874F0] overflow-hidden sell-section">
                 {/* Decorative Pattern Background */}
                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                 <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#1a60d6] to-transparent"></div>
@@ -98,7 +98,7 @@ const SellOnFlipzokart: React.FC = () => {
             </div>
 
             {/* 3 Steps Process Section */}
-            <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 sell-section">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Start Selling in 3 Simple Steps</h2>
                     <p className="text-xl text-gray-600">Bus 3 steps aur aapka business online!</p>
@@ -150,7 +150,7 @@ const SellOnFlipzokart: React.FC = () => {
             </div>
 
             {/* Why Sell With Us? (Benefits) */}
-            <div className="bg-blue-50 py-16">
+            <div className="bg-blue-50 py-16 sell-section">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl font-bold text-gray-900">Why Sellers Choose Flipzokart?</h2>
@@ -163,7 +163,7 @@ const SellOnFlipzokart: React.FC = () => {
                             { icon: <ShieldCheck size={28} />, title: "Secure Payments", desc: "Regular settlements directly to bank." },
                             { icon: <Headphones size={28} />, title: "Seller Support", desc: "24/7 dedicated support for you." }
                         ].map((item, idx) => (
-                            <div key={idx} className="bg-white p-6 rounded-xl hover:shadow-md transition-shadow">
+                            <div key={idx} className="bg-white p-6 rounded-xl hover:shadow-md transition-shadow sell-card">
                                 <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4">
                                     {item.icon}
                                 </div>
@@ -176,7 +176,7 @@ const SellOnFlipzokart: React.FC = () => {
             </div>
 
             {/* Testimonial / Trust */}
-            <div className="max-w-5xl mx-auto px-4 py-20 text-center">
+            <div className="max-w-5xl mx-auto px-4 py-20 text-center sell-section">
                 <h2 className="text-3xl font-bold text-gray-900 mb-8">Trusted by Indians Like You</h2>
                 <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-2xl p-8 md:p-12 relative overflow-hidden">
                     <div className="relative z-10 flex flex-col items-center">

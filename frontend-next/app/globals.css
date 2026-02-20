@@ -554,3 +554,75 @@
         backdrop-filter: blur(18px) saturate(160%);
     }
 }
+
+/* ============================================
+   📱 SELL ON FZOKART — MOBILE COMPACT FIT
+   ULTRA LOCK: Only @media (max-width: 768px)
+   Desktop untouched.
+   ============================================ */
+
+@media (max-width: 768px) {
+
+    /* STEP 1 – Reduce Page Padding */
+    .sell-page-container {
+        padding: 16px 14px;
+    }
+
+    /* STEP 2 – Heading Size Optimize */
+    .sell-page-container h1 {
+        font-size: 22px;
+        line-height: 1.3;
+    }
+
+    .sell-page-container h2 {
+        font-size: 18px;
+    }
+
+    /* STEP 3 – Paragraph Text Tighten */
+    .sell-page-container p {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    /* STEP 4 – Reduce Section Spacing */
+    .sell-section {
+        margin-bottom: 20px;
+    }
+
+    /* STEP 5 – Form Inputs Compact */
+    .sell-form input,
+    .sell-form textarea,
+    .sell-form select {
+        height: 42px;
+        font-size: 14px;
+        padding: 8px 10px;
+    }
+
+    /* STEP 6 – Button Resize (Not Too Big) */
+    .sell-form button {
+        height: 44px;
+        font-size: 14px;
+    }
+
+    /* STEP 7 – Card or Box Layout Full Width */
+    .sell-card {
+        width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    /* STEP 8 – Remove Extra Empty Space */
+    .sell-page-container>* {
+        margin-top: 12px;
+        margin-bottom: 12px;
+    }
+
+    /* STEP 9 – Ensure No Horizontal Scroll */
+    body {
+        overflow-x: hidden;
+    }
+
+    .sell-page-container {
+        max-width: 100%;
+    }
+}
