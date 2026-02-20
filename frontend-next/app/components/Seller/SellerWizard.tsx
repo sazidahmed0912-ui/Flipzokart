@@ -88,8 +88,8 @@ const SellerWizard: React.FC = () => {
                     {step === 2 && <Step2Business onSuccess={handleStep2Success} onBack={() => setStep(1)} API={API} token={token} />}
                     {step === 3 && <Step3Store onSuccess={handleStep3Success} API={API} token={token} />}
                 </div>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 };
 
