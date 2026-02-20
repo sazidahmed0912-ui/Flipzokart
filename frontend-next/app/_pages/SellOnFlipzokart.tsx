@@ -31,9 +31,16 @@ const SellOnFlipzokart: React.FC = () => {
     const [otpSent, setOtpSent] = useState(false);
     const [timer, setTimer] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
-    const { loginSequence } = useApp();
+    const { loginSequence, user, isInitialized } = useApp();
     const { addToast } = useToast();
     const router = useRouter();
+
+    // ─── Auto-redirect: Already logged-in seller → Dashboard directly ──────
+    useEffect(() => {
+        if (isInitialized && user) {
+            router.replace('/dashboard');
+        }
+    }, [isInitialized, user]);
 
     // Countdown timer for OTP resend
     useEffect(() => {
@@ -41,6 +48,15 @@ const SellOnFlipzokart: React.FC = () => {
         const interval = setInterval(() => setTimer(t => t - 1), 1000);
         return () => clearInterval(interval);
     }, [timer]);
+
+    // Helper: agar already logged in hai toh dashboard, else wizard
+    const handleSellerCta = () => {
+        if (user) {
+            router.push('/dashboard');
+        } else {
+            setStartWizard(true);
+        }
+    };
 
     const handleSendOtp = async () => {
         if (!loginEmail.includes('@')) {
@@ -87,6 +103,15 @@ const SellOnFlipzokart: React.FC = () => {
         }
     };
 
+    // Show spinner until context hydrates (prevent flash of login form for logged-in sellers)
+    if (!isInitialized) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#2874F0]">
+                <Loader2 size={40} className="animate-spin text-white" />
+            </div>
+        );
+    }
+
     if (startWizard) {
         return <SellerWizard />;
     }
@@ -123,7 +148,7 @@ const SellOnFlipzokart: React.FC = () => {
 
                             <div className="flex flex-col sm:flex-row gap-4 mt-8">
                                 <button
-                                    onClick={() => setStartWizard(true)}
+                                    onClick={handleSellerCta}
                                     className="bg-yellow-400 text-blue-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-yellow-300 transition-all shadow-lg hover:shadow-yellow-400/30 flex items-center justify-center gap-2"
                                 >
                                     Start Selling <ArrowRight size={20} />
@@ -276,7 +301,7 @@ const SellOnFlipzokart: React.FC = () => {
                                     {/* Register CTA */}
                                     <button
                                         type="button"
-                                        onClick={() => setStartWizard(true)}
+                                        onClick={handleSellerCta}
                                         className="w-full py-3 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-all border-2 border-white/30 hover:bg-white/10 active:scale-[0.98]"
                                     >
                                         Register as Seller <ChevronRight size={16} />
@@ -310,7 +335,7 @@ const SellOnFlipzokart: React.FC = () => {
                     {/* Step 1 */}
                     <div
                         className="flex flex-col items-center text-center group cursor-pointer hover:bg-gray-50 p-4 rounded-xl transition-all"
-                        onClick={() => setStartWizard(true)}
+                        onClick={handleSellerCta}
                     >
                         <div className="w-24 h-24 bg-white rounded-full shadow-lg border-4 border-blue-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                             <FileText size={40} className="text-blue-600" />
@@ -340,7 +365,7 @@ const SellOnFlipzokart: React.FC = () => {
 
                 <div className="flex justify-center mt-12">
                     <button
-                        onClick={() => setStartWizard(true)}
+                        onClick={handleSellerCta}
                         className="bg-[#2874F0] text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-[#1a60d6] transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1"
                     >
                         Start Your Seller Journey
@@ -391,7 +416,7 @@ const SellOnFlipzokart: React.FC = () => {
             {/* Sticky CTA for Mobile */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50">
                 <button
-                    onClick={() => setStartWizard(true)}
+                    onClick={handleSellerCta}
                     className="w-full bg-[#2874F0] text-white font-bold py-3 rounded-lg shadow-lg"
                 >
                     Start Selling Now
