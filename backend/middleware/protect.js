@@ -24,7 +24,7 @@ const protect = async (req, res, next) => {
     // ✅ Verify token
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET || "secret_key_123"
+      process.env.JWT_USER_SECRET || process.env.JWT_SECRET || "secret_key_123"
     );
 
     // ✅ Get user from DB
