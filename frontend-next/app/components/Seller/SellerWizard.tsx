@@ -56,7 +56,7 @@ const SellerWizard: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans">
+        <div className="sell-page min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans">
             <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
                 {/* Wizard Header */}
                 <div className="bg-[#2874F0] p-6 text-white flex items-center justify-between">
@@ -88,8 +88,8 @@ const SellerWizard: React.FC = () => {
                     {step === 2 && <Step2Business onSuccess={handleStep2Success} onBack={() => setStep(1)} API={API} token={token} />}
                     {step === 3 && <Step3Store onSuccess={handleStep3Success} API={API} token={token} />}
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 
