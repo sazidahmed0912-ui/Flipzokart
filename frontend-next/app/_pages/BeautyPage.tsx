@@ -240,40 +240,6 @@ export const BeautyPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
 
-            {/* 1. STICKY TAB NAV */}
-            <div className="sticky top-[56px] md:top-[72px] z-20 bg-white shadow-sm border-b border-gray-100">
-                <div className="w-full max-w-7xl mx-auto px-0 md:px-8">
-                    <div className="flex w-full overflow-x-auto no-scrollbar">
-                        {TABS.map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => {
-                                    setActiveTab(tab);
-                                    router.replace(`/beauty?tab=${encodeURIComponent(tab)}`, { scroll: false });
-                                }}
-                                className={`
-                                    relative flex-shrink-0 flex-1 min-w-[72px] py-3 md:py-4 text-[11px] md:text-base font-bold uppercase tracking-wide text-center transition-all duration-200 outline-none select-none
-                                    ${activeTab === tab
-                                        ? 'text-black bg-gradient-to-b from-white to-pink-50'
-                                        : 'text-gray-600 hover:text-black hover:bg-pink-50'
-                                    }
-                                `}
-                                style={{ WebkitTapHighlightColor: 'transparent' }}
-                            >
-                                {tab}
-                                {activeTab === tab && (
-                                    <motion.div
-                                        layoutId="beautyTabIndicator"
-                                        className="absolute bottom-0 left-0 right-0 h-1 bg-[#FACC15] shadow-[0_-2px_6px_rgba(250,204,21,0.4)]"
-                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                    />
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
             {/* 2. SWIPER HERO BANNER */}
             <div className="w-full h-[220px] md:h-[420px] lg:h-[420px] xl:h-[520px] 2xl:h-[580px] bg-gray-100 overflow-hidden lg:max-w-[1400px] xl:max-w-[1500px] mx-auto rounded-none lg:rounded-2xl lg:mt-4 lg:shadow-xl relative">
                 <Swiper
