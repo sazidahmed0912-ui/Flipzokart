@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import SellerWizard from '@/app/components/Seller/SellerWizard';
 import { OtpInput } from '@/app/components/OtpInput';
 import authService from '@/app/services/authService';
-import { useApp } from '@/app/store/Context';
 import { useToast } from '@/app/components/toast';
 import { useRouter } from 'next/navigation';
 import {
@@ -25,22 +24,27 @@ import {
 const SellOnFlipzokart: React.FC = () => {
     const [startWizard, setStartWizard] = useState(false);
 
-    // ─── Seller Login State ────────────────────────────────────────────────
+    // ─── Separate Seller Session (independent from main website login) ────
     const [loginEmail, setLoginEmail] = useState('');
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [otpSent, setOtpSent] = useState(false);
     const [timer, setTimer] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
-    const { loginSequence, user, isInitialized } = useApp();
+    const [sellerInitialized, setSellerInitialized] = useState(false);
+    const [sellerLoggedIn, setSellerLoggedIn] = useState(false);
     const { addToast } = useToast();
     const router = useRouter();
 
-    // ─── Auto-redirect: Already logged-in seller → Dashboard directly ──────
+    // ─── On mount: check if seller session exists  → redirect immediately ─
     useEffect(() => {
-        if (isInitialized && user) {
-            router.replace('/dashboard');
+        const sellerToken = localStorage.getItem('seller_token');
+        if (sellerToken) {
+            setSellerLoggedIn(true);
+            router.replace('/seller-panel');
+        } else {
+            setSellerInitialized(true);
         }
-    }, [isInitialized, user]);
+    }, []);
 
     // Countdown timer for OTP resend
     useEffect(() => {
@@ -49,10 +53,11 @@ const SellOnFlipzokart: React.FC = () => {
         return () => clearInterval(interval);
     }, [timer]);
 
-    // Helper: agar already logged in hai toh dashboard, else wizard
+    // Helper: agar already logged in hai toh seller-panel, else wizard
     const handleSellerCta = () => {
-        if (user) {
-            router.push('/dashboard');
+        const sellerToken = localStorage.getItem('seller_token');
+        if (sellerToken) {
+            router.push('/seller-panel');
         } else {
             setStartWizard(true);
         }
@@ -85,13 +90,23 @@ const SellOnFlipzokart: React.FC = () => {
         }
         setIsLoading(true);
         try {
-            const user = await authService.verifyEmailOtp(loginEmail, otpCode);
-            const token = localStorage.getItem('token');
-            if (token && user) {
-                await loginSequence(token, user);
+            const userData = await authService.verifyEmailOtp(loginEmail, otpCode);
+            const token = localStorage.getItem('token'); // backend sets this during verifyEmailOtp
+
+            // ✅ Store ONLY in seller-specific keys — main website session is untouched
+            localStorage.setItem('seller_token', token || '');
+            localStorage.setItem('seller_user', JSON.stringify(userData));
+            // Remove the main token if it was accidentally set by authService
+            // (we want seller login to be completely separate)
+            // Note: we keep main token intact if user was already logged in
+            const mainUser = localStorage.getItem('flipzokart_user');
+            if (!mainUser) {
+                // Only if user wasn't already logged in to the main site
+                localStorage.removeItem('token');
             }
-            addToast('success', '✅ Login successful! Redirecting...');
-            setTimeout(() => router.push('/dashboard'), 800);
+
+            addToast('success', '✅ Seller login successful! Redirecting...');
+            setTimeout(() => router.push('/seller-panel'), 800);
         } catch (err: any) {
             if (err.message?.includes('Sign Up first') || err.response?.status === 404) {
                 addToast('error', '🚫 No seller account found. Please register first.');
@@ -103,8 +118,8 @@ const SellOnFlipzokart: React.FC = () => {
         }
     };
 
-    // Show spinner until context hydrates (prevent flash of login form for logged-in sellers)
-    if (!isInitialized) {
+    // Show spinner while checking seller session
+    if (!sellerInitialized && !sellerLoggedIn) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#2874F0]">
                 <Loader2 size={40} className="animate-spin text-white" />
