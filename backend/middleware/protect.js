@@ -42,9 +42,16 @@ const protect = async (req, res, next) => {
 
     next(); // 🚀 allow request
   } catch (error) {
-    return res.status(401).json({
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError' || error.name === 'NotBeforeError') {
+      return res.status(401).json({
+        success: false,
+        message: "Token invalid",
+      });
+    }
+    console.error("Protect middleware error:", error);
+    return res.status(500).json({
       success: false,
-      message: "Token invalid",
+      message: "Server error during authentication",
     });
   }
 };

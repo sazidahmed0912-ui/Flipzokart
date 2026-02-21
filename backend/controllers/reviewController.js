@@ -120,7 +120,7 @@ const updateReview = async (req, res) => {
     }
 
     if (review.user.toString() !== req.user._id.toString()) {
-      return res.status(401).json({ message: "Not authorized to update this review" });
+      return res.status(403).json({ message: "Not authorized to update this review" });
     }
 
     review.rating = rating || review.rating;
@@ -160,7 +160,7 @@ const deleteReview = async (req, res) => {
       review.user.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
     ) {
-      return res.status(401).json({ message: "Not authorized to delete this review" });
+      return res.status(403).json({ message: "Not authorized to delete this review" });
     }
 
     const productId = review.product; // Save before delete

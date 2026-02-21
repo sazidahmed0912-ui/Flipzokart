@@ -69,7 +69,7 @@ const changePassword = async (req, res) => {
 
             res.json({ success: true, message: 'Password updated successfully' });
         } else {
-            res.status(401).json({ success: false, message: 'Invalid current password' });
+            res.status(400).json({ success: false, message: 'Invalid current password' });
         }
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

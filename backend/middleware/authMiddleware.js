@@ -18,7 +18,11 @@ exports.protect = async (req, res, next) => {
     req.user = await User.findById(decoded.id);
     next();
   } catch (err) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError' || err.name === 'NotBeforeError') {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+    console.error("Auth middleware error:", err);
+    return res.status(500).json({ success: false, message: 'Server error during authentication' });
   }
 };
 
