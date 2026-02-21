@@ -30,10 +30,9 @@ const SellerWizard: React.FC = () => {
     };
 
     const handleStep3Success = (finalUser: any) => {
-        // ✅ Ultra-Lock: Do NOT set 'token' or global 'user' state here.
-        // The wizard was using a temporary generic token for steps 2 & 3.
-        // We do not want to contaminate the main website session.
-        // Instead, the user will be redirected to the pure Seller Panel login.
+        // Update global app state with the fully active seller user
+        localStorage.setItem('token', token);
+        setUser(finalUser);
         setCompleted(true);
     };
 
@@ -48,15 +47,8 @@ const SellerWizard: React.FC = () => {
                     <p className="text-gray-600 mb-8 leading-relaxed">
                         Badhai Ho! Your seller account created successfully. You can now start listing your products.
                     </p>
-                    <button onClick={() => {
-                        // Clear the temporary onboarding token
-                        // We do not want this token lying around. 
-                        // The Next step is they log in properly via OTP and get `seller_token`.
-                        router.push('/sell');
-                        // Small reload trick ensures clean state if they were already on /sell
-                        setTimeout(() => window.location.reload(), 100);
-                    }} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl w-full">
-                        Login to Seller Panel
+                    <button onClick={() => router.push('/dashboard')} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl w-full">
+                        Go to Dashboard
                     </button>
                 </div>
             </div>

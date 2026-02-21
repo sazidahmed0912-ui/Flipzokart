@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import SellerWizard from '@/app/components/Seller/SellerWizard';
 import { OtpInput } from '@/app/components/OtpInput';
-import sellerAuthService from '@/app/services/sellerAuthService';
+import authService from '@/app/services/authService';
 import { useToast } from '@/app/components/toast';
 import { useRouter } from 'next/navigation';
 import {
@@ -35,9 +35,10 @@ const SellOnFlipzokart: React.FC = () => {
     const { addToast } = useToast();
     const router = useRouter();
 
-    // ─── On mount: check seller_token (never reads main website "token") ───
+    // ─── On mount: check if seller session exists  → redirect immediately ─
     useEffect(() => {
-        if (sellerAuthService.isSellerLoggedIn()) {
+        const sellerToken = localStorage.getItem('seller_token');
+        if (sellerToken) {
             setSellerLoggedIn(true);
             router.replace('/seller-panel');
         } else {
@@ -54,7 +55,8 @@ const SellOnFlipzokart: React.FC = () => {
 
     // Helper: agar already logged in hai toh seller-panel, else wizard
     const handleSellerCta = () => {
-        if (sellerAuthService.isSellerLoggedIn()) {
+        const sellerToken = localStorage.getItem('seller_token');
+        if (sellerToken) {
             router.push('/seller-panel');
         } else {
             setStartWizard(true);
@@ -68,11 +70,10 @@ const SellOnFlipzokart: React.FC = () => {
         }
         setIsLoading(true);
         try {
-            // ✅ Uses /api/seller/auth/send-otp (separate route from user OTP)
-            await sellerAuthService.sendSellerOtp(loginEmail);
+            await authService.sendEmailOtp(loginEmail);
             setOtpSent(true);
             setTimer(300);
-            addToast('success', 'OTP sent to your seller email!');
+            addToast('success', 'OTP sent to your email!');
         } catch (err: any) {
             addToast('error', err.message || 'Failed to send OTP');
         } finally {
@@ -89,16 +90,28 @@ const SellOnFlipzokart: React.FC = () => {
         }
         setIsLoading(true);
         try {
-            // ✅ Uses /api/seller/auth/verify-otp
-            // Stores seller_token + seller_user ONLY — main website "token" is NEVER touched
-            await sellerAuthService.verifySellerOtp(loginEmail, otpCode);
+            const userData = await authService.verifyEmailOtp(loginEmail, otpCode);
+            const token = localStorage.getItem('token'); // backend sets this during verifyEmailOtp
+
+            // ✅ Store ONLY in seller-specific keys — main website session is untouched
+            localStorage.setItem('seller_token', token || '');
+            localStorage.setItem('seller_user', JSON.stringify(userData));
+            // Remove the main token if it was accidentally set by authService
+            // (we want seller login to be completely separate)
+            // Note: we keep main token intact if user was already logged in
+            const mainUser = localStorage.getItem('flipzokart_user');
+            if (!mainUser) {
+                // Only if user wasn't already logged in to the main site
+                localStorage.removeItem('token');
+            }
+
             addToast('success', '✅ Seller login successful! Redirecting...');
             setTimeout(() => router.push('/seller-panel'), 800);
         } catch (err: any) {
-            if (err.message?.includes('not found') || err.message?.includes('No account')) {
+            if (err.message?.includes('Sign Up first') || err.response?.status === 404) {
                 addToast('error', '🚫 No seller account found. Please register first.');
             } else {
-                addToast('error', err.message || 'Login failed');
+                addToast('error', err.response?.data?.message || err.message || 'Login failed');
             }
         } finally {
             setIsLoading(false);

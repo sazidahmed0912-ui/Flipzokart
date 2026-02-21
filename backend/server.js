@@ -257,9 +257,6 @@ app.get("/oauth/zoho/callback", async (req, res) => {
 
 app.use("/api/auth", require("./routes/auth"));
 
-// 🔐 Seller Auth (Isolated)
-app.use("/api/seller/auth", require("./routes/sellerAuth"));
-
 // 📦 Products
 app.use("/api/products", require("./routes/productRoutes"));
 

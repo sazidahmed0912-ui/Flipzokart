@@ -24,7 +24,7 @@ const protect = async (req, res, next) => {
     // ✅ Verify token
     const decoded = jwt.verify(
       token,
-      process.env.JWT_USER_SECRET || process.env.JWT_SECRET || "secret_key_123"
+      process.env.JWT_SECRET || "secret_key_123"
     );
 
     // ✅ Get user from DB
@@ -42,16 +42,9 @@ const protect = async (req, res, next) => {
 
     next(); // 🚀 allow request
   } catch (error) {
-    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError' || error.name === 'NotBeforeError') {
-      return res.status(401).json({
-        success: false,
-        message: "Token invalid",
-      });
-    }
-    console.error("Protect middleware error:", error);
-    return res.status(500).json({
+    return res.status(401).json({
       success: false,
-      message: "Server error during authentication",
+      message: "Token invalid",
     });
   }
 };

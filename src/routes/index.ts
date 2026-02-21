@@ -9,7 +9,6 @@ import adminRoutes from './admin.routes';
 import reviewRoutes from './review.routes';
 import trackingRoutes from './tracking.routes';
 import addressRoutes from './address.routes';
-import sellerAuthRoutes from './seller.auth.routes';
 
 const router = Router();
 
@@ -23,7 +22,5 @@ router.use('/admin', adminRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/tracking', trackingRoutes); // Public tracking
 router.use('/user/address', addressRoutes);
-// ✅ SEPARATE Seller Auth — never conflicts with user auth
-router.use('/seller/auth', sellerAuthRoutes);
 
 export default router;
