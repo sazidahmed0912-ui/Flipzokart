@@ -284,6 +284,10 @@ app.use("/api/cart", require("./routes/cartRoutes"));
 // 🎨 Website Content Manager
 app.use("/api/content", require("./routes/contentRoutes"));
 
+// 🗂️ Homepage Section Headers (Admin → always append at bottom)
+app.use("/api/sections", require("./routes/sectionRoutes"));
+
+
 // 🔗 Frontend compatibility - alias /admin to /api/admin
 app.use("/admin", require("./routes/adminRoutes"));
 

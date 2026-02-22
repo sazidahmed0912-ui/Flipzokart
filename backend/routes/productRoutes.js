@@ -460,6 +460,65 @@ router.get("/suggested", async (req, res) => {
   }
 });
 
+// 🌐 GLOBAL TRENDING — All categories combined (Homepage Top Deals)
+// CRITICAL: Must be BEFORE /:id AND before trending/:gender/:days routes
+// GET /api/products/trending/global?days=7&limit=24
+router.get("/trending/global", async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 7;
+    const limit = parseInt(req.query.limit) || 24;
+
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    // Step 1: Aggregate sold quantities across ALL orders in the time window
+    const soldMap = await Order.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      { $unwind: "$products" },
+      {
+        $group: {
+          _id: "$products.productId",
+          totalSold: { $sum: "$products.quantity" }
+        }
+      }
+    ]);
+
+    const soldById = {};
+    soldMap.forEach(item => {
+      if (item._id) soldById[item._id.toString()] = item.totalSold;
+    });
+
+    // Step 2: Fetch all active, in-stock products (no category filter — truly global)
+    const products = await Product.find({
+      isDeleted: { $ne: true },
+      countInStock: { $gt: 0 }
+    }).lean();
+
+    // Step 3: Score, sort, slice, rank
+    const ranked = products
+      .map(p => ({
+        ...p,
+        id: p._id?.toString(),
+        mainImage: p.mainImage || p.image || (p.images && p.images[0]) || '/placeholder.png',
+        images: (p.images && p.images.length > 0) ? p.images : (p.image ? [p.image] : []),
+        _trendScore: soldById[p._id?.toString()] || 0
+      }))
+      .sort((a, b) => b._trendScore - a._trendScore)
+      .slice(0, limit)
+      .map((p, index) => ({
+        ...p,
+        totalSold: p._trendScore,
+        rank: index + 1,
+        showRankBadge: index < 5
+      }));
+
+    res.json(ranked);
+  } catch (error) {
+    console.error("Error fetching global trending products:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // 📊 TRENDING BY CATEGORY + TIME RANGE (Generic — works for Beauty, Electronics, etc.)
 // CRITICAL: Must be BEFORE /:id route and BEFORE /:gender/:days to avoid routing collision
 // GET /api/products/trending/category/:category/:days  (days = 7 | 15 | 30)

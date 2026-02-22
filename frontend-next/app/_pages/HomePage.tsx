@@ -30,6 +30,14 @@ export const HomePage: React.FC = () => {
     const [randomProducts, setRandomProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // 🔥 Global Trending (Top Deals)
+    const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
+    const [trendingLoading, setTrendingLoading] = useState(true);
+    const [showAllTrending, setShowAllTrending] = useState(false);
+
+    // 🗂️ Admin Section Headers
+    const [homeSections, setHomeSections] = useState<{ _id: string; title: string; order: number }[]>([]);
+
     // Normalize MongoDB _id to id for ProductCard compatibility
     const normalizeProduct = (p: any) => ({
         ...p,
@@ -39,6 +47,8 @@ export const HomePage: React.FC = () => {
     useEffect(() => {
         fetchContent();
         fetchRandomProducts();
+        fetchGlobalTrending();
+        fetchHomeSections();
 
         // Real-time Sync
         const socket = (window as any).socket;
@@ -67,6 +77,32 @@ export const HomePage: React.FC = () => {
             setRandomProducts(products.filter(p => p.category !== 'Groceries').map(normalizeProduct));
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchGlobalTrending = async () => {
+        try {
+            setTrendingLoading(true);
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+            const res = await axios.get(`${API_URL}/api/products/trending/global?days=7&limit=24`, {
+                headers: { 'Cache-Control': 'no-store' }
+            });
+            setTrendingProducts((res.data || []).map(normalizeProduct));
+        } catch (error) {
+            console.warn('[TopDeals] Global trending API failed, using random fallback:', error);
+            // Fallback: use first 24 random products sorted by nothing
+            setTrendingProducts([]);
+        } finally {
+            setTrendingLoading(false);
+        }
+    };
+
+    const fetchHomeSections = async () => {
+        try {
+            const res = await axios.get('/api/sections');
+            setHomeSections(res.data || []);
+        } catch (error) {
+            // sections are optional — fail silently
         }
     };
 
@@ -198,20 +234,96 @@ export const HomePage: React.FC = () => {
                 </section>
             ))}
 
+            {/* 🔥 TOP DEALS — Global Trending (All Categories) */}
             <section className="py-4 md:py-8 px-4 md:px-8 bg-gray-50">
                 <SmoothReveal direction="up" delay={400}>
                     <div className="max-w-7xl mx-auto">
-                        <div className="mb-4 md:mb-6">
-                            <h2 className="text-2xl md:text-3xl font-bold"><span className="text-gray-800">Top Deals</span></h2>
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-4 md:mb-6">
+                            <div>
+                                <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Top Deals</h2>
+                                <p className="text-xs md:text-sm text-gray-400 mt-0.5">Based on real orders · Last 7 days</p>
+                            </div>
+                            {!trendingLoading && trendingProducts.length > 3 && (
+                                <button
+                                    onClick={() => setShowAllTrending(prev => !prev)}
+                                    className="flex items-center gap-1.5 bg-[#2874F0] text-white text-xs md:text-sm font-bold px-4 py-2 rounded-full hover:bg-blue-700 transition-all shadow-sm"
+                                >
+                                    {showAllTrending ? 'Show Less ↑' : `View All (${trendingProducts.length}) →`}
+                                </button>
+                            )}
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6 auto-rows-fr">
-                            {topDeals.map((product, idx) => (
-                                <ProductCard key={product.id} product={product} priority={idx < 4} />
-                            ))}
-                        </div>
+
+                        {/* Skeleton */}
+                        {trendingLoading && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
+                                {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="h-56 bg-gray-200 rounded-xl animate-pulse" />
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Products Grid */}
+                        {!trendingLoading && (() => {
+                            // Decide what to show
+                            const source = trendingProducts.length > 0
+                                ? trendingProducts
+                                : displayProducts.slice(0, 24);
+                            const visible = showAllTrending ? source : source.slice(0, 3);
+                            return (
+                                <>
+                                    <div
+                                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 auto-rows-fr"
+                                        style={{ transition: 'all 0.3s ease' }}
+                                    >
+                                        {visible.map((product, idx) => (
+                                            <ProductCard key={product.id} product={product} priority={idx < 3} />
+                                        ))}
+                                    </div>
+                                    {/* Mobile View All pill */}
+                                    {source.length > 3 && (
+                                        <div className="flex justify-center mt-4 md:hidden">
+                                            <button
+                                                onClick={() => setShowAllTrending(prev => !prev)}
+                                                className="bg-[#2874F0] text-white text-sm font-bold px-8 py-2.5 rounded-full shadow"
+                                            >
+                                                {showAllTrending ? 'Show Less' : `View All ${source.length} Deals`}
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
                 </SmoothReveal>
             </section>
+
+            {/* 🗂️ Admin-Defined Section Headers — always bottom-appended */}
+            {homeSections.length > 0 && homeSections
+                .sort((a, b) => a.order - b.order)
+                .map((section, idx) => {
+                    // Match products that belong to this section title (existing meta.section logic)
+                    const sectionProducts = customSections.find(s => s.title === section.title);
+                    return (
+                        <section key={section._id} className={`py-4 md:py-8 px-4 md:px-8 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                            <SmoothReveal direction="up" delay={300}>
+                                <div className="max-w-7xl mx-auto">
+                                    <div className="mb-4 md:mb-6 border-l-4 border-[#F28C28] pl-4">
+                                        <h2 className="text-2xl font-bold text-gray-900">{section.title}</h2>
+                                    </div>
+                                    {sectionProducts && sectionProducts.products.length > 0 && (
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6 auto-rows-fr">
+                                            {sectionProducts.products.map(product => (
+                                                <ProductCard key={product.id} product={product} />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </SmoothReveal>
+                        </section>
+                    );
+                })
+            }
 
 
 
