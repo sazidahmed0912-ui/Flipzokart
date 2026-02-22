@@ -244,7 +244,7 @@ export const HomePage: React.FC = () => {
                                 <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Top Deals</h2>
                                 <p className="text-xs md:text-sm text-gray-400 mt-0.5">Based on real orders · Last 7 days</p>
                             </div>
-                            {!trendingLoading && trendingProducts.length > 2 && (
+                            {!trendingLoading && trendingProducts.length > 4 && (
                                 <button
                                     onClick={() => setShowAllTrending(prev => !prev)}
                                     className="flex items-center gap-1.5 bg-[#2874F0] text-white text-xs md:text-sm font-bold px-4 py-2 rounded-full hover:bg-blue-700 transition-all shadow-sm"
@@ -254,38 +254,34 @@ export const HomePage: React.FC = () => {
                             )}
                         </div>
 
-                        {/* Skeleton */}
+                        {/* Skeleton — matches Featured on Fzokart exactly */}
                         {trendingLoading && (
-                            <div className="grid grid-cols-2 gap-2 md:gap-6">
-                                {[...Array(2)].map((_, i) => (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6">
+                                {[...Array(4)].map((_, i) => (
                                     <div key={i} className="h-56 bg-gray-200 rounded-xl animate-pulse" />
                                 ))}
                             </div>
                         )}
 
+                        {/* Products Grid — 100% matches Featured on Fzokart layout */}
                         {!trendingLoading && (() => {
-                            // Decide what to show
                             const source = trendingProducts.length > 0
                                 ? trendingProducts
                                 : displayProducts.slice(0, 24);
-                            // Initially 2 products (1 row of 2), just like Featured on Fzokart
-                            const visible = showAllTrending ? source : source.slice(0, 2);
+                            const visible = showAllTrending ? source : source.slice(0, 4);
                             return (
                                 <>
-                                    <div
-                                        className="grid grid-cols-2 gap-2 md:gap-6 auto-rows-fr"
-                                        style={{ transition: 'all 0.3s ease' }}
-                                    >
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6 auto-rows-fr">
                                         {visible.map((product, idx) => (
-                                            <ProductCard key={product.id} product={product} priority={idx < 2} />
+                                            <ProductCard key={product.id} product={product} priority={idx < 4} />
                                         ))}
                                     </div>
-                                    {/* View All pill — shown when more than 2 products available */}
-                                    {source.length > 2 && (
+                                    {/* View All pill (shown on all sizes when collapsed) */}
+                                    {source.length > 4 && (
                                         <div className="flex justify-center mt-4">
                                             <button
                                                 onClick={() => setShowAllTrending(prev => !prev)}
-                                                className="bg-[#2874F0] text-white text-sm font-bold px-8 py-2.5 rounded-full shadow"
+                                                className="bg-[#2874F0] text-white text-sm font-bold px-8 py-2.5 rounded-full shadow md:hidden"
                                             >
                                                 {showAllTrending ? 'Show Less' : `View All ${source.length} Deals`}
                                             </button>
