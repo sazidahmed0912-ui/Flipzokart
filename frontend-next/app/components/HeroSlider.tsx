@@ -208,8 +208,8 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                                     </motion.div>
                                 </div>
 
-                                {/* Text Content — title + subtext only, no button */}
-                                <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col items-start text-left z-10 md:static md:bg-none md:order-1 md:h-auto md:justify-center md:p-0 md:pt-0 md:pb-0">
+                                {/* Text Content — hidden on mobile (banner too short), visible on desktop */}
+                                <div className="hidden md:flex absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex-col items-start text-left z-10 md:static md:bg-none md:order-1 md:h-auto md:justify-center md:p-0 md:pt-0 md:pb-0">
                                     <motion.h1
                                         initial={{ y: 20, opacity: 0 }}
                                         animate={{ y: 0, opacity: 1 }}
