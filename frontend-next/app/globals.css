@@ -686,6 +686,10 @@
             0 1px 4px rgba(0, 0, 0, 0.05);
         width: calc(100% - 20px);
         /* shrink width to match side margins */
+        height: 160px;
+        /* compact banner height on mobile */
+        background-color: #fff;
+        /* white bg — clean look with object-contain */
     }
 
     /* Image inside banner inherits border-radius cleanly */
@@ -693,5 +697,15 @@
         border-radius: inherit;
         display: block;
         width: 100%;
+    }
+}
+
+/* ── DESKTOP CATEGORY BANNER — slightly compact (homepage hero untouched) ── */
+@media (min-width: 769px) {
+
+    /* Only category page banners — NOT the homepage HeroSlider */
+    .hero-banner-quad {
+        background-color: #fff;
+        /* white bg for object-contain clean look */
     }
 }

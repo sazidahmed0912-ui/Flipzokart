@@ -360,7 +360,7 @@ export const FashionPage: React.FC = () => {
                                 <img
                                     src={img}
                                     alt={`${currentBanner.title} - Slide ${index + 1}`}
-                                    className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                                    className="absolute inset-0 w-full h-full object-contain object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                                 />
 
                                 {/* Gradient depth */}
