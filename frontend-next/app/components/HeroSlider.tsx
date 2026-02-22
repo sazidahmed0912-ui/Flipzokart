@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import LazyImage from '@/app/components/LazyImage';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -68,6 +69,7 @@ interface HeroSliderProps {
 }
 
 export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
+    const router = useRouter();
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const activeSlides = banners.length > 0 ? banners : slides;
@@ -136,7 +138,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                                     alt="Banner"
                                     fill={true}
                                     priority={true}
-                                    className="object-cover w-full h-full"
+                                    className="object-cover w-full h-full transition-transform duration-500 ease-out group-hover:scale-[1.02]"
                                     sizes="100vw"
                                 />
                             </div>
@@ -152,37 +154,25 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                                 />
                             </div>
 
-                            {/* Dynamic Text Overlay (If title exists) */}
+                            {/* Soft gradient + title at bottom-left */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
                             {((activeSlides[currentIndex] as any).title) && (
-                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                    <div className="text-center w-full md:max-w-4xl px-4 pointer-events-auto">
-                                        <motion.h2
-                                            initial={{ y: 20, opacity: 0 }}
-                                            animate={{ y: 0, opacity: 1 }}
-                                            transition={{ delay: 0.2 }}
-                                            className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] mb-2 md:mb-4 tracking-tight"
-                                        >
-                                            {(activeSlides[currentIndex] as any).title}
-                                        </motion.h2>
-                                        <motion.p
-                                            initial={{ y: 20, opacity: 0 }}
-                                            animate={{ y: 0, opacity: 1 }}
-                                            transition={{ delay: 0.3 }}
-                                            className="text-sm sm:text-lg md:text-2xl text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] mb-4 md:mb-8 font-medium tracking-wide"
-                                        >
-                                            {(activeSlides[currentIndex] as any).subtitle}
-                                        </motion.p>
-                                        <motion.span
-                                            initial={{ y: 20, opacity: 0 }}
-                                            animate={{ y: 0, opacity: 1 }}
-                                            transition={{ delay: 0.4 }}
-                                            className="inline-block bg-white text-gray-900 px-6 py-2 md:px-8 md:py-3 rounded-full font-bold text-xs md:text-base uppercase tracking-wider hover:scale-105 transition-transform shadow-lg cursor-pointer"
-                                        >
-                                            {(activeSlides[currentIndex] as any).ctaText || 'Shop Now'}
-                                        </motion.span>
-                                    </div>
+                                <div className="absolute bottom-16 md:bottom-20 left-4 md:left-12 text-white pointer-events-none max-w-xl">
+                                    <motion.h2
+                                        initial={{ y: 16, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        transition={{ delay: 0.2 }}
+                                        className="text-2xl sm:text-3xl md:text-5xl font-extrabold drop-shadow-lg tracking-tight leading-tight"
+                                    >
+                                        {(activeSlides[currentIndex] as any).title}
+                                    </motion.h2>
                                 </div>
                             )}
+
+                            {/* Premium Clean CTA Pill */}
+                            <div className="banner-overlay">
+                                <span className="cta-text">{(activeSlides[currentIndex] as any).ctaText || 'Shop Now'}</span>
+                            </div>
                         </Link>
                     </motion.div>
                 ) : (
@@ -193,7 +183,8 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.5 }}
-                        className={`absolute inset-0 bg-gradient-to-r ${(activeSlides[currentIndex] as any).gradient} flex md:items-center`}
+                        className={`absolute inset-0 bg-gradient-to-r ${(activeSlides[currentIndex] as any).gradient} flex md:items-center cursor-pointer`}
+                        onClick={() => router.push((activeSlides[currentIndex] as any).link)}
                     >
                         <div className="w-full h-full md:max-w-7xl md:mx-auto md:px-12 relative">
                             <div className="flex flex-col md:grid md:grid-cols-2 gap-0 md:gap-8 h-full items-center">
@@ -217,7 +208,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                                     </motion.div>
                                 </div>
 
-                                {/* Text Content */}
+                                {/* Text Content — title + subtext only, no button */}
                                 <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col items-start text-left z-10 md:static md:bg-none md:order-1 md:h-auto md:justify-center md:p-0 md:pt-0 md:pb-0">
                                     <motion.h1
                                         initial={{ y: 20, opacity: 0 }}
@@ -235,20 +226,18 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                                     >
                                         {(activeSlides[currentIndex] as any).subtext}
                                     </motion.p>
-                                    <motion.div
-                                        initial={{ y: 20, opacity: 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        transition={{ delay: 0.4 }}
-                                    >
-                                        <Link href={(activeSlides[currentIndex] as any).link}
-                                            className={`${(activeSlides[currentIndex] as any).textParams.buttonBg} ${(activeSlides[currentIndex] as any).textParams.buttonText} px-5 py-2 md:px-8 md:py-3 rounded-full font-bold text-xs md:text-lg hover:shadow-xl hover:scale-105 transition-all shadow-md inline-block uppercase tracking-wide`}
-                                        >
-                                            {(activeSlides[currentIndex] as any).cta}
-                                        </Link>
-                                    </motion.div>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Premium Clean CTA Pill — bottom-left */}
+                        <Link
+                            href={(activeSlides[currentIndex] as any).link}
+                            onClick={e => e.stopPropagation()}
+                            className="banner-overlay"
+                        >
+                            <span className="cta-text">{(activeSlides[currentIndex] as any).cta}</span>
+                        </Link>
                     </motion.div>
                 )}
             </AnimatePresence>

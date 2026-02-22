@@ -352,25 +352,28 @@ export const FashionPage: React.FC = () => {
                 >
                     {currentBanner.images.map((img, index) => (
                         <SwiperSlide key={`${activeTab}-${index}`}>
-                            <div className="relative w-full h-full">
-                                {/* PURE IMG TAG to avoid Next.js Image lifestyle conflicts in Swiper */}
+                            <div
+                                className="relative w-full h-full cursor-pointer group"
+                                onClick={() => router.push(currentBanner.link)}
+                            >
+                                {/* Banner Image — smooth zoom on hover */}
                                 <img
                                     src={img}
                                     alt={`${currentBanner.title} - Slide ${index + 1}`}
-                                    className="absolute inset-0 w-full h-full object-cover object-center"
+                                    className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                                 />
 
-                                {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-12 pointer-events-none">
-                                    <div className="text-white pointer-events-auto max-w-[600px] lg:max-w-[800px]">
-                                        <h2 className="text-xl md:text-5xl lg:text-5xl xl:text-6xl font-bold mb-1 md:mb-3 lg:mb-4">{currentBanner.title}</h2>
-                                        <Link
-                                            href={currentBanner.link}
-                                            className="text-xs md:text-base lg:text-lg font-semibold bg-white text-black px-3 py-1.5 md:px-6 md:py-2.5 lg:px-8 lg:py-3 rounded-full inline-flex items-center gap-1 hover:bg-opacity-90 transition-transform hover:scale-105 shadow-lg"
-                                        >
-                                            Shop Now <ChevronRight size={16} className="md:w-4 md:h-4 lg:w-5 lg:h-5" />
-                                        </Link>
-                                    </div>
+                                {/* Gradient depth */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent pointer-events-none" />
+
+                                {/* Banner title */}
+                                <div className="absolute bottom-14 md:bottom-20 left-4 md:left-12 text-white pointer-events-none max-w-[500px] lg:max-w-[700px]">
+                                    <h2 className="text-xl md:text-5xl lg:text-5xl xl:text-6xl font-bold leading-tight drop-shadow-lg">{currentBanner.title}</h2>
+                                </div>
+
+                                {/* Premium Clean CTA Pill */}
+                                <div className="banner-overlay">
+                                    <span className="cta-text">Shop Now</span>
                                 </div>
                             </div>
                         </SwiperSlide>

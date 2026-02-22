@@ -588,3 +588,55 @@
         border-radius: 18px;
     }
 }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  🏆 ULTRA LOCK CLEAN BANNER CTA — Premium Overlay Pill      ║
+   ║  ✔ No layout shift  ✔ No route change  ✔ Mobile safe        ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* Glassmorphic CTA pill — bottom-left of any banner */
+.banner-overlay {
+    position: absolute;
+    bottom: 20px;
+    left: 24px;
+    background: rgba(0, 0, 0, 0.45);
+    padding: 8px 20px;
+    border-radius: 999px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.2s ease;
+    text-decoration: none;
+}
+
+.banner-overlay:hover {
+    background: rgba(0, 0, 0, 0.62);
+    transform: translateY(-1px);
+}
+
+.cta-text {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .banner-overlay {
+        bottom: 14px;
+        left: 16px;
+        padding: 6px 14px;
+    }
+
+    .cta-text {
+        font-size: 12px;
+    }
+}
