@@ -244,7 +244,7 @@ export const HomePage: React.FC = () => {
                                 <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Top Deals</h2>
                                 <p className="text-xs md:text-sm text-gray-400 mt-0.5">Based on real orders · Last 7 days</p>
                             </div>
-                            {!trendingLoading && trendingProducts.length > 3 && (
+                            {!trendingLoading && trendingProducts.length > 2 && (
                                 <button
                                     onClick={() => setShowAllTrending(prev => !prev)}
                                     className="flex items-center gap-1.5 bg-[#2874F0] text-white text-xs md:text-sm font-bold px-4 py-2 rounded-full hover:bg-blue-700 transition-all shadow-sm"
@@ -256,33 +256,33 @@ export const HomePage: React.FC = () => {
 
                         {/* Skeleton */}
                         {trendingLoading && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
-                                {[...Array(3)].map((_, i) => (
+                            <div className="grid grid-cols-2 gap-2 md:gap-6">
+                                {[...Array(2)].map((_, i) => (
                                     <div key={i} className="h-56 bg-gray-200 rounded-xl animate-pulse" />
                                 ))}
                             </div>
                         )}
 
-                        {/* Products Grid */}
                         {!trendingLoading && (() => {
                             // Decide what to show
                             const source = trendingProducts.length > 0
                                 ? trendingProducts
                                 : displayProducts.slice(0, 24);
-                            const visible = showAllTrending ? source : source.slice(0, 3);
+                            // Initially 2 products (1 row of 2), just like Featured on Fzokart
+                            const visible = showAllTrending ? source : source.slice(0, 2);
                             return (
                                 <>
                                     <div
-                                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 auto-rows-fr"
+                                        className="grid grid-cols-2 gap-2 md:gap-6 auto-rows-fr"
                                         style={{ transition: 'all 0.3s ease' }}
                                     >
                                         {visible.map((product, idx) => (
-                                            <ProductCard key={product.id} product={product} priority={idx < 3} />
+                                            <ProductCard key={product.id} product={product} priority={idx < 2} />
                                         ))}
                                     </div>
-                                    {/* Mobile View All pill */}
-                                    {source.length > 3 && (
-                                        <div className="flex justify-center mt-4 md:hidden">
+                                    {/* View All pill — shown when more than 2 products available */}
+                                    {source.length > 2 && (
+                                        <div className="flex justify-center mt-4">
                                             <button
                                                 onClick={() => setShowAllTrending(prev => !prev)}
                                                 className="bg-[#2874F0] text-white text-sm font-bold px-8 py-2.5 rounded-full shadow"
