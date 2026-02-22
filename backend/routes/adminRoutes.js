@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/authorize');
-const { getDashboardStats, getAllUsers, updateUserStatus, sendUserNotice } = require('../controllers/adminController');
+const {
+  getDashboardStats, getAllUsers, updateUserStatus, sendUserNotice,
+  bulkUpdatePaymentMode, getGlobalPaymentSettings, updateGlobalPaymentSettings
+} = require('../controllers/adminController');
 
 router.route('/dashboard-stats')
   .get(protect, authorize(['admin']), getDashboardStats);
@@ -29,5 +32,13 @@ router.route('/orders/:id/status')
 
 router.route('/orders/:id/location')
   .patch(protect, authorize(['admin']), require('../controllers/adminController').updateOrderLocation);
+
+// 🔒 Payment Mode Control Routes
+router.route('/products/payment-mode/bulk')
+  .patch(protect, authorize(['admin']), bulkUpdatePaymentMode);
+
+router.route('/settings/payment')
+  .get(protect, authorize(['admin']), getGlobalPaymentSettings)
+  .put(protect, authorize(['admin']), updateGlobalPaymentSettings);
 
 module.exports = router;

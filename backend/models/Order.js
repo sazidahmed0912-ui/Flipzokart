@@ -96,6 +96,17 @@ const orderSchema = new mongoose.Schema({
   razorpayPaymentId: {
     type: String,
   },
+  // 🔒 PAYMENT MODE AUDIT SNAPSHOT (Security Integrity)
+  // Stores the exact payment restrictions of each product at time of order.
+  // Used for dispute resolution and backend security logs.
+  paymentModeSnapshot: [{
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product'
+    },
+    codAvailable: { type: Boolean, default: true },
+    prepaidAvailable: { type: Boolean, default: true }
+  }],
   // Real-Time Tracking Fields
   statusHistory: [{
     status: String,

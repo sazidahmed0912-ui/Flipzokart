@@ -433,6 +433,14 @@ export const AdminProductEditor: React.FC = () => {
                 return;
             }
 
+            // 🔒 ULTRA LOCK: Validate Payment Mode
+            // Cannot save a product that has NEITHER COD nor Prepaid enabled
+            if (!formData.codAvailable && !formData.prepaidAvailable) {
+                addToast('error', 'At least one payment method (COD or Prepaid) must be enabled for a product.');
+                setSaving(false);
+                return;
+            }
+
             const totalStock = matrix.length > 0 ? matrix.reduce((acc, c) => acc + c.stock, 0) : Number(formData.countInStock);
             const defaultVar = matrix.find(m => m.isDefault);
             const finalPrice = defaultVar ? defaultVar.price : finalSalePrice;

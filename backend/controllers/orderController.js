@@ -97,6 +97,7 @@ const createOrder = async (req, res) => {
 
     // Check for stock availability and build snapshot
     const finalOrderProducts = [];
+    const paymentModeSnapshot = []; // 🔒 ULTRA LOCK: Payment Mode Audit
     for (const item of validatedProducts) {
       const product = await Product.findById(item.productId);
 
@@ -114,6 +115,24 @@ const createOrder = async (req, res) => {
       if (product.countInStock < item.quantity) {
         return res.status(400).json({ message: `Product ${product.name} is out of stock.` });
       }
+
+      // 🔒 ULTRA LOCK: Server-side payment mode validation for COD
+      // This CANNOT be bypassed via frontend manipulation, devtools, or direct API calls
+      if (product.codAvailable === false) {
+        console.warn(`🚫 [PaymentGuard] COD rejected for product "${product.name}" (ID: ${product._id}) — codAvailable=false`);
+        return res.status(403).json({
+          message: `Cash on Delivery is not available for "${product.name}". Please use an online payment method.`,
+          productId: product._id,
+          errorCode: 'COD_NOT_ALLOWED'
+        });
+      }
+
+      // 📸 Build Payment Mode Snapshot for this order
+      paymentModeSnapshot.push({
+        productId: product._id,
+        codAvailable: product.codAvailable !== false,
+        prepaidAvailable: product.prepaidAvailable !== false
+      });
 
       // Add to final array with snapshot data
       finalOrderProducts.push({
@@ -147,6 +166,7 @@ const createOrder = async (req, res) => {
       shippingAddress: address,
       paymentMethod: 'COD',
       paymentStatus: 'PENDING',
+      paymentModeSnapshot, // 🔒 ULTRA LOCK: Audit trail
 
       // Use Server-Calculated Values
       subtotal: priceDetails.itemsPrice,
@@ -341,6 +361,7 @@ const verifyPayment = async (req, res) => {
     }
 
     // Check for stock availability (with Auto-Restock for Testing)
+    const paymentModeSnapshotRzp = []; // 🔒 ULTRA LOCK: Payment Mode Audit
     for (const item of products) {
       const product = await Product.findById(item.productId);
 
@@ -358,6 +379,24 @@ const verifyPayment = async (req, res) => {
       if (product.countInStock < item.quantity) {
         return res.status(400).json({ message: `Product ${product.name} is out of stock. Payment will be refunded.` });
       }
+
+      // 🔒 ULTRA LOCK: Server-side payment mode validation for Prepaid/Razorpay
+      // This CANNOT be bypassed via frontend manipulation, devtools, or direct API calls
+      if (product.prepaidAvailable === false) {
+        console.warn(`🚫 [PaymentGuard] Online payment rejected for product "${product.name}" (ID: ${product._id}) — prepaidAvailable=false`);
+        return res.status(403).json({
+          message: `Online payment is not available for "${product.name}". Please use Cash on Delivery.`,
+          productId: product._id,
+          errorCode: 'PREPAID_NOT_ALLOWED'
+        });
+      }
+
+      // 📸 Build Payment Mode Snapshot
+      paymentModeSnapshotRzp.push({
+        productId: product._id,
+        codAvailable: product.codAvailable !== false,
+        prepaidAvailable: product.prepaidAvailable !== false
+      });
     }
 
     // -------------------------------------------------------------------------
@@ -388,6 +427,7 @@ const verifyPayment = async (req, res) => {
       paymentMethod: 'RAZORPAY',
       paymentStatus: 'PAID',
       status: 'Processing',
+      paymentModeSnapshot: paymentModeSnapshotRzp, // 🔒 ULTRA LOCK: Audit trail
 
       // Use Server-Calculated Values
       subtotal: priceDetails.itemsPrice,

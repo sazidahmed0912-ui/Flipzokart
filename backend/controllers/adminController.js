@@ -453,6 +453,126 @@ const updateOrderLocation = async (req, res) => {
   }
 };
 
+// @desc    Bulk update payment mode for multiple products
+// @route   PATCH /api/admin/products/payment-mode/bulk
+// @access  Private/Admin
+const bulkUpdatePaymentMode = async (req, res) => {
+  const { productIds, codAvailable, prepaidAvailable } = req.body;
+
+  try {
+    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(400).json({ message: 'No product IDs provided' });
+    }
+
+    // Validate: at least one payment mode must be enabled
+    if (codAvailable === false && prepaidAvailable === false) {
+      return res.status(400).json({
+        message: 'At least one payment method (COD or Prepaid) must be enabled for each product.'
+      });
+    }
+
+    const updateData = {};
+    if (typeof codAvailable === 'boolean') updateData.codAvailable = codAvailable;
+    if (typeof prepaidAvailable === 'boolean') updateData.prepaidAvailable = prepaidAvailable;
+
+    const result = await Product.updateMany(
+      { _id: { $in: productIds } },
+      { $set: updateData }
+    );
+
+    console.log(`[Admin] Bulk payment mode update: ${result.modifiedCount} products updated`);
+
+    // Broadcast Real-time Monitor Log
+    const broadcastLog = req.app.get('broadcastLog');
+    if (broadcastLog) {
+      broadcastLog('info', `Payment mode bulk updated for ${result.modifiedCount} products`, 'Admin');
+    }
+
+    res.json({
+      success: true,
+      modifiedCount: result.modifiedCount,
+      message: `Payment mode updated for ${result.modifiedCount} product(s)`
+    });
+  } catch (error) {
+    console.error('Error bulk updating payment mode:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Get global payment settings
+// @route   GET /api/admin/settings/payment
+// @access  Private/Admin
+const getGlobalPaymentSettings = async (req, res) => {
+  try {
+    // Count products by payment mode to derive a summary
+    const total = await Product.countDocuments({});
+    const codDisabled = await Product.countDocuments({ codAvailable: false });
+    const prepaidDisabled = await Product.countDocuments({ prepaidAvailable: false });
+
+    res.json({
+      success: true,
+      stats: {
+        totalProducts: total,
+        codDisabledCount: codDisabled,
+        prepaidDisabledCount: prepaidDisabled,
+        globalCodEnabled: codDisabled === 0,
+        globalPrepaidEnabled: prepaidDisabled === 0
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching global payment settings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Update global payment settings (enable/disable COD or Prepaid globally)
+// @route   PUT /api/admin/settings/payment
+// @access  Private/Admin
+const updateGlobalPaymentSettings = async (req, res) => {
+  const { globalCodEnabled, globalPrepaidEnabled } = req.body;
+
+  try {
+    // Prevent disabling BOTH methods globally
+    if (globalCodEnabled === false && globalPrepaidEnabled === false) {
+      return res.status(400).json({
+        message: 'Cannot disable both COD and Prepaid globally. At least one must remain enabled.'
+      });
+    }
+
+    const operations = [];
+
+    if (typeof globalCodEnabled === 'boolean') {
+      operations.push(
+        Product.updateMany({}, { $set: { codAvailable: globalCodEnabled } })
+      );
+    }
+
+    if (typeof globalPrepaidEnabled === 'boolean') {
+      operations.push(
+        Product.updateMany({}, { $set: { prepaidAvailable: globalPrepaidEnabled } })
+      );
+    }
+
+    await Promise.all(operations);
+
+    console.log(`[Admin] Global payment settings updated: COD=${globalCodEnabled}, Prepaid=${globalPrepaidEnabled}`);
+
+    // Broadcast
+    const broadcastLog = req.app.get('broadcastLog');
+    if (broadcastLog) {
+      broadcastLog('warning', `Global payment settings changed: COD ${globalCodEnabled ? 'ENABLED' : 'DISABLED'}`, 'Admin');
+    }
+
+    res.json({
+      success: true,
+      message: 'Global payment settings updated for all products'
+    });
+  } catch (error) {
+    console.error('Error updating global payment settings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAllUsers,
@@ -462,5 +582,8 @@ module.exports = {
   deleteUser,
   createUser,
   updateOrderStatus,
-  updateOrderLocation
+  updateOrderLocation,
+  bulkUpdatePaymentMode,
+  getGlobalPaymentSettings,
+  updateGlobalPaymentSettings
 };
