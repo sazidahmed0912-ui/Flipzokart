@@ -20,6 +20,7 @@ const initialCategories = [
     { name: 'Beauty', imageUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100&h=100&fit=crop&q=60', href: '/shop?category=Beauty', redirectUrl: '/shop?category=Beauty' },
     { name: 'Home', imageUrl: 'https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=100&h=100&fit=crop&q=60', href: '/shop?category=Home', redirectUrl: '/shop?category=Home' },
     { name: 'Appliances', imageUrl: 'https://images.unsplash.com/photo-1626806819282-2c1dc01a5e0c?w=100&h=100&fit=crop&q=60', href: '/shop?category=Appliances', redirectUrl: '/shop?category=Appliances' },
+    { name: 'Agriculture', imageUrl: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=100&h=100&fit=crop&q=60', href: '/agriculture', redirectUrl: '/agriculture' },
     { name: 'Offers', imageUrl: 'https://rukminim1.flixcart.com/fk-p-flap/80/80/image/0139228b2f7eb413.jpg?q=100', href: '/shop?tag=offer', redirectUrl: '/shop?tag=offer' },
 ];
 
@@ -120,7 +121,11 @@ export const HomePage: React.FC = () => {
                 const mapped = res.data.map((c: any) => ({
                     name: c.categoryName,
                     imageUrl: c.iconUrl,
-                    href: c.redirectUrl || (c.categoryName.toLowerCase() === 'fashion' ? '/fashion' : `/shop?category=${encodeURIComponent(c.categoryName)}`)
+                    href: c.redirectUrl || (
+                        c.categoryName.toLowerCase() === 'fashion' ? '/fashion' :
+                            c.categoryName.toLowerCase() === 'agriculture' ? '/agriculture' :
+                                `/shop?category=${encodeURIComponent(c.categoryName)}`
+                    )
                 }));
                 setDisplayCategories(mapped);
             }

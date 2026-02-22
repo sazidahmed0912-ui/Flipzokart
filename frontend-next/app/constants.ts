@@ -2,7 +2,7 @@
 import { Product, Coupon } from './types';
 
 export const CATEGORIES = [
-  'Mobiles', 'Electronics', 'Fashion', 'Home', 'Beauty', 'Appliances', 'Groceries', 'Offers', 'Kids', 'Books', 'Home & Kitchen'
+  'Mobiles', 'Electronics', 'Fashion', 'Home', 'Beauty', 'Appliances', 'Groceries', 'Agriculture', 'Offers', 'Kids', 'Books', 'Home & Kitchen'
 ];
 
 export const SUBCATEGORIES: Record<string, string[]> = {
@@ -15,7 +15,8 @@ export const SUBCATEGORIES: Record<string, string[]> = {
   'Groceries': ['Staples', 'Snacks', 'Beverages', 'Personal Care', 'Dairy'],
   'Kids': ['Toys', 'Clothing', 'School Supplies', 'Baby Care'],
   'Books': ['Fiction', 'Non-Fiction', 'Academic', 'Children'],
-  'Home & Kitchen': ['Cookware', 'Dining', 'Storage', 'Tools']
+  'Home & Kitchen': ['Cookware', 'Dining', 'Storage', 'Tools'],
+  'Agriculture': ['Seeds & Plants', 'Fertilizers', 'Tools & Equipment', 'Pesticides', 'Irrigation', 'Livestock']
 };
 
 export const MOCK_PRODUCTS: Product[] = [
