@@ -154,22 +154,10 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                                 />
                             </div>
 
-                            {/* Gradient + title — desktop only (mobile banner too short) */}
+                            {/* Soft gradient for visual depth */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
-                            {((activeSlides[currentIndex] as any).title) && (
-                                <div className="hidden md:block absolute bottom-20 left-12 text-white pointer-events-none max-w-xl">
-                                    <motion.h2
-                                        initial={{ y: 16, opacity: 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        transition={{ delay: 0.2 }}
-                                        className="text-3xl md:text-5xl font-extrabold drop-shadow-lg tracking-tight leading-tight"
-                                    >
-                                        {(activeSlides[currentIndex] as any).title}
-                                    </motion.h2>
-                                </div>
-                            )}
 
-                            {/* Premium Clean CTA Pill */}
+                            {/* Premium Clean CTA Pill — only element on banner */}
                             <div className="banner-overlay">
                                 <span className="cta-text">{(activeSlides[currentIndex] as any).ctaText || 'Shop Now'}</span>
                             </div>
@@ -208,8 +196,8 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                                     </motion.div>
                                 </div>
 
-                                {/* Text Content — hidden on mobile (banner too short), visible on desktop */}
-                                <div className="hidden md:flex absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex-col items-start text-left z-10 md:static md:bg-none md:order-1 md:h-auto md:justify-center md:p-0 md:pt-0 md:pb-0">
+                                {/* Text Content — completely hidden, only banner-overlay CTA pill shows */}
+                                <div className="hidden">
                                     <motion.h1
                                         initial={{ y: 20, opacity: 0 }}
                                         animate={{ y: 0, opacity: 1 }}

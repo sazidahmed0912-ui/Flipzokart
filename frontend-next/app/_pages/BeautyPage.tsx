@@ -270,12 +270,7 @@ export const BeautyPage: React.FC = () => {
                                 {/* Gradient depth */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent pointer-events-none" />
 
-                                {/* Banner title — desktop only */}
-                                <div className="hidden md:block absolute bottom-20 left-12 text-white pointer-events-none max-w-[500px] lg:max-w-[700px]">
-                                    <h2 className="text-5xl lg:text-5xl xl:text-6xl font-bold leading-tight drop-shadow-lg">{currentBanner.title}</h2>
-                                </div>
-
-                                {/* Premium Clean CTA Pill */}
+                                {/* Premium Clean CTA Pill — only element on banner */}
                                 <div className="banner-overlay">
                                     <span className="cta-text">Shop Now</span>
                                 </div>
