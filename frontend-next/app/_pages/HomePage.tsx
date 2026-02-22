@@ -121,11 +121,19 @@ export const HomePage: React.FC = () => {
                 const mapped = res.data.map((c: any) => ({
                     name: c.categoryName,
                     imageUrl: c.iconUrl,
-                    href: c.redirectUrl || (
-                        c.categoryName.toLowerCase() === 'fashion' ? '/fashion' :
-                            c.categoryName.toLowerCase() === 'agriculture' ? '/agriculture' :
-                                `/shop?category=${encodeURIComponent(c.categoryName)}`
-                    )
+                    href: c.redirectUrl || (() => {
+                        const name = c.categoryName.toLowerCase();
+                        if (name === 'fashion') return '/fashion';
+                        if (name === 'beauty') return '/beauty';
+                        if (name === 'agriculture') return '/agriculture';
+                        if (name === 'groceries') return '/groceries';
+                        if (name === 'mobiles') return '/mobiles';
+                        if (name === 'electronics') return '/electronics';
+                        if (name === 'home') return '/home';
+                        if (name === 'appliances') return '/appliances';
+                        if (name === 'offers') return '/offers';
+                        return `/shop?category=${encodeURIComponent(c.categoryName)}`;
+                    })()
                 }));
                 setDisplayCategories(mapped);
             }
