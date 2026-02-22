@@ -13,15 +13,15 @@ import { SuggestedForYou } from '@/app/components/SuggestedForYou';
 
 // Fallback data
 const initialCategories = [
-    { name: 'Groceries', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-groceries-e6814d7f00ef4f7d92268edd5246a637.png', href: '/shop?category=Groceries', redirectUrl: '/shop?category=Groceries' },
-    { name: 'Mobiles', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-mobiles-4f832660f1f64e30b256a396f486ad70.png', href: '/shop?category=Mobiles', redirectUrl: '/shop?category=Mobiles' },
-    { name: 'Electronics', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-electronics-2416c835515347fdabf6e9053feec09e.png', href: '/shop?category=Electronics', redirectUrl: '/shop?category=Electronics' },
-    { name: 'Fashion', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-fashion-ceae805ee2f24728922582c24545ceba.png', href: '/fashion', redirectUrl: '/fashion' },
-    { name: 'Beauty', imageUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100&h=100&fit=crop&q=60', href: '/shop?category=Beauty', redirectUrl: '/shop?category=Beauty' },
-    { name: 'Home', imageUrl: 'https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=100&h=100&fit=crop&q=60', href: '/shop?category=Home', redirectUrl: '/shop?category=Home' },
-    { name: 'Appliances', imageUrl: 'https://images.unsplash.com/photo-1626806819282-2c1dc01a5e0c?w=100&h=100&fit=crop&q=60', href: '/shop?category=Appliances', redirectUrl: '/shop?category=Appliances' },
-    { name: 'Agriculture', imageUrl: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=100&h=100&fit=crop&q=60', href: '/agriculture', redirectUrl: '/agriculture' },
-    { name: 'Offers', imageUrl: 'https://rukminim1.flixcart.com/fk-p-flap/80/80/image/0139228b2f7eb413.jpg?q=100', href: '/shop?tag=offer', redirectUrl: '/shop?tag=offer' },
+    { name: 'Groceries', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-groceries-e6814d7f00ef4f7d92268edd5246a637.png', href: '/groceries' },
+    { name: 'Mobiles', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-mobiles-4f832660f1f64e30b256a396f486ad70.png', href: '/mobiles' },
+    { name: 'Electronics', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-electronics-2416c835515347fdabf6e9053feec09e.png', href: '/electronics' },
+    { name: 'Fashion', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-fashion-ceae805ee2f24728922582c24545ceba.png', href: '/fashion' },
+    { name: 'Beauty', imageUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100&h=100&fit=crop&q=60', href: '/beauty' },
+    { name: 'Home', imageUrl: 'https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=100&h=100&fit=crop&q=60', href: '/home' },
+    { name: 'Appliances', imageUrl: 'https://images.unsplash.com/photo-1626806819282-2c1dc01a5e0c?w=100&h=100&fit=crop&q=60', href: '/appliances' },
+    { name: 'Agriculture', imageUrl: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=100&h=100&fit=crop&q=60', href: '/agriculture' },
+    { name: 'Offers', imageUrl: 'https://rukminim1.flixcart.com/fk-p-flap/80/80/image/0139228b2f7eb413.jpg?q=100', href: '/offers' },
 ];
 
 export const HomePage: React.FC = () => {
@@ -121,7 +121,8 @@ export const HomePage: React.FC = () => {
                 const mapped = res.data.map((c: any) => ({
                     name: c.categoryName,
                     imageUrl: c.iconUrl,
-                    href: c.redirectUrl || (() => {
+                    href: (() => {
+                        // Slug mapping always wins over DB redirectUrl for known categories
                         const name = c.categoryName.toLowerCase();
                         if (name === 'fashion') return '/fashion';
                         if (name === 'beauty') return '/beauty';
@@ -132,7 +133,8 @@ export const HomePage: React.FC = () => {
                         if (name === 'home') return '/home';
                         if (name === 'appliances') return '/appliances';
                         if (name === 'offers') return '/offers';
-                        return `/shop?category=${encodeURIComponent(c.categoryName)}`;
+                        // Unknown category: use DB redirectUrl or shop fallback
+                        return c.redirectUrl || `/shop?category=${encodeURIComponent(c.categoryName)}`;
                     })()
                 }));
                 setDisplayCategories(mapped);
