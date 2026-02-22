@@ -154,15 +154,15 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                                 />
                             </div>
 
-                            {/* Soft gradient + title at bottom-left */}
+                            {/* Gradient + title — desktop only (mobile banner too short) */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
                             {((activeSlides[currentIndex] as any).title) && (
-                                <div className="absolute bottom-16 md:bottom-20 left-4 md:left-12 text-white pointer-events-none max-w-xl">
+                                <div className="hidden md:block absolute bottom-20 left-12 text-white pointer-events-none max-w-xl">
                                     <motion.h2
                                         initial={{ y: 16, opacity: 0 }}
                                         animate={{ y: 0, opacity: 1 }}
                                         transition={{ delay: 0.2 }}
-                                        className="text-2xl sm:text-3xl md:text-5xl font-extrabold drop-shadow-lg tracking-tight leading-tight"
+                                        className="text-3xl md:text-5xl font-extrabold drop-shadow-lg tracking-tight leading-tight"
                                     >
                                         {(activeSlides[currentIndex] as any).title}
                                     </motion.h2>
