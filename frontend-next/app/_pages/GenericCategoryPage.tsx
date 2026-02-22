@@ -422,8 +422,8 @@ export const GenericCategoryPage: React.FC<Props> = ({ categoryKey }) => {
                                     );
                                 }}
                                 className={`flex-shrink-0 px-4 py-2 rounded-full text-xs md:text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab
-                                        ? `${config.accent} text-white shadow-md ${config.accentShadow}`
-                                        : 'text-gray-600 hover:bg-gray-100'
+                                    ? `${config.accent} text-white shadow-md ${config.accentShadow}`
+                                    : 'text-gray-600 hover:bg-gray-100'
                                     }`}
                             >
                                 {config.isOffers && tab !== defaultTab && <Tag size={10} className="inline mr-1 -mt-0.5" />}
@@ -479,7 +479,7 @@ export const GenericCategoryPage: React.FC<Props> = ({ categoryKey }) => {
                     <h3 className="text-xs md:text-lg font-bold text-gray-800 mb-3 md:mb-6 uppercase tracking-wider">
                         {config.isOffers ? 'Shop by Budget' : 'Shop by Category'}
                     </h3>
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-6">
+                    <div className="grid grid-cols-6 md:grid-cols-4 lg:grid-cols-6 gap-1 md:gap-6">
                         {config.subcategories.map((sub, idx) => (
                             <Link key={idx} href={sub.link} className="flex flex-col items-center group">
                                 <div className={`w-full aspect-square relative rounded-lg overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:${config.accentBorder} transition-colors`}>
@@ -526,8 +526,8 @@ export const GenericCategoryPage: React.FC<Props> = ({ categoryKey }) => {
                                             key={d}
                                             onClick={() => setTrendingDays(d)}
                                             className={`text-[10px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-full transition-all ${trendingDays === d
-                                                    ? `${config.accent} text-white shadow-sm`
-                                                    : 'text-gray-500 hover:text-gray-700'
+                                                ? `${config.accent} text-white shadow-sm`
+                                                : 'text-gray-500 hover:text-gray-700'
                                                 }`}
                                         >
                                             {d}D

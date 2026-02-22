@@ -309,7 +309,7 @@ export const BeautyPage: React.FC = () => {
             <div className="bg-white py-4 md:py-8 px-3 md:px-8 mb-4 shadow-sm">
                 <div className="max-w-7xl mx-auto">
                     <h3 className="text-xs md:text-lg font-bold text-gray-800 mb-3 md:mb-6 uppercase tracking-wider">Shop by Category</h3>
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-6">
+                    <div className="grid grid-cols-6 md:grid-cols-4 lg:grid-cols-6 gap-1 md:gap-6">
                         {BEAUTY_SUBCATEGORIES.map((sub, idx) => (
                             <Link key={idx} href={sub.link} className="flex flex-col items-center group">
                                 <div className="w-full aspect-square relative rounded-lg overflow-hidden bg-gray-100 mb-2 border border-gray-100 group-hover:border-pink-400 transition-colors">
