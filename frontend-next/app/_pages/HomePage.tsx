@@ -188,8 +188,8 @@ export const HomePage: React.FC = () => {
                 <SmoothReveal direction="up" delay={200}>
                     <div className="max-w-7xl mx-auto">
                         <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-center"><span className="text-gray-800">Shop by Categories</span></h2>
-                        <div className="flex overflow-x-auto pb-2 gap-3 px-2 md:grid md:grid-cols-8 md:gap-6 no-scrollbar snap-x">                        {displayCategories.map(category => (
-                            <Link href={category.href} key={category.name} className="flex flex-col items-center flex-shrink-0 snap-center w-[72px] md:w-auto text-center group">
+                        <div className="flex flex-nowrap overflow-x-auto pb-2 gap-3 px-2 md:gap-6 no-scrollbar snap-x">                        {displayCategories.map(category => (
+                            <Link href={category.href} key={category.name} className="flex flex-col items-center flex-shrink-0 snap-center w-[72px] md:w-[90px] text-center group">
                                 <div className="w-14 h-14 md:w-20 md:h-20 mb-2 bg-gray-100 rounded-full md:rounded-xl p-3 border border-gray-200 group-hover:shadow-md transition-shadow flex items-center justify-center">
                                     <LazyImage
                                         src={category.imageUrl}
