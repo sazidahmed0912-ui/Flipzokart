@@ -112,7 +112,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
 
     return (
         <section
-            className="relative w-full md:w-auto md:mx-8 md:my-6 h-[200px] md:h-[450px] lg:h-[500px] max-h-[600px] overflow-hidden md:rounded-2xl shadow-lg group bg-gray-100 touch-pan-y"
+            className="hero-banner-quad relative w-full md:w-auto md:mx-8 md:my-6 h-[200px] md:h-[450px] lg:h-[500px] max-h-[600px] overflow-hidden group bg-gray-100 touch-pan-y"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}

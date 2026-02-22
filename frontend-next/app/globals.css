@@ -554,3 +554,37 @@
         backdrop-filter: blur(18px) saturate(160%);
     }
 }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  💎 FLIPKART-STYLE QUAD CURVE BANNER — ULTRA LOCK SAFE      ║
+   ║  ✔ No height/width/spacing change                           ║
+   ║  ✔ Slider (Swiper / custom) safe                            ║
+   ║  ✔ Image edge safe                                          ║
+   ║  ✔ Mobile responsive                                        ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.hero-banner-quad {
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.08),
+        0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Slider safe — inherit radius into Swiper/custom slider containers */
+.hero-banner-quad .swiper,
+.hero-banner-quad .slick-slider {
+    border-radius: inherit;
+    overflow: hidden;
+}
+
+/* Image safe — prevent square image edges inside the curved container */
+.hero-banner-quad img {
+    border-radius: inherit;
+}
+
+/* Mobile: slightly reduced curve for tighter screens */
+@media (max-width: 768px) {
+    .hero-banner-quad {
+        border-radius: 18px;
+    }
+}

@@ -241,7 +241,7 @@ export const BeautyPage: React.FC = () => {
         <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
 
             {/* 2. SWIPER HERO BANNER */}
-            <div className="w-full h-[220px] md:h-[420px] lg:h-[420px] xl:h-[520px] 2xl:h-[580px] bg-gray-100 overflow-hidden lg:max-w-[1400px] xl:max-w-[1500px] mx-auto rounded-none lg:rounded-2xl lg:mt-4 lg:shadow-xl relative">
+            <div className="hero-banner-quad w-full h-[220px] md:h-[420px] lg:h-[420px] xl:h-[520px] 2xl:h-[580px] bg-gray-100 overflow-hidden lg:max-w-[1400px] xl:max-w-[1500px] mx-auto lg:mt-4 relative">
                 <Swiper
                     key={activeTab}
                     modules={[Autoplay, Pagination]}

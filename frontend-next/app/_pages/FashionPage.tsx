@@ -334,7 +334,7 @@ export const FashionPage: React.FC = () => {
             </div>
 
             {/* 2. SWIPER HERO BANNER (ULTRA LOCK FIX) */}
-            <div className="w-full h-[220px] md:h-[420px] lg:h-[420px] xl:h-[520px] 2xl:h-[580px] bg-gray-100 overflow-hidden lg:max-w-[1400px] xl:max-w-[1500px] mx-auto rounded-none lg:rounded-2xl lg:mt-4 lg:shadow-xl relative">
+            <div className="hero-banner-quad w-full h-[220px] md:h-[420px] lg:h-[420px] xl:h-[520px] 2xl:h-[580px] bg-gray-100 overflow-hidden lg:max-w-[1400px] xl:max-w-[1500px] mx-auto lg:mt-4 relative">
                 <Swiper
                     key={activeTab} // Force re-render on activeTab change
                     modules={[Autoplay, Pagination]}
