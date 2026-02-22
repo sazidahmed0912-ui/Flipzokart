@@ -664,3 +664,34 @@
         overflow: hidden;
     }
 }
+
+/* ── MOBILE FLOATING BANNER (Flipkart style — 4-side gap + soft shadow) ─────
+   Ultra Lock: desktop untouched | only mobile < 768px affected
+   ────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Prevent any horizontal scroll from margin */
+    body {
+        overflow-x: hidden;
+    }
+
+    /* Floating banner: side gaps + soft shadow */
+    .hero-banner-quad {
+        margin: 10px 10px 0;
+        /* top 10px | sides 10px */
+        border-radius: 18px !important;
+        /* override the existing 28px to 18px on mobile */
+        box-shadow:
+            0 4px 14px rgba(0, 0, 0, 0.09),
+            0 1px 4px rgba(0, 0, 0, 0.05);
+        width: calc(100% - 20px);
+        /* shrink width to match side margins */
+    }
+
+    /* Image inside banner inherits border-radius cleanly */
+    .hero-banner-quad img {
+        border-radius: inherit;
+        display: block;
+        width: 100%;
+    }
+}
