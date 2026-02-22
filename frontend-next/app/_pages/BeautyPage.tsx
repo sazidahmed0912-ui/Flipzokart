@@ -240,6 +240,29 @@ export const BeautyPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
 
+            {/* 1. TABS */}
+            <div className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
+                <div className="max-w-7xl mx-auto px-3 md:px-8">
+                    <div className="flex overflow-x-auto no-scrollbar gap-1 py-2">
+                        {TABS.map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => {
+                                    setActiveTab(tab);
+                                    router.replace(`/beauty?tab=${encodeURIComponent(tab)}`, { scroll: false });
+                                }}
+                                className={`flex-shrink-0 px-4 py-2 rounded-full text-xs md:text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab
+                                    ? 'bg-pink-500 text-white shadow-md shadow-pink-200'
+                                    : 'text-gray-600 hover:bg-gray-100'
+                                    }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
             {/* 2. SWIPER HERO BANNER */}
             <div className="hero-banner-quad w-full h-[220px] md:h-[420px] lg:h-[420px] xl:h-[520px] 2xl:h-[580px] bg-gray-100 overflow-hidden lg:max-w-[1400px] xl:max-w-[1500px] mx-auto lg:mt-4 relative">
                 <Swiper
@@ -265,6 +288,8 @@ export const BeautyPage: React.FC = () => {
                                     src={img}
                                     alt={`${currentBanner.title} - Slide ${index + 1}`}
                                     className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                                    referrerPolicy="no-referrer"
+                                    crossOrigin="anonymous"
                                 />
 
                                 {/* Gradient depth */}
@@ -292,6 +317,8 @@ export const BeautyPage: React.FC = () => {
                                         src={sub.icon}
                                         alt={sub.name}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        referrerPolicy="no-referrer"
+                                        crossOrigin="anonymous"
                                     />
                                 </div>
                                 <span className="text-[11px] md:text-sm font-medium text-gray-700 text-center">{sub.name}</span>
