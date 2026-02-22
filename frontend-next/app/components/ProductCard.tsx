@@ -41,7 +41,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
     <div className={`group rounded-lg md:rounded-xl overflow-hidden hover:shadow-lg transition-transform duration-300 transform-origin-center will-change-transform hover:scale-[1.02] md:hover:scale-[1.03] flex flex-col realme-glass-card ${animationClass}`}>
       <div className="glass-layer"></div>
       <div className="card-content flex flex-col w-full h-full">
-        <div className="relative w-full aspect-[4/5] overflow-hidden bg-transparent flex items-center justify-center p-4 mb-1.5">
+        <div className="relative w-full aspect-[4/5] overflow-hidden bg-transparent flex items-center justify-center p-1.5 md:p-3 mb-1">
           <Link href={`/product/${product.id}`} className="block w-full h-full relative">
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10 transition-opacity duration-300">
@@ -76,9 +76,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
           )}
         </div>
 
-        <div className="px-3 pt-1.5 pb-3 flex flex-col">
+        <div className="px-2 md:px-3 pt-1 pb-2 md:pb-3 flex flex-col">
           <p className="text-[10px] text-gray-400 font-medium truncate uppercase tracking-wide mt-1 mb-0.5">{product.category}</p>
-          <Link href={`/product/${product.id}`} className="font-semibold text-xs md:text-sm line-clamp-2 hover:text-primary transition-colors leading-tight min-h-[2.5em] mb-1.5">
+          <Link href={`/product/${product.id}`} className="font-semibold text-[11px] md:text-sm line-clamp-2 hover:text-primary transition-colors leading-tight min-h-[2.2em] mb-1">
             {product.name}
           </Link>
 
