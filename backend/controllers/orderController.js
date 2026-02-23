@@ -711,7 +711,7 @@ const verifyPayment = async (req, res) => {
       }
     });
   } catch (error) {
-    if (session.inAtomTransaction()) {
+    if (session.inTransaction()) {
       await session.abortTransaction();
     }
     session.endSession();
