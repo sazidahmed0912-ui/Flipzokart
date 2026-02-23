@@ -686,10 +686,6 @@
             0 1px 4px rgba(0, 0, 0, 0.05);
         width: calc(100% - 20px);
         /* shrink width to match side margins */
-        height: 170px !important;
-        /* slightly reduced from 200/220px for a compact look */
-        background-color: #fff !important;
-        /* White bg behind contain images */
     }
 
     /* Image inside banner inherits border-radius cleanly */
@@ -697,9 +693,6 @@
         border-radius: inherit;
         display: block;
         width: 100%;
-        height: 100% !important;
-        object-fit: contain !important;
-        /* Forces full image to be visible without crop */
     }
 }
 

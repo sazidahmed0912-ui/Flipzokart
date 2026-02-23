@@ -53,6 +53,8 @@ const LazyImage: React.FC<LazyImageProps> = ({
                 src={imgSrc || '/placeholder.png'}
                 alt={alt}
                 priority={priority}
+                loading={priority ? undefined : "lazy"}
+                quality={60} // Aggressive compression for 13kb/s low bandwidth
                 sizes={sizes}
                 onLoad={(e) => {
                     setIsLoaded(true);
@@ -65,6 +67,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
                 className={`
                     transition-opacity duration-300 ease-in-out
                     ${isLoaded ? 'opacity-100' : 'opacity-0'}
+                    object-contain
                     ${className}
                 `}
                 {...finalProps}

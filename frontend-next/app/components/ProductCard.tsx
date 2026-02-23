@@ -52,9 +52,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
               src={imgSrc}
               alt={product.name}
               priority={priority}
+              loading={priority ? undefined : "lazy"}
+              quality={50} // 13kb/s ultra-low bandwidth setting
               fill
               className={`object-contain transition-transform duration-300 hover:scale-105 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              sizes="(max-width: 420px) 35vw, (max-width: 768px) 25vw, (max-width: 1200px) 20vw, 15vw"
               onLoad={() => setIsLoading(false)}
               onError={() => {
                 setImgSrc("/placeholder.png");

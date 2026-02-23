@@ -457,6 +457,7 @@ export const GenericCategoryPage: React.FC<Props> = ({ categoryKey }) => {
                                 <img
                                     src={img}
                                     alt={`${currentBanner.title} - Slide ${index + 1}`}
+                                    loading={index === 0 ? "eager" : "lazy"} // Lazy load non-visible slides
                                     className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                                     referrerPolicy="no-referrer"
                                     crossOrigin="anonymous"
@@ -486,6 +487,7 @@ export const GenericCategoryPage: React.FC<Props> = ({ categoryKey }) => {
                                     <img
                                         src={sub.icon}
                                         alt={sub.name}
+                                        loading="lazy"
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         referrerPolicy="no-referrer"
                                         crossOrigin="anonymous"

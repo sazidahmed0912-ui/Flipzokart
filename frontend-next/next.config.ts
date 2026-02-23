@@ -9,7 +9,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: false, // 🟢 Disable strict mode for production performance (optional)
   images: {
     formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 31536000, // 1 year cache for maximum bandwidth saving
+    deviceSizes: [320, 420, 768, 1024, 1200], // Minimal breakpoint sizes
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384], // Strict small sizes
     remotePatterns: [
       { protocol: "https", hostname: "cdn.ailandingpage.ai" },
       { protocol: "https", hostname: "images.unsplash.com" },
