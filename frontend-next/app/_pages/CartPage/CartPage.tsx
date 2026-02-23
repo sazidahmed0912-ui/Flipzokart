@@ -8,8 +8,8 @@ import { CartItem } from '@/app/types';
 import './CartPage.css';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
 import { getProductImage } from '@/app/utils/imageHelper';
-import { applyCoupon } from '@/app/services/api';
-import toast from 'react-hot-toast';
+import { applyCouponSimple } from '@/app/services/simpleCouponService';
+import { toast } from 'react-toastify';
 
 const getCartItemKey = (productId: string, variants?: Record<string, string>, variantId?: string) => {
   if (variantId) return variantId;
@@ -82,20 +82,29 @@ const CartPage = () => {
   const handleApplyCoupon = async (codeToApply = couponCode) => {
     if (!codeToApply.trim()) return;
     setIsApplyingCoupon(true);
+
+    // Calculate current totals locally to avoid scoping issues with priceDetails
+    const currentTotals = calculateCartTotals(cartItems);
+    const totalAmount = Number(currentTotals.totalAmount - currentTotals.deliveryCharges - currentTotals.platformFee);
+
     try {
-      const res = await applyCoupon(codeToApply.trim());
-      if (res.data.success) {
-        setAppliedCoupon(res.data.result);
+      const data = await applyCouponSimple(codeToApply.trim(), totalAmount);
+      if (data.success) {
+        setAppliedCoupon({
+          couponCode: codeToApply.trim().toUpperCase(),
+          discountAmount: data.discount,
+          finalCartTotal: data.finalAmount,
+          type: data.type || 'coupon'
+        });
         setCouponCode('');
         if (codeToApply === couponCode) {
-          toast.success(`Coupon ${codeToApply.toUpperCase()} applied successfully!`);
+          toast.success(`Coupon applied successfully!`);
         }
       }
     } catch (error: any) {
       setAppliedCoupon(null);
-      // Only show error if the user actively clicked sumbit
       if (codeToApply === couponCode) {
-        toast.error(error.response?.data?.message || 'Invalid Coupon Code');
+        toast.error(error.response?.data?.message || 'Invalid coupon code');
       }
     } finally {
       setIsApplyingCoupon(false);

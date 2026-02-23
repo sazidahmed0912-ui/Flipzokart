@@ -16,8 +16,8 @@ import {
   verifyPayment,
 } from '@/app/services/api';
 import { useApp } from '@/app/store/Context';
-import { useToast } from '@/app/components/toast';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
+import { toast } from 'react-toastify';
 import './PaymentPage.css';
 /* =========================
    Razorpay ENV SAFE ACCESS
@@ -49,7 +49,6 @@ const PaymentPage: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname(); const searchParams = useSearchParams();
   const { user, cart, clearCart, selectedAddress, removeProductFromCart } = useApp();
-  const { addToast } = useToast();
 
   const [paymentMethod, setPaymentMethod] = useState<
     "COD" | "RAZORPAY" | null
@@ -118,12 +117,9 @@ const PaymentPage: React.FC = () => {
   } = calculateCartTotals(activeCart, undefined, paymentMethod);
 
   // Apply Coupon Discount
-  let totalPayable = rawTotalPayable;
-  let couponDiscount = 0;
-  if (appliedCoupon) {
-    couponDiscount = appliedCoupon.discount || 0;
-    totalPayable = Math.max(0, totalPayable - couponDiscount);
-  }
+  const couponDiscount = appliedCoupon ? Number(appliedCoupon.discount || 0) : 0;
+  const finalAmount = Math.max(0, rawTotalPayable - couponDiscount);
+  const totalPayable = finalAmount; // Alias for UI compatibility
 
   // 🛡️ Payment Availability Logic
   // If ANY item in cart has codAvailable === false, then COD is disabled for entire order.
@@ -169,7 +165,7 @@ const PaymentPage: React.FC = () => {
       setError(null);
 
       if (!selectedAddress || (!selectedAddress.id && !selectedAddress._id)) {
-        addToast('error', "Delivery address missing. Please select one.");
+        toast.info("Delivery address missing. Please select one.");
         return;
       }
 
@@ -192,8 +188,8 @@ const PaymentPage: React.FC = () => {
         platformFee,
         tax,
         mrp,
-        total: totalPayable,
-        finalAmount: totalPayable,
+        total: finalAmount,
+        finalAmount: finalAmount,
         addressId: selectedAddress.id || selectedAddress._id,
         address: selectedAddress,
         couponCode: appliedCoupon?.code,
@@ -226,7 +222,7 @@ const PaymentPage: React.FC = () => {
     }
 
     if (!selectedAddress || (!selectedAddress.id && !selectedAddress._id)) {
-      addToast('error', "Delivery address missing. Please select one.");
+      toast.info("Delivery address missing. Please select one.");
       return;
     }
 
@@ -235,7 +231,7 @@ const PaymentPage: React.FC = () => {
       setError(null);
 
       const { data: order } = await createRazorpayOrder({
-        amount: totalPayable,
+        amount: finalAmount,
       });
 
       const options = {
@@ -269,8 +265,8 @@ const PaymentPage: React.FC = () => {
               platformFee,
               tax,
               mrp,
-              total: totalPayable,
-              finalAmount: totalPayable,
+              total: finalAmount,
+              finalAmount: finalAmount,
               addressId: selectedAddress?.id || selectedAddress?._id,
               address: selectedAddress,
               couponCode: appliedCoupon?.code,
@@ -333,8 +329,8 @@ const PaymentPage: React.FC = () => {
         platformFee,
         tax,
         mrp,
-        total: totalPayable,
-        finalAmount: totalPayable,
+        total: finalAmount,
+        finalAmount: finalAmount,
         addressId: selectedAddress?.id || selectedAddress?._id,
         address: selectedAddress,
         paymentMethod: paymentMethod, // 'COD' or 'RAZORPAY' - logic will be handled after signup
@@ -355,7 +351,7 @@ const PaymentPage: React.FC = () => {
       // If we are in Buy Now Mode, the buyNowItem is already in LS.
       // But we should ensure it stays there. It persists by default.
 
-      addToast('info', '⚠️ Please signup/login to place your order');
+      toast.info('⚠️ Please signup/login to place your order');
       // Redirect to signup which will handle the intent
       setTimeout(() => router.push('/signup?redirect=checkout'), 1000);
       return;
