@@ -675,27 +675,31 @@
         overflow-x: hidden;
     }
 
-    /* Floating banner: side gaps + soft shadow + aspect-ratio */
+    /* Floating banner: side gaps + soft shadow */
     .hero-banner-quad {
         margin: 10px 10px 0;
+        /* top 10px | sides 10px */
         border-radius: 18px !important;
+        /* override the existing 28px to 18px on mobile */
         box-shadow:
             0 4px 14px rgba(0, 0, 0, 0.09),
             0 1px 4px rgba(0, 0, 0, 0.05);
         width: calc(100% - 20px);
-        /* Aspect-ratio replaces fixed h-[200px] — scales perfectly with screen */
-        height: auto !important;
-        aspect-ratio: 16 / 10;
-        overflow: hidden;
+        /* shrink width to match side margins */
+        height: 170px !important;
+        /* slightly reduced from 200/220px for a compact look */
+        background-color: #fff !important;
+        /* White bg behind contain images */
     }
 
-    /* Full image visible — no crop */
+    /* Image inside banner inherits border-radius cleanly */
     .hero-banner-quad img {
         border-radius: inherit;
         display: block;
-        width: 100% !important;
+        width: 100%;
         height: 100% !important;
         object-fit: contain !important;
+        /* Forces full image to be visible without crop */
     }
 }
 
