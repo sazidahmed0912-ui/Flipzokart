@@ -10,7 +10,7 @@ import {
 import { motion } from 'framer-motion';
 // removed canvas-confetti to avoid dependency issues
 import { fetchOrderById } from '@/app/services/api';
-import { useToast } from '@/app/components/toast';
+import { toast } from 'react-toastify';
 import { getSafeAddress } from '@/app/utils/addressHelper';
 import { resolveProductImage } from '@/app/utils/imageHelper';
 import { purchase } from '@/lib/fbPixel';
@@ -49,7 +49,6 @@ const OrderSuccessPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
-  const { addToast } = useToast();
 
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -105,7 +104,7 @@ const OrderSuccessPage = () => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    addToast('success', 'Copied to clipboard!');
+    toast.success('Copied to clipboard!');
   };
 
   const getStepStatus = (step: string, currentStatus: string) => {

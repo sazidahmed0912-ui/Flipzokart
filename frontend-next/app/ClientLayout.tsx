@@ -56,10 +56,15 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             };
 
             const type = notification.status as any;
-            if (type === 'success') toast.success(notification.message);
-            else if (type === 'error') toast.error(notification.message);
-            else if (type === 'warning' || type === 'warn') toast.warn(notification.message);
-            else toast.info(notification.message);
+
+            // Dispatch custom event for persistent support
+            window.dispatchEvent(new CustomEvent("show-toast", {
+                detail: {
+                    type: type,
+                    message: notification.message,
+                    persist: type === 'success' || type === 'error' // Persist critical messages across route changes
+                }
+            }));
 
             if (!isWarning) {
                 // Ensure showToast exists on NotificationContext

@@ -170,7 +170,9 @@ const CheckoutPage = () => {
         const addressToSave = addresses.find(addr => addr.id === selectedAddressId);
         if (addressToSave) {
             setContextAddress(addressToSave);
-            toast.success('Address selected!');
+            window.dispatchEvent(new CustomEvent("show-toast", {
+                detail: { type: 'success', message: 'Address selected!', persist: true }
+            }));
         }
     };
 

@@ -354,7 +354,9 @@ const PaymentPage: React.FC = () => {
       // If we are in Buy Now Mode, the buyNowItem is already in LS.
       // But we should ensure it stays there. It persists by default.
 
-      toast.info('⚠️ Please signup/login to place your order');
+      window.dispatchEvent(new CustomEvent("show-toast", {
+        detail: { type: 'info', message: '⚠️ Please signup/login to place your order', persist: true }
+      }));
       // Redirect to signup which will handle the intent
       setTimeout(() => router.push('/signup?redirect=checkout'), 1000);
       return;

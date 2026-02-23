@@ -46,9 +46,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </React.Suspense>
           <ClientLayout>
             {children}
-            <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover />
           </ClientLayout>
         </Providers>
+        <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover limit={3} />
       </body>
     </html>
   );

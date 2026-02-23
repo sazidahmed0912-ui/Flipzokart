@@ -796,3 +796,8 @@
         width: 24px !important;
     }
 }
+
+/* ── TOAST VISIBILITY FIX (Highest Stacking Layer) ────────────────────────── */
+.Toastify__toast-container {
+    z-index: 999999 !important;
+}

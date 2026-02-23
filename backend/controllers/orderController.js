@@ -35,8 +35,6 @@ const razorpay = new Razorpay({
 
 // Create order for COD
 const createOrder = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
     console.log('Creating order with user:', req.user?.id);
     console.log('Request body:', req.body);
@@ -163,54 +161,33 @@ const createOrder = async (req, res) => {
     // Instead of trusting req.body totals, we RE-CALCULATE based on DB products.
     let priceDetails = calculateOrderTotals(finalOrderProducts, 'COD');
 
-    // 🎟️ STRICT COUPON ENGINE INGESTION (SECTION 2: SAFE COUPON VALIDATION FLOW)
+    // 🎟️ STRICT COUPON ENGINE INGESTION
     let couponSnapshot = undefined;
     if (req.body.couponCode) {
       try {
-        console.log(`[CouponGuard] Validating coupon: ${req.body.couponCode}`);
         const couponResult = await couponController.validateAndCalculateDiscount(
           req.user.id,
           finalOrderProducts,
           req.body.couponCode,
           'COD'
         );
-
-        // SECTION 3: SAFE CALCULATION GUARD
         if (couponResult && couponResult.isValid) {
-          let safeDiscount = Number(couponResult.discountAmount || 0);
-
-          // Guard: discount_amount <= cart_total
-          if (safeDiscount > priceDetails.itemsPrice) {
-            console.warn(`[CouponGuard] Discount ₹${safeDiscount} exceeded total ₹${priceDetails.itemsPrice}. Capping.`);
-            safeDiscount = priceDetails.itemsPrice;
-          }
-
-          priceDetails.discount = safeDiscount;
-          // Guard: final_amount >= 0
-          priceDetails.finalAmount = Math.max(0, Number((priceDetails.totalAmount - safeDiscount).toFixed(2)));
-          priceDetails.totalAmount = priceDetails.finalAmount;
+          priceDetails.discount = (priceDetails.discount || 0) + couponResult.discountAmount;
+          priceDetails.finalAmount = Math.max(0, priceDetails.totalAmount - couponResult.discountAmount);
+          priceDetails.totalAmount = priceDetails.finalAmount; // update total payable
 
           couponSnapshot = {
             couponId: couponResult.couponId,
             code: couponResult.couponCode,
             type: couponResult.type,
-            discountAmount: safeDiscount,
+            discountAmount: couponResult.discountAmount,
             appliedProducts: couponResult.appliedProducts,
             freeItems: couponResult.freeItems
           };
-          console.log('[CouponGuard] Coupon applied with safety guards:', couponSnapshot);
         }
       } catch (err) {
-        console.error(`[CouponGuard] ERROR during safe validation for ${req.body.couponCode}:`, err.message);
-        // SECTION 2: FAIL GRACEFULLY
-        // Remove coupon intent from this calculation to continue checkout if requested, 
-        // but user prompt says: "Return user-friendly message / Continue checkout"
-        // Let's stick to returning 400 for explicit coupon failures to notify user.
-        return res.status(400).json({
-          success: false,
-          message: `Coupon Error: ${err.message}. Please remove coupon or try another.`,
-          errorCode: 'COUPON_VALIDATION_FAILED'
-        });
+        console.warn(`[CouponGuard] Failed to apply coupon ${req.body.couponCode}:`, err.message);
+        return res.status(400).json({ message: err.message, errorCode: 'INVALID_COUPON' });
       }
     }
 
@@ -225,7 +202,6 @@ const createOrder = async (req, res) => {
       paymentStatus: 'PENDING',
       paymentModeSnapshot, // 🔒 ULTRA LOCK: Audit trail
       couponSnapshot,      // 🎟️ COUPON METADATA
-      couponCode: couponSnapshot ? couponSnapshot.code : null, // SECTION 4
 
       // Use Server-Calculated Values
       subtotal: priceDetails.itemsPrice,
@@ -237,6 +213,7 @@ const createOrder = async (req, res) => {
       mrp: priceDetails.mrp,
       total: priceDetails.totalAmount,
       finalAmount: priceDetails.finalAmount,
+
       orderSummary: {
         itemsPrice: priceDetails.itemsPrice,
         tax: priceDetails.tax,
@@ -248,15 +225,15 @@ const createOrder = async (req, res) => {
       }
     });
 
-    await order.save({ session });
+    await order.save();
 
     // Create Notification for User
-    await Notification.create([{
+    await Notification.create({
       recipient: order.user,
       message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
       type: 'newOrder',
       relatedId: order._id
-    }], { session });
+    });
 
     const io = req.app.get('socketio');
     // Notify customer
@@ -294,13 +271,10 @@ const createOrder = async (req, res) => {
       await require('../models/Coupon').findByIdAndUpdate(couponSnapshot.couponId, { $inc: { usageCount: 1 } });
     }
 
-    // Update stock & trending (Pass session if modified to support it, but for now we execute inside try)
+    // Update stock
     await updateStock(validatedProducts);
+    // 📈 Update trending order counts
     await updateTrendingOrders(validatedProducts);
-
-    // Commit transaction
-    await session.commitTransaction();
-    session.endSession();
 
     for (const item of validatedProducts) {
       const product = await Product.findById(item.productId);
@@ -323,17 +297,8 @@ const createOrder = async (req, res) => {
       }
     });
   } catch (error) {
-    if (session.inTransaction()) { // Use inTransaction() for checking if a transaction is active
-      await session.abortTransaction();
-    }
-    session.endSession();
-    console.error('Error creating COD order - CRITICAL EXCEPTION:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error during order creation',
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
+    console.error('Error creating COD order:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -369,8 +334,6 @@ const createRazorpayOrder = async (req, res) => {
 
 // Verify Razorpay payment and create order
 const verifyPayment = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
     if (!process.env.RAZORPAY_KEY_SECRET) {
       console.error("CRITICAL ERROR: RAZORPAY_KEY_SECRET is not defined in environment variables");
@@ -526,51 +489,35 @@ const verifyPayment = async (req, res) => {
     // Calculate using 'RAZORPAY' (Prepaid) logic
     let priceDetails = calculateOrderTotals(productsForCalc, 'RAZORPAY');
 
-    // 🎟️ STRICT COUPON ENGINE INGESTION (SECTION 2: SAFE COUPON VALIDATION FLOW)
+    // 🎟️ STRICT COUPON ENGINE INGESTION (RAZORPAY)
     let couponSnapshot = undefined;
     if (req.body.couponCode) {
       try {
-        console.log(`[CouponGuard-RZP] Validating coupon: ${req.body.couponCode}`);
         const couponResult = await couponController.validateAndCalculateDiscount(
           req.user.id,
           finalOrderProducts,
           req.body.couponCode,
           'RAZORPAY'
         );
-
-        // SECTION 3: SAFE CALCULATION GUARD
         if (couponResult && couponResult.isValid) {
-          let safeDiscount = Number(couponResult.discountAmount || 0);
-
-          // Guard: discount_amount <= cart_total
-          if (safeDiscount > priceDetails.itemsPrice) {
-            console.warn(`[CouponGuard-RZP] Discount ₹${safeDiscount} exceeded total ₹${priceDetails.itemsPrice}. Capping.`);
-            safeDiscount = priceDetails.itemsPrice;
-          }
-
-          priceDetails.discount = safeDiscount;
-          // Guard: final_amount >= 0
-          priceDetails.finalAmount = Math.max(0, Number((priceDetails.totalAmount - safeDiscount).toFixed(2)));
-          priceDetails.totalAmount = priceDetails.finalAmount;
+          priceDetails.discount = (priceDetails.discount || 0) + couponResult.discountAmount;
+          priceDetails.finalAmount = Math.max(0, priceDetails.totalAmount - couponResult.discountAmount);
+          priceDetails.totalAmount = priceDetails.finalAmount; // update total payable
 
           couponSnapshot = {
             couponId: couponResult.couponId,
             code: couponResult.couponCode,
             type: couponResult.type,
-            discountAmount: safeDiscount,
+            discountAmount: couponResult.discountAmount,
             appliedProducts: couponResult.appliedProducts,
             freeItems: couponResult.freeItems
           };
-          console.log('[CouponGuard-RZP] Coupon applied successfully with guards:', couponSnapshot);
         }
       } catch (err) {
-        console.error(`[CouponGuard-RZP] ERROR during safe validation for ${req.body.couponCode}:`, err.message);
+        console.warn(`[CouponGuard] Failed to apply coupon ${req.body.couponCode}:`, err.message);
         // Razorpay already charged them at this point potentially (based on checkout UI logic)
-        return res.status(400).json({
-          success: false,
-          message: `Coupon Validation Failed: ${err.message}. Order cannot be processed as paid amount may mismatch.`,
-          errorCode: 'COUPON_VALIDATION_FAILED'
-        });
+        // So if coupon fails now, we might need to handle refund. But we reject order to be safe.
+        return res.status(400).json({ message: err.message, errorCode: 'INVALID_COUPON' });
       }
     }
 
@@ -585,7 +532,6 @@ const verifyPayment = async (req, res) => {
       status: 'Processing',
       paymentModeSnapshot: paymentModeSnapshotRzp, // 🔒 ULTRA LOCK: Audit trail
       couponSnapshot, // 🎟️ COUPON METADATA
-      couponCode: couponSnapshot ? couponSnapshot.code : null, // SECTION 4
 
       // Use Server-Calculated Values
       subtotal: priceDetails.itemsPrice,
@@ -597,6 +543,7 @@ const verifyPayment = async (req, res) => {
       mrp: priceDetails.mrp,
       total: priceDetails.totalAmount,
       finalAmount: priceDetails.finalAmount,
+
       orderSummary: {
         itemsPrice: priceDetails.itemsPrice,
         tax: priceDetails.tax,
@@ -610,15 +557,15 @@ const verifyPayment = async (req, res) => {
       razorpayPaymentId: razorpay_payment_id
     });
 
-    await order.save({ session });
+    await order.save();
 
     // Create Notification for User
-    await Notification.create([{
+    await Notification.create({
       recipient: order.user,
       message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
       type: 'newOrder',
       relatedId: order._id
-    }], { session });
+    });
 
     const io = req.app.get('socketio');
     // Notify customer
@@ -684,10 +631,6 @@ const verifyPayment = async (req, res) => {
     // 📈 Update trending order counts
     await updateTrendingOrders(products);
 
-    // Commit transaction
-    await session.commitTransaction();
-    session.endSession();
-
     for (const item of products) {
       const product = await Product.findById(item.productId);
       if (product && product.countInStock <= 10) { // Threshold for low stock
@@ -709,16 +652,8 @@ const verifyPayment = async (req, res) => {
       }
     });
   } catch (error) {
-    if (session.inTransaction()) {
-      await session.abortTransaction();
-    }
-    session.endSession();
-    console.error('Error verifying payment - CRITICAL EXCEPTION:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Payment verification failed due to server error',
-      error: error.message
-    });
+    console.error('Error verifying payment:', error);
+    res.status(500).json({ message: 'Payment verification failed' });
   }
 };
 
