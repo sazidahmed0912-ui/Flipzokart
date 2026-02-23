@@ -237,7 +237,6 @@ const createOrder = async (req, res) => {
       mrp: priceDetails.mrp,
       total: priceDetails.totalAmount,
       finalAmount: priceDetails.finalAmount,
-
       orderSummary: {
         itemsPrice: priceDetails.itemsPrice,
         tax: priceDetails.tax,
@@ -249,15 +248,15 @@ const createOrder = async (req, res) => {
       }
     });
 
-    await order.save();
+    await order.save({ session });
 
     // Create Notification for User
-    await Notification.create({
+    await Notification.create([{
       recipient: order.user,
       message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
       type: 'newOrder',
       relatedId: order._id
-    });
+    }], { session });
 
     const io = req.app.get('socketio');
     // Notify customer
@@ -598,7 +597,6 @@ const verifyPayment = async (req, res) => {
       mrp: priceDetails.mrp,
       total: priceDetails.totalAmount,
       finalAmount: priceDetails.finalAmount,
-
       orderSummary: {
         itemsPrice: priceDetails.itemsPrice,
         tax: priceDetails.tax,
@@ -612,15 +610,15 @@ const verifyPayment = async (req, res) => {
       razorpayPaymentId: razorpay_payment_id
     });
 
-    await order.save();
+    await order.save({ session });
 
     // Create Notification for User
-    await Notification.create({
+    await Notification.create([{
       recipient: order.user,
       message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
       type: 'newOrder',
       relatedId: order._id
-    });
+    }], { session });
 
     const io = req.app.get('socketio');
     // Notify customer
