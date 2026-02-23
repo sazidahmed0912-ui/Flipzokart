@@ -284,6 +284,10 @@ app.use("/api/cart", require("./routes/cartRoutes"));
 // 🎟️ Coupons
 app.use("/api/coupons", require("./routes/couponRoutes"));
 
+// Simple, safe coupon application (STEP 2 & 3 compatibility)
+// Exposed at /api/apply-coupon
+app.use("/api/apply-coupon", require("./routes/applyCouponSimpleRoutes"));
+
 // 🎨 Website Content Manager
 app.use("/api/content", require("./routes/contentRoutes"));
 

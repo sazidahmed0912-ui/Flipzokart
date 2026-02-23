@@ -196,7 +196,7 @@ const PaymentPage: React.FC = () => {
         finalAmount: totalPayable,
         addressId: selectedAddress.id || selectedAddress._id,
         address: selectedAddress,
-        couponCode: appliedCoupon?.couponCode || appliedCoupon?.code,
+        couponCode: appliedCoupon?.code,
       });
 
       // CLEANUP based on MODE

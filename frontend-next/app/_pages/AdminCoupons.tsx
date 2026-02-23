@@ -18,13 +18,16 @@ export const AdminCoupons: React.FC = () => {
   // Form State
   const [newCoupon, setNewCoupon] = useState({
     code: '',
-    discountType: 'percentage',
+    type: 'PERCENTAGE',
     discountValue: '',
-    minOrderAmount: '',
+    minCartValue: '',
     maxDiscount: '',
-    usageLimit: '1',
+    usageLimit: '',
+    usageLimitPerUser: '1',
     expiryDate: '',
-    isActive: true
+    allowedCategories: '', // Comma separated for now
+    allowedProducts: '', // Comma separated for now
+    paymentRestriction: '' // e.g. PREPAID, COD
   });
 
   useEffect(() => {
@@ -50,14 +53,24 @@ export const AdminCoupons: React.FC = () => {
     try {
       const payload: any = {
         code: newCoupon.code,
-        discountType: newCoupon.discountType,
+        type: newCoupon.type,
         discountValue: Number(newCoupon.discountValue),
         expiryDate: newCoupon.expiryDate,
-        minOrderAmount: newCoupon.minOrderAmount ? Number(newCoupon.minOrderAmount) : 0,
+        minCartValue: newCoupon.minCartValue ? Number(newCoupon.minCartValue) : undefined,
         maxDiscount: newCoupon.maxDiscount ? Number(newCoupon.maxDiscount) : undefined,
-        usageLimit: Number(newCoupon.usageLimit),
-        isActive: newCoupon.isActive
+        usageLimit: newCoupon.usageLimit ? Number(newCoupon.usageLimit) : undefined,
+        usageLimitPerUser: newCoupon.usageLimitPerUser ? Number(newCoupon.usageLimitPerUser) : undefined,
       };
+
+      // Handle custom JSON conditions
+      const conditions: any = {};
+      if (newCoupon.allowedCategories) conditions.allowedCategories = newCoupon.allowedCategories.split(',').map(s => s.trim());
+      if (newCoupon.allowedProducts) conditions.allowedProducts = newCoupon.allowedProducts.split(',').map(s => s.trim());
+      if (newCoupon.paymentRestriction) conditions.paymentRestriction = newCoupon.paymentRestriction;
+
+      if (Object.keys(conditions).length > 0) {
+        payload.conditions = conditions;
+      }
 
       await createCoupon(payload);
       toast.success('Campaign Deployed Successfully');
@@ -73,7 +86,7 @@ export const AdminCoupons: React.FC = () => {
 
   const resetForm = () => {
     setNewCoupon({
-      code: '', discountType: 'percentage', discountValue: '', minOrderAmount: '', maxDiscount: '', usageLimit: '1', expiryDate: '', isActive: true
+      code: '', type: 'PERCENTAGE', discountValue: '', minCartValue: '', maxDiscount: '', usageLimit: '', usageLimitPerUser: '1', expiryDate: '', allowedCategories: '', allowedProducts: '', paymentRestriction: ''
     });
   };
 
@@ -89,9 +102,9 @@ export const AdminCoupons: React.FC = () => {
     }
   };
 
-  const toggleStatus = async (id: string, currentStatus: boolean) => {
+  const toggleStatus = async (id: string, currentStatus: string) => {
     try {
-      const newStatus = !currentStatus;
+      const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
       await updateCouponStatus(id, newStatus);
       toast.success('Status updated');
       loadData();
@@ -148,18 +161,18 @@ export const AdminCoupons: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-2xl font-black tracking-tight text-dark">{coupon.code}</h3>
-                    <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">{coupon.discountType}</p>
+                    <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">{coupon.type.replace(/_/g, ' ')}</p>
                   </div>
                 </div>
 
                 <div className="space-y-3 mb-6 relative z-10">
                   <div className="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
                     <span className="text-gray-400 font-medium flex items-center gap-2"><Tag size={14} /> Value</span>
-                    <span className="font-bold text-dark">{coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}</span>
+                    <span className="font-bold text-dark">{coupon.type === 'PERCENTAGE' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
-                    <span className="text-gray-400 font-medium flex items-center gap-2"><Activity size={14} /> Redemptions</span>
-                    <span className="font-bold text-dark">{coupon.usedCount} / {coupon.usageLimit || '∞'}</span>
+                    <span className="text-gray-400 font-medium flex items-center gap-2"><Activity size={14} /> Usage Redemptions</span>
+                    <span className="font-bold text-dark">{coupon.usageCount} / {coupon.usageLimit || '∞'}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm pb-2">
                     <span className="text-gray-400 font-medium flex items-center gap-2"><Clock size={14} /> Expiry</span>
@@ -170,9 +183,9 @@ export const AdminCoupons: React.FC = () => {
 
               <div className="flex gap-2 relative z-10 mt-auto pt-4 border-t border-gray-100">
                 <button
-                  onClick={() => toggleStatus(coupon._id, coupon.isActive)}
-                  className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${coupon.isActive ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
-                  {coupon.isActive ? 'ACTIVE' : 'INACTIVE'}
+                  onClick={() => toggleStatus(coupon._id, coupon.status)}
+                  className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${coupon.status === 'ACTIVE' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
+                  {coupon.status}
                 </button>
                 <button
                   onClick={() => handleDelete(coupon._id)}
@@ -207,9 +220,14 @@ export const AdminCoupons: React.FC = () => {
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Logic Type *</label>
-                      <select required className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/20 transition-all" value={newCoupon.discountType} onChange={e => setNewCoupon({ ...newCoupon, discountType: e.target.value })}>
-                        <option value="percentage">Percentage (%)</option>
-                        <option value="flat">Flat Discount (₹)</option>
+                      <select required className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/20 transition-all" value={newCoupon.type} onChange={e => setNewCoupon({ ...newCoupon, type: e.target.value })}>
+                        <option value="PERCENTAGE">Percentage (%)</option>
+                        <option value="FLAT">Flat Discount (₹)</option>
+                        <option value="BOGO">Buy 1 Get 1 Free</option>
+                        <option value="FREE_SHIPPING">Free Shipping</option>
+                        <option value="BUY_X_GET_Y">Buy X Get Y (Flat)</option>
+                        <option value="MIN_CART_VALUE">Min Cart Value Trigger</option>
+                        <option value="CATEGORY_SPECIFIC">Category Specific</option>
                       </select>
                     </div>
                   </div>
@@ -217,12 +235,12 @@ export const AdminCoupons: React.FC = () => {
                   {/* Values */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Value *</label>
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Discount Value *</label>
                       <input required type="number" placeholder="e.g. 50" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.discountValue} onChange={e => setNewCoupon({ ...newCoupon, discountValue: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Min Order (₹)</label>
-                      <input type="number" placeholder="Optional" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.minOrderAmount} onChange={e => setNewCoupon({ ...newCoupon, minOrderAmount: e.target.value })} />
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Min Cart Trigger (₹)</label>
+                      <input type="number" placeholder="Optional" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.minCartValue} onChange={e => setNewCoupon({ ...newCoupon, minCartValue: e.target.value })} />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Max Cap (₹)</label>
@@ -231,10 +249,14 @@ export const AdminCoupons: React.FC = () => {
                   </div>
 
                   {/* Limits & Expiry */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Usage Limit</label>
-                      <input type="number" placeholder="1" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.usageLimit} onChange={e => setNewCoupon({ ...newCoupon, usageLimit: e.target.value })} />
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Total Usage Limit</label>
+                      <input type="number" placeholder="Optional (e.g. 100)" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.usageLimit} onChange={e => setNewCoupon({ ...newCoupon, usageLimit: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Limit Per User</label>
+                      <input type="number" placeholder="1" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.usageLimitPerUser} onChange={e => setNewCoupon({ ...newCoupon, usageLimitPerUser: e.target.value })} />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Expiry Date *</label>
@@ -244,7 +266,28 @@ export const AdminCoupons: React.FC = () => {
 
                   <div className="h-px w-full bg-gray-100 my-6"></div>
 
-                  {/* Removed complex conditions for Ultra Lock simplicity */}
+                  {/* Advanced Conditions block */}
+                  <div>
+                    <h3 className="text-lg font-bold text-dark mb-4 border-l-4 border-primary pl-3">Advanced Isolation Rules (Optional)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Allowed Category IDs</label>
+                        <input placeholder="Comma separated ObjectIds" className="w-full bg-lightGray px-5 py-4 rounded-xl font-medium outline-none focus:ring-2 focus:ring-primary/20 text-sm" value={newCoupon.allowedCategories} onChange={e => setNewCoupon({ ...newCoupon, allowedCategories: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Allowed Product IDs</label>
+                        <input placeholder="Comma separated ObjectIds" className="w-full bg-lightGray px-5 py-4 rounded-xl font-medium outline-none focus:ring-2 focus:ring-primary/20 text-sm" value={newCoupon.allowedProducts} onChange={e => setNewCoupon({ ...newCoupon, allowedProducts: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Payment Method Restriction</label>
+                        <select className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.paymentRestriction} onChange={e => setNewCoupon({ ...newCoupon, paymentRestriction: e.target.value })}>
+                          <option value="">No Restriction</option>
+                          <option value="PREPAID">Prepaid Only</option>
+                          <option value="COD">Cash on Delivery Only</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
 
                 </form>
               </div>
