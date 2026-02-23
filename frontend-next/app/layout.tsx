@@ -7,6 +7,8 @@ import Script from "next/script";
 import { Providers } from "./Providers";
 import ClientLayout from "./ClientLayout";
 import FacebookPixel from "./components/analytics/FacebookPixel";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700', '900'],
@@ -44,6 +46,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </React.Suspense>
           <ClientLayout>
             {children}
+            <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover />
           </ClientLayout>
         </Providers>
       </body>

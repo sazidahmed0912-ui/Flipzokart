@@ -6,7 +6,7 @@ import { Lock, Loader } from 'lucide-react';
 import API from '@/app/services/api';
 import { getSafeAddress, isAddressValid } from '@/app/utils/addressHelper';
 import { useApp } from '@/app/store/Context';
-import { useToast } from '@/app/components/toast';
+import { toast } from 'react-toastify';
 import { Address } from '@/app/types';
 import AddressCard from './components/AddressCard';
 import AddressForm from './components/AddressForm';
@@ -17,7 +17,6 @@ import { initiateCheckout } from '@/lib/fbPixel';
 
 const CheckoutPage = () => {
     const { cart, selectedAddress: contextAddress, setSelectedAddress: setContextAddress, user } = useApp();
-    const { addToast } = useToast();
     const router = useRouter();
 
     const [addresses, setAddresses] = useState<Address[]>([]);
@@ -62,7 +61,7 @@ const CheckoutPage = () => {
                 }
             } catch (error) {
                 console.error("Failed to fetch addresses", error);
-                addToast('error', "Failed to load addresses");
+                toast.error("Failed to load addresses");
             } finally {
                 setIsLoading(false);
             }
@@ -164,14 +163,14 @@ const CheckoutPage = () => {
 
     const handleDeliverHere = () => {
         if (!selectedAddressId) {
-            addToast('warning', 'Please select or add a delivery address first!');
+            toast.warn('Please select or add a delivery address first!');
             return;
         }
 
         const addressToSave = addresses.find(addr => addr.id === selectedAddressId);
         if (addressToSave) {
             setContextAddress(addressToSave);
-            addToast('success', 'Address selected!');
+            toast.success('Address selected!');
         }
     };
 
@@ -193,7 +192,7 @@ const CheckoutPage = () => {
                 // Backend expects _id string. If it's a number, it might be a guest address not supported yet.
                 await API.delete(`/api/user/address/${id}`);
                 setAddresses(prev => prev.filter(addr => addr.id !== id));
-                addToast('success', "Address deleted");
+                toast.success("Address deleted");
                 if (selectedAddressId === id) {
                     setSelectedAddressId(null);
                     setContextAddress(null);
@@ -202,11 +201,11 @@ const CheckoutPage = () => {
                 // If backend delete fails but we have a local ID, try to remove it anyway if it's not a mongo ID
                 if (typeof id === 'number') {
                     setAddresses(prev => prev.filter(addr => addr.id !== id));
-                    addToast('success', "Address removed");
+                    toast.success("Address removed");
                     if (selectedAddressId === id) setSelectedAddressId(null);
                 } else {
                     console.error("Delete failed", e);
-                    addToast('error', "Failed to delete address");
+                    toast.error("Failed to delete address");
                 }
             }
         }
@@ -239,7 +238,7 @@ const CheckoutPage = () => {
                 setContextAddress(finalAddress);
                 setSelectedAddressId(finalAddress.id!);
 
-                addToast('success', "Address added (Guest)");
+                toast.success("Address added (Guest)");
                 setIsAddressFormOpen(false);
                 setAddressToEdit(null);
                 return;
@@ -276,7 +275,7 @@ const CheckoutPage = () => {
             console.log("[Checkout] Final Normalized Addresses:", updatedAddresses);
 
             setAddresses(updatedAddresses);
-            addToast('success', addressToEdit ? "Address updated" : "Address added");
+            toast.success(addressToEdit ? "Address updated" : "Address added");
             setIsAddressFormOpen(false);
             setAddressToEdit(null);
 
@@ -286,7 +285,7 @@ const CheckoutPage = () => {
             console.log("[Checkout] Address Saved. Waiting for user selection.");
         } catch (e) {
             console.error(e);
-            addToast('error', "Failed to save address");
+            toast.error("Failed to save address");
         }
     };
 
@@ -301,7 +300,7 @@ const CheckoutPage = () => {
 
         // 1️⃣ STRICT VALIDATION GUARD
         if (!selectedAddress || !isAddressValid(selectedAddress)) {
-            addToast('error', 'Please select delivery address');
+            toast.error('Please select delivery address');
 
             // 📂 Auto-Open Logic
             const addressFormElement = document.getElementById("address-section-container"); // We'll add this ID to wrapper

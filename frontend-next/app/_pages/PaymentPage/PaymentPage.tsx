@@ -16,7 +16,7 @@ import {
   verifyPayment,
 } from '@/app/services/api';
 import { useApp } from '@/app/store/Context';
-import { useToast } from '@/app/components/toast';
+import { toast } from 'react-toastify';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
 import './PaymentPage.css';
 /* =========================
@@ -49,7 +49,6 @@ const PaymentPage: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname(); const searchParams = useSearchParams();
   const { user, cart, clearCart, selectedAddress, removeProductFromCart } = useApp();
-  const { addToast } = useToast();
 
   const [paymentMethod, setPaymentMethod] = useState<
     "COD" | "RAZORPAY" | null
@@ -169,7 +168,7 @@ const PaymentPage: React.FC = () => {
       setError(null);
 
       if (!selectedAddress || (!selectedAddress.id && !selectedAddress._id)) {
-        addToast('error', "Delivery address missing. Please select one.");
+        toast.error("Delivery address missing. Please select one.");
         return;
       }
 
@@ -226,7 +225,7 @@ const PaymentPage: React.FC = () => {
     }
 
     if (!selectedAddress || (!selectedAddress.id && !selectedAddress._id)) {
-      addToast('error', "Delivery address missing. Please select one.");
+      toast.error("Delivery address missing. Please select one.");
       return;
     }
 
@@ -355,7 +354,7 @@ const PaymentPage: React.FC = () => {
       // If we are in Buy Now Mode, the buyNowItem is already in LS.
       // But we should ensure it stays there. It persists by default.
 
-      addToast('info', '⚠️ Please signup/login to place your order');
+      toast.info('⚠️ Please signup/login to place your order');
       // Redirect to signup which will handle the intent
       setTimeout(() => router.push('/signup?redirect=checkout'), 1000);
       return;

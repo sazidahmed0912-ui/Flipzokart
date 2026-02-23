@@ -9,7 +9,7 @@ import './CartPage.css';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
 import { getProductImage } from '@/app/utils/imageHelper';
 import { applyCoupon } from '@/app/services/api';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 
 const getCartItemKey = (productId: string, variants?: Record<string, string>, variantId?: string) => {
   if (variantId) return variantId;
@@ -88,14 +88,14 @@ const CartPage = () => {
         setAppliedCoupon(res.data.result);
         setCouponCode('');
         if (codeToApply === couponCode) {
-          toast.success(`Coupon ${codeToApply.toUpperCase()} applied successfully!`);
+          toast.success("Coupon applied successfully 🎉");
         }
       }
     } catch (error: any) {
       setAppliedCoupon(null);
       // Only show error if the user actively clicked sumbit
       if (codeToApply === couponCode) {
-        toast.error(error.response?.data?.message || 'Invalid Coupon Code');
+        toast.error(error.response?.data?.message || "Invalid coupon code ❌");
       }
     } finally {
       setIsApplyingCoupon(false);
@@ -105,7 +105,7 @@ const CartPage = () => {
   const removeCoupon = () => {
     setAppliedCoupon(null);
     localStorage.removeItem('appliedCoupon');
-    toast.success('Coupon removed');
+    toast.info("Coupon removed 🗑️");
   }
 
   // Proactive Cart Cleanup: Remove items that no longer exist in DB

@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Layout } from '@/app/components/Layout';
 import { useApp } from '@/app/store/Context';
 import { useNotifications } from '@/app/store/NotificationContext';
-import { useToast } from '@/app/components/toast';
+import { toast } from 'react-toastify';
 import { useSocket } from '@/app/hooks/useSocket';
 import authService from '@/app/services/authService';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
@@ -13,7 +13,6 @@ import ToastListener from '@/app/components/ToastListener';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const { user, setUser } = useApp();
-    const { addToast } = useToast();
     const { showToast } = useNotifications();
 
     const pathname = usePathname();
@@ -55,7 +54,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 createdAt: new Date().toISOString(),
                 status: (data?.type === "success" || data?.type === "error" || data?.type === "warning") ? data.type : "info",
             };
-            addToast(notification.status as any, notification.message);
+
+            const type = notification.status as any;
+            if (type === 'success') toast.success(notification.message);
+            else if (type === 'error') toast.error(notification.message);
+            else if (type === 'warning' || type === 'warn') toast.warn(notification.message);
+            else toast.info(notification.message);
+
             if (!isWarning) {
                 // Ensure showToast exists on NotificationContext
                 if (showToast) showToast(notification);
@@ -63,7 +68,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         };
         socket.on("notification", handleNotification);
         return () => { socket.off("notification", handleNotification); };
-    }, [socket, user, addToast, showToast]);
+    }, [socket, user, showToast]);
 
     useEffect(() => {
         if (user && (user.status === 'Banned' || user.status === 'Suspended')) {
