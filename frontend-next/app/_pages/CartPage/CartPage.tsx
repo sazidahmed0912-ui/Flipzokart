@@ -9,6 +9,7 @@ import './CartPage.css';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
 import { getProductImage } from '@/app/utils/imageHelper';
 import { applyCoupon } from '@/app/services/api';
+import API from '@/app/services/api';
 import toast from 'react-hot-toast';
 
 const getCartItemKey = (productId: string, variants?: Record<string, string>, variantId?: string) => {
@@ -83,7 +84,11 @@ const CartPage = () => {
     if (!codeToApply.trim()) return;
     setIsApplyingCoupon(true);
     try {
-      const res = await applyCoupon(codeToApply.trim());
+      const res = await API.post('/api/coupons/apply', {
+        code: codeToApply.trim(),
+        cartTotal: priceDetails.totalAmount - (priceDetails.deliveryCharges + priceDetails.platformFee)
+      });
+
       if (res.data.success) {
         setAppliedCoupon(res.data.result);
         setCouponCode('');
@@ -93,9 +98,8 @@ const CartPage = () => {
       }
     } catch (error: any) {
       setAppliedCoupon(null);
-      // Only show error if the user actively clicked sumbit
       if (codeToApply === couponCode) {
-        toast.error(error.response?.data?.message || 'Invalid Coupon Code');
+        toast.error(error.response?.data?.message || 'Something went wrong!');
       }
     } finally {
       setIsApplyingCoupon(false);
@@ -129,8 +133,8 @@ const CartPage = () => {
   let priceDetails = calculateCartTotals(cartItems);
 
   if (appliedCoupon) {
-    priceDetails.totalAmount = appliedCoupon.finalCartTotal + priceDetails.deliveryCharges + priceDetails.platformFee;
-    priceDetails.discount = priceDetails.originalPrice - appliedCoupon.cartTotal + appliedCoupon.discountAmount; // Total savings including normal discount + coupon
+    priceDetails.totalAmount = appliedCoupon.finalTotal + priceDetails.deliveryCharges + priceDetails.platformFee;
+    priceDetails.discount = priceDetails.originalPrice - appliedCoupon.finalTotal;
   }
 
   // HYDRATION LOCK: Ensure we wait for context to fully initialize

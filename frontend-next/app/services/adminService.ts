@@ -26,7 +26,7 @@ export const deleteOrder = (id: string) => API.delete(`/api/order/${id}`);
 export const fetchAllCoupons = () => API.get("/api/coupons");
 export const fetchCouponStats = () => API.get("/api/coupons/stats");
 export const createCoupon = (data: any) => API.post("/api/coupons", data);
-export const updateCouponStatus = (id: string, status: string) => API.patch(`/api/coupons/${id}/status`, { status });
+export const updateCouponStatus = (id: string, isActive: boolean) => API.patch(`/api/coupons/${id}/status`, { isActive });
 export const deleteCoupon = (id: string) => API.delete(`/api/coupons/${id}`);
 
 export default API;

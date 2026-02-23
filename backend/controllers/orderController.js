@@ -166,22 +166,19 @@ const createOrder = async (req, res) => {
       try {
         const couponResult = await couponController.validateAndCalculateDiscount(
           req.user.id,
-          finalOrderProducts,
-          req.body.couponCode,
-          'COD'
+          priceDetails.itemsPrice,
+          req.body.couponCode
         );
         if (couponResult && couponResult.isValid) {
           priceDetails.discount = (priceDetails.discount || 0) + couponResult.discountAmount;
-          priceDetails.finalAmount = Math.max(0, priceDetails.totalAmount - couponResult.discountAmount);
-          priceDetails.totalAmount = priceDetails.finalAmount; // update total payable
+          priceDetails.finalAmount = Math.max(0, priceDetails.itemsPrice + priceDetails.deliveryCharges + priceDetails.platformFee - priceDetails.discount);
+          priceDetails.totalAmount = priceDetails.finalAmount;
 
           couponSnapshot = {
             couponId: couponResult.couponId,
             code: couponResult.couponCode,
-            type: couponResult.type,
-            discountAmount: couponResult.discountAmount,
-            appliedProducts: couponResult.appliedProducts,
-            freeItems: couponResult.freeItems
+            type: couponResult.discountType,
+            discountAmount: couponResult.discountAmount
           };
         }
       } catch (err) {
@@ -477,28 +474,23 @@ const verifyPayment = async (req, res) => {
       try {
         const couponResult = await couponController.validateAndCalculateDiscount(
           req.user.id,
-          finalOrderProducts,
-          req.body.couponCode,
-          'RAZORPAY'
+          priceDetails.itemsPrice,
+          req.body.couponCode
         );
         if (couponResult && couponResult.isValid) {
           priceDetails.discount = (priceDetails.discount || 0) + couponResult.discountAmount;
-          priceDetails.finalAmount = Math.max(0, priceDetails.totalAmount - couponResult.discountAmount);
-          priceDetails.totalAmount = priceDetails.finalAmount; // update total payable
+          priceDetails.finalAmount = Math.max(0, priceDetails.itemsPrice + priceDetails.deliveryCharges + priceDetails.platformFee - priceDetails.discount);
+          priceDetails.totalAmount = priceDetails.finalAmount;
 
           couponSnapshot = {
             couponId: couponResult.couponId,
             code: couponResult.couponCode,
-            type: couponResult.type,
-            discountAmount: couponResult.discountAmount,
-            appliedProducts: couponResult.appliedProducts,
-            freeItems: couponResult.freeItems
+            type: couponResult.discountType,
+            discountAmount: couponResult.discountAmount
           };
         }
       } catch (err) {
         console.warn(`[CouponGuard] Failed to apply coupon ${req.body.couponCode}:`, err.message);
-        // Razorpay already charged them at this point potentially (based on checkout UI logic)
-        // So if coupon fails now, we might need to handle refund. But we reject order to be safe.
         return res.status(400).json({ message: err.message, errorCode: 'INVALID_COUPON' });
       }
     }

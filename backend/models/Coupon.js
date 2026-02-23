@@ -6,65 +6,39 @@ const couponSchema = new mongoose.Schema({
         required: true,
         unique: true,
         uppercase: true,
-        trim: true,
+        trim: true
     },
-    type: {
+    discountType: {
         type: String,
-        enum: ['PERCENTAGE', 'FLAT', 'FREE_SHIPPING', 'BOGO', 'BUY_X_GET_Y', 'MIN_CART_VALUE', 'CATEGORY_SPECIFIC', 'PRODUCT_SPECIFIC'],
-        required: true,
+        enum: ["percentage", "flat"],
+        required: true
     },
     discountValue: {
         type: Number,
-        required: true,
+        required: true
+    },
+    minOrderAmount: {
+        type: Number,
+        default: 0
     },
     maxDiscount: {
-        type: Number,
-    },
-    minCartValue: {
-        type: Number,
-        default: 0,
-    },
-    usageLimit: {
-        type: Number,
-    },
-    usageCount: {
-        type: Number,
-        default: 0,
-    },
-    usageLimitPerUser: {
-        type: Number,
-        default: 1,
-    },
-    startDate: {
-        type: Date,
-        default: Date.now,
+        type: Number
     },
     expiryDate: {
         type: Date,
-        required: true,
+        required: true
     },
-    status: {
-        type: String,
-        enum: ['ACTIVE', 'INACTIVE'],
-        default: 'ACTIVE',
+    usageLimit: {
+        type: Number,
+        default: 1
     },
-    conditions: {
-        type: mongoose.Schema.Types.Mixed,
-        default: {},
-        /**
-         * expects:
-         * {
-         *   allowedCategories: [ObjectId],
-         *   excludedCategories: [ObjectId],
-         *   allowedProducts: [ObjectId],
-         *   excludedProducts: [ObjectId],
-         *   paymentRestriction: String ('PREPAID', 'COD'),
-         *   firstOrderOnly: Boolean,
-         *   specificPincodes: [String],
-         *   buyX: Number,
-         *   getY: Number
-         * }
-         */
+    usedCount: {
+        type: Number,
+        default: 0
+    },
+    isActive: {
+        type: Boolean,
+        default: true
     }
 }, { timestamps: true });
 
