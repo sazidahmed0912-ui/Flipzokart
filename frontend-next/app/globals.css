@@ -685,17 +685,17 @@
         width: calc(100% - 20px);
         /* Aspect-ratio replaces fixed h-[200px] — scales perfectly with screen */
         height: auto !important;
-        aspect-ratio: 16 / 7;
+        aspect-ratio: 16 / 10;
         overflow: hidden;
     }
 
-    /* Image stretches to fit fully — 100% visible, no internal gap, no crop */
+    /* Full image visible — no crop */
     .hero-banner-quad img {
         border-radius: inherit;
         display: block;
         width: 100% !important;
         height: 100% !important;
-        object-fit: fill !important;
+        object-fit: contain !important;
     }
 }
 

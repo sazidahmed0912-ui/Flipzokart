@@ -14,7 +14,6 @@ const slides = [
         link: "/sell",
         gradient: "from-yellow-400 to-orange-500",
         image: "/assets/banner_seller.png",
-        mobileImage: "/assets/banner_seller.png",
         position: "center bottom",
         textParams: {
             titleColor: "text-white md:text-gray-900",
@@ -31,7 +30,6 @@ const slides = [
         link: "/shop?tag=offer",
         gradient: "from-[#fcd34d] to-[#ef4444]", // Warm Yellow to Red
         image: "/assets/banner_offer_new.png",
-        mobileImage: "/assets/banner_offer_new.png",
         position: "center center",
         textParams: {
             titleColor: "text-white",
@@ -48,7 +46,6 @@ const slides = [
         link: "/shop?category=Kids",
         gradient: "from-[#6717cd] to-[#280590]", // Deep purple/blue to match image bg
         image: "/assets/banner_kids_new.jpg",
-        mobileImage: "/assets/banner_kids_new.jpg",
         position: "center center",
         textParams: {
             titleColor: "text-white",
@@ -185,12 +182,11 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                             <div className="flex flex-col md:grid md:grid-cols-2 gap-0 md:gap-8 h-full items-center">
                                 {/* Image Content */}
                                 <div className="absolute inset-0 md:relative md:h-full w-full flex justify-center md:justify-end items-center order-1 md:order-2 z-0 md:z-auto">
-                                    {/* Desktop Image */}
                                     <motion.div
                                         initial={{ scale: 0.9, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
                                         transition={{ delay: 0.1, duration: 0.4 }}
-                                        className="hidden md:block relative w-full h-full md:h-[85%] md:w-full"
+                                        className="relative w-full h-full md:h-[85%] md:w-full"
                                     >
                                         <LazyImage
                                             src={(activeSlides[currentIndex] as any).image}
@@ -198,24 +194,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                                             priority={true}
                                             fill={true}
                                             className="object-cover md:object-contain drop-shadow-2xl"
-                                            sizes="50vw"
-                                            wrapperClassName="w-full h-full bg-transparent"
-                                        />
-                                    </motion.div>
-                                    {/* Mobile Image */}
-                                    <motion.div
-                                        initial={{ scale: 0.9, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        transition={{ delay: 0.1, duration: 0.4 }}
-                                        className="block md:hidden relative w-full h-full"
-                                    >
-                                        <LazyImage
-                                            src={(activeSlides[currentIndex] as any).mobileImage || (activeSlides[currentIndex] as any).image}
-                                            alt={(activeSlides[currentIndex] as any).title}
-                                            priority={true}
-                                            fill={true}
-                                            className="object-cover md:object-contain drop-shadow-2xl"
-                                            sizes="100vw"
+                                            sizes="(max-width: 768px) 100vw, 50vw"
                                             wrapperClassName="w-full h-full bg-transparent"
                                         />
                                     </motion.div>
