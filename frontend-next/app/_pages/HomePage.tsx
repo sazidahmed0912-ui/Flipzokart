@@ -215,10 +215,10 @@ export const HomePage: React.FC = () => {
                                 </Link>
                             ))}
                         </div>
-                        {/* Mobile grid — exactly 6 per row, compact */}
-                        <div className="grid grid-cols-6 gap-x-1 gap-y-3 md:hidden">
+                        {/* Mobile — single swipable row, no wrapping */}
+                        <div className="flex flex-nowrap overflow-x-auto gap-2 no-scrollbar snap-x md:hidden">
                             {displayCategories.map(category => (
-                                <Link href={category.href} key={category.name} className="flex flex-col items-center text-center group">
+                                <Link href={category.href} key={category.name} className="flex flex-col items-center flex-shrink-0 snap-center w-[60px] text-center group">
                                     <div className="w-11 h-11 mb-1 bg-gray-100 rounded-full p-1.5 border border-gray-200 flex items-center justify-center">
                                         <LazyImage
                                             src={category.imageUrl}
