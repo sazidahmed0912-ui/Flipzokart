@@ -30,6 +30,22 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum DiscountType {
+  PERCENTAGE
+  FLAT
+  FREE_SHIPPING
+  BOGO
+  BUY_X_GET_Y
+  CATEGORY_SPECIFIC
+  PRODUCT_SPECIFIC
+  MIN_CART_VALUE
+}
+
+enum CouponStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
@@ -57,6 +73,7 @@ model User {
   cart      Cart?
   chats     Chat[]
   activities Activity[]
+  couponUsages CouponUsage[]
 }
 
 model Activity {
@@ -187,6 +204,7 @@ model Order {
   orderNumber   String?       @unique // e.g. FZK123456
   addressId     String        @db.ObjectId
   address       Json // Snapshot of address
+  couponSnapshot Json? // Snapshot of applied coupon and discount amount
   
   // Real-Time Tracking Fields
   statusHistory Json? // List of { status, timestamp, note }
@@ -197,6 +215,7 @@ model Order {
   updatedAt     DateTime      @updatedAt
 
   items OrderItem[]
+  couponUsages CouponUsage[]
 }
 
 model OrderItem {
@@ -239,4 +258,35 @@ model ChatMessage {
   message   String
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model Coupon {
+  id                String       @id @default(auto()) @map("_id") @db.ObjectId
+  code              String       @unique
+  type              DiscountType
+  discountValue     Float
+  maxDiscount       Float?
+  minCartValue      Float?       @default(0)
+  usageLimit        Int?
+  usageLimitPerUser Int?         @default(1)
+  startDate         DateTime     @default(now())
+  expiryDate        DateTime
+  status            CouponStatus @default(ACTIVE)
+  conditions        Json?        // Stores allowedCategories, excludedCategories, allowedProducts, paymentRestriction, firstOrderOnly, etc.
+  usageCount        Int          @default(0)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  usages CouponUsage[]
+}
+
+model CouponUsage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  couponId  String   @db.ObjectId
+  coupon    Coupon   @relation(fields: [couponId], references: [id])
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  orderId   String?  @db.ObjectId
+  order     Order?   @relation(fields: [orderId], references: [id])
+  usedAt    DateTime @default(now())
 }

@@ -7,13 +7,13 @@ const orderService = new OrderService();
 
 export class OrderController {
     createOrder = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-        const { addressId } = req.body;
+        const { addressId, couponCode, paymentMethod } = req.body;
 
         if (!addressId) {
             return next(new AppError('Delivery address is required', 400));
         }
 
-        const order = await orderService.createOrder((req as any).user.id, addressId);
+        const order = await orderService.createOrder((req as any).user.id, addressId, couponCode, paymentMethod);
         res.status(201).json({
             status: 'success',
             data: { order },

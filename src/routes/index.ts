@@ -9,6 +9,7 @@ import adminRoutes from './admin.routes';
 import reviewRoutes from './review.routes';
 import trackingRoutes from './tracking.routes';
 import addressRoutes from './address.routes';
+import couponRoutes from './coupon.routes';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/admin', adminRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/tracking', trackingRoutes); // Public tracking
 router.use('/user/address', addressRoutes);
+router.use('/coupons', couponRoutes);
 
 export default router;

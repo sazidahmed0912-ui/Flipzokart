@@ -96,6 +96,18 @@ const orderSchema = new mongoose.Schema({
   razorpayPaymentId: {
     type: String,
   },
+  couponSnapshot: {
+    couponId: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
+    code: String,
+    type: String,
+    discountAmount: Number,
+    appliedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+    freeItems: [{
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      quantityFreed: Number,
+      priceFreed: Number
+    }]
+  },
   // 🔒 PAYMENT MODE AUDIT SNAPSHOT (Security Integrity)
   // Stores the exact payment restrictions of each product at time of order.
   // Used for dispute resolution and backend security logs.

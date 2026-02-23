@@ -86,6 +86,20 @@ const CheckoutPage = () => {
         }
     }, []);
 
+    // --- COUPON SYNCHRONIZATION ---
+    const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+    React.useEffect(() => {
+        const storedCoupon = localStorage.getItem('appliedCoupon');
+        if (storedCoupon) {
+            try {
+                setAppliedCoupon(JSON.parse(storedCoupon));
+            } catch (e) {
+                console.error("Invalid appliedCoupon", e);
+                localStorage.removeItem('appliedCoupon');
+            }
+        }
+    }, []);
+
     // Determine what to show in Checkout
     // IF buyNowItem exists, ignore Cart.
     const checkoutItems = buyNowItem ? [buyNowItem] : cart;
@@ -128,7 +142,12 @@ const CheckoutPage = () => {
     const isFreeDeliveryEligible = subtotal >= FREE_DELIVERY_THRESHOLD;
 
     // Recalculate total if delivery charges change dynamically
-    const totalPayable = subtotal + deliveryCharges + platformFee;
+    let totalPayable = subtotal + deliveryCharges + platformFee;
+    let couponDiscount = 0;
+    if (appliedCoupon) {
+        couponDiscount = appliedCoupon.discount || 0;
+        totalPayable -= couponDiscount;
+    }
 
     const handleSelectAddress = async (id: string | number) => {
         console.log(`[Checkout] Selecting Address: ${id}`);
@@ -331,6 +350,12 @@ const CheckoutPage = () => {
                 <span>Platform Fee</span>
                 <span>₹{platformFee}</span>
             </div>
+            {appliedCoupon && (
+                <div className="price-summary-item text-green-600 font-bold">
+                    <span>Coupon ({appliedCoupon.code})</span>
+                    <span>- ₹{couponDiscount.toLocaleString('en-IN')}</span>
+                </div>
+            )}
             <div className="price-summary-total">
                 <span>Total payable</span>
                 <span>₹{totalPayable.toLocaleString('en-IN')}</span>

@@ -2,12 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Minus, Plus, Star, Trash2, Heart, ShieldCheck, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { Minus, Plus, Star, Trash2, Heart, ShieldCheck, ShoppingBag, AlertTriangle, TicketPercent } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { CartItem } from '@/app/types';
 import './CartPage.css';
 import { calculateCartTotals } from '@/app/utils/priceHelper';
 import { getProductImage } from '@/app/utils/imageHelper';
+import { applyCoupon } from '@/app/services/api';
+import toast from 'react-hot-toast';
 
 const getCartItemKey = (productId: string, variants?: Record<string, string>, variantId?: string) => {
   if (variantId) return variantId;
@@ -27,6 +29,11 @@ const CartPage = () => {
   // Ensure we are strictly on the client and mounted before allowing any interaction
   const [isMounted, setIsMounted] = useState(false);
 
+  // --- Real-Time Coupon State ---
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
   // --- ISOLATED BUY NOW GUARD ---
   // If user navigates to Cart, they are EXITING Buy Now mode.
   useEffect(() => {
@@ -36,6 +43,13 @@ const CartPage = () => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Re-verify coupon if cart changes
+  useEffect(() => {
+    if (appliedCoupon && isMounted && cartItems.length > 0) {
+      handleApplyCoupon(appliedCoupon.couponCode);
+    }
+  }, [cartItems]);
 
 
   const updateQuantity = (item: CartItem, change: number) => {
@@ -53,8 +67,46 @@ const CartPage = () => {
 
   const handlePlaceOrder = () => {
     if (!isInitialized || !isMounted) return; // Strict Safety check
+    if (appliedCoupon) {
+      localStorage.setItem('appliedCoupon', JSON.stringify({
+        code: appliedCoupon.couponCode,
+        discount: appliedCoupon.discountAmount,
+        type: appliedCoupon.type
+      }));
+    } else {
+      localStorage.removeItem('appliedCoupon');
+    }
     router.push('/checkout');
   };
+
+  const handleApplyCoupon = async (codeToApply = couponCode) => {
+    if (!codeToApply.trim()) return;
+    setIsApplyingCoupon(true);
+    try {
+      const res = await applyCoupon(codeToApply.trim());
+      if (res.data.success) {
+        setAppliedCoupon(res.data.result);
+        setCouponCode('');
+        if (codeToApply === couponCode) {
+          toast.success(`Coupon ${codeToApply.toUpperCase()} applied successfully!`);
+        }
+      }
+    } catch (error: any) {
+      setAppliedCoupon(null);
+      // Only show error if the user actively clicked sumbit
+      if (codeToApply === couponCode) {
+        toast.error(error.response?.data?.message || 'Invalid Coupon Code');
+      }
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    localStorage.removeItem('appliedCoupon');
+    toast.success('Coupon removed');
+  }
 
   // Proactive Cart Cleanup: Remove items that no longer exist in DB
   // Proactive Cart Cleanup: DISABLED due to "All Items Removed" bug if product list is partial
@@ -74,7 +126,12 @@ const CartPage = () => {
 
   // ... existing code ...
 
-  const priceDetails = calculateCartTotals(cartItems);
+  let priceDetails = calculateCartTotals(cartItems);
+
+  if (appliedCoupon) {
+    priceDetails.totalAmount = appliedCoupon.finalCartTotal + priceDetails.deliveryCharges + priceDetails.platformFee;
+    priceDetails.discount = priceDetails.originalPrice - appliedCoupon.cartTotal + appliedCoupon.discountAmount; // Total savings including normal discount + coupon
+  }
 
   // HYDRATION LOCK: Ensure we wait for context to fully initialize
   // prevent interactions with stale state
@@ -281,6 +338,43 @@ const CartPage = () => {
 
         {/* Right Column: Price Details */}
         <div className="price-details-section">
+
+          {/* Coupon Input Section */}
+          <div className="bg-white p-4 rounded text-sm shadow-[0_1px_2px_0_rgba(0,0,0,0.1)] mb-4 border border-gray-100">
+            <div className="flex items-center gap-2 mb-3">
+              <TicketPercent size={18} className="text-[#2874F0]" />
+              <span className="font-semibold text-gray-800">Apply Coupons</span>
+            </div>
+
+            {appliedCoupon ? (
+              <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded p-3">
+                <div>
+                  <p className="text-green-700 font-bold uppercase text-xs">{appliedCoupon.couponCode} applied</p>
+                  <p className="text-green-600 text-xs mt-0.5">You saved ₹{appliedCoupon.discountAmount.toLocaleString()} extra!</p>
+                </div>
+                <button onClick={removeCoupon} className="text-red-500 hover:text-red-700 text-xs font-bold uppercase cursor-pointer">Remove</button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter Coupon Code"
+                  className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm uppercase focus:outline-none focus:border-[#2874F0]"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                />
+                <button
+                  className="bg-[#2874F0] text-white px-4 py-2 rounded text-xs font-bold uppercase disabled:opacity-50"
+                  onClick={() => handleApplyCoupon()}
+                  disabled={isApplyingCoupon || !couponCode.trim()}
+                >
+                  {isApplyingCoupon ? 'Applying' : 'Apply'}
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="price-details-card">
             <h3 className="price-header">PRICE DETAILS</h3>
             <div className="price-breakdown">
@@ -290,7 +384,13 @@ const CartPage = () => {
               </div>
               <div className="price-row">
                 <span>Discount</span>
-                <span className="success-text">- ₹{priceDetails.discount.toLocaleString()}</span>
+                <span className="success-text">- ₹{(priceDetails.originalPrice - priceDetails.totalAmount + priceDetails.deliveryCharges + priceDetails.platformFee).toLocaleString()}</span>
+              </div>
+              <div className="price-row">
+                <span>Coupons for you</span>
+                <span className={appliedCoupon ? "success-text" : "text-gray-500"}>
+                  {appliedCoupon ? `- ₹${appliedCoupon.discountAmount.toLocaleString()}` : "Not Apply"}
+                </span>
               </div>
               <div className="price-row">
                 <span>Delivery Charges</span>

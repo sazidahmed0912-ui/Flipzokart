@@ -281,6 +281,9 @@ app.use("/api/reviews", require("./routes/reviewRoutes"));
 // 🛒 Persistent Cart
 app.use("/api/cart", require("./routes/cartRoutes"));
 
+// 🎟️ Coupons
+app.use("/api/coupons", require("./routes/couponRoutes"));
+
 // 🎨 Website Content Manager
 app.use("/api/content", require("./routes/contentRoutes"));
 

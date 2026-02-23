@@ -1,6 +1,8 @@
 const Order = require('../models/Order'); // Force redeploy
 const Notification = require('../models/Notification');
 const Product = require('../models/Product'); // Import Product model
+const CouponUsage = require('../models/CouponUsage');
+const couponController = require('../controllers/couponController');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
@@ -145,7 +147,8 @@ const createOrder = async (req, res) => {
         color: item.color, // Snapshot Color
         size: item.size, // Snapshot Size
         variantId: item.variantId, // Snapshot Variant ID
-        selectedVariants: item.selectedVariants || {}
+        selectedVariants: item.selectedVariants || {},
+        categoryId: product.category ? product.category.toString() : null
       });
     }
 
@@ -155,7 +158,37 @@ const createOrder = async (req, res) => {
     // 🛡️ UNIFIED PRICING ENGINE ENFORCEMENT
     // -------------------------------------------------------------------------
     // Instead of trusting req.body totals, we RE-CALCULATE based on DB products.
-    const priceDetails = calculateOrderTotals(finalOrderProducts, 'COD');
+    let priceDetails = calculateOrderTotals(finalOrderProducts, 'COD');
+
+    // 🎟️ STRICT COUPON ENGINE INGESTION
+    let couponSnapshot = undefined;
+    if (req.body.couponCode) {
+      try {
+        const couponResult = await couponController.validateAndCalculateDiscount(
+          req.user.id,
+          finalOrderProducts,
+          req.body.couponCode,
+          'COD'
+        );
+        if (couponResult && couponResult.isValid) {
+          priceDetails.discount = (priceDetails.discount || 0) + couponResult.discountAmount;
+          priceDetails.finalAmount = Math.max(0, priceDetails.totalAmount - couponResult.discountAmount);
+          priceDetails.totalAmount = priceDetails.finalAmount; // update total payable
+
+          couponSnapshot = {
+            couponId: couponResult.couponId,
+            code: couponResult.couponCode,
+            type: couponResult.type,
+            discountAmount: couponResult.discountAmount,
+            appliedProducts: couponResult.appliedProducts,
+            freeItems: couponResult.freeItems
+          };
+        }
+      } catch (err) {
+        console.warn(`[CouponGuard] Failed to apply coupon ${req.body.couponCode}:`, err.message);
+        return res.status(400).json({ message: err.message, errorCode: 'INVALID_COUPON' });
+      }
+    }
 
     console.log('🛡️ Server-Calculated Totals:', priceDetails);
 
@@ -167,6 +200,7 @@ const createOrder = async (req, res) => {
       paymentMethod: 'COD',
       paymentStatus: 'PENDING',
       paymentModeSnapshot, // 🔒 ULTRA LOCK: Audit trail
+      couponSnapshot,      // 🎟️ COUPON METADATA
 
       // Use Server-Calculated Values
       subtotal: priceDetails.itemsPrice,
@@ -225,6 +259,16 @@ const createOrder = async (req, res) => {
 
     // Send confirmation email (Non-blocking)
     sendOrderConfirmationEmail(req.user.email, order).catch(err => console.error("Email send failed:", err));
+
+    // Consume Coupon
+    if (couponSnapshot) {
+      await CouponUsage.create({
+        coupon: couponSnapshot.couponId,
+        user: req.user.id,
+        order: order._id
+      });
+      await require('../models/Coupon').findByIdAndUpdate(couponSnapshot.couponId, { $inc: { usageCount: 1 } });
+    }
 
     // Update stock
     await updateStock(validatedProducts);
@@ -404,19 +448,60 @@ const verifyPayment = async (req, res) => {
     // -------------------------------------------------------------------------
     // Re-fetch products with details for calculation
     const productsForCalc = [];
+    const finalOrderProducts = [];
     for (const item of products) {
       const p = await Product.findById(item.productId);
       if (p) {
         productsForCalc.push({
           price: item.price, // Use Snapshot Price
           originalPrice: p.originalPrice || p.price,
-          quantity: item.quantity
+          quantity: item.quantity,
+          categoryId: p.category ? p.category.toString() : null,
+          productId: p._id.toString()
+        });
+        finalOrderProducts.push({
+          price: item.price,
+          quantity: item.quantity,
+          productId: p._id.toString(),
+          categoryId: p.category ? p.category.toString() : null
         });
       }
     }
 
     // Calculate using 'RAZORPAY' (Prepaid) logic
-    const priceDetails = calculateOrderTotals(productsForCalc, 'RAZORPAY');
+    let priceDetails = calculateOrderTotals(productsForCalc, 'RAZORPAY');
+
+    // 🎟️ STRICT COUPON ENGINE INGESTION (RAZORPAY)
+    let couponSnapshot = undefined;
+    if (req.body.couponCode) {
+      try {
+        const couponResult = await couponController.validateAndCalculateDiscount(
+          req.user.id,
+          finalOrderProducts,
+          req.body.couponCode,
+          'RAZORPAY'
+        );
+        if (couponResult && couponResult.isValid) {
+          priceDetails.discount = (priceDetails.discount || 0) + couponResult.discountAmount;
+          priceDetails.finalAmount = Math.max(0, priceDetails.totalAmount - couponResult.discountAmount);
+          priceDetails.totalAmount = priceDetails.finalAmount; // update total payable
+
+          couponSnapshot = {
+            couponId: couponResult.couponId,
+            code: couponResult.couponCode,
+            type: couponResult.type,
+            discountAmount: couponResult.discountAmount,
+            appliedProducts: couponResult.appliedProducts,
+            freeItems: couponResult.freeItems
+          };
+        }
+      } catch (err) {
+        console.warn(`[CouponGuard] Failed to apply coupon ${req.body.couponCode}:`, err.message);
+        // Razorpay already charged them at this point potentially (based on checkout UI logic)
+        // So if coupon fails now, we might need to handle refund. But we reject order to be safe.
+        return res.status(400).json({ message: err.message, errorCode: 'INVALID_COUPON' });
+      }
+    }
 
     // Create order after successful payment
     console.log("ORDER ITEMS SNAPSHOT (RAZORPAY)", products); // 🧪 DEBUG CONFIRMATION
@@ -428,6 +513,7 @@ const verifyPayment = async (req, res) => {
       paymentStatus: 'PAID',
       status: 'Processing',
       paymentModeSnapshot: paymentModeSnapshotRzp, // 🔒 ULTRA LOCK: Audit trail
+      couponSnapshot, // 🎟️ COUPON METADATA
 
       // Use Server-Calculated Values
       subtotal: priceDetails.itemsPrice,
@@ -511,6 +597,16 @@ const verifyPayment = async (req, res) => {
 
     // Send confirmation email (Non-blocking)
     sendOrderConfirmationEmail(req.user.email, order).catch(err => console.error("Email send failed:", err));
+
+    // Consume Coupon
+    if (couponSnapshot) {
+      await CouponUsage.create({
+        coupon: couponSnapshot.couponId,
+        user: req.user.id,
+        order: order._id
+      });
+      await require('../models/Coupon').findByIdAndUpdate(couponSnapshot.couponId, { $inc: { usageCount: 1 } });
+    }
 
     // Update stock
     await updateStock(products);

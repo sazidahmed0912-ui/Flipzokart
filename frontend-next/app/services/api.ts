@@ -68,4 +68,6 @@ export const fetchOrderById = (id: string) => API.get(`/api/order/${id}`);
 export const deleteOrder = (id: string) => API.delete(`/api/order/${id}`);
 export const updateOrderStatus = (id: string, status: string) => API.put(`/api/order/${id}/status`, { status });
 
+export const applyCoupon = (couponCode: string, paymentMethod?: string) => API.post("/api/coupons/apply", { couponCode, paymentMethod });
+
 export default API;

@@ -83,6 +83,23 @@ const PaymentPage: React.FC = () => {
     }
   }, []);
 
+  /* =========================
+     COUPON SYNCHRONIZATION
+  ========================= */
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+
+  useEffect(() => {
+    const storedCoupon = localStorage.getItem('appliedCoupon');
+    if (storedCoupon) {
+      try {
+        setAppliedCoupon(JSON.parse(storedCoupon));
+      } catch (e) {
+        console.error("Invalid appliedCoupon", e);
+        localStorage.removeItem('appliedCoupon');
+      }
+    }
+  }, []);
+
   // Determine ACTIVE CART for this session
   // If buyNowItem exists, WE IGNORE THE GLOBAL CART
   const activeCart = buyNowItem ? [buyNowItem] : cart;
@@ -97,8 +114,16 @@ const PaymentPage: React.FC = () => {
     discount,
     platformFee,
     tax,
-    totalAmount: totalPayable
+    totalAmount: rawTotalPayable
   } = calculateCartTotals(activeCart, undefined, paymentMethod);
+
+  // Apply Coupon Discount
+  let totalPayable = rawTotalPayable;
+  let couponDiscount = 0;
+  if (appliedCoupon) {
+    couponDiscount = appliedCoupon.discount || 0;
+    totalPayable = Math.max(0, totalPayable - couponDiscount);
+  }
 
   // 🛡️ Payment Availability Logic
   // If ANY item in cart has codAvailable === false, then COD is disabled for entire order.
@@ -171,6 +196,7 @@ const PaymentPage: React.FC = () => {
         finalAmount: totalPayable,
         addressId: selectedAddress.id || selectedAddress._id,
         address: selectedAddress,
+        couponCode: appliedCoupon?.code,
       });
 
       // CLEANUP based on MODE
@@ -179,6 +205,7 @@ const PaymentPage: React.FC = () => {
       } else {
         clearCart();
       }
+      localStorage.removeItem('appliedCoupon');
 
       // Use the returned order ID for the success page
       router.push(`/order-success?orderId=${data.order.id}`);
@@ -246,6 +273,7 @@ const PaymentPage: React.FC = () => {
               finalAmount: totalPayable,
               addressId: selectedAddress?.id || selectedAddress?._id,
               address: selectedAddress,
+              couponCode: appliedCoupon?.code,
             });
 
             // CLEANUP based on MODE
@@ -254,6 +282,7 @@ const PaymentPage: React.FC = () => {
             } else {
               clearCart();
             }
+            localStorage.removeItem('appliedCoupon');
 
             router.push(`/order-success?orderId=${data.order.id}`);
           } catch (err) {
@@ -308,7 +337,8 @@ const PaymentPage: React.FC = () => {
         finalAmount: totalPayable,
         addressId: selectedAddress?.id || selectedAddress?._id,
         address: selectedAddress,
-        paymentMethod: paymentMethod // 'COD' or 'RAZORPAY' - logic will be handled after signup
+        paymentMethod: paymentMethod, // 'COD' or 'RAZORPAY' - logic will be handled after signup
+        couponCode: appliedCoupon?.code,
       };
 
       localStorage.setItem("pendingOrder", JSON.stringify(orderPayload));
@@ -436,6 +466,13 @@ const PaymentPage: React.FC = () => {
               <span>Platform Fee</span>
               <span>₹{platformFee.toLocaleString('en-IN')}</span>
             </div>
+
+            {appliedCoupon && (
+              <div className="price-item text-green-600 font-bold">
+                <span>Coupon ({appliedCoupon.code})</span>
+                <span>- ₹{couponDiscount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
 
             <div className="price-total">
               <strong>TOTAL</strong>

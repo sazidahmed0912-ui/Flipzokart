@@ -15,6 +15,7 @@ const navItems = [
   { name: 'Inventory', path: '/admin/inventory', icon: Package },
   { name: 'Website Content Manager', path: '/admin/content', icon: LayoutDashboard },
   { name: 'Section Headers', path: '/admin/sections', icon: Layers },
+  { name: 'Coupons Management', path: '/admin/coupons', icon: TicketPercent },
   { name: 'Orders Management', path: '/admin/orders', icon: ShoppingCart },
   { name: 'Users Management', path: '/admin/users', icon: Users },
   { name: 'Reviews', path: '/admin/reviews', icon: Star },

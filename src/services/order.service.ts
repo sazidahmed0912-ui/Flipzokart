@@ -1,14 +1,16 @@
 import { PrismaClient, OrderStatus, PaymentStatus } from '@prisma/client';
 import { AppError } from '../utils/AppError';
 import { CartService } from './cart.service';
+import { CouponService } from './coupon.service';
 
 const prisma = new PrismaClient();
 // Refreshed client
 const cartService = new CartService();
+const couponService = new CouponService();
 
 export class OrderService {
 
-    async createOrder(userId: string, addressId: string) {
+    async createOrder(userId: string, addressId: string, couponCode?: string, paymentMethod?: string) {
         const cart = await cartService.getCart(userId);
 
         if (cart.items.length === 0) {
@@ -22,10 +24,32 @@ export class OrderService {
         const address = await prisma.address.findUnique({ where: { id: addressId } });
         if (!address) throw new AppError('Address not found', 404);
 
-        const totalAmount = cart.items.reduce((acc, item) => {
+        let validatedCouponContext: any = null;
+
+        if (couponCode) {
+            // Strictly re-validate the coupon just before creating the order
+            validatedCouponContext = await couponService.validateAndCalculateDiscount(userId, cart, couponCode, paymentMethod);
+        }
+
+        // Standard gross calculation
+        let totalAmount = cart.items.reduce((acc, item) => {
             const price = item.price || Number(item.product.price);
             return acc + price * item.quantity;
         }, 0);
+
+        let couponSnapshot = null;
+
+        if (validatedCouponContext && validatedCouponContext.isValid) {
+            totalAmount = validatedCouponContext.finalCartTotal;
+            couponSnapshot = {
+                couponId: validatedCouponContext.couponId,
+                code: validatedCouponContext.couponCode,
+                type: validatedCouponContext.type,
+                discountAmount: validatedCouponContext.discountAmount,
+                appliedProducts: validatedCouponContext.appliedProducts,
+                freeItems: validatedCouponContext.freeItems
+            };
+        }
 
         // Generate dynamic IDs
         const timestamp = Date.now().toString().slice(-6);
@@ -69,12 +93,22 @@ export class OrderService {
                 // @ts-ignore
                 addressId: address.id, // Canonical reference
                 address: address as any, // Storing address snapshot
+                couponSnapshot: couponSnapshot as any,
                 items: {
                     create: cart.items.map((item) => {
+                        let finalItemPrice = item.price || item.product.price;
+                        // Handle BOGO zero cost adjustments securely
+                        if (validatedCouponContext && validatedCouponContext.freeItems) {
+                            const freeItemInfo = validatedCouponContext.freeItems.find((f: any) => f.productId === item.productId);
+                            if (freeItemInfo && freeItemInfo.quantityFreed >= item.quantity) {
+                                finalItemPrice = 0; // The entire quantity is free
+                            }
+                        }
+
                         const orderItemData = {
                             product: { connect: { id: item.productId } },
                             quantity: item.quantity,
-                            price: item.price || item.product.price, // Use snapshot price if available
+                            price: finalItemPrice, // Use snapshot price or 0 if BOGO free
                             // Critical Snapshot Data
                             productName: item.product.title,
                             image: item.image || item.product.thumbnail || item.product.images[0] || '',
@@ -88,6 +122,10 @@ export class OrderService {
                 },
             },
         });
+
+        if (couponSnapshot) {
+            await couponService.recordUsage(couponSnapshot.couponId, userId, order.id);
+        }
 
         // Clear cart
         await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
