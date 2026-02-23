@@ -194,24 +194,43 @@ export const HomePage: React.FC = () => {
         <>
             <HeroSlider banners={banners} />
 
-            <section className="py-4 md:py-8 px-4 md:px-8">
+            <section className="homepage-shop-category py-3 md:py-8 px-3 md:px-8">
                 <SmoothReveal direction="up" delay={200}>
                     <div className="max-w-7xl mx-auto">
-                        <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-center"><span className="text-gray-800">Shop by Categories</span></h2>
-                        <div className="flex flex-nowrap overflow-x-auto pb-2 gap-3 px-2 md:justify-between md:gap-4 no-scrollbar snap-x">                        {displayCategories.map(category => (
-                            <Link href={category.href} key={category.name} className="flex flex-col items-center flex-shrink-0 snap-center w-[72px] md:w-[90px] text-center group">
-                                <div className="w-14 h-14 md:w-20 md:h-20 mb-2 bg-gray-100 rounded-full md:rounded-xl p-3 border border-gray-200 group-hover:shadow-md transition-shadow flex items-center justify-center">
-                                    <LazyImage
-                                        src={category.imageUrl}
-                                        alt={category.name}
-                                        className="w-full h-full object-contain"
-                                        priority={true}
-                                        sizes="(max-width: 768px) 56px, 80px"
-                                    />
-                                </div>
-                                <span className="text-xs md:text-sm font-medium text-gray-700 whitespace-nowrap">{category.name}</span>
-                            </Link>
-                        ))}
+                        <h2 className="text-sm md:text-2xl font-semibold md:font-bold mb-3 md:mb-8 text-center text-gray-800 uppercase tracking-wide">Shop by Categories</h2>
+                        {/* Mobile: 6-col grid | Desktop: flex justify-between */}
+                        <div className="hidden md:flex flex-nowrap pb-2 gap-3 px-2 md:justify-between md:gap-4 no-scrollbar">
+                            {displayCategories.map(category => (
+                                <Link href={category.href} key={category.name} className="flex flex-col items-center md:w-[90px] text-center group">
+                                    <div className="w-14 h-14 md:w-20 md:h-20 mb-2 bg-gray-100 rounded-full md:rounded-xl p-3 border border-gray-200 group-hover:shadow-md transition-shadow flex items-center justify-center">
+                                        <LazyImage
+                                            src={category.imageUrl}
+                                            alt={category.name}
+                                            className="w-full h-full object-contain"
+                                            priority={true}
+                                            sizes="80px"
+                                        />
+                                    </div>
+                                    <span className="text-xs md:text-sm font-medium text-gray-700 whitespace-nowrap">{category.name}</span>
+                                </Link>
+                            ))}
+                        </div>
+                        {/* Mobile grid — exactly 6 per row, compact */}
+                        <div className="grid grid-cols-6 gap-x-1 gap-y-3 md:hidden">
+                            {displayCategories.map(category => (
+                                <Link href={category.href} key={category.name} className="flex flex-col items-center text-center group">
+                                    <div className="w-11 h-11 mb-1 bg-gray-100 rounded-full p-1.5 border border-gray-200 flex items-center justify-center">
+                                        <LazyImage
+                                            src={category.imageUrl}
+                                            alt={category.name}
+                                            className="w-full h-full object-contain"
+                                            priority={true}
+                                            sizes="44px"
+                                        />
+                                    </div>
+                                    <span className="text-[10px] font-medium text-gray-700 leading-tight line-clamp-2">{category.name}</span>
+                                </Link>
+                            ))}
                         </div>
                     </div>
                 </SmoothReveal>
