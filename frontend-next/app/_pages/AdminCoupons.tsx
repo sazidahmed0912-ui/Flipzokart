@@ -168,7 +168,7 @@ export const AdminCoupons: React.FC = () => {
                 <div className="space-y-3 mb-6 relative z-10">
                   <div className="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
                     <span className="text-gray-400 font-medium flex items-center gap-2"><Tag size={14} /> Value</span>
-                    <span className="font-bold text-dark">{coupon.type === 'PERCENTAGE' ?\`\${coupon.discountValue}%\` : \`₹\${coupon.discountValue}\`}</span>
+                    <span className="font-bold text-dark">{coupon.type === 'PERCENTAGE' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
                     <span className="text-gray-400 font-medium flex items-center gap-2"><Activity size={14} /> Usage Redemptions</span>
@@ -184,125 +184,125 @@ export const AdminCoupons: React.FC = () => {
               <div className="flex gap-2 relative z-10 mt-auto pt-4 border-t border-gray-100">
                 <button
                   onClick={() => toggleStatus(coupon.id, coupon.status)}
-                  className={\`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all \${coupon.status === 'ACTIVE' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}\`}>
-                {coupon.status}
-              </button>
-              <button
-                onClick={() => handleDelete(coupon.id)}
-                className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
+                  className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${coupon.status === 'ACTIVE' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
+                  {coupon.status}
+                </button>
+                <button
+                  onClick={() => handleDelete(coupon.id)}
+                  className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </div>
           ))}
-        {coupons.length === 0 && <div className="col-span-full py-20 text-center text-gray-400 font-medium text-lg border-2 border-dashed border-gray-200 rounded-3xl">No campaigns running currently. Create one to get started!</div>}
-      </div>
+          {coupons.length === 0 && <div className="col-span-full py-20 text-center text-gray-400 font-medium text-lg border-2 border-dashed border-gray-200 rounded-3xl">No campaigns running currently. Create one to get started!</div>}
+        </div>
 
-      {/* Create Modal - Expanded for Full Engine */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="absolute inset-0 bg-dark/70 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-          <div className="relative bg-white w-full max-w-4xl rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-300 my-8 flex flex-col max-h-full">
-            <div className="p-8 border-b border-gray-100 shrink-0">
-              <h2 className="text-3xl font-black text-dark">Engine Rules Configurator</h2>
-              <p className="text-gray-500 mt-1">Configure advanced conditional triggers and discount properties.</p>
-            </div>
+        {/* Create Modal - Expanded for Full Engine */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            <div className="absolute inset-0 bg-dark/70 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
+            <div className="relative bg-white w-full max-w-4xl rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-300 my-8 flex flex-col max-h-full">
+              <div className="p-8 border-b border-gray-100 shrink-0">
+                <h2 className="text-3xl font-black text-dark">Engine Rules Configurator</h2>
+                <p className="text-gray-500 mt-1">Configure advanced conditional triggers and discount properties.</p>
+              </div>
 
-            <div className="p-8 overflow-y-auto">
-              <form id="couponForm" onSubmit={handleCreateCoupon} className="space-y-8">
+              <div className="p-8 overflow-y-auto">
+                <form id="couponForm" onSubmit={handleCreateCoupon} className="space-y-8">
 
-                {/* Basic Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Campaign Code *</label>
-                    <input required placeholder="e.g. GET50" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/20 transition-all uppercase" value={newCoupon.code} onChange={e => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Logic Type *</label>
-                    <select required className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/20 transition-all" value={newCoupon.type} onChange={e => setNewCoupon({ ...newCoupon, type: e.target.value })}>
-                      <option value="PERCENTAGE">Percentage (%)</option>
-                      <option value="FLAT">Flat Discount (₹)</option>
-                      <option value="BOGO">Buy 1 Get 1 Free</option>
-                      <option value="FREE_SHIPPING">Free Shipping</option>
-                      <option value="BUY_X_GET_Y">Buy X Get Y (Flat)</option>
-                      <option value="MIN_CART_VALUE">Min Cart Value Trigger</option>
-                      <option value="CATEGORY_SPECIFIC">Category Specific</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Values */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Discount Value *</label>
-                    <input required type="number" placeholder="e.g. 50" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.discountValue} onChange={e => setNewCoupon({ ...newCoupon, discountValue: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Min Cart Trigger (₹)</label>
-                    <input type="number" placeholder="Optional" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.minCartValue} onChange={e => setNewCoupon({ ...newCoupon, minCartValue: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Max Cap (₹)</label>
-                    <input type="number" placeholder="Optional" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.maxDiscount} onChange={e => setNewCoupon({ ...newCoupon, maxDiscount: e.target.value })} />
-                  </div>
-                </div>
-
-                {/* Limits & Expiry */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Total Usage Limit</label>
-                    <input type="number" placeholder="Optional (e.g. 100)" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.usageLimit} onChange={e => setNewCoupon({ ...newCoupon, usageLimit: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Limit Per User</label>
-                    <input type="number" placeholder="1" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.usageLimitPerUser} onChange={e => setNewCoupon({ ...newCoupon, usageLimitPerUser: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Expiry Date *</label>
-                    <input required type="date" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.expiryDate} onChange={e => setNewCoupon({ ...newCoupon, expiryDate: e.target.value })} />
-                  </div>
-                </div>
-
-                <div className="h-px w-full bg-gray-100 my-6"></div>
-
-                {/* Advanced Conditions block */}
-                <div>
-                  <h3 className="text-lg font-bold text-dark mb-4 border-l-4 border-primary pl-3">Advanced Isolation Rules (Optional)</h3>
+                  {/* Basic Info */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Allowed Category IDs</label>
-                      <input placeholder="Comma separated ObjectIds" className="w-full bg-lightGray px-5 py-4 rounded-xl font-medium outline-none focus:ring-2 focus:ring-primary/20 text-sm" value={newCoupon.allowedCategories} onChange={e => setNewCoupon({ ...newCoupon, allowedCategories: e.target.value })} />
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Campaign Code *</label>
+                      <input required placeholder="e.g. GET50" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/20 transition-all uppercase" value={newCoupon.code} onChange={e => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Allowed Product IDs</label>
-                      <input placeholder="Comma separated ObjectIds" className="w-full bg-lightGray px-5 py-4 rounded-xl font-medium outline-none focus:ring-2 focus:ring-primary/20 text-sm" value={newCoupon.allowedProducts} onChange={e => setNewCoupon({ ...newCoupon, allowedProducts: e.target.value })} />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Payment Method Restriction</label>
-                      <select className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.paymentRestriction} onChange={e => setNewCoupon({ ...newCoupon, paymentRestriction: e.target.value })}>
-                        <option value="">No Restriction</option>
-                        <option value="PREPAID">Prepaid Only</option>
-                        <option value="COD">Cash on Delivery Only</option>
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Logic Type *</label>
+                      <select required className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/20 transition-all" value={newCoupon.type} onChange={e => setNewCoupon({ ...newCoupon, type: e.target.value })}>
+                        <option value="PERCENTAGE">Percentage (%)</option>
+                        <option value="FLAT">Flat Discount (₹)</option>
+                        <option value="BOGO">Buy 1 Get 1 Free</option>
+                        <option value="FREE_SHIPPING">Free Shipping</option>
+                        <option value="BUY_X_GET_Y">Buy X Get Y (Flat)</option>
+                        <option value="MIN_CART_VALUE">Min Cart Value Trigger</option>
+                        <option value="CATEGORY_SPECIFIC">Category Specific</option>
                       </select>
                     </div>
                   </div>
-                </div>
 
-              </form>
+                  {/* Values */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Discount Value *</label>
+                      <input required type="number" placeholder="e.g. 50" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.discountValue} onChange={e => setNewCoupon({ ...newCoupon, discountValue: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Min Cart Trigger (₹)</label>
+                      <input type="number" placeholder="Optional" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.minCartValue} onChange={e => setNewCoupon({ ...newCoupon, minCartValue: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Max Cap (₹)</label>
+                      <input type="number" placeholder="Optional" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold text-lg outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.maxDiscount} onChange={e => setNewCoupon({ ...newCoupon, maxDiscount: e.target.value })} />
+                    </div>
+                  </div>
+
+                  {/* Limits & Expiry */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Total Usage Limit</label>
+                      <input type="number" placeholder="Optional (e.g. 100)" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.usageLimit} onChange={e => setNewCoupon({ ...newCoupon, usageLimit: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Limit Per User</label>
+                      <input type="number" placeholder="1" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.usageLimitPerUser} onChange={e => setNewCoupon({ ...newCoupon, usageLimitPerUser: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Expiry Date *</label>
+                      <input required type="date" className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.expiryDate} onChange={e => setNewCoupon({ ...newCoupon, expiryDate: e.target.value })} />
+                    </div>
+                  </div>
+
+                  <div className="h-px w-full bg-gray-100 my-6"></div>
+
+                  {/* Advanced Conditions block */}
+                  <div>
+                    <h3 className="text-lg font-bold text-dark mb-4 border-l-4 border-primary pl-3">Advanced Isolation Rules (Optional)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Allowed Category IDs</label>
+                        <input placeholder="Comma separated ObjectIds" className="w-full bg-lightGray px-5 py-4 rounded-xl font-medium outline-none focus:ring-2 focus:ring-primary/20 text-sm" value={newCoupon.allowedCategories} onChange={e => setNewCoupon({ ...newCoupon, allowedCategories: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Allowed Product IDs</label>
+                        <input placeholder="Comma separated ObjectIds" className="w-full bg-lightGray px-5 py-4 rounded-xl font-medium outline-none focus:ring-2 focus:ring-primary/20 text-sm" value={newCoupon.allowedProducts} onChange={e => setNewCoupon({ ...newCoupon, allowedProducts: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Payment Method Restriction</label>
+                        <select className="w-full bg-lightGray px-5 py-4 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newCoupon.paymentRestriction} onChange={e => setNewCoupon({ ...newCoupon, paymentRestriction: e.target.value })}>
+                          <option value="">No Restriction</option>
+                          <option value="PREPAID">Prepaid Only</option>
+                          <option value="COD">Cash on Delivery Only</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                </form>
+              </div>
+
+              <div className="p-8 border-t border-gray-100 shrink-0 flex gap-4">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-white border-2 border-gray-200 text-gray-600 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all">Cancel</button>
+                <button type="submit" form="couponForm" disabled={isLoading} className="flex-[2] bg-primary text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-xl hover:-translate-y-1 transition-all disabled:opacity-50">
+                  {isLoading ? 'Deploying...' : 'Deploy Campaign'}
+                </button>
+              </div>
+
             </div>
-
-            <div className="p-8 border-t border-gray-100 shrink-0 flex gap-4">
-              <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-white border-2 border-gray-200 text-gray-600 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all">Cancel</button>
-              <button type="submit" form="couponForm" disabled={isLoading} className="flex-[2] bg-primary text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-xl hover:-translate-y-1 transition-all disabled:opacity-50">
-                {isLoading ? 'Deploying...' : 'Deploy Campaign'}
-              </button>
-            </div>
-
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </div >
   );
 };
