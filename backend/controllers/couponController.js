@@ -1,6 +1,8 @@
+const mongoose = require('mongoose');
 const Coupon = require('../models/Coupon');
 const CouponUsage = require('../models/CouponUsage');
 const Order = require('../models/Order');
+const User = require('../models/User');
 
 exports.createCoupon = async (req, res) => {
     try {
@@ -281,17 +283,23 @@ exports.applyCoupon = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Coupon code is required' });
         }
 
-        // We need the user's cart. 
-        // We will fetch it from DB using Cart model or accept it from frontend.
-        // For real security, we must fetch from DB.
-        const Cart = require('../models/Cart');
-        const cart = await Cart.findOne({ user: userId }).populate('items.product');
+        // Fetch user with populated cart
+        const user = await User.findById(userId).populate('cart.productId');
 
-        if (!cart || !cart.items || cart.items.length === 0) {
+        if (!user || !user.cart || user.cart.length === 0) {
             return res.status(400).json({ success: false, message: 'Your cart is empty' });
         }
 
-        const result = await exports.validateAndCalculateDiscount(userId, cart.items, couponCode, paymentMethod);
+        // Map cart items to format expected by engine
+        const cartItems = user.cart.map(item => ({
+            productId: item.productId?._id,
+            price: item.productId?.price,
+            quantity: item.quantity,
+            categoryId: item.productId?.category?.toString(),
+            name: item.productId?.name
+        })).filter(item => item.productId); // removes items with deleted products
+
+        const result = await exports.validateAndCalculateDiscount(userId, cartItems, couponCode, paymentMethod);
 
         res.status(200).json({ success: true, result });
     } catch (error) {

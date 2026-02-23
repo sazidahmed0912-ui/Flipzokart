@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const couponController = require('../controllers/couponController');
-const { protect, admin } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/auth');
+const { authorize } = require('../middleware/authorize');
 
 // Public User Endpoint
 router.post('/apply', protect, couponController.applyCoupon);
 
 // Admin Endpoints
-router.use(protect, admin);
+router.use(protect, authorize(['admin']));
+
 router.post('/', couponController.createCoupon);
 router.get('/', couponController.getAllCoupons);
 router.get('/stats', couponController.getCouponStats);
