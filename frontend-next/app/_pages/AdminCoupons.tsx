@@ -150,7 +150,7 @@ export const AdminCoupons: React.FC = () => {
         {/* Promo Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 md:grid-cols-2 gap-8">
           {coupons.map((coupon, i) => (
-            <div key={coupon.id} className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm relative group hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
+            <div key={coupon._id} className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm relative group hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
               <div>
                 <div className="absolute top-6 right-6 text-primary opacity-10 group-hover:opacity-100 transition-opacity">
                   <TicketPercent size={48} strokeWidth={1} />
@@ -183,12 +183,12 @@ export const AdminCoupons: React.FC = () => {
 
               <div className="flex gap-2 relative z-10 mt-auto pt-4 border-t border-gray-100">
                 <button
-                  onClick={() => toggleStatus(coupon.id, coupon.status)}
+                  onClick={() => toggleStatus(coupon._id, coupon.status)}
                   className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${coupon.status === 'ACTIVE' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
                   {coupon.status}
                 </button>
                 <button
-                  onClick={() => handleDelete(coupon.id)}
+                  onClick={() => handleDelete(coupon._id)}
                   className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                 >
                   <Trash2 size={18} />
