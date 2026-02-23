@@ -138,15 +138,16 @@ const createOrder = async (req, res) => {
 
       // Add to final array with snapshot data
       finalOrderProducts.push({
+        // Snapshot Logic: Use incoming item data with strong fallbacks to DB defaults to prevent NaN
         productId: item.productId,
         quantity: item.quantity,
-        productName: item.productName || product.name, // Snapshot Name
-        // Fix: Use item.image (from variant) if available, else product thumbnail/image
+        productName: item.productName || product.name,
         image: item.image || product.thumbnail || product.images?.[0] || product.image || '',
-        price: item.price, // Snapshot Price (from cart/variant)
-        color: item.color, // Snapshot Color
-        size: item.size, // Snapshot Size
-        variantId: item.variantId, // Snapshot Variant ID
+        price: item.price !== undefined && item.price !== null ? Number(item.price) : Number(product.price || 0),
+        mrp: item.mrp !== undefined && item.mrp !== null ? Number(item.mrp) : Number(product.originalPrice || product.price || 0),
+        color: item.color,
+        size: item.size,
+        variantId: item.variantId,
         selectedVariants: item.selectedVariants || {},
         categoryId: product.category ? product.category.toString() : null
       });
@@ -446,23 +447,40 @@ const verifyPayment = async (req, res) => {
     // -------------------------------------------------------------------------
     // 🛡️ UNIFIED PRICING ENGINE ENFORCEMENT
     // -------------------------------------------------------------------------
-    // Re-fetch products with details for calculation
+    // Calculate using 'RAZORPAY' (Prepaid) logic
+    const validatedProductsRzp = products.map(item => ({
+      ...item,
+      // If price is missing from RAZORPAY payload, we already have a fallback needed? No, verifyPayment takes it from req.body
+      // But verifyPayment loop below also needs fallbacks.
+    }));
+
+    // Re-fetch products with details for calculation with robust fallbacks
     const productsForCalc = [];
     const finalOrderProducts = [];
     for (const item of products) {
       const p = await Product.findById(item.productId);
       if (p) {
+        const safePrice = item.price !== undefined && item.price !== null ? Number(item.price) : Number(p.price || 0);
+        const safeMrp = item.mrp !== undefined && item.mrp !== null ? Number(item.mrp) : Number(p.originalPrice || p.price || 0);
+
         productsForCalc.push({
-          price: item.price, // Use Snapshot Price
-          originalPrice: p.originalPrice || p.price,
+          price: safePrice,
+          originalPrice: safeMrp,
           quantity: item.quantity,
           categoryId: p.category ? p.category.toString() : null,
           productId: p._id.toString()
         });
         finalOrderProducts.push({
-          price: item.price,
+          price: safePrice,
+          mrp: safeMrp,
           quantity: item.quantity,
           productId: p._id.toString(),
+          productName: item.productName || p.name,
+          image: item.image || p.thumbnail || p.images?.[0] || '',
+          variantId: item.variantId,
+          color: item.color,
+          size: item.size,
+          selectedVariants: item.selectedVariants || {},
           categoryId: p.category ? p.category.toString() : null
         });
       }
