@@ -71,6 +71,7 @@ exports.getCouponStats = async (req, res) => {
 
 // --- Engine Logic ---
 exports.validateAndCalculateDiscount = async (userId, cartItems, couponCode, paymentMethod) => {
+    console.log(`[CouponEngine] Validating coupon: ${couponCode} for user: ${userId}, payment: ${paymentMethod}`);
     if (!cartItems || cartItems.length === 0) {
         throw new Error('Cart is empty');
     }

@@ -96,6 +96,10 @@ const orderSchema = new mongoose.Schema({
   razorpayPaymentId: {
     type: String,
   },
+  couponCode: {
+    type: String,
+    default: null
+  },
   couponSnapshot: {
     couponId: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
     code: String,
