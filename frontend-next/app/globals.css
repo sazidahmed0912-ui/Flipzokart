@@ -689,13 +689,14 @@
         overflow: hidden;
     }
 
-    /* Image fills the banner fully — no internal gap, no crop distortion */
+    /* Full image visible — no crop */
     .hero-banner-quad img {
         border-radius: inherit;
         display: block;
         width: 100% !important;
         height: 100% !important;
-        object-fit: cover !important;
+        object-fit: contain !important;
+        background: #000;
     }
 }
 
