@@ -11,13 +11,52 @@ import { useApp } from '@/app/store/Context';
 
 export const AdminNotifications: React.FC = () => {
     const { user } = useApp();
-    const { notifications, deleteNotification: clearNotification, markNotificationAsRead: markAsRead } = useNotifications();
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+    const fetchNotifications = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                setNotifications(data.notifications);
+            }
+        } catch (error) {
+            console.error("Failed to fetch notifications:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const deleteNotification = async (id: string) => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications/${id}`, {
+                method: "DELETE",
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                // Manual delete only - remove from state after DB success
+                setNotifications(prev => prev.filter(n => n._id !== id));
+            }
+        } catch (error) {
+            console.error("Failed to delete notification:", error);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchNotifications();
+    }, []);
+
     const filtered = notifications.filter(n => {
         if (filter === 'All') return true;
-        return n.type === filter;
+        return n.type === filter || (filter === 'order' && n.type === 'adminNewOrder');
     });
 
     const getIcon = (type: string) => {
@@ -88,7 +127,7 @@ export const AdminNotifications: React.FC = () => {
                                             <div className="flex justify-between items-start">
                                                 <h3 className="text-sm font-bold text-gray-800">{note.message}</h3>
                                                 <button
-                                                    onClick={() => clearNotification(note._id)}
+                                                    onClick={() => deleteNotification(note._id)}
                                                     className="text-gray-300 hover:text-red-500 transition-colors"
                                                 >
                                                     <Trash2 size={14} />

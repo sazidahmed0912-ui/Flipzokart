@@ -232,7 +232,14 @@ const createOrder = async (req, res) => {
       recipient: order.user,
       message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
       type: 'newOrder',
-      relatedId: order._id
+      orderId: order._id
+    });
+
+    // 🔒 ULTRA LOCK: Create Persistent Admin Notification
+    await Notification.create({
+      type: 'adminNewOrder',
+      message: `New order received from ${req.user.name || 'Guest'}`,
+      orderId: order._id
     });
 
     const io = req.app.get('socketio');
@@ -564,7 +571,14 @@ const verifyPayment = async (req, res) => {
       recipient: order.user,
       message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
       type: 'newOrder',
-      relatedId: order._id
+      orderId: order._id
+    });
+
+    // 🔒 ULTRA LOCK: Create Persistent Admin Notification
+    await Notification.create({
+      type: 'adminNewOrder',
+      message: `New order received from ${req.user.name || 'Guest'}`,
+      orderId: order._id
     });
 
     const io = req.app.get('socketio');
