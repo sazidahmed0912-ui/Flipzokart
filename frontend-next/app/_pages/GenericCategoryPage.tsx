@@ -442,7 +442,7 @@ export const GenericCategoryPage: React.FC<Props> = ({ categoryKey }) => {
                     spaceBetween={0}
                     slidesPerView={1}
                     loop={true}
-                    autoplay={{ delay: 3500, disableOnInteraction: false }}
+                    autoplay={{ delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true }}
                     pagination={{ clickable: true }}
                     observer={true}
                     observeParents={true}

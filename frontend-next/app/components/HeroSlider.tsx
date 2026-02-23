@@ -71,16 +71,18 @@ interface HeroSliderProps {
 export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
     const router = useRouter();
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [paused, setPaused] = useState(false);
 
     const activeSlides = banners.length > 0 ? banners : slides;
     const isDynamic = banners.length > 0;
 
     useEffect(() => {
+        if (paused) return;
         const timer = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
-        }, 5000);
+        }, 4000);
         return () => clearInterval(timer);
-    }, [activeSlides.length, banners.length]);
+    }, [paused, activeSlides.length, banners.length]);
 
     const touchStartX = React.useRef(0);
     const touchEndX = React.useRef(0);
@@ -118,6 +120,8 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
         >
             <AnimatePresence mode='wait'>
                 {isDynamic ? (
@@ -230,13 +234,13 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
                 )}
             </AnimatePresence>
 
-            {/* Indicators */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+            {/* Flipkart-style progress dot indicators */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
                 {activeSlides.map((_, index) => (
                     <button
                         key={index}
-                        onClick={() => setCurrentIndex(index)}
-                        className={`h-1.5 rounded-full transition-all duration-300 shadow-sm ${index === currentIndex ? "w-6 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"}`}
+                        onClick={() => { setCurrentIndex(index); setPaused(false); }}
+                        className={`hero-dot relative overflow-hidden rounded-full transition-all duration-300 shadow-sm ${index === currentIndex ? 'hero-dot-active' : 'hero-dot-inactive'}`}
                         aria-label={`Go to slide ${index + 1}`}
                     />
                 ))}

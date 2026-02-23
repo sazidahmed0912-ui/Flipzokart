@@ -695,3 +695,104 @@
         width: 100%;
     }
 }
+
+/* ── BANNER PROGRESS DOTS (Flipkart style) ─────────────────────────────────
+   Works for both HeroSlider (hero-dot classes) and Swiper pagination
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── HeroSlider dots ── */
+.hero-dot {
+    height: 4px;
+    width: 14px;
+    background: rgba(255, 255, 255, 0.45);
+    border: none;
+    cursor: pointer;
+}
+
+.hero-dot-inactive {
+    width: 14px;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.hero-dot-active {
+    width: 28px;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+/* Progress fill sweeps across the active dot in 4s */
+.hero-dot-active::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background: #ffffff;
+    border-radius: inherit;
+    animation: heroDotProgress 4s linear forwards;
+}
+
+@keyframes heroDotProgress {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-dot {
+        height: 3px;
+        width: 12px;
+    }
+
+    .hero-dot-inactive {
+        width: 12px;
+    }
+
+    .hero-dot-active {
+        width: 24px;
+    }
+}
+
+/* ── Swiper pagination override (GenericCategoryPage banners) ── */
+.swiper-pagination-bullet {
+    width: 14px !important;
+    height: 4px !important;
+    border-radius: 4px !important;
+    background: rgba(255, 255, 255, 0.45) !important;
+    opacity: 1 !important;
+    transition: width 0.3s ease, background 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.swiper-pagination-bullet-active {
+    width: 28px !important;
+    background: rgba(255, 255, 255, 0.45) !important;
+}
+
+.swiper-pagination-bullet-active::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background: #ffffff;
+    border-radius: inherit;
+    animation: heroDotProgress 4s linear forwards;
+}
+
+@media (max-width: 768px) {
+    .swiper-pagination-bullet {
+        width: 12px !important;
+        height: 3px !important;
+    }
+
+    .swiper-pagination-bullet-active {
+        width: 24px !important;
+    }
+}
