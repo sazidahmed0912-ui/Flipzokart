@@ -105,11 +105,23 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                                 <td className="py-3 px-4">
                                     <p className="text-sm font-semibold text-gray-800">{item.name}</p>
                                     <p className="text-xs text-gray-400">Variant: {item.color || 'Standard'} {item.size ? `| ${item.size}` : ''}</p>
+                                    {/* GST badge — only if item has a non-zero gstRate */}
+                                    {item.gstRate > 0 && (
+                                        <p className="text-[10px] text-amber-600 font-medium mt-0.5">
+                                            GST {item.gstRate}% (CGST {item.gstRate / 2}% + SGST {item.gstRate / 2}%)
+                                        </p>
+                                    )}
                                 </td>
                                 <td className="py-3 px-4 text-right text-sm text-gray-500">8517</td>
                                 <td className="py-3 px-4 text-right text-sm text-gray-800 font-medium">{item.quantity}</td>
-                                <td className="py-3 px-4 text-right text-sm text-gray-800">₹{item.price?.toLocaleString()}</td>
-                                <td className="py-3 px-4 text-right text-sm font-bold text-gray-800">₹{(item.quantity * item.price).toLocaleString()}</td>
+                                {/* Rate: show baseAmount per unit (pre-GST) */}
+                                <td className="py-3 px-4 text-right text-sm text-gray-800">
+                                    ₹{(item.unitPrice ?? item.price ?? 0).toLocaleString()}
+                                </td>
+                                {/* Total: frozen finalAmount from DB — no recalculation */}
+                                <td className="py-3 px-4 text-right text-sm font-bold text-gray-800">
+                                    ₹{(item.finalAmount ?? (item.price * item.quantity)).toLocaleString()}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -119,28 +131,40 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
             {/* Total Summary */}
             <div className="flex justify-end mb-12">
                 <div className="w-72 bg-gray-50 rounded-lg p-6 border border-gray-100">
+                    {/* Subtotal (pre-GST base) */}
                     <div className="flex justify-between mb-2 text-sm text-gray-600">
-                        <span>Subtotal:</span>
-                        <span>₹{order.totals?.subtotal?.toLocaleString() || 0}</span>
+                        <span>Subtotal (before GST):</span>
+                        <span>₹{(order.subtotal ?? 0).toLocaleString()}</span>
                     </div>
+                    {/* GST breakdown — use frozen values from DB */}
+                    {(order.cgst > 0 || order.sgst > 0) && (
+                        <>
+                            <div className="flex justify-between mb-1 text-sm text-amber-600">
+                                <span>CGST:</span>
+                                <span>₹{(order.cgst ?? 0).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between mb-2 text-sm text-amber-600">
+                                <span>SGST:</span>
+                                <span>₹{(order.sgst ?? 0).toLocaleString()}</span>
+                            </div>
+                        </>
+                    )}
+                    {/* Delivery */}
                     <div className="flex justify-between mb-2 text-sm text-gray-600">
                         <span>Shipping Charges:</span>
-                        <span>₹{order.totals?.shipping?.toLocaleString() || 0}</span>
+                        <span>{(order.deliveryCharges ?? order.shipping ?? 0) === 0 ? 'FREE' : `₹${(order.deliveryCharges ?? order.shipping ?? 0).toLocaleString()}`}</span>
                     </div>
-                    <div className="flex justify-between mb-2 text-sm text-gray-600">
-                        <span>Tax (GST 18%):</span>
-                        <span>₹{order.totals?.tax?.toLocaleString() || 0}</span>
-                    </div>
-                    {/* Discount */}
-                    {order.totals?.discount > 0 && (
+                    {/* Coupon Discount */}
+                    {(order.discount ?? 0) > 0 && (
                         <div className="flex justify-between mb-2 text-sm text-green-600">
                             <span>Discount:</span>
-                            <span>-₹{order.totals?.discount?.toLocaleString()}</span>
+                            <span>-₹{(order.discount ?? 0).toLocaleString()}</span>
                         </div>
                     )}
                     <div className="border-t-2 border-dashed border-gray-200 my-3 pt-3 flex justify-between items-center">
                         <span className="text-base font-bold text-gray-900">Grand Total:</span>
-                        <span className="text-xl font-bold text-[#2874F0]">₹{order.totals?.total?.toLocaleString() || 0}</span>
+                        {/* Use grandTotal from DB — frozen, never recalculated */}
+                        <span className="text-xl font-bold text-[#2874F0]">₹{(order.grandTotal ?? order.total ?? order.finalAmount ?? 0).toLocaleString()}</span>
                     </div>
                     <p className="text-xs text-gray-400 text-right italic">(Inclusive of all taxes)</p>
                 </div>

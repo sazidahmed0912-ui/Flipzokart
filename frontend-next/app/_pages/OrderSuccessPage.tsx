@@ -330,8 +330,21 @@ const OrderSuccessPage = () => {
               <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                 <div className="flex justify-between text-xs sm:text-sm text-gray-500">
                   <span>Subtotal</span>
-                  <span>₹{order.subtotal.toLocaleString()}</span>
+                  <span>₹{(order.subtotal ?? 0).toLocaleString()}</span>
                 </div>
+                {/* 🧾 GST — read frozen values from order, never recalculate */}
+                {(order as any).cgst > 0 && (
+                  <>
+                    <div className="flex justify-between text-xs text-amber-600">
+                      <span>CGST</span>
+                      <span>+ ₹{(order as any).cgst.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-amber-600">
+                      <span>SGST</span>
+                      <span>+ ₹{((order as any).sgst ?? 0).toLocaleString()}</span>
+                    </div>
+                  </>
+                )}
                 {order.discount > 0 && (
                   <div className="flex justify-between text-xs sm:text-sm text-green-600">
                     <span>Discount</span>
@@ -345,10 +358,12 @@ const OrderSuccessPage = () => {
                 <div className="h-px bg-gray-100 my-2" />
                 <div className="flex justify-between font-bold text-base sm:text-lg text-gray-900">
                   <span>Total</span>
-                  <span>₹{order.total.toLocaleString()}</span>
+                  {/* grandTotal = new freeze field; fallback to total for old orders */}
+                  <span>₹{((order as any).grandTotal ?? order.total ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="text-xs text-gray-400 text-right">{order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Paid Online'}</div>
               </div>
+
 
               <div className="space-y-3">
                 <button

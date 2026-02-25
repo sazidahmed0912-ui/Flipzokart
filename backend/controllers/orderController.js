@@ -1,13 +1,13 @@
-const Order = require('../models/Order'); // Force redeploy
+const Order = require('../models/Order');
 const Notification = require('../models/Notification');
-const Product = require('../models/Product'); // Import Product model
+const Product = require('../models/Product');
 const CouponUsage = require('../models/CouponUsage');
 const couponController = require('../controllers/couponController');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const { sendOrderConfirmationEmail } = require('../utils/email');
-const { calculateOrderTotals } = require('../utils/priceCalculator');
+const { calculateCartSummary } = require('../utils/priceEngine'); // 🏗️ MASTER PRICE ENGINE
 
 // Helper function to update stock
 const updateStock = async (products) => {
@@ -153,16 +153,25 @@ const createOrder = async (req, res) => {
       });
     }
 
-    console.log("ORDER ITEMS SNAPSHOT", finalOrderProducts); // 🧪 DEBUG CONFIRMATION
-
     // -------------------------------------------------------------------------
-    // 🛡️ UNIFIED PRICING ENGINE ENFORCEMENT
+    // 🛡️ MASTER PRICE ENGINE — ONE CALCULATION, THEN FREEZE
     // -------------------------------------------------------------------------
-    // Instead of trusting req.body totals, we RE-CALCULATE based on DB products.
-    let priceDetails = calculateOrderTotals(finalOrderProducts, 'COD');
+    // Build engine-compatible items format (product obj + quantity)
+    const engineItems = finalOrderProducts.map(fp => ({
+      product: {
+        _id: fp.productId,
+        name: fp.productName,
+        price: fp.price,
+        originalPrice: fp.mrp,
+        customGstRate: null,  // Already pulled from DB and embedded, use default
+        priceType: 'exclusive'
+      },
+      quantity: fp.quantity
+    }));
 
-    // 🎟️ STRICT COUPON ENGINE INGESTION
+    // 🎟️ Re-validate coupon server-side
     let couponSnapshot = undefined;
+    let couponDiscount = 0;
     if (req.body.couponCode) {
       try {
         const couponResult = await couponController.validateAndCalculateDiscount(
@@ -172,10 +181,7 @@ const createOrder = async (req, res) => {
           'COD'
         );
         if (couponResult && couponResult.isValid) {
-          priceDetails.discount = (priceDetails.discount || 0) + couponResult.discountAmount;
-          priceDetails.finalAmount = Math.max(0, priceDetails.totalAmount - couponResult.discountAmount);
-          priceDetails.totalAmount = priceDetails.finalAmount; // update total payable
-
+          couponDiscount = couponResult.discountAmount || 0;
           couponSnapshot = {
             couponId: couponResult.couponId,
             code: couponResult.couponCode,
@@ -191,37 +197,56 @@ const createOrder = async (req, res) => {
       }
     }
 
-    console.log('🛡️ Server-Calculated Totals:', priceDetails);
+    // 🔒 FREEZE — run master engine, ONE time, values locked forever
+    const summary = calculateCartSummary(engineItems, couponDiscount, 'COD');
+    console.log('🛡️ Frozen Price Summary:', JSON.stringify(summary, null, 2));
 
-    // Create order
+    // Map engine items back to order product rows (with full GST freeze per item)
+    const frozenProducts = summary.items.map((engineItem, idx) => ({
+      ...finalOrderProducts[idx],
+      // 🔒 FROZEN GST PER ITEM
+      unitPrice: engineItem.unitPrice,
+      baseAmount: engineItem.baseAmount,
+      gstRate: engineItem.gstRate,
+      cgst: engineItem.cgst,
+      sgst: engineItem.sgst,
+      totalGST: engineItem.totalGST,
+      finalAmount: engineItem.finalAmount
+    }));
+
+    // Create order with ALL values frozen from engine (no frontend numbers)
     const order = new Order({
       user: req.user.id,
-      products: finalOrderProducts,
+      products: frozenProducts,
       shippingAddress: address,
       paymentMethod: 'COD',
       paymentStatus: 'PENDING',
-      paymentModeSnapshot, // 🔒 ULTRA LOCK: Audit trail
-      couponSnapshot,      // 🎟️ COUPON METADATA
+      paymentModeSnapshot,
+      couponSnapshot,
 
-      // Use Server-Calculated Values
-      subtotal: priceDetails.itemsPrice,
-      itemsPrice: priceDetails.itemsPrice,
-      deliveryCharges: priceDetails.deliveryCharges,
-      discount: priceDetails.discount,
-      platformFee: priceDetails.platformFee,
-      tax: priceDetails.tax,
-      mrp: priceDetails.mrp,
-      total: priceDetails.totalAmount,
-      finalAmount: priceDetails.finalAmount,
+      // 🔒 ORDER-LEVEL FROZEN SUMMARY
+      subtotal: summary.subtotal,
+      itemsPrice: summary.subtotal,
+      deliveryCharges: summary.deliveryCharge,
+      discount: summary.couponDiscount,
+      platformFee: summary.platformFee,
+      tax: summary.totalGST,         // backward compat alias
+      totalGST: summary.totalGST,
+      cgst: summary.cgst,
+      sgst: summary.sgst,
+      mrp: summary.mrp,
+      total: summary.grandTotal,
+      finalAmount: summary.grandTotal,
+      grandTotal: summary.grandTotal,
 
       orderSummary: {
-        itemsPrice: priceDetails.itemsPrice,
-        tax: priceDetails.tax,
-        deliveryCharges: priceDetails.deliveryCharges,
-        discount: priceDetails.discount,
-        platformFee: priceDetails.platformFee,
-        finalAmount: priceDetails.finalAmount,
-        mrp: priceDetails.mrp
+        itemsPrice: summary.subtotal,
+        tax: summary.totalGST,
+        deliveryCharges: summary.deliveryCharge,
+        discount: summary.couponDiscount,
+        platformFee: summary.platformFee,
+        finalAmount: summary.grandTotal,
+        mrp: summary.mrp
       }
     });
 

@@ -13,21 +13,28 @@ const orderSchema = new mongoose.Schema({
         ref: 'Product',
         required: true,
       },
-      variantId: String, // Variant Snapshot
-      productName: String, // Snapshot
-      color: String, // Snapshot
-      size: String, // Snapshot
-      image: String, // Snapshot
-      price: Number, // Snapshot
+      variantId: String,
+      productName: String,
+      color: String,
+      size: String,
+      image: String,
+      price: Number,     // snapshot of selling price (unitPrice)
       quantity: {
         type: Number,
         required: true,
       },
-      // Keep selectedVariants for backward compatibility if needed, but user wants specific fields
       selectedVariants: {
         type: Map,
         of: String
-      }
+      },
+      // 🔒 GST FREEZE FIELDS (set at order creation, never recalculated)
+      unitPrice: { type: Number, default: 0 },  // price per unit (base, pre-GST)
+      baseAmount: { type: Number, default: 0 },  // unitPrice * quantity
+      gstRate: { type: Number, default: 0 },  // %: 0/5/12/18/28
+      cgst: { type: Number, default: 0 },  // CGST portion
+      sgst: { type: Number, default: 0 },  // SGST portion
+      totalGST: { type: Number, default: 0 },  // cgst + sgst
+      finalAmount: { type: Number, default: 0 },  // baseAmount + totalGST
     },
   ],
   shippingAddress: {
@@ -84,6 +91,11 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  // 🔒 GST FREEZE SUMMARY (set at order creation, never recalculated)
+  totalGST: { type: Number, default: 0 },   // Total GST collected
+  cgst: { type: Number, default: 0 },   // CGST portion
+  sgst: { type: Number, default: 0 },   // SGST portion
+  grandTotal: { type: Number, default: 0 }, // Final amount customer paid (= finalAmount)
   orderSummary: {
     itemsPrice: { type: Number, default: 0 },
     tax: { type: Number, default: 0 },
