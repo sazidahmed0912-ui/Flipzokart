@@ -276,12 +276,18 @@ const createOrder = async (req, res) => {
 
     // Consume Coupon
     if (couponSnapshot) {
-      await CouponUsage.create({
-        coupon: couponSnapshot.couponId,
-        user: req.user.id,
-        order: order._id
-      });
-      await require('../models/Coupon').findByIdAndUpdate(couponSnapshot.couponId, { $inc: { usageCount: 1 } });
+      try {
+        console.log('[CouponConsume] Saving usage:', { coupon: couponSnapshot.couponId, user: req.user._id, order: order._id });
+        await CouponUsage.create({
+          coupon: couponSnapshot.couponId,
+          user: req.user._id,
+          order: order._id
+        });
+        await require('../models/Coupon').findByIdAndUpdate(couponSnapshot.couponId, { $inc: { usageCount: 1 } });
+        console.log('[CouponConsume] Done ✓');
+      } catch (couponErr) {
+        console.error('[CouponConsume] Failed to record coupon usage (order still placed):', couponErr.message);
+      }
     }
 
     // Update stock
@@ -644,12 +650,18 @@ const verifyPayment = async (req, res) => {
 
     // Consume Coupon
     if (couponSnapshot) {
-      await CouponUsage.create({
-        coupon: couponSnapshot.couponId,
-        user: req.user.id,
-        order: order._id
-      });
-      await require('../models/Coupon').findByIdAndUpdate(couponSnapshot.couponId, { $inc: { usageCount: 1 } });
+      try {
+        console.log('[CouponConsume] Saving usage:', { coupon: couponSnapshot.couponId, user: req.user._id, order: order._id });
+        await CouponUsage.create({
+          coupon: couponSnapshot.couponId,
+          user: req.user._id,
+          order: order._id
+        });
+        await require('../models/Coupon').findByIdAndUpdate(couponSnapshot.couponId, { $inc: { usageCount: 1 } });
+        console.log('[CouponConsume] Done ✓');
+      } catch (couponErr) {
+        console.error('[CouponConsume] Failed to record coupon usage (order still placed):', couponErr.message);
+      }
     }
 
     // Update stock
