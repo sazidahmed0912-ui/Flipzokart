@@ -30,6 +30,12 @@ const categorySchema = new mongoose.Schema({
     draftLayout: {
         type: Array,
         default: []
+    },
+    // 🧾 GST SLAB — India GST: 0, 5, 12, 18, 28
+    gstRate: {
+        type: Number,
+        enum: [0, 5, 12, 18, 28],
+        default: 18
     }
 }, {
     timestamps: true,

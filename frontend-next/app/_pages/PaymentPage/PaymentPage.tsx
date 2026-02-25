@@ -107,13 +107,18 @@ const PaymentPage: React.FC = () => {
      Price Calculation
   ========================= */
   const {
-    subtotal: itemsPrice, // Alias subtotal to itemsPrice from helper
+    subtotal: itemsPrice,
     originalPrice: mrp,
     deliveryCharges,
     discount,
     platformFee,
     tax,
-    totalAmount: rawTotalPayable
+    totalAmount: rawTotalPayable,
+    // 🧾 GST breakdown
+    cgst,
+    sgst,
+    totalGST,
+    hasGST
   } = calculateCartTotals(activeCart, undefined, paymentMethod);
 
   // Apply Coupon Discount
@@ -467,6 +472,24 @@ const PaymentPage: React.FC = () => {
               <span>Platform Fee</span>
               <span>₹{platformFee.toLocaleString('en-IN')}</span>
             </div>
+
+            {/* 🧾 GST Invoice Breakdown */}
+            {hasGST && (
+              <div className="mt-2 pt-2 border-t border-dashed border-gray-200 space-y-1">
+                <div className="price-item text-xs text-gray-500">
+                  <span>CGST ({((cgst / (itemsPrice || 1)) * 100).toFixed(0)}%)</span>
+                  <span>+ ₹{cgst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+                <div className="price-item text-xs text-gray-500">
+                  <span>SGST ({((sgst / (itemsPrice || 1)) * 100).toFixed(0)}%)</span>
+                  <span>+ ₹{sgst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+                <div className="price-item text-xs font-bold text-amber-700">
+                  <span>Total GST</span>
+                  <span>₹{totalGST.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+            )}
 
             {appliedCoupon && (
               <div className="price-item text-green-600 font-bold">

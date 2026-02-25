@@ -103,6 +103,20 @@ const productSchema = new mongoose.Schema(
       enum: ["Men", "Women", "Kids", null],
       default: null,
       index: true  // Index for fast gender-based filtering
+    },
+    // 🧾 GST ENGINE FIELDS
+    // null = inherit gstRate from category. Set a number to override.
+    customGstRate: {
+      type: Number,
+      enum: [null, 0, 5, 12, 18, 28],
+      default: null
+    },
+    // 'exclusive' = price is base price, GST is ADDED on top.
+    // 'inclusive' = price already includes GST, GST must be extracted.
+    priceType: {
+      type: String,
+      enum: ['inclusive', 'exclusive'],
+      default: 'exclusive'
     }
   },
   {

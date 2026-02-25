@@ -64,7 +64,10 @@ export const AdminProductEditor: React.FC = () => {
         description: '',
         isFeatured: false,
         codAvailable: true,
-        prepaidAvailable: true
+        prepaidAvailable: true,
+        // 🧾 GST Fields
+        customGstRate: '' as '' | '0' | '5' | '12' | '18' | '28',  // '' = use category default
+        priceType: 'exclusive' as 'exclusive' | 'inclusive'
     });
 
     const [discount, setDiscount] = useState<number>(0);
@@ -139,13 +142,16 @@ export const AdminProductEditor: React.FC = () => {
                 originalPrice: data.originalPrice || '',
                 image: data.image,
                 category: data.category,
-                subcategory: data.subcategory || '', // Fix for missing property
+                subcategory: data.subcategory || '',
                 genderCategory: data.genderCategory || '',
                 countInStock: data.countInStock || 0,
-                description: cleanDescription, // Load ONLY clean text
+                description: cleanDescription,
                 isFeatured: data.isFeatured || false,
-                codAvailable: data.codAvailable !== false, // Default true
-                prepaidAvailable: data.prepaidAvailable !== false // Default true
+                codAvailable: data.codAvailable !== false,
+                prepaidAvailable: data.prepaidAvailable !== false,
+                // 🧾 GST
+                customGstRate: (data.customGstRate !== null && data.customGstRate !== undefined ? String(data.customGstRate) : '') as '' | '0' | '5' | '12' | '18' | '28',
+                priceType: data.priceType || 'exclusive'
             });
 
             // Load Gallery Images (Exclude Main Image to avoid duplicate)
@@ -505,6 +511,9 @@ export const AdminProductEditor: React.FC = () => {
                 // inventory: undefined,  // REMOVED legacy field
                 specifications: specifications,
                 sku: skuBase,
+                // 🧾 GST
+                customGstRate: formData.customGstRate !== '' ? Number(formData.customGstRate) : null,
+                priceType: formData.priceType,
                 description: formData.description + `\n<!-- METADATA:${JSON.stringify(richData)}-->`
             };
 
@@ -807,6 +816,56 @@ export const AdminProductEditor: React.FC = () => {
                                             </div>
                                             <span className="text-xs font-bold text-gray-600 group-hover:text-purple-600 transition-colors">Prepaid Available</span>
                                         </label>
+                                    </div>
+
+                                    {/* 🧾 GST Settings */}
+                                    <div className="col-span-2 mt-2 p-4 bg-amber-50 rounded-xl border border-dashed border-amber-200 space-y-4">
+                                        <p className="text-xs font-bold text-amber-700 flex items-center gap-1.5">
+                                            🧾 GST Settings <span className="font-normal text-amber-600">(India GST)</span>
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {/* GST Rate */}
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-500">GST Rate</label>
+                                                <select
+                                                    name="customGstRate"
+                                                    value={formData.customGstRate}
+                                                    onChange={handleChange}
+                                                    className="w-full mt-1 px-3 py-2 border rounded-xl text-sm bg-white"
+                                                >
+                                                    <option value="">Category Default</option>
+                                                    <option value="0">0% (Exempt)</option>
+                                                    <option value="5">5%</option>
+                                                    <option value="12">12%</option>
+                                                    <option value="18">18% (Standard)</option>
+                                                    <option value="28">28% (Luxury)</option>
+                                                </select>
+                                                <p className="text-[10px] text-gray-400 mt-1">Leave blank to use category GST rate.</p>
+                                            </div>
+                                            {/* Price Type */}
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-500">Price Type</label>
+                                                <div className="mt-2 flex gap-3">
+                                                    <label className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${formData.priceType === 'exclusive'
+                                                        ? 'bg-amber-500 border-amber-400 text-white shadow-md'
+                                                        : 'bg-white border-gray-200 text-gray-500 hover:border-amber-300'
+                                                        }`}>
+                                                        <input type="radio" name="priceType" value="exclusive" checked={formData.priceType === 'exclusive'} onChange={handleChange} className="sr-only" />
+                                                        + GST
+                                                    </label>
+                                                    <label className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${formData.priceType === 'inclusive'
+                                                        ? 'bg-green-500 border-green-400 text-white shadow-md'
+                                                        : 'bg-white border-gray-200 text-gray-500 hover:border-green-300'
+                                                        }`}>
+                                                        <input type="radio" name="priceType" value="inclusive" checked={formData.priceType === 'inclusive'} onChange={handleChange} className="sr-only" />
+                                                        Incl. GST
+                                                    </label>
+                                                </div>
+                                                <p className="text-[10px] text-gray-400 mt-1">
+                                                    {formData.priceType === 'inclusive' ? 'GST already in price — will be extracted.' : 'GST added on top of price.'}
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="col-span-2"><label className="text-xs font-bold text-gray-500">Description</label><textarea name="description" value={formData.description} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl text-sm" rows={3}></textarea></div>
