@@ -4,8 +4,7 @@ const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/authorize');
 const {
   getDashboardStats, getAllUsers, updateUserStatus, sendUserNotice,
-  bulkUpdatePaymentMode, getGlobalPaymentSettings, updateGlobalPaymentSettings,
-  getAdminNotifications, deleteAdminNotification
+  bulkUpdatePaymentMode, getGlobalPaymentSettings, updateGlobalPaymentSettings
 } = require('../controllers/adminController');
 
 router.route('/dashboard-stats')
@@ -41,12 +40,5 @@ router.route('/products/payment-mode/bulk')
 router.route('/settings/payment')
   .get(protect, authorize(['admin']), getGlobalPaymentSettings)
   .put(protect, authorize(['admin']), updateGlobalPaymentSettings);
-
-// 🔒 Admin Notification Routes
-router.route('/notifications')
-  .get(protect, authorize(['admin']), getAdminNotifications);
-
-router.route('/notifications/:id')
-  .delete(protect, authorize(['admin']), deleteAdminNotification);
 
 module.exports = router;

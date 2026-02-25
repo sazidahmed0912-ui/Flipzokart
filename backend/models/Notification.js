@@ -1,28 +1,36 @@
 const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: ["order", "user", "system", "newOrder", "adminNewOrder"], // Extended to keep compatibility but fulfill requirement
-    default: "order"
+  recipient: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
   },
   message: {
     type: String,
-    required: true
+    required: true,
   },
-  orderId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Order"
+  type: {
+    type: String,
+    enum: ['newOrder', 'orderStatusUpdate', 'lowStock', 'adminNewOrder', 'userRegistration', 'general', 'adminNotice'],
+    default: 'general',
   },
-  recipient: { // Keeping for backward compatibility if needed, but making optional
+  note: {
+    type: String,
+    required: false,
+  },
+  relatedId: { // To link to an order, product, or user
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: false
+    required: false,
   },
   isRead: {
     type: Boolean,
-    default: false
-  }
-}, { timestamps: true });
+    default: false,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 module.exports = mongoose.model('Notification', notificationSchema);

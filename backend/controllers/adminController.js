@@ -573,34 +573,6 @@ const updateGlobalPaymentSettings = async (req, res) => {
   }
 };
 
-// @desc    Get all notifications for admin
-// @route   GET /api/admin/notifications
-// @access  Private/Admin
-const getAdminNotifications = async (req, res) => {
-  try {
-    const notifications = await Notification.find()
-      .sort({ createdAt: -1 });
-
-    res.json({ success: true, notifications });
-  } catch (error) {
-    console.error('Error fetching admin notifications:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
-// @desc    Delete a notification
-// @route   DELETE /api/admin/notifications/:id
-// @access  Private/Admin
-const deleteAdminNotification = async (req, res) => {
-  try {
-    await Notification.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: 'Notification deleted' });
-  } catch (error) {
-    console.error('Error deleting notification:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
 module.exports = {
   getDashboardStats,
   getAllUsers,
@@ -613,7 +585,5 @@ module.exports = {
   updateOrderLocation,
   bulkUpdatePaymentMode,
   getGlobalPaymentSettings,
-  updateGlobalPaymentSettings,
-  getAdminNotifications,
-  deleteAdminNotification
+  updateGlobalPaymentSettings
 };

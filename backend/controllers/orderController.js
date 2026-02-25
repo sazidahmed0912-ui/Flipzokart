@@ -235,12 +235,18 @@ const createOrder = async (req, res) => {
       orderId: order._id
     });
 
-    // 🔒 ULTRA LOCK: Create Persistent Admin Notification
-    await Notification.create({
-      type: 'adminNewOrder',
-      message: `New order received from ${req.user.name || 'Guest'}`,
-      orderId: order._id
-    });
+    // 🔒 ULTRA LOCK: Create Persistent Admin Notification (for ALL admin users)
+    const adminUsers = await require('../models/User').find({ role: 'admin' }).select('_id');
+    if (adminUsers.length > 0) {
+      await Promise.all(adminUsers.map(admin =>
+        Notification.create({
+          recipient: admin._id,
+          type: 'adminNewOrder',
+          message: `New order received from ${req.user.name || 'Guest'} – Order #${order._id.toString().slice(-6)}`,
+          relatedId: order._id
+        })
+      ));
+    }
 
     const io = req.app.get('socketio');
     // Notify customer
@@ -574,12 +580,18 @@ const verifyPayment = async (req, res) => {
       orderId: order._id
     });
 
-    // 🔒 ULTRA LOCK: Create Persistent Admin Notification
-    await Notification.create({
-      type: 'adminNewOrder',
-      message: `New order received from ${req.user.name || 'Guest'}`,
-      orderId: order._id
-    });
+    // 🔒 ULTRA LOCK: Create Persistent Admin Notification (for ALL admin users)
+    const adminUsers = await require('../models/User').find({ role: 'admin' }).select('_id');
+    if (adminUsers.length > 0) {
+      await Promise.all(adminUsers.map(admin =>
+        Notification.create({
+          recipient: admin._id,
+          type: 'adminNewOrder',
+          message: `New order received from ${req.user.name || 'Guest'} – Order #${order._id.toString().slice(-6)}`,
+          relatedId: order._id
+        })
+      ));
+    }
 
     const io = req.app.get('socketio');
     // Notify customer
