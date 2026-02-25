@@ -227,86 +227,7 @@ const createOrder = async (req, res) => {
 
     await order.save();
 
-    // Create Notification for User
-    await Notification.create({
-      recipient: order.user,
-      message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
-      type: 'newOrder',
-      orderId: order._id
-    });
-
-    // 🔒 ULTRA LOCK: Create Persistent Admin Notification (for ALL admin users)
-    const adminUsers = await require('../models/User').find({ role: 'admin' }).select('_id');
-    if (adminUsers.length > 0) {
-      await Promise.all(adminUsers.map(admin =>
-        Notification.create({
-          recipient: admin._id,
-          type: 'adminNewOrder',
-          message: `New order received from ${req.user.name || 'Guest'} – Order #${order._id.toString().slice(-6)}`,
-          relatedId: order._id
-        })
-      ));
-    }
-
-    const io = req.app.get('socketio');
-    // Notify customer
-    io.to(order.user.toString()).emit('notification', {
-      type: 'newOrder',
-      message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
-      orderId: order._id,
-      status: 'success'
-    });
-    // Notify admin
-    io.to('admin').emit('notification', {
-      type: 'adminNewOrder',
-      message: `New Order #${order._id.toString().slice(-6)} from ${req.user.name}`,
-      orderId: order._id,
-      userId: req.user.id,
-      status: 'info'
-    });
-
-    // Broadcast Real-time Monitor Log
-    const broadcastLog = req.app.get("broadcastLog");
-    if (broadcastLog) {
-      broadcastLog("success", `New Order #${order._id.toString().slice(-6)} placed by ${req.user.name}`, "Orders");
-    }
-
-    // Send confirmation email (Non-blocking)
-    sendOrderConfirmationEmail(req.user.email, order).catch(err => console.error("Email send failed:", err));
-
-    // Consume Coupon
-    if (couponSnapshot) {
-      try {
-        console.log('[CouponConsume] Saving usage:', { coupon: couponSnapshot.couponId, user: req.user._id, order: order._id });
-        await CouponUsage.create({
-          coupon: couponSnapshot.couponId,
-          user: req.user._id,
-          order: order._id
-        });
-        await require('../models/Coupon').findByIdAndUpdate(couponSnapshot.couponId, { $inc: { usageCount: 1 } });
-        console.log('[CouponConsume] Done ✓');
-      } catch (couponErr) {
-        console.error('[CouponConsume] Failed to record coupon usage (order still placed):', couponErr.message);
-      }
-    }
-
-    // Update stock
-    await updateStock(validatedProducts);
-    // 📈 Update trending order counts
-    await updateTrendingOrders(validatedProducts);
-
-    for (const item of validatedProducts) {
-      const product = await Product.findById(item.productId);
-      if (product && product.countInStock <= 10) { // Threshold for low stock
-        io.to('admin').emit('notification', {
-          type: 'lowStock',
-          message: `Low stock alert: ${product.name} (ID: ${product._id.toString().slice(-6)}) has only ${product.countInStock} units left!`,
-          productId: product._id,
-          status: 'warning'
-        });
-      }
-    }
-
+    // ✅ RETURN SUCCESS RESPONSE — order is saved, everything below is non-critical
     res.status(201).json({
       message: 'Order created successfully',
       order: {
@@ -315,9 +236,94 @@ const createOrder = async (req, res) => {
         total: order.total
       }
     });
+
+    // ─── Non-critical side effects (failures here do NOT affect the order) ────
+
+    // User notification
+    try {
+      await Notification.create({
+        recipient: order.user,
+        message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
+        type: 'newOrder',
+        relatedId: order._id
+      });
+    } catch (e) { console.warn('[COD] User notification failed:', e.message); }
+
+    // Admin notifications (persistent)
+    try {
+      const adminUsers = await require('../models/User').find({ role: 'admin' }).select('_id');
+      if (adminUsers.length > 0) {
+        await Promise.all(adminUsers.map(admin =>
+          Notification.create({
+            recipient: admin._id,
+            type: 'adminNewOrder',
+            message: `New order received from ${req.user.name || 'Guest'} – Order #${order._id.toString().slice(-6)}`,
+            relatedId: order._id
+          })
+        ));
+      }
+    } catch (e) { console.warn('[COD] Admin notification failed:', e.message); }
+
+    // Socket.IO emits
+    try {
+      const io = req.app.get('socketio');
+      if (io) {
+        io.to(order.user.toString()).emit('notification', {
+          type: 'newOrder',
+          message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
+          relatedId: order._id,
+          status: 'success'
+        });
+        io.to('admin').emit('notification', {
+          type: 'adminNewOrder',
+          message: `New Order #${order._id.toString().slice(-6)} from ${req.user.name || 'Customer'}`,
+          relatedId: order._id,
+          userId: req.user.id,
+          status: 'info'
+        });
+      }
+      const broadcastLog = req.app.get('broadcastLog');
+      if (broadcastLog) broadcastLog('success', `New Order #${order._id.toString().slice(-6)} placed by ${req.user.name || 'Customer'}`, 'Orders');
+    } catch (e) { console.warn('[COD] Socket emit failed:', e.message); }
+
+    // Coupon consumption
+    try {
+      if (couponSnapshot) {
+        await CouponUsage.create({
+          coupon: couponSnapshot.couponId,
+          user: req.user.id,
+          order: order._id
+        });
+        await require('../models/Coupon').findByIdAndUpdate(couponSnapshot.couponId, { $inc: { usageCount: 1 } });
+      }
+    } catch (e) { console.warn('[COD] Coupon usage recording failed:', e.message); }
+
+    // Email confirmation
+    sendOrderConfirmationEmail(req.user.email, order).catch(err => console.error('Email send failed:', err));
+
+    // Stock & trending updates
+    try {
+      await updateStock(validatedProducts);
+      await updateTrendingOrders(validatedProducts);
+      const io = req.app.get('socketio');
+      if (io) {
+        for (const item of validatedProducts) {
+          const product = await Product.findById(item.productId);
+          if (product && product.countInStock <= 10) {
+            io.to('admin').emit('notification', {
+              type: 'lowStock',
+              message: `Low stock alert: ${product.name} has only ${product.countInStock} units left!`,
+              productId: product._id,
+              status: 'warning'
+            });
+          }
+        }
+      }
+    } catch (e) { console.warn('[COD] Stock update failed:', e.message); }
+
   } catch (error) {
-    console.error('Error creating COD order:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error creating COD order:', error.message, error.stack);
+    res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
@@ -578,109 +584,7 @@ const verifyPayment = async (req, res) => {
 
     await order.save();
 
-    // Create Notification for User
-    await Notification.create({
-      recipient: order.user,
-      message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
-      type: 'newOrder',
-      orderId: order._id
-    });
-
-    // 🔒 ULTRA LOCK: Create Persistent Admin Notification (for ALL admin users)
-    const adminUsers = await require('../models/User').find({ role: 'admin' }).select('_id');
-    if (adminUsers.length > 0) {
-      await Promise.all(adminUsers.map(admin =>
-        Notification.create({
-          recipient: admin._id,
-          type: 'adminNewOrder',
-          message: `New order received from ${req.user.name || 'Guest'} – Order #${order._id.toString().slice(-6)}`,
-          relatedId: order._id
-        })
-      ));
-    }
-
-    const io = req.app.get('socketio');
-    // Notify customer
-    io.to(order.user.toString()).emit('notification', {
-      type: 'newOrder',
-      message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
-      orderId: order._id,
-      status: 'success'
-    });
-    // Notify admin
-    io.to('admin').emit('notification', {
-      type: 'adminNewOrder',
-      message: `New Order #${order._id.toString().slice(-6)} from ${req.user.name}`,
-      orderId: order._id,
-      userId: req.user.id,
-      status: 'info'
-    });
-
-    // 💰 BROADCAST REAL-TIME PAYMENT EVENT (PREPAID) 💰
-    io.to('admin').emit('payment:new', {
-      id: razorpay_payment_id || `TRX-${order._id.toString().slice(-6)}`,
-      orderId: order._id,
-      customer: req.user.name,
-      amount: order.total,
-      date: order.createdAt,
-      status: 'Success', // Verified payments are always success
-      method: 'RAZORPAY' // Or order.paymentMethod
-    });
-
-    // 💰 BROADCAST REAL-TIME PAYMENT EVENT 💰
-    io.to('admin').emit('payment:new', {
-      id: order.paymentMethod === 'CDO' ? `TRX-${order._id.toString().slice(-6)}` : `TRX-${order._id.toString().slice(-6)}`,
-      orderId: order._id,
-      customer: req.user.name,
-      amount: order.total,
-      date: order.createdAt,
-      status: order.paymentStatus === 'PAID' ? 'Success' : 'Pending',
-      method: order.paymentMethod
-    });
-
-    // Broadcast Real-time Monitor Log
-    const broadcastLog = req.app.get("broadcastLog");
-    if (broadcastLog) {
-      broadcastLog("info", `Payment verified for Order #${order._id.toString().slice(-6)}`, "Payments");
-      broadcastLog("success", `New Order #${order._id.toString().slice(-6)} placed (Pre-paid)`, "Orders");
-    }
-
-    // Send confirmation email (Non-blocking)
-    sendOrderConfirmationEmail(req.user.email, order).catch(err => console.error("Email send failed:", err));
-
-    // Consume Coupon
-    if (couponSnapshot) {
-      try {
-        console.log('[CouponConsume] Saving usage:', { coupon: couponSnapshot.couponId, user: req.user._id, order: order._id });
-        await CouponUsage.create({
-          coupon: couponSnapshot.couponId,
-          user: req.user._id,
-          order: order._id
-        });
-        await require('../models/Coupon').findByIdAndUpdate(couponSnapshot.couponId, { $inc: { usageCount: 1 } });
-        console.log('[CouponConsume] Done ✓');
-      } catch (couponErr) {
-        console.error('[CouponConsume] Failed to record coupon usage (order still placed):', couponErr.message);
-      }
-    }
-
-    // Update stock
-    await updateStock(products);
-    // 📈 Update trending order counts
-    await updateTrendingOrders(products);
-
-    for (const item of products) {
-      const product = await Product.findById(item.productId);
-      if (product && product.countInStock <= 10) { // Threshold for low stock
-        io.to('admin').emit('notification', {
-          type: 'lowStock',
-          message: `Low stock alert: ${product.name} (ID: ${product._id.toString().slice(-6)}) has only ${product.countInStock} units left!`,
-          productId: product._id,
-          status: 'warning'
-        });
-      }
-    }
-
+    // ✅ RETURN SUCCESS RESPONSE — order is saved, everything below is non-critical
     res.json({
       message: 'Payment verified and order created successfully',
       order: {
@@ -689,8 +593,105 @@ const verifyPayment = async (req, res) => {
         total: order.total
       }
     });
+
+    // ─── Non-critical side effects (failures here do NOT affect the order) ────
+
+    // User notification
+    try {
+      await Notification.create({
+        recipient: order.user,
+        message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
+        type: 'newOrder',
+        relatedId: order._id
+      });
+    } catch (e) { console.warn('[RZP] User notification failed:', e.message); }
+
+    // Admin notifications (persistent)
+    try {
+      const adminUsers = await require('../models/User').find({ role: 'admin' }).select('_id');
+      if (adminUsers.length > 0) {
+        await Promise.all(adminUsers.map(admin =>
+          Notification.create({
+            recipient: admin._id,
+            type: 'adminNewOrder',
+            message: `New order received from ${req.user.name || 'Guest'} – Order #${order._id.toString().slice(-6)}`,
+            relatedId: order._id
+          })
+        ));
+      }
+    } catch (e) { console.warn('[RZP] Admin notification failed:', e.message); }
+
+    // Socket.IO emits
+    try {
+      const io = req.app.get('socketio');
+      if (io) {
+        io.to(order.user.toString()).emit('notification', {
+          type: 'newOrder',
+          message: `Your order #${order._id.toString().slice(-6)} has been placed successfully!`,
+          relatedId: order._id,
+          status: 'success'
+        });
+        io.to('admin').emit('notification', {
+          type: 'adminNewOrder',
+          message: `New Order #${order._id.toString().slice(-6)} from ${req.user.name || 'Customer'}`,
+          relatedId: order._id,
+          userId: req.user.id,
+          status: 'info'
+        });
+        io.to('admin').emit('payment:new', {
+          id: razorpay_payment_id || `TRX-${order._id.toString().slice(-6)}`,
+          orderId: order._id,
+          customer: req.user.name || 'Customer',
+          amount: order.total,
+          date: order.createdAt,
+          status: 'Success',
+          method: 'RAZORPAY'
+        });
+      }
+      const broadcastLog = req.app.get('broadcastLog');
+      if (broadcastLog) {
+        broadcastLog('info', `Payment verified for Order #${order._id.toString().slice(-6)}`, 'Payments');
+        broadcastLog('success', `New Order #${order._id.toString().slice(-6)} placed (Pre-paid)`, 'Orders');
+      }
+    } catch (e) { console.warn('[RZP] Socket emit failed:', e.message); }
+
+    // Coupon consumption
+    try {
+      if (couponSnapshot) {
+        await CouponUsage.create({
+          coupon: couponSnapshot.couponId,
+          user: req.user.id,
+          order: order._id
+        });
+        await require('../models/Coupon').findByIdAndUpdate(couponSnapshot.couponId, { $inc: { usageCount: 1 } });
+      }
+    } catch (e) { console.warn('[RZP] Coupon usage recording failed:', e.message); }
+
+    // Email confirmation
+    sendOrderConfirmationEmail(req.user.email, order).catch(err => console.error('Email send failed:', err));
+
+    // Stock & trending updates
+    try {
+      await updateStock(products);
+      await updateTrendingOrders(products);
+      const io = req.app.get('socketio');
+      if (io) {
+        for (const item of products) {
+          const product = await Product.findById(item.productId);
+          if (product && product.countInStock <= 10) {
+            io.to('admin').emit('notification', {
+              type: 'lowStock',
+              message: `Low stock alert: ${product.name} has only ${product.countInStock} units left!`,
+              productId: product._id,
+              status: 'warning'
+            });
+          }
+        }
+      }
+    } catch (e) { console.warn('[RZP] Stock update failed:', e.message); }
+
   } catch (error) {
-    console.error('Error verifying payment:', error);
+    console.error('Error verifying payment:', error.message, error.stack);
     res.status(500).json({ message: 'Payment verification failed' });
   }
 };
