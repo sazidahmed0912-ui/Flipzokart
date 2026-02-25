@@ -460,14 +460,13 @@ export const ProductDetails: React.FC = () => {
                           images: galleryImages,
                         };
                         // @ts-ignore
-                        addToCart(cartItem, quantity); // 🟢 PASS QUANTITY
+                        addToCart(cartItem, quantity); // 🟢 PASS QUANTITY — toast shown by addToCart in Context
                         fbAddToCart({
                           content_name: product.name,
                           content_ids: [product.id],
                           value: currentPrice * quantity, // 🟢 TOTAL VALUE
                           currency: 'INR',
                         });
-                        addToast('success', 'Added to Cart');
                       }}
                       disabled={!canAddToCart}
                       className="w-full py-4 bg-[#ff9f00] hover:bg-[#ff9000] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-[0.98] flex items-center justify-center gap-2"
