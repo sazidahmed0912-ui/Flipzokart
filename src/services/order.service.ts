@@ -44,7 +44,7 @@ export class OrderService {
             couponSnapshot = {
                 couponId: validatedCouponContext.couponId,
                 code: validatedCouponContext.couponCode,
-                type: validatedCouponContext.type,
+                discountType: validatedCouponContext.type,
                 discountAmount: validatedCouponContext.discountAmount,
                 appliedProducts: validatedCouponContext.appliedProducts,
                 freeItems: validatedCouponContext.freeItems

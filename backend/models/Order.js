@@ -99,7 +99,7 @@ const orderSchema = new mongoose.Schema({
   couponSnapshot: {
     couponId: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
     code: String,
-    type: String,
+    discountType: String,   // renamed from 'type' — avoids Mongoose reserved keyword conflict
     discountAmount: Number,
     appliedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
     freeItems: [{

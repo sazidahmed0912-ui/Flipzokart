@@ -179,7 +179,7 @@ const createOrder = async (req, res) => {
           couponSnapshot = {
             couponId: couponResult.couponId,
             code: couponResult.couponCode,
-            type: couponResult.type,
+            discountType: couponResult.type,
             discountAmount: couponResult.discountAmount,
             appliedProducts: couponResult.appliedProducts,
             freeItems: couponResult.freeItems
@@ -532,7 +532,7 @@ const verifyPayment = async (req, res) => {
           couponSnapshot = {
             couponId: couponResult.couponId,
             code: couponResult.couponCode,
-            type: couponResult.type,
+            discountType: couponResult.type,
             discountAmount: couponResult.discountAmount,
             appliedProducts: couponResult.appliedProducts,
             freeItems: couponResult.freeItems
