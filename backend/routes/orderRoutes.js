@@ -4,6 +4,7 @@ const protect = require('../middleware/protect');
 
 const {
   createOrder,
+  previewOrder,
   createRazorpayOrder,
   verifyPayment,
   calculateShipping,
@@ -15,7 +16,10 @@ const {
   deleteOrder
 } = require('../controllers/orderController');
 
+// 🏇 Server-authoritative price preview (GST + shipping + coupon) — READ ONLY
+router.post('/preview', protect, previewOrder);
 router.post('/create', protect, createOrder);
+
 router.post('/razorpay', protect, createRazorpayOrder);
 router.post('/verify-payment', protect, verifyPayment);
 router.post('/calculate-shipping', calculateShipping);

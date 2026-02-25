@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const Product = require('../models/Product');
-const { calculateOrderSummary, resolveDeliveryCharge } = require('../utils/priceEngine');
+const { calculateCartSummary } = require('../utils/priceEngine');
 const couponController = require('./couponController');
 
 // @desc    Get user's cart
@@ -161,27 +161,22 @@ const cartSummary = async (req, res) => {
             return res.status(404).json({ message: 'No valid products found' });
         }
 
-        // Build engine-ready items (flat format with gstRate + priceType from DB)
+        // Build engine-ready items
         const engineItems = cartItems.map(cartItem => {
             const pid = (cartItem.productId || cartItem.id)?.toString();
             const product = dbProducts.find(p => p._id.toString() === pid);
             if (!product) return null;
+
             return {
-                price: Number(product.price || 0),
-                quantity: Number(cartItem.quantity) || 1,
-                gstRate: product.customGstRate ?? 18,  // product override or default slab
-                priceType: product.priceType || 'exclusive',
-                // Metadata for cart display
-                name: product.name,
-                image: product.thumbnail || product.images?.[0] || product.image || '',
-                productId: product._id.toString()
+                product: {
+                    ...product,
+                    // No categoryGstRate override needed — customGstRate on product takes priority
+                    // If future migration adds Category ref, inject category.gstRate here
+                    categoryGstRate: null
+                },
+                quantity: Number(cartItem.quantity) || 1
             };
         }).filter(Boolean);
-
-        // Estimate subtotal+GST to resolve delivery
-        const prelimSubtotal = engineItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
-        const deliveryCharge = resolveDeliveryCharge(prelimSubtotal, paymentMethod);
-        const platformFee = 3;
 
         // 🎟️ Validate coupon server-side
         let couponDiscount = 0;
@@ -190,7 +185,7 @@ const cartSummary = async (req, res) => {
             try {
                 const couponResult = await couponController.validateAndCalculateDiscount(
                     req.user.id,
-                    engineItems.map(i => ({ price: i.price, quantity: i.quantity, productId: i.productId })),
+                    engineItems.map(i => ({ ...i.product, quantity: i.quantity })),
                     couponCode,
                     paymentMethod
                 );
@@ -200,18 +195,17 @@ const cartSummary = async (req, res) => {
                 }
             } catch (err) {
                 console.warn('[CartSummary] Coupon validation failed:', err.message);
+                // Non-fatal — proceed without coupon
             }
         }
 
-        // 🏗️ Run master price engine (read-only — no DB write here)
-        const summary = calculateOrderSummary({
-            items: engineItems,
-            deliveryCharge,
-            platformFee,
-            discount: couponDiscount
-        });
+        // 🏗️ Run through master price engine
+        const summary = calculateCartSummary(engineItems, couponDiscount, paymentMethod);
 
-        return res.json({ ...summary, coupon: couponMeta });
+        return res.json({
+            ...summary,
+            coupon: couponMeta
+        });
 
     } catch (error) {
         console.error('[CartSummary] Error:', error);

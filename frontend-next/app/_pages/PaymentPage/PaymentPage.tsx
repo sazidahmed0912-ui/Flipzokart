@@ -119,7 +119,7 @@ const PaymentPage: React.FC = () => {
       try {
         const token = localStorage.getItem('token');
         const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || ''}/api/cart/summary`,
+          `${process.env.NEXT_PUBLIC_API_URL || ''}/api/order/preview`,
           {
             cartItems: activeCart.map(i => ({ productId: i.productId || i.id, quantity: i.quantity })),
             couponCode: appliedCoupon?.code || undefined,
@@ -129,7 +129,7 @@ const PaymentPage: React.FC = () => {
         );
         setServerSummary(data);
       } catch (err) {
-        console.warn('[PaymentPage] cart/summary API failed, falling back to local', err);
+        console.warn('[PaymentPage] /api/order/preview failed', err);
       } finally {
         setSummaryLoading(false);
       }
@@ -138,17 +138,17 @@ const PaymentPage: React.FC = () => {
     fetchSummary();
   }, [activeCart, appliedCoupon, paymentMethod]);
 
-  // Resolved display values — server wins over local fallback
+  // ✅ All display values from server — canonical finalPriceEngine output
   const itemsPrice = serverSummary?.subtotal ?? 0;
   const mrp = serverSummary?.mrp ?? itemsPrice;
-  const discount = serverSummary?.mrpDiscount ?? 0;
+  const discount = serverSummary?.couponDiscount ?? (appliedCoupon?.discount || 0);
   const deliveryCharges = serverSummary?.deliveryCharge ?? 0;
   const platformFee = serverSummary?.platformFee ?? 3;
   const cgst = serverSummary?.cgst ?? 0;
   const sgst = serverSummary?.sgst ?? 0;
   const totalGST = serverSummary?.totalGST ?? 0;
   const hasGST = totalGST > 0;
-  const tax = totalGST;  // Alias for backward compat
+  const tax = totalGST;
   const couponDiscount = serverSummary?.couponDiscount ?? (appliedCoupon?.discount || 0);
   const totalPayable = serverSummary?.grandTotal ?? 0;
 

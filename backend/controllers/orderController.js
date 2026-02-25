@@ -7,7 +7,8 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const { sendOrderConfirmationEmail } = require('../utils/email');
-const { calculateOrderSummary, resolveDeliveryCharge } = require('../utils/priceEngine'); // 🏗️ MASTER PRICE ENGINE
+const { calculateFinalOrder, calculateDeliveryCharge } = require('../utils/finalPriceEngine'); // 🔒 FINAL MASTER ENGINE
+
 
 // Helper function to update stock
 const updateStock = async (products) => {
@@ -33,8 +34,81 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 🏇 PREVIEW ORDER — server-authoritative price summary (READ-ONLY, no save)
+//    Called by: POST /api/order/preview (PaymentPage)
+//    Same engine as createOrder but does NOT save. Ensures Cart = Checkout = Order.
+// ─────────────────────────────────────────────────────────────────────────────
+const previewOrder = async (req, res) => {
+  try {
+    const { cartItems = [], couponCode, paymentMethod = 'COD' } = req.body;
+
+    if (!cartItems.length) return res.status(400).json({ message: 'cartItems required' });
+
+    // Fetch DB products + real GST rates
+    const dbItems = await Promise.all(
+      cartItems.map(async (ci) => {
+        const id = ci.productId || ci.id;
+        if (!mongoose.Types.ObjectId.isValid(id)) return null;
+        const p = await Product.findById(id).populate('category');
+        if (!p) return null;
+        return {
+          _id: p._id,
+          name: p.name,
+          image: p.thumbnail || (p.images && p.images[0]) || p.image || '',
+          mrp: p.originalPrice || p.price,
+          sellingPrice: p.price,
+          quantity: Number(ci.quantity) || 1,
+          gstRate: p.customGstRate ?? p.category?.gstRate ?? 18,
+          priceType: p.priceType || 'exclusive'
+        };
+      })
+    );
+    const validItems = dbItems.filter(Boolean);
+    if (!validItems.length) return res.status(400).json({ message: 'No valid products found' });
+
+    // Validate coupon server-side
+    let couponDiscount = 0;
+    let couponMeta = null;
+    if (couponCode) {
+      try {
+        const couponResult = await couponController.validateAndCalculateDiscount(
+          req.user.id,
+          validItems.map(i => ({ productId: i._id, quantity: i.quantity, price: i.sellingPrice })),
+          couponCode,
+          paymentMethod
+        );
+        if (couponResult?.isValid) {
+          couponDiscount = couponResult.discountAmount || 0;
+          couponMeta = { code: couponCode, discount: couponDiscount };
+        }
+      } catch (e) {
+        console.warn('[Preview] Coupon validation skipped:', e.message);
+      }
+    }
+
+    // Delivery charge
+    const estimatedTotal = validItems.reduce((s, i) => s + i.sellingPrice * i.quantity, 0);
+    const deliveryCharge = calculateDeliveryCharge(estimatedTotal, paymentMethod);
+
+    // Run final engine — same logic as createOrder
+    const summary = calculateFinalOrder({
+      items: validItems,
+      deliveryCharge,
+      platformFee: 3,
+      couponDiscount
+    });
+
+    return res.json({ ...summary, coupon: couponMeta });
+  } catch (err) {
+    console.error('[previewOrder]', err);
+    return res.status(500).json({ message: 'Preview failed', error: err.message });
+  }
+};
+
 // Create order for COD
 const createOrder = async (req, res) => {
+
   try {
     console.log('Creating order with user:', req.user?.id);
     console.log('Request body:', req.body);
@@ -154,27 +228,26 @@ const createOrder = async (req, res) => {
     }
 
     // -------------------------------------------------------------------------
-    // 🛡️ MASTER PRICE ENGINE — ONE CALCULATION, THEN FREEZE (COD)
+    // 🔒 FINAL PRICE ENGINE — ONE calculation, then FREEZE
     // -------------------------------------------------------------------------
-    const engineItems = finalOrderProducts.map(fp => ({
-      price: Number(fp.price || 0),
-      quantity: Number(fp.quantity || 1),
-      gstRate: 18,           // Default slab (product.customGstRate fetched in cart/summary API)
-      priceType: 'exclusive',  // Default; set per product in cart summary flow
-      // Snapshot metadata
-      productId: fp.productId,
-      productName: fp.productName,
-      image: fp.image,
-      mrp: fp.mrp,
-      color: fp.color,
-      size: fp.size,
-      variantId: fp.variantId,
-      selectedVariants: fp.selectedVariants
-    }));
+    // Fetch real GST rates from DB for each product
+    const dbProducts = await Promise.all(
+      finalOrderProducts.map(fp => Product.findById(fp.productId).populate('category'))
+    );
 
-    const prelimSubtotal = engineItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
-    const deliveryChargeCOD = resolveDeliveryCharge(prelimSubtotal, 'COD');
-    const platformFeeCOD = 3;
+    const engineItems = finalOrderProducts.map((fp, idx) => {
+      const db = dbProducts[idx];
+      return {
+        _id: fp.productId,
+        name: fp.productName,
+        image: fp.image,
+        mrp: fp.mrp || fp.price,
+        sellingPrice: fp.price,
+        quantity: fp.quantity,
+        gstRate: db?.customGstRate ?? db?.category?.gstRate ?? 18,
+        priceType: db?.priceType || 'exclusive'
+      };
+    });
 
     // 🎟️ Re-validate coupon server-side
     let couponSnapshot = undefined;
@@ -182,7 +255,10 @@ const createOrder = async (req, res) => {
     if (req.body.couponCode) {
       try {
         const couponResult = await couponController.validateAndCalculateDiscount(
-          req.user.id, finalOrderProducts, req.body.couponCode, 'COD'
+          req.user.id,
+          finalOrderProducts,
+          req.body.couponCode,
+          'COD'
         );
         if (couponResult && couponResult.isValid) {
           couponDiscount = couponResult.discountAmount || 0;
@@ -196,35 +272,43 @@ const createOrder = async (req, res) => {
           };
         }
       } catch (err) {
-        console.warn(`[CouponGuard] Coupon validation failed:`, err.message);
+        console.warn(`[CouponGuard] Failed to apply coupon ${req.body.couponCode}:`, err.message);
         return res.status(400).json({ message: err.message, errorCode: 'INVALID_COUPON' });
       }
     }
 
-    // 🔒 FREEZE — run master engine, ONE time, values locked forever
-    const summary = calculateOrderSummary({
+    // 🔒 ONE final calculation. Values locked forever.
+    const estimatedTotal = engineItems.reduce((s, i) => s + i.sellingPrice * i.quantity, 0);
+    const deliveryChargeAmt = calculateDeliveryCharge(estimatedTotal, 'COD');
+
+    const summary = calculateFinalOrder({
       items: engineItems,
-      deliveryCharge: deliveryChargeCOD,
-      platformFee: platformFeeCOD,
-      discount: couponDiscount
+      deliveryCharge: deliveryChargeAmt,
+      platformFee: 3,
+      couponDiscount
     });
-    console.log('🛡️ [COD] Frozen Price Summary:', JSON.stringify(summary, null, 2));
+    console.log('🔒 Frozen Summary:', JSON.stringify(summary, null, 2));
 
-
-    // Map engine items back to order product rows (with full GST freeze per item)
-    const frozenProducts = summary.items.map((engineItem, idx) => ({
+    // Merge frozen engine output into product rows — canonical field names
+    const frozenProducts = summary.items.map((eng, idx) => ({
       ...finalOrderProducts[idx],
-      // 🔒 FROZEN GST PER ITEM
-      unitPrice: engineItem.unitPrice,
-      baseAmount: engineItem.baseAmount,
-      gstRate: engineItem.gstRate,
-      cgst: engineItem.cgst,
-      sgst: engineItem.sgst,
-      totalGST: engineItem.totalGST,
-      finalAmount: engineItem.finalAmount
+      // 🔒 Canonical final-engine fields
+      mrp: eng.mrp,
+      sellingPrice: eng.sellingPrice,
+      itemSubtotal: eng.itemSubtotal,
+      itemGST: eng.itemGST,
+      itemFinal: eng.itemFinal,
+      gstRate: eng.gstRate,
+      // Legacy-compat aliases
+      unitPrice: eng.sellingPrice,
+      baseAmount: eng.itemSubtotal,
+      cgst: eng.itemGST / 2,
+      sgst: eng.itemGST / 2,
+      totalGST: eng.itemGST,
+      finalAmount: eng.itemFinal
     }));
 
-    // Create order with ALL values frozen from engine (no frontend numbers)
+    // 🔒 ALL frozen from finalPriceEngine — no frontend numbers used
     const order = new Order({
       user: req.user.id,
       products: frozenProducts,
@@ -234,20 +318,24 @@ const createOrder = async (req, res) => {
       paymentModeSnapshot,
       couponSnapshot,
 
-      // 🔒 ORDER-LEVEL FROZEN SUMMARY
+      // Canonical final-engine field names
       subtotal: summary.subtotal,
-      itemsPrice: summary.subtotal,
-      deliveryCharges: summary.deliveryCharge,
-      discount: summary.couponDiscount,
-      platformFee: summary.platformFee,
-      tax: summary.totalGST,         // backward compat alias
       totalGST: summary.totalGST,
       cgst: summary.cgst,
       sgst: summary.sgst,
+      deliveryCharge: summary.deliveryCharge,
+      platformFee: summary.platformFee,
+      couponDiscount: summary.couponDiscount,
+      grandTotal: summary.grandTotal,
       mrp: summary.mrp,
+
+      // Legacy-compat aliases (read by old frontend code)
+      itemsPrice: summary.subtotal,
+      deliveryCharges: summary.deliveryCharge,
+      discount: summary.couponDiscount,
+      tax: summary.totalGST,
       total: summary.grandTotal,
       finalAmount: summary.grandTotal,
-      grandTotal: summary.grandTotal,
 
       orderSummary: {
         itemsPrice: summary.subtotal,
@@ -546,39 +634,24 @@ const verifyPayment = async (req, res) => {
       }
     }
 
-    // -------------------------------------------------------------------------
-    // 🛡️ MASTER PRICE ENGINE — ONE CALCULATION, THEN FREEZE (RAZORPAY)
-    // -------------------------------------------------------------------------
-    const engineItemsRzp = finalOrderProducts.map(fp => ({
-      price: fp.price,
-      quantity: fp.quantity,
-      gstRate: 18,          // Default slab; product.customGstRate will be read in cart/summary API
-      priceType: 'exclusive',
-      // Pass through snapshot fields
-      productId: fp.productId,
-      productName: fp.productName,
-      image: fp.image,
-      mrp: fp.mrp,
-      color: fp.color,
-      size: fp.size,
-      variantId: fp.variantId,
-      selectedVariants: fp.selectedVariants
-    }));
+    // Calculate using 'RAZORPAY' (Prepaid) logic
+    let priceDetails = calculateOrderTotals(productsForCalc, 'RAZORPAY');
 
-    const subtotalPlusGST = engineItemsRzp.reduce((acc, i) => acc + i.price * i.quantity * (1 + i.gstRate / 100), 0);
-    const deliveryChargeRzp = resolveDeliveryCharge(subtotalPlusGST, 'RAZORPAY');
-    const platformFeeRzp = 3;
-
-    // 🎟️ Re-validate coupon server-side
+    // 🎟️ STRICT COUPON ENGINE INGESTION (RAZORPAY)
     let couponSnapshot = undefined;
-    let couponDiscountRzp = 0;
     if (req.body.couponCode) {
       try {
         const couponResult = await couponController.validateAndCalculateDiscount(
-          req.user.id, finalOrderProducts, req.body.couponCode, 'RAZORPAY'
+          req.user.id,
+          finalOrderProducts,
+          req.body.couponCode,
+          'RAZORPAY'
         );
         if (couponResult && couponResult.isValid) {
-          couponDiscountRzp = couponResult.discountAmount || 0;
+          priceDetails.discount = (priceDetails.discount || 0) + couponResult.discountAmount;
+          priceDetails.finalAmount = Math.max(0, priceDetails.totalAmount - couponResult.discountAmount);
+          priceDetails.totalAmount = priceDetails.finalAmount; // update total payable
+
           couponSnapshot = {
             couponId: couponResult.couponId,
             code: couponResult.couponCode,
@@ -589,67 +662,47 @@ const verifyPayment = async (req, res) => {
           };
         }
       } catch (err) {
-        console.warn(`[CouponGuard-Rzp] Coupon validation failed:`, err.message);
+        console.warn(`[CouponGuard] Failed to apply coupon ${req.body.couponCode}:`, err.message);
+        // Razorpay already charged them at this point potentially (based on checkout UI logic)
+        // So if coupon fails now, we might need to handle refund. But we reject order to be safe.
         return res.status(400).json({ message: err.message, errorCode: 'INVALID_COUPON' });
       }
     }
 
-    // 🔒 FREEZE — same engine, same result, all values locked
-    const summaryRzp = calculateOrderSummary({
-      items: engineItemsRzp,
-      deliveryCharge: deliveryChargeRzp,
-      platformFee: platformFeeRzp,
-      discount: couponDiscountRzp
-    });
-    console.log('🛡️ [Razorpay] Frozen Price Summary:', JSON.stringify(summaryRzp, null, 2));
-
-    // Map engine items back with full GST freeze per item
-    const frozenProductsRzp = summaryRzp.items.map((engineItem, idx) => ({
-      ...finalOrderProducts[idx],
-      unitPrice: engineItem.unitPrice,
-      baseAmount: engineItem.baseAmount,
-      gstRate: engineItem.gstRate,
-      cgst: engineItem.cgst,
-      sgst: engineItem.sgst,
-      totalGST: engineItem.totalGST,
-      finalAmount: engineItem.finalAmount
-    }));
-
-    // Create order with ALL values frozen from engine
+    // Create order after successful payment
+    console.log("ORDER ITEMS SNAPSHOT (RAZORPAY)", products); // 🧪 DEBUG CONFIRMATION
     const order = new Order({
       user: req.user.id,
-      products: frozenProductsRzp,
+      products,
       shippingAddress: address,
       paymentMethod: 'RAZORPAY',
       paymentStatus: 'PAID',
       status: 'Processing',
-      paymentModeSnapshot: paymentModeSnapshotRzp,
-      couponSnapshot,
-      razorpayOrderId: razorpay_order_id,
-      razorpayPaymentId: razorpay_payment_id,
+      paymentModeSnapshot: paymentModeSnapshotRzp, // 🔒 ULTRA LOCK: Audit trail
+      couponSnapshot, // 🎟️ COUPON METADATA
 
-      // 🔒 ORDER-LEVEL FROZEN SUMMARY
-      subtotal: summaryRzp.subtotal,
-      itemsPrice: summaryRzp.subtotal,
-      deliveryCharges: summaryRzp.deliveryCharge,
-      discount: summaryRzp.discount,
-      platformFee: summaryRzp.platformFee,
-      tax: summaryRzp.totalGST,
-      totalGST: summaryRzp.totalGST,
-      cgst: summaryRzp.cgst,
-      sgst: summaryRzp.sgst,
-      total: summaryRzp.grandTotal,
-      finalAmount: summaryRzp.grandTotal,
-      grandTotal: summaryRzp.grandTotal,
+      // Use Server-Calculated Values
+      subtotal: priceDetails.itemsPrice,
+      itemsPrice: priceDetails.itemsPrice,
+      deliveryCharges: priceDetails.deliveryCharges,
+      discount: priceDetails.discount,
+      platformFee: priceDetails.platformFee,
+      tax: priceDetails.tax,
+      mrp: priceDetails.mrp,
+      total: priceDetails.totalAmount,
+      finalAmount: priceDetails.finalAmount,
 
       orderSummary: {
-        itemsPrice: summaryRzp.subtotal,
-        tax: summaryRzp.totalGST,
-        deliveryCharges: summaryRzp.deliveryCharge,
-        discount: summaryRzp.discount,
-        platformFee: summaryRzp.platformFee,
-        finalAmount: summaryRzp.grandTotal
-      }
+        itemsPrice: priceDetails.itemsPrice,
+        tax: priceDetails.tax,
+        deliveryCharges: priceDetails.deliveryCharges,
+        discount: priceDetails.discount,
+        platformFee: priceDetails.platformFee,
+        finalAmount: priceDetails.finalAmount,
+        mrp: priceDetails.mrp
+      },
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id
     });
 
     await order.save();
@@ -1117,6 +1170,7 @@ const deleteOrder = async (req, res) => {
 
 module.exports = {
   createOrder,
+  previewOrder,
   createRazorpayOrder,
   verifyPayment,
   calculateShipping,
@@ -1127,3 +1181,4 @@ module.exports = {
   updateOrderStatus,
   deleteOrder
 };
+
