@@ -17,7 +17,7 @@ import {
 } from '@/app/services/api';
 import { useApp } from '@/app/store/Context';
 import { toast } from 'react-toastify';
-import { calculateCartTotals } from '@/app/utils/priceHelper';
+import axios from 'axios';
 import './PaymentPage.css';
 /* =========================
    Razorpay ENV SAFE ACCESS
@@ -104,30 +104,53 @@ const PaymentPage: React.FC = () => {
   const activeCart = buyNowItem ? [buyNowItem] : cart;
 
   /* =========================
-     Price Calculation
+     Server-Authoritative Price Summary
+     ❌ No local GST / discount / shipping calculation.
+     ✅ All values come from /api/cart/summary.
   ========================= */
-  const {
-    subtotal: itemsPrice,
-    originalPrice: mrp,
-    deliveryCharges,
-    discount,
-    platformFee,
-    tax,
-    totalAmount: rawTotalPayable,
-    // 🧾 GST breakdown
-    cgst,
-    sgst,
-    totalGST,
-    hasGST
-  } = calculateCartTotals(activeCart, undefined, paymentMethod);
+  const [serverSummary, setServerSummary] = useState<any>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
-  // Apply Coupon Discount
-  let totalPayable = rawTotalPayable;
-  let couponDiscount = 0;
-  if (appliedCoupon) {
-    couponDiscount = appliedCoupon.discount || 0;
-    totalPayable = Math.max(0, totalPayable - couponDiscount);
-  }
+  useEffect(() => {
+    if (!activeCart || activeCart.length === 0) return;
+
+    const fetchSummary = async () => {
+      setSummaryLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const { data } = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL || ''}/api/cart/summary`,
+          {
+            cartItems: activeCart.map(i => ({ productId: i.productId || i.id, quantity: i.quantity })),
+            couponCode: appliedCoupon?.code || undefined,
+            paymentMethod: paymentMethod || 'COD'
+          },
+          { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+        );
+        setServerSummary(data);
+      } catch (err) {
+        console.warn('[PaymentPage] cart/summary API failed, falling back to local', err);
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+
+    fetchSummary();
+  }, [activeCart, appliedCoupon, paymentMethod]);
+
+  // Resolved display values — server wins over local fallback
+  const itemsPrice = serverSummary?.subtotal ?? 0;
+  const mrp = serverSummary?.mrp ?? itemsPrice;
+  const discount = serverSummary?.mrpDiscount ?? 0;
+  const deliveryCharges = serverSummary?.deliveryCharge ?? 0;
+  const platformFee = serverSummary?.platformFee ?? 3;
+  const cgst = serverSummary?.cgst ?? 0;
+  const sgst = serverSummary?.sgst ?? 0;
+  const totalGST = serverSummary?.totalGST ?? 0;
+  const hasGST = totalGST > 0;
+  const tax = totalGST;  // Alias for backward compat
+  const couponDiscount = serverSummary?.couponDiscount ?? (appliedCoupon?.discount || 0);
+  const totalPayable = serverSummary?.grandTotal ?? 0;
 
   // 🛡️ Payment Availability Logic
   // If ANY item in cart has codAvailable === false, then COD is disabled for entire order.
