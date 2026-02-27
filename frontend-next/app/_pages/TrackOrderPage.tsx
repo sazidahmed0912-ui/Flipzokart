@@ -424,7 +424,11 @@ export const TrackOrderPage: React.FC = () => {
                 {!isCancelled && order.status !== 'DELIVERED' && order.status !== 'Delivered' && (
                     <div className="bg-[#effcf5] border border-[#dcfce7] p-3 md:p-4 rounded-sm mb-4 flex justify-between items-center px-4 md:px-6">
                         <div className="flex items-center gap-2">
-                            {isOutForDelivery ? (
+                            {order.deliveryText && (order.status === 'Shipped' || order.status === 'SHIPPED' || isOutForDelivery) ? (
+                                <span className="text-sm md:text-base text-gray-800">
+                                    <span className="font-bold text-green-700">{order.deliveryText}</span>
+                                </span>
+                            ) : isOutForDelivery ? (
                                 <span className="text-sm md:text-base text-gray-800">
                                     <span className="font-bold text-green-700">🚚 Arriving Today by 11 AM</span>
                                 </span>
@@ -651,7 +655,9 @@ export const TrackOrderPage: React.FC = () => {
                                 <div className="absolute -left-[19px] top-0 w-4 h-4 rounded-full bg-green-500 border-[3px] border-white ring-1 ring-green-500"></div>
                                 <div>
                                     <p className="font-bold text-sm text-gray-900">{displayStatus}</p>
-                                    {isOutForDelivery ? (
+                                    {order.deliveryText && (order.status === 'Shipped' || order.status === 'SHIPPED' || isOutForDelivery) ? (
+                                        <p className="text-xs font-semibold text-green-600 mt-0.5">{order.deliveryText}</p>
+                                    ) : isOutForDelivery ? (
                                         <p className="text-xs font-semibold text-green-600 mt-0.5">🚚 Arriving Today by 11 AM</p>
                                     ) : order.expectedDelivery ? (
                                         <p className="text-xs text-gray-500 mt-0.5">Arriving by {formatDate(order.expectedDelivery)}</p>

@@ -32,7 +32,7 @@ export class AdminController {
 
     updateOrderStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const id = req.params.id as string;
-        const { status, note } = req.body;
+        const { status, note, deliveryText } = req.body;
 
         const order = await prisma.order.findUnique({ where: { id } });
         if (!order) {
@@ -54,6 +54,8 @@ export class AdminController {
                 orderStatus: status, // Update both if schema uses different names, but trying to standardize
                 // @ts-ignore
                 status: status,      // Prisma might have one or the other, strictly updating mapped field
+                // @ts-ignore - fresh schema change
+                deliveryText: deliveryText !== undefined ? deliveryText : order.deliveryText,
                 statusHistory: [
                     // @ts-ignore
                     ...(Array.isArray(order.statusHistory) ? order.statusHistory : []),

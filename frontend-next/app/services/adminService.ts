@@ -18,7 +18,7 @@ export const deleteProduct = (id: string) => API.delete(`/api/products/${id}`);
 export const fetchAllOrders = () => API.get("/api/order/admin/all");
 export const fetchOrderById = (id: string) => API.get(`/api/order/${id}`);
 // Real-Time Tracking & Status API (Admin Routes)
-export const updateOrderStatus = (id: string, status: string, note?: string) => API.patch(`/api/admin/orders/${id}/status`, { status, note });
+export const updateOrderStatus = (id: string, status: string, note?: string, deliveryText?: string) => API.patch(`/api/admin/orders/${id}/status`, { status, note, deliveryText });
 export const updateOrderLocation = (id: string, locationData: { lat: number, lng: number, address: string }) => API.patch(`/api/admin/orders/${id}/location`, locationData);
 export const deleteOrder = (id: string) => API.delete(`/api/order/${id}`);
 

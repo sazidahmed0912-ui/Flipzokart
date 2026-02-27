@@ -34,6 +34,7 @@ interface Order {
     paymentMethod: string;
     currentLocation?: { lat: number; lng: number; address: string };
     statusHistory?: { status: string; timestamp: string; note?: string }[]; // Added for persistence
+    deliveryText?: string;
 }
 
 export const AdminOrders: React.FC = () => {
@@ -52,7 +53,7 @@ export const AdminOrders: React.FC = () => {
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-    const [statusData, setStatusData] = useState({ status: '', note: '' });
+    const [statusData, setStatusData] = useState({ status: '', note: '', deliveryText: '' });
     const [locationData, setLocationData] = useState({ lat: 0, lng: 0, address: '' });
 
     useEffect(() => {
@@ -67,7 +68,11 @@ export const AdminOrders: React.FC = () => {
         const lastNote = order.statusHistory && order.statusHistory.length > 0
             ? order.statusHistory[order.statusHistory.length - 1].note
             : '';
-        setStatusData({ status: order.status, note: lastNote || '' });
+        setStatusData({
+            status: order.status,
+            note: lastNote || '',
+            deliveryText: order.deliveryText || ''
+        });
         setIsStatusOpen(true);
     };
 
@@ -81,9 +86,9 @@ export const AdminOrders: React.FC = () => {
         if (!selectedOrder) return;
         setIsUpdating(true);
         try {
-            await updateOrderStatus(selectedOrder._id, statusData.status, statusData.note);
+            await updateOrderStatus(selectedOrder._id, statusData.status, statusData.note, statusData.deliveryText);
             // Optimistic update
-            const updatedOrders = orders.map(o => o._id === selectedOrder._id ? { ...o, status: statusData.status } : o);
+            const updatedOrders = orders.map(o => o._id === selectedOrder._id ? { ...o, status: statusData.status, deliveryText: statusData.deliveryText } as Order : o);
             setOrders(updatedOrders);
             setFilteredOrders(updatedOrders); // Re-apply filters if needed
             setIsStatusOpen(false);
@@ -428,17 +433,38 @@ export const AdminOrders: React.FC = () => {
                                 <select
                                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                     value={statusData.status}
-                                    onChange={(e) => setStatusData({ ...statusData, status: e.target.value })}
+                                    onChange={(e) => {
+                                        const newStatus = e.target.value;
+                                        let newDeliveryText = statusData.deliveryText;
+                                        // Auto-fill default text for Out for Delivery if empty
+                                        if (newStatus === 'Out for Delivery' && (!newDeliveryText || newDeliveryText.trim() === '')) {
+                                            newDeliveryText = '🚚 Arriving Today by 11 AM';
+                                        }
+                                        setStatusData({ ...statusData, status: newStatus, deliveryText: newDeliveryText });
+                                    }}
                                 >
-                                    <option value="Shipped">🚚 Shipped</option>
-                                    <option value="Out for Delivery">📦 Out for Delivery</option>
+                                    {['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(s => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
                                 </select>
-                                {statusData.status === 'Out for Delivery' && (
-                                    <p className="text-xs text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-2 mt-2 font-medium">
-                                        ✅ Customer will see: <strong>&quot;🚚 Arriving Today by 11 AM&quot;</strong>
-                                    </p>
-                                )}
                             </div>
+
+                            {(statusData.status === 'Shipped' || statusData.status === 'Out for Delivery') && (
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
+                                        Expected Delivery Text (User Facing)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-blue-50/50 border border-blue-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                        placeholder="e.g. 🚚 Arriving Today by 11 AM"
+                                        value={statusData.deliveryText}
+                                        onChange={(e) => setStatusData({ ...statusData, deliveryText: e.target.value })}
+                                    />
+                                    <p className="text-[10px] text-gray-500 mt-1">Leave blank to hide or use default text logic.</p>
+                                </div>
+                            )}
+
                             <div>
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Note (Optional)</label>
                                 <textarea

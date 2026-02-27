@@ -211,6 +211,7 @@ model Order {
   statusHistory Json? // List of { status, timestamp, note }
   currentLocation Json? // { lat, lng, address, updatedAt }
   deliveryAgent Json? // { name, phone, vehicle }
+  deliveryText  String? // Custom text for expected arrival shown to user
   
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
