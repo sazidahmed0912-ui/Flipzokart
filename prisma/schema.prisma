@@ -92,6 +92,7 @@ model Address {
   userId       String  @db.ObjectId
   user         User    @relation(fields: [userId], references: [id])
   fullName     String
+  email        String?
   phone        String
   street       String
   addressLine2 String?

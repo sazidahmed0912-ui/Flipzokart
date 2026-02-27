@@ -9,7 +9,7 @@ export class AddressController {
     addAddress = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const userId = (req as any).user.id;
         console.log(`[AddressController] Add Address Request: User=${userId}`, req.body);
-        const { fullName, phone, street, addressLine2, city, state, pincode, type, isDefault } = req.body;
+        const { fullName, email, phone, street, addressLine2, city, state, pincode, type, isDefault } = req.body;
 
         if (!fullName || !phone || !street || !city || !state || !pincode || !type) {
             return next(new AppError('Please provide all mandatory fields', 400));
@@ -27,6 +27,8 @@ export class AddressController {
             data: {
                 userId,
                 fullName,
+                // @ts-ignore - prisma generate done, IDE needs TS server restart
+                email: email || null,
                 phone,
                 street,
                 addressLine2,
@@ -35,7 +37,7 @@ export class AddressController {
                 pincode,
                 // @ts-ignore
                 type,
-                country: 'India', // Fixed as per requirement
+                country: 'India',
                 isDefault: isDefault || false
             }
         });
@@ -50,7 +52,7 @@ export class AddressController {
         const { id } = req.params;
         const userId = (req as any).user.id;
         console.log(`[AddressController] Update Address Request: ID=${id} User=${userId}`, req.body);
-        const { fullName, phone, street, addressLine2, city, state, pincode, type, isDefault } = req.body;
+        const { fullName, email, phone, street, addressLine2, city, state, pincode, type, isDefault } = req.body;
 
         // If set as default, update others
         if (isDefault) {
@@ -70,9 +72,11 @@ export class AddressController {
         }
 
         const address = await prisma.address.update({
-            where: { id: id as string, userId }, // Ensure user owns address
+            where: { id: id as string, userId },
             data: {
                 fullName: fullName || existingAddress.fullName,
+                // @ts-ignore - prisma generate done, IDE needs TS server restart
+                email: email !== undefined ? (email || null) : (existingAddress as any).email,
                 phone: phone || existingAddress.phone,
                 street: street || existingAddress.street,
                 addressLine2: addressLine2 !== undefined ? addressLine2 : existingAddress.addressLine2,

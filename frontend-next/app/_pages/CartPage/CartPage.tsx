@@ -44,6 +44,15 @@ const CartPage = () => {
     setIsMounted(true);
   }, []);
 
+  // 🧹 BODY BACKGROUND LOCK: Force correct background on CartPage mount
+  // Prevents any bleed from CheckoutPage or other pages changing body bg
+  useEffect(() => {
+    document.body.style.backgroundColor = '#f1f3f6';
+    return () => {
+      document.body.style.backgroundColor = '';
+    };
+  }, []);
+
   // Re-verify coupon if cart changes
   useEffect(() => {
     if (appliedCoupon && isMounted && cartItems.length > 0) {

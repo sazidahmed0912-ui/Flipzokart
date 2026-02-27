@@ -19,6 +19,14 @@ const CheckoutPage = () => {
     const { cart, selectedAddress: contextAddress, setSelectedAddress: setContextAddress, user } = useApp();
     const router = useRouter();
 
+    // 🧹 CLEANUP: Reset body background when leaving checkout (prevents bleed into CartPage)
+    React.useEffect(() => {
+        document.body.style.backgroundColor = '#f1f3f6';
+        return () => {
+            document.body.style.backgroundColor = '';
+        };
+    }, []);
+
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<string | number | null>(
         contextAddress ? (contextAddress._id || contextAddress.id || null) : null

@@ -1,43 +1,44 @@
+/* ── MODAL OVERLAY ─────────────────────────────────────────────── */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.55);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 10000;
-    padding: 16px;
-    /* Ensure some spacing on small mobile screens */
 }
 
+/* ── MODAL CONTENT — Desktop: centered card ─────────────────────── */
 .modal-content {
     background-color: #fff;
     border-radius: 12px;
-    /* Slightly softer corners */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
     width: 100%;
-    max-width: 800px;
-    /* Increased from 500px to allow landscape/grid layout */
+    max-width: 680px;
+    height: 90vh;
     max-height: 90vh;
-    /* Prevent it from being taller than screen */
     overflow-y: auto;
-    /* Allow scrolling if form is tall */
     position: relative;
     display: flex;
     flex-direction: column;
 }
 
-/* Ensure padding is minimal on mobile to prevent squishing */
-@media (max-width: 640px) {
+/* ── MOBILE: Full screen bottom sheet ──────────────────────────── */
+@media (max-width: 768px) {
+    .modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
     .modal-content {
-        max-height: 95vh;
-        border-radius: 12px 12px 0 0;
-        /* Bottom sheet style feel if at bottom, but center is fine */
-        margin: 0 10px;
-        /* Slight margin from edges */
-        width: calc(100% - 20px);
+        width: 100%;
+        max-width: 100%;
+        height: 100dvh;
+        /* full viewport height */
+        max-height: 100dvh;
+        border-radius: 0;
+        /* no rounded corners on mobile */
+        overflow-y: auto;
     }
 }
