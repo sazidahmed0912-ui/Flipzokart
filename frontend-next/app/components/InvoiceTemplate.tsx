@@ -59,8 +59,8 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
 
                     {/* Address */}
                     <div className="text-sm text-gray-600 space-y-1">
-                        <p className="break-words">{order.address?.street}</p>
-                        <p>{order.address?.city}, {order.address?.state} - {order.address?.postalCode}</p>
+                        <p className="break-words">{order.address?.street}{order.address?.addressLine2 ? `, ${order.address.addressLine2}` : ''}</p>
+                        <p>{order.address?.city}, {order.address?.state} - {order.address?.pincode || order.address?.postalCode || ''}</p>
                         <p>Phone: {order.billingPhone || order.address?.phone || 'N/A'}</p>
                     </div>
                 </div>
@@ -68,8 +68,8 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Shipping Address</h3>
                     <p className="font-bold text-gray-800 text-lg mb-1">{order.address?.name || order.userName}</p>
                     <div className="text-sm text-gray-600 space-y-1">
-                        <p>{order.address?.street}</p>
-                        <p>{order.address?.city}, {order.address?.state} - {order.address?.postalCode}</p>
+                        <p>{order.address?.street}{order.address?.addressLine2 ? `, ${order.address.addressLine2}` : ''}</p>
+                        <p>{order.address?.city}, {order.address?.state} - {order.address?.pincode || order.address?.postalCode || ''}</p>
                         <p>Phone: {order.address?.phone || 'N/A'}</p>
                     </div>
                 </div>

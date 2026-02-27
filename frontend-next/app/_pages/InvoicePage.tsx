@@ -84,8 +84,8 @@ const MobileInvoiceLayout = ({ order }: { order: any }) => {
 
                     {/* Address: Multi-line & Break-words */}
                     <div className="text-xs text-gray-600 mt-1 space-y-0.5">
-                        <p className="break-words leading-tight">{order.address?.street}</p>
-                        <p>{order.address?.city}, {order.address?.state} - {order.address?.postalCode}</p>
+                        <p className="break-words leading-tight">{order.address?.street}{order.address?.addressLine2 ? `, ${order.address.addressLine2}` : ''}</p>
+                        <p>{order.address?.city}, {order.address?.state} - {order.address?.pincode || order.address?.postalCode || ''}</p>
                     </div>
 
                     {/* Phone */}
