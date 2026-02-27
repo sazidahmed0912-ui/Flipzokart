@@ -133,10 +133,11 @@ const CartPage = () => {
     priceDetails.discount = priceDetails.originalPrice - appliedCoupon.cartTotal + appliedCoupon.discountAmount; // Total savings including normal discount + coupon
   }
 
-  // HYDRATION LOCK: Only show skeleton if we have NO data yet.
-  // If cartItems already has data (e.g. coming back from checkout), render immediately.
-  // This prevents the "crash/broken" design on back navigation.
-  const loading = (!isInitialized || !isMounted) && cartItems.length === 0;
+  // HYDRATION LOCK:
+  // Only show skeleton when we have zero items AND context hasn't initialized yet.
+  // If items are already in memory (e.g. coming back from checkout), render immediately.
+  // isMounted is kept for interaction safety only (buttons/actions), not for rendering.
+  const loading = !isInitialized && cartItems.length === 0;
 
   // Loading skeleton component
   const CartItemSkeleton = () => (
@@ -202,8 +203,8 @@ const CartPage = () => {
     );
   }
 
-  // Only check for empty cart AFTER initialization is done
-  if (isInitialized && cartItems.length === 0) {
+  // Only check for empty cart AFTER initialization AND isMounted (avoids flash of empty state on back nav)
+  if (isInitialized && isMounted && cartItems.length === 0) {
     return (
       <div className="empty-cart-container">
         <div className="empty-cart-content">

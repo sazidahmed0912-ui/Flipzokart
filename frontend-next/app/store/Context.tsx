@@ -46,7 +46,7 @@ const getCartItemKey = (productId: string, variants?: Record<string, string>, va
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = typeof window !== 'undefined';
   const [isInitialized, setIsInitialized] = useState(false);
 
   const [user, setUser] = useState<User | null>(null);
@@ -59,9 +59,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const { addToast } = useToast();
 
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   // 🟢 7️⃣ HYDRATION (STRICT SEPARATION)
   useEffect(() => {
@@ -420,7 +417,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [socket]);
 
-  if (!isHydrated) return null;
 
   return (
     <AppContext.Provider value={{
