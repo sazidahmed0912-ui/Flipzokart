@@ -15,10 +15,11 @@ interface AddressFormProps {
 const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCancel }) => {
     const [formData, setFormData] = useState<AddressFormData>({
         name: addressToEdit?.fullName || '',
+        email: (addressToEdit as any)?.email || '',
         phone: addressToEdit?.phone || '',
         street: addressToEdit?.street || '',
         addressLine2: addressToEdit?.addressLine2 || '',
-        locality: addressToEdit?.addressLine2 || '', // mapping back for form compat
+        locality: addressToEdit?.addressLine2 || '',
         city: addressToEdit?.city || '',
         state: addressToEdit?.state || '',
         zip: addressToEdit?.pincode || '',
@@ -42,6 +43,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
                         console.log("[AddressForm] Fetched Full Address:", fullAddr);
                         setFormData({
                             name: fullAddr.fullName,
+                            email: fullAddr.email || '',
                             phone: fullAddr.phone,
                             street: fullAddr.street,
                             addressLine2: fullAddr.addressLine2 || '',
@@ -94,10 +96,11 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
             id: addressToEdit?.id ?? Date.now(),
             _id: addressToEdit?._id,
             fullName: formData.name,
+            email: formData.email || '',
             phone: formData.phone,
             street: formData.street,
             addressLine2: formData.addressLine2 || '',
-            locality: formData.addressLine2 || '',   // backend compat
+            locality: formData.addressLine2 || '',
             city: formData.city,
             state: formData.state,
             pincode: formData.zip,
