@@ -249,6 +249,10 @@ export const TrackOrderPage: React.FC = () => {
     };
 
     const isCancelled = order.status === 'Cancelled';
+    // Normalize OUT_FOR_DELIVERY across all possible formats from backend
+    const isOutForDelivery = ['out for delivery', 'out_for_delivery'].includes(
+        (order.status || '').toLowerCase().replace(/ /g, '_').replace(/_+/g, '_')
+    ) || (order.status || '').toLowerCase().includes('out') && (order.status || '').toLowerCase().includes('delivery');
 
     const renderAddress = () => {
         const addr = order.shippingAddress || order.address;
@@ -420,7 +424,7 @@ export const TrackOrderPage: React.FC = () => {
                 {!isCancelled && order.status !== 'DELIVERED' && order.status !== 'Delivered' && (
                     <div className="bg-[#effcf5] border border-[#dcfce7] p-3 md:p-4 rounded-sm mb-4 flex justify-between items-center px-4 md:px-6">
                         <div className="flex items-center gap-2">
-                            {(order.status === 'OUT_FOR_DELIVERY' || order.status === 'Out For Delivery') ? (
+                            {isOutForDelivery ? (
                                 <span className="text-sm md:text-base text-gray-800">
                                     <span className="font-bold text-green-700">🚚 Arriving Today by 11 AM</span>
                                 </span>
@@ -647,7 +651,7 @@ export const TrackOrderPage: React.FC = () => {
                                 <div className="absolute -left-[19px] top-0 w-4 h-4 rounded-full bg-green-500 border-[3px] border-white ring-1 ring-green-500"></div>
                                 <div>
                                     <p className="font-bold text-sm text-gray-900">{displayStatus}</p>
-                                    {(order.status === 'OUT_FOR_DELIVERY' || order.status === 'Out For Delivery') ? (
+                                    {isOutForDelivery ? (
                                         <p className="text-xs font-semibold text-green-600 mt-0.5">🚚 Arriving Today by 11 AM</p>
                                     ) : order.expectedDelivery ? (
                                         <p className="text-xs text-gray-500 mt-0.5">Arriving by {formatDate(order.expectedDelivery)}</p>
