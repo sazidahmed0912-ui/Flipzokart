@@ -29,6 +29,7 @@ interface AppContextType {
   selectedAddress: Address | null;
   setSelectedAddress: (address: Address | null) => void;
   isInitialized: boolean;
+  isCartLoading: boolean;
   loginSequence: (token: string, userData: User) => Promise<void>; // 🟢 Exposed for MobileOtpLogin
 }
 
@@ -422,7 +423,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider value={{
       user, setUser, cart, addToCart, removeFromCart, removeProductFromCart, updateCartQuantity, clearCart,
       wishlist, toggleWishlist, isAdmin, logout, orders, placeOrder, updateOrderStatus,
-      products, setProducts, selectedAddress, setSelectedAddress, isInitialized,
+      products, setProducts, selectedAddress, setSelectedAddress, isInitialized, isCartLoading,
       loginSequence
     }}>
       {children}

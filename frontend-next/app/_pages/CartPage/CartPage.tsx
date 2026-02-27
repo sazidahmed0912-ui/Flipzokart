@@ -22,7 +22,7 @@ const getCartItemKey = (productId: string, variants?: Record<string, string>, va
 };
 
 const CartPage = () => {
-  const { cart: cartItems, removeFromCart, updateCartQuantity, clearCart, products, removeProductFromCart, isInitialized } = useApp();
+  const { cart: cartItems, removeFromCart, updateCartQuantity, clearCart, products, removeProductFromCart, isInitialized, isCartLoading } = useApp();
   const router = useRouter();
 
   // DOUBLE-LOCK HYDRATION GATE
@@ -134,10 +134,9 @@ const CartPage = () => {
   }
 
   // HYDRATION LOCK:
-  // Only show skeleton when we have zero items AND context hasn't initialized yet.
-  // If items are already in memory (e.g. coming back from checkout), render immediately.
-  // isMounted is kept for interaction safety only (buttons/actions), not for rendering.
-  const loading = !isInitialized && cartItems.length === 0;
+  // Show skeleton when: context not initialized OR server cart fetch in progress (and no items yet)
+  // This prevents the empty cart flash on back navigation for logged-in users
+  const loading = (!isInitialized || isCartLoading) && cartItems.length === 0;
 
   // Loading skeleton component
   const CartItemSkeleton = () => (
@@ -203,8 +202,8 @@ const CartPage = () => {
     );
   }
 
-  // Only check for empty cart AFTER initialization AND isMounted (avoids flash of empty state on back nav)
-  if (isInitialized && isMounted && cartItems.length === 0) {
+  // Only show empty cart AFTER init + mount complete + server fetch done + confirmed empty
+  if (isInitialized && !isCartLoading && isMounted && cartItems.length === 0) {
     return (
       <div className="empty-cart-container">
         <div className="empty-cart-content">

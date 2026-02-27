@@ -2,7 +2,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import API from '@/app/services/api';
-import { InvoiceTemplate } from '../components/InvoiceTemplate';
 import { normalizeOrder } from '@/app/utils/orderHelper';
 import { Printer, MapPin, Phone, Mail, Package } from 'lucide-react';
 import { useSocket } from '@/app/hooks/useSocket';
@@ -261,9 +260,6 @@ export const InvoicePage: React.FC = () => {
             <style jsx global>{`
                 @media print { 
                     @page { margin: 0; size: auto; }
-                    /* Force Desktop Template on Print */
-                    .mobile-invoice-view { display: none !important; }
-                    .desktop-invoice-view { display: block !important; }
                 }
             `}</style>
 
@@ -279,15 +275,8 @@ export const InvoicePage: React.FC = () => {
                 </button>
             </div>
 
-            {/* DESKTOP VIEW: Hidden on Mobile, shown on Desktop */}
-            <div className="desktop-invoice-view hidden md:block print:block bg-white shadow-lg rounded-xl overflow-hidden print:shadow-none">
-                <div className="invoice-container">
-                    <InvoiceTemplate order={order} ref={componentRef} />
-                </div>
-            </div>
-
-            {/* MOBILE VIEW: Block on Mobile, Hidden on Desktop */}
-            <div className="mobile-invoice-view block md:hidden print:hidden shadow-sm">
+            {/* UNIFIED FULL-SCREEN VIEW: Mobile-style layout for all screen sizes */}
+            <div className="max-w-[850px] mx-auto bg-white shadow-lg rounded-xl overflow-hidden print:shadow-none print:rounded-none">
                 <MobileInvoiceLayout order={order} />
             </div>
         </div>
