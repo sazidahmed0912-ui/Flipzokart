@@ -416,11 +416,19 @@ export const TrackOrderPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Arriving By Banner */}
-                {!isCancelled && (
+                {/* Arriving By Banner — hidden for cancelled/delivered */}
+                {!isCancelled && order.status !== 'DELIVERED' && order.status !== 'Delivered' && (
                     <div className="bg-[#effcf5] border border-[#dcfce7] p-3 md:p-4 rounded-sm mb-4 flex justify-between items-center px-4 md:px-6">
                         <div className="flex items-center gap-2">
-                            <span className="text-sm md:text-base text-gray-800">Arriving by <span className="font-bold text-green-700">{order.expectedDelivery ? formatDate(order.expectedDelivery) : 'Tomorrow'}</span></span>
+                            {(order.status === 'OUT_FOR_DELIVERY' || order.status === 'Out For Delivery') ? (
+                                <span className="text-sm md:text-base text-gray-800">
+                                    <span className="font-bold text-green-700">🚚 Arriving Today by 11 AM</span>
+                                </span>
+                            ) : order.expectedDelivery ? (
+                                <span className="text-sm md:text-base text-gray-800">
+                                    Arriving by <span className="font-bold text-green-700">{formatDate(order.expectedDelivery)}</span>
+                                </span>
+                            ) : null}
                         </div>
                         <div className="text-lg md:text-xl font-bold text-gray-900">₹{(order.grandTotal || order.total || 0).toLocaleString('en-IN')}</div>
                     </div>
@@ -639,7 +647,11 @@ export const TrackOrderPage: React.FC = () => {
                                 <div className="absolute -left-[19px] top-0 w-4 h-4 rounded-full bg-green-500 border-[3px] border-white ring-1 ring-green-500"></div>
                                 <div>
                                     <p className="font-bold text-sm text-gray-900">{displayStatus}</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">Arriving by {order.expectedDelivery ? formatDate(order.expectedDelivery) : 'Tomorrow'}</p>
+                                    {(order.status === 'OUT_FOR_DELIVERY' || order.status === 'Out For Delivery') ? (
+                                        <p className="text-xs font-semibold text-green-600 mt-0.5">🚚 Arriving Today by 11 AM</p>
+                                    ) : order.expectedDelivery ? (
+                                        <p className="text-xs text-gray-500 mt-0.5">Arriving by {formatDate(order.expectedDelivery)}</p>
+                                    ) : null}
                                     {order.statusHistory && order.statusHistory.length > 0 && (
                                         <p className="text-[10px] text-gray-400 mt-1">
                                             {new Date(order.statusHistory[order.statusHistory.length - 1].timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
