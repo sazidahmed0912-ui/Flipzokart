@@ -92,18 +92,18 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
 
         const finalAddress: Address = {
             id: addressToEdit?.id ?? Date.now(),
-            _id: addressToEdit?._id, // Preserve Mongo ID if exists
+            _id: addressToEdit?._id,
             fullName: formData.name,
             phone: formData.phone,
             street: formData.street,
-            addressLine2: formData.addressLine2,
+            addressLine2: formData.addressLine2 || '',
+            locality: formData.addressLine2 || '',   // backend compat
             city: formData.city,
             state: formData.state,
             pincode: formData.zip,
             type: formData.type,
             country: 'India',
             isDefault: addressToEdit?.isDefault || false,
-            // Legacy/Backend Compatibility Fields (to ensure persistence works even if backend expects these)
             name: formData.name,
             mobile: formData.phone,
             address: formData.street,

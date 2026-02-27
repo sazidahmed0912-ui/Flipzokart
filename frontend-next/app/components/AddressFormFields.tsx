@@ -156,20 +156,6 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
                 </div>
             </div>
 
-            {/* Locality */}
-            <div>
-                <div className={mobileRowContainer}>
-                    <label className={mobileRowLabel}>Locality</label>
-                    <input
-                        type="text"
-                        name="locality"
-                        value={formData.locality || ''}
-                        onChange={handleChange}
-                        placeholder="Area, Colony, Street, Sector (Optional)"
-                        className={inputClasses}
-                    />
-                </div>
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* State */}
