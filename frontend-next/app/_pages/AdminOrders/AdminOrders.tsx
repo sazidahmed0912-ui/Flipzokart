@@ -430,10 +430,14 @@ export const AdminOrders: React.FC = () => {
                                     value={statusData.status}
                                     onChange={(e) => setStatusData({ ...statusData, status: e.target.value })}
                                 >
-                                    {['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(s => (
-                                        <option key={s} value={s}>{s}</option>
-                                    ))}
+                                    <option value="Shipped">🚚 Shipped</option>
+                                    <option value="Out for Delivery">📦 Out for Delivery</option>
                                 </select>
+                                {statusData.status === 'Out for Delivery' && (
+                                    <p className="text-xs text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-2 mt-2 font-medium">
+                                        ✅ Customer will see: <strong>&quot;🚚 Arriving Today by 11 AM&quot;</strong>
+                                    </p>
+                                )}
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Note (Optional)</label>
