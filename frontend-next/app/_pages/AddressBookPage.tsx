@@ -7,7 +7,7 @@ import {
 import { useApp } from '@/app/store/Context';
 import { useToast } from '@/app/components/toast';
 import API, { calculateShipping } from '@/app/services/api';
-import AddressCard from '@/app/_pages/CheckoutPage/components/AddressCard';
+import PremiumAddressCard from '@/app/_pages/CheckoutPage/components/PremiumAddressCard';
 import AddressForm from '@/app/_pages/CheckoutPage/components/AddressForm';
 import Modal from '@/app/_pages/CheckoutPage/components/Modal';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
@@ -198,16 +198,11 @@ const AddressBookPage: React.FC = () => {
                             // Address Grid
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {addresses.map((addr) => (
-                                    <AddressCard
+                                    <PremiumAddressCard
                                         key={addr.id}
                                         address={addr}
-                                        isSelected={true}
-                                        onSelect={handleSelectDummy}
                                         onDelete={handleDeleteAddress}
                                         onEdit={handleEditAddress}
-                                        onDeliverHere={handleDeliverHereDummy}
-                                        isLoading={false}
-                                        hideRadio={true}
                                     />
                                 ))}
                             </div>
