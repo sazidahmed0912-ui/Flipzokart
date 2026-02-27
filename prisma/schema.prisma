@@ -205,7 +205,18 @@ model Order {
   addressId     String        @db.ObjectId
   address       Json // Snapshot of address
   couponSnapshot Json? // Snapshot of applied coupon and discount amount
-  
+
+  // 🔒 ULTRA LOCK — Frozen Price Fields (set once at order creation, never recalculated)
+  subtotal       Float? // Sum of base item prices (excl. GST)
+  totalGST       Float? // Total GST across all items
+  cgst           Float? // Central GST (50% of totalGST)
+  sgst           Float? // State GST (50% of totalGST)
+  deliveryCharge Float? // Frozen delivery charge
+  platformFee    Float? // Frozen platform fee
+  couponDiscount Float? // Frozen coupon discount amount
+  grandTotal     Float? // Final payable = subtotal+GST+delivery+platform-coupon
+  priceHash      String? // HMAC-SHA256 of price summary (tamper detection)
+
   // Real-Time Tracking Fields
   statusHistory Json? // List of { status, timestamp, note }
   currentLocation Json? // { lat, lng, address, updatedAt }
@@ -232,6 +243,10 @@ model OrderItem {
   color        String?
   size         String?
   variantId    String?
+  // 🔒 ULTRA LOCK — Frozen item-level price breakdown
+  baseAmount   Float? // Base price excl. GST for this line
+  gstAmount    Float? // GST for this line
+  finalAmount  Float? // baseAmount + gstAmount for this line
 }
 
 model Chat {

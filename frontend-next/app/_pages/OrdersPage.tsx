@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
@@ -90,13 +90,13 @@ const OrdersPage: React.FC = () => {
         <div className="bg-[#F5F7FA] min-h-screen font-sans text-[#1F2937]">
             <div className="max-w-[1200px] mx-auto px-0 md:px-4 py-4 md:py-8 flex flex-col lg:flex-row gap-4 md:gap-6">
 
-                {/* ──────── LEFT SIDEBAR ──────── */}
+                {/* â”€â”€â”€â”€â”€â”€â”€â”€ LEFT SIDEBAR â”€â”€â”€â”€â”€â”€â”€â”€ */}
                 <div className="hidden lg:block">
                     <ProfileSidebar />
                 </div>
                 {/* Mobile Sidebar Trigger (Optional or handle via Layout) - For now assuming Sidebar handles itself or hidden on mobile main view */}
 
-                {/* ──────── MAIN CONTENT ──────── */}
+                {/* â”€â”€â”€â”€â”€â”€â”€â”€ MAIN CONTENT â”€â”€â”€â”€â”€â”€â”€â”€ */}
                 <div className="flex-1 space-y-4 px-3 md:px-0">
 
                     {/* Filter Tabs & Search */}
@@ -158,7 +158,7 @@ const OrdersPage: React.FC = () => {
 
                                             <div className="flex flex-col items-end md:items-start">
                                                 <span className="text-[10px] md:text-xs text-gray-400 uppercase font-medium tracking-wide">Total Amount</span>
-                                                <span className="text-sm md:text-base font-bold text-gray-900">₹{order.total?.toLocaleString() || order.items?.reduce((acc: number, i: any) => acc + (i.price * i.quantity), 0).toLocaleString()}</span>
+                                                <span className="text-sm md:text-base font-bold text-gray-900">{/* ULTRA LOCK */}{(order.grandTotal ?? order.totalAmount ?? order.total ?? 0).toLocaleString()}</span>
                                             </div>
 
                                             <div className="hidden md:flex flex-col">
@@ -199,7 +199,7 @@ const OrdersPage: React.FC = () => {
                                                                     {item.productName || item.name}
                                                                 </h3>
                                                                 <div className="md:hidden text-sm font-bold text-gray-900 whitespace-nowrap">
-                                                                    ₹{(item.price * item.quantity).toLocaleString()}
+                                                                    â‚¹{(item.price * item.quantity).toLocaleString()}
                                                                 </div>
                                                             </div>
 
@@ -236,7 +236,7 @@ const OrdersPage: React.FC = () => {
                                                                 </span>
                                                             </div>
                                                             <div className="hidden md:block text-xl font-bold text-gray-900">
-                                                                ₹{(item.price * item.quantity).toLocaleString()}
+                                                                â‚¹{(item.price * item.quantity).toLocaleString()}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -324,3 +324,4 @@ const OrdersPage: React.FC = () => {
 };
 
 export default OrdersPage;
+

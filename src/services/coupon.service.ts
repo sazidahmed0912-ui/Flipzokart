@@ -1,4 +1,4 @@
-import { PrismaClient, DiscountType, CouponStatus } from '@prisma/client';
+﻿import { PrismaClient, DiscountType, CouponStatus } from '@prisma/client';
 import { AppError } from '../utils/AppError';
 
 const prisma = new PrismaClient();
@@ -110,14 +110,14 @@ export class CouponService {
 
         // Condition Validation
         if (coupon.minCartValue && cartTotal < coupon.minCartValue) {
-            throw new AppError(\`Minimum cart value of ₹\${coupon.minCartValue} is required\`, 400);
+            throw new AppError(`Minimum cart value of ₹${coupon.minCartValue} is required`, 400);
         }
 
         const conditions = coupon.conditions as any || {};
 
         if (conditions.paymentRestriction && paymentMethod) {
             if (conditions.paymentRestriction.toLowerCase() !== paymentMethod.toLowerCase()) {
-                throw new AppError(\`This coupon is only valid for \${conditions.paymentRestriction} payments\`, 400);
+                throw new AppError(`This coupon is only valid for ${conditions.paymentRestriction} payments`, 400);
             }
         }
 
@@ -211,7 +211,7 @@ export class CouponService {
                 let totalXQuantity = eligibleItemsForX.reduce((acc, item) => acc + item.quantity, 0);
                 
                 if (totalXQuantity < buyX) {
-                    throw new AppError(\`You need to buy at least \${buyX} items to get the discount\`, 400);
+                    throw new AppError(`You need to buy at least ${buyX} items to get the discount`, 400);
                 }
                 discountAmount = coupon.discountValue; // Flat discount given when condition met
                 break;
@@ -220,7 +220,7 @@ export class CouponService {
                 if (cartTotal >= coupon.minCartValue!) {
                     discountAmount = coupon.discountValue; // Assumes flat discount value if Min Cart met
                 } else {
-                    throw new AppError(\`Minimum cart value of ₹\${coupon.minCartValue} required\`, 400);
+                    throw new AppError(`Minimum cart value of ₹${coupon.minCartValue} required`, 400);
                 }
                 break;
             }

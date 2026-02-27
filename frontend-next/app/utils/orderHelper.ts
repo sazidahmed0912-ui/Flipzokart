@@ -41,12 +41,13 @@ export const normalizeOrder = (order: any) => {
         // Strict check to preserve 0 if it is 0, but user said "Prevent zero fallback" for undefined.
         if (grandTotal === undefined || grandTotal === null) grandTotal = order.total || 0;
     } else {
-        itemsPrice = order.itemsPrice !== undefined ? order.itemsPrice : (order.subtotal || items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0));
-        tax = order.tax || order.taxPrice || 0;
-        shipping = order.deliveryCharges !== undefined ? order.deliveryCharges : (order.shipping || order.shippingPrice || 0);
+        itemsPrice = order.itemsPrice !== undefined ? order.itemsPrice : (order.subtotal || 0);
+        // 🔒 ULTRA LOCK — Never calculate from items. Use frozen DB values only.
+        tax = order.tax || order.taxPrice || order.totalGST || 0;
+        shipping = order.deliveryCharges !== undefined ? order.deliveryCharges : (order.deliveryCharge || order.shipping || order.shippingPrice || 0);
         platformFee = order.platformFee || 0;
-        discount = order.discount || 0;
-        grandTotal = order.total !== undefined ? order.total : (order.totalAmount || order.totalPrice || order.grandTotal || 0);
+        discount = order.couponDiscount || order.discount || 0;
+        grandTotal = order.grandTotal !== undefined ? order.grandTotal : (order.total !== undefined ? order.total : (order.totalAmount || order.totalPrice || 0));
     }
 
     // 4. Strict Billing Data Resolution (Max Ultra Lock)

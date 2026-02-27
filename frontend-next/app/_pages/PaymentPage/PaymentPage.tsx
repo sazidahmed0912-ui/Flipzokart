@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect } from "react";
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -105,8 +105,8 @@ const PaymentPage: React.FC = () => {
 
   /* =========================
      Server-Authoritative Price Summary
-     ❌ No local GST / discount / shipping calculation.
-     ✅ All values come from /api/cart/summary.
+     âŒ No local GST / discount / shipping calculation.
+     âœ… All values come from /api/cart/summary.
   ========================= */
   const [serverSummary, setServerSummary] = useState<any>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -138,7 +138,7 @@ const PaymentPage: React.FC = () => {
     fetchSummary();
   }, [activeCart, appliedCoupon, paymentMethod]);
 
-  // ✅ All display values from server — canonical finalPriceEngine output
+  // âœ… All display values from server â€” canonical finalPriceEngine output
   const itemsPrice = serverSummary?.subtotal ?? 0;
   const mrp = serverSummary?.mrp ?? itemsPrice;
   const discount = serverSummary?.couponDiscount ?? (appliedCoupon?.discount || 0);
@@ -152,7 +152,7 @@ const PaymentPage: React.FC = () => {
   const couponDiscount = serverSummary?.couponDiscount ?? (appliedCoupon?.discount || 0);
   const totalPayable = serverSummary?.grandTotal ?? 0;
 
-  // 🛡️ Payment Availability Logic
+  // ðŸ›¡ï¸ Payment Availability Logic
   // If ANY item in cart has codAvailable === false, then COD is disabled for entire order.
   const isCodAllowed = activeCart.every(item => item.codAvailable !== false);
   const isPrepaidAllowed = activeCart.every(item => item.prepaidAvailable !== false);
@@ -200,29 +200,11 @@ const PaymentPage: React.FC = () => {
         return;
       }
 
+      // ðŸ”’ ULTRA LOCK: Send frozen previewData (hash-signed) â€” backend verifies hash, no recalculation
       const { data } = await createOrder({
-        products: activeCart.map((i) => ({
-          productId: i.id,
-          variantId: i.variantId,
-          productName: i.productName || i.name,
-          color: i.color || i.selectedVariants?.Color || i.selectedVariants?.color || i.selectedVariants?.Colour,
-          size: i.size || i.selectedVariants?.Size || i.selectedVariants?.size,
-          image: i.image || i.thumbnail || i.images?.[0] || '',
-          price: i.price,
-          quantity: i.quantity,
-          selectedVariants: i.selectedVariants
-        })),
-        subtotal: itemsPrice, // Use itemsPrice as subtotal for backend compatibility if needed, or send both
-        itemsPrice,
-        deliveryCharges,
-        discount,
-        platformFee,
-        tax,
-        mrp,
-        total: totalPayable,
-        finalAmount: totalPayable,
+        previewData: serverSummary, // Hash-signed frozen price summary
         addressId: selectedAddress.id || selectedAddress._id,
-        address: selectedAddress,
+        paymentMethod: 'COD',
         couponCode: appliedCoupon?.code,
       });
 
@@ -274,34 +256,17 @@ const PaymentPage: React.FC = () => {
         order_id: order.id,
         handler: async (response: any) => {
           try {
-            const { data } = await verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              products: activeCart.map((i) => ({
-                productId: i.id,
-                variantId: i.variantId,
-                productName: i.productName || i.name,
-                color: i.color || i.selectedVariants?.Color || i.selectedVariants?.color || i.selectedVariants?.Colour,
-                size: i.size || i.selectedVariants?.Size || i.selectedVariants?.size,
-                image: i.image || i.thumbnail || i.images?.[0] || '',
-                price: i.price,
-                quantity: i.quantity,
-                selectedVariants: i.selectedVariants
-              })),
-              subtotal: itemsPrice,
-              itemsPrice,
-              deliveryCharges,
-              discount,
-              platformFee,
-              tax,
-              mrp,
-              total: totalPayable,
-              finalAmount: totalPayable,
-              addressId: selectedAddress?.id || selectedAddress?._id,
-              address: selectedAddress,
-              couponCode: appliedCoupon?.code,
-            });
+              // ULTRA LOCK: Send frozen previewData (hash-signed)
+              const { data } = await verifyPayment({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                previewData: serverSummary,
+                addressId: selectedAddress?.id || selectedAddress?._id,
+                paymentMethod: "RAZORPAY",
+                couponCode: appliedCoupon?.code,
+              });
+
 
             // CLEANUP based on MODE
             if (buyNowItem) {
@@ -339,7 +304,7 @@ const PaymentPage: React.FC = () => {
      SUBMIT HANDLER
   ========================= */
   const handleSubmit = () => {
-    // 1️⃣ GUEST HANDLING: Redirect to Signup with Pending Order
+    // 1ï¸âƒ£ GUEST HANDLING: Redirect to Signup with Pending Order
     if (!user) {
       const orderPayload = {
         products: activeCart.map((i) => ({
@@ -370,7 +335,7 @@ const PaymentPage: React.FC = () => {
 
       localStorage.setItem("pendingOrder", JSON.stringify(orderPayload));
 
-      // 🟢 STORE CHECKOUT INTENT
+      // ðŸŸ¢ STORE CHECKOUT INTENT
       if (paymentMethod) {
         localStorage.setItem("checkout_intent", JSON.stringify({
           fromCheckout: true,
@@ -378,12 +343,12 @@ const PaymentPage: React.FC = () => {
         }));
       }
 
-      // 🛑 STORE BUY NOW ITEM FOR RESTORE
+      // ðŸ›‘ STORE BUY NOW ITEM FOR RESTORE
       // If we are in Buy Now Mode, the buyNowItem is already in LS.
       // But we should ensure it stays there. It persists by default.
 
       window.dispatchEvent(new CustomEvent("show-toast", {
-        detail: { type: 'info', message: '⚠️ Please signup/login to place your order', persist: true }
+        detail: { type: 'info', message: 'âš ï¸ Please signup/login to place your order', persist: true }
       }));
       // Redirect to signup which will handle the intent
       setTimeout(() => router.push('/signup?redirect=checkout'), 1000);
@@ -402,7 +367,7 @@ const PaymentPage: React.FC = () => {
       <header className="payment-header">
         <div className="checkout-steps">
           {buyNowItem ? (
-            <span className="text-orange-600 font-bold">⚡ Buy Now Mode</span>
+            <span className="text-orange-600 font-bold">âš¡ Buy Now Mode</span>
           ) : (
             <>Cart <ChevronRight size={14} /></>
           )}
@@ -485,31 +450,31 @@ const PaymentPage: React.FC = () => {
 
             <div className="price-item">
               <span>Subtotal</span>
-              <span>₹{itemsPrice.toLocaleString('en-IN')}</span>
+              <span>â‚¹{itemsPrice.toLocaleString('en-IN')}</span>
             </div>
             <div className="price-item">
               <span>Delivery</span>
-              <span>{deliveryCharges === 0 ? "FREE" : `₹${deliveryCharges.toLocaleString('en-IN')}`}</span>
+              <span>{deliveryCharges === 0 ? "FREE" : `â‚¹${deliveryCharges.toLocaleString('en-IN')}`}</span>
             </div>
             <div className="price-item">
               <span>Platform Fee</span>
-              <span>₹{platformFee.toLocaleString('en-IN')}</span>
+              <span>â‚¹{platformFee.toLocaleString('en-IN')}</span>
             </div>
 
-            {/* 🧾 GST Invoice Breakdown */}
+            {/* ðŸ§¾ GST Invoice Breakdown */}
             {hasGST && (
               <div className="mt-2 pt-2 border-t border-dashed border-gray-200 space-y-1">
                 <div className="price-item text-xs text-gray-500">
                   <span>CGST ({((cgst / (itemsPrice || 1)) * 100).toFixed(0)}%)</span>
-                  <span>+ ₹{cgst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span>+ â‚¹{cgst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="price-item text-xs text-gray-500">
                   <span>SGST ({((sgst / (itemsPrice || 1)) * 100).toFixed(0)}%)</span>
-                  <span>+ ₹{sgst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span>+ â‚¹{sgst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="price-item text-xs font-bold text-amber-700">
                   <span>Total GST</span>
-                  <span>₹{totalGST.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span>â‚¹{totalGST.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
             )}
@@ -517,13 +482,13 @@ const PaymentPage: React.FC = () => {
             {appliedCoupon && (
               <div className="price-item text-green-600 font-bold">
                 <span>Coupon ({appliedCoupon.code})</span>
-                <span>- ₹{couponDiscount.toLocaleString('en-IN')}</span>
+                <span>- â‚¹{couponDiscount.toLocaleString('en-IN')}</span>
               </div>
             )}
 
             <div className="price-total">
               <strong>TOTAL</strong>
-              <strong>₹{totalPayable.toLocaleString('en-IN')}</strong>
+              <strong>â‚¹{totalPayable.toLocaleString('en-IN')}</strong>
             </div>
 
             {error && <p className="error-toast">{error}</p>}
@@ -538,7 +503,7 @@ const PaymentPage: React.FC = () => {
               ) : paymentMethod === "COD" ? (
                 "PLACE ORDER"
               ) : (
-                `PAY ₹${totalPayable} SECURELY`
+                `PAY â‚¹${totalPayable} SECURELY`
               )}
             </button>
           </div>
@@ -548,7 +513,7 @@ const PaymentPage: React.FC = () => {
       <div className="sticky-mobile-footer">
         <div className="mobile-total-info">
           <span className="text-xs text-gray-500 font-medium">Total Payable</span>
-          <span className="text-lg font-bold text-[#212121]">₹{totalPayable}</span>
+          <span className="text-lg font-bold text-[#212121]">â‚¹{totalPayable}</span>
         </div>
         <button
           className="action-button mobile-pay-btn"
@@ -560,7 +525,7 @@ const PaymentPage: React.FC = () => {
           ) : paymentMethod === "COD" ? (
             "PLACE ORDER"
           ) : (
-            `PAY ₹${totalPayable}`
+            `PAY â‚¹${totalPayable}`
           )}
         </button>
       </div>
