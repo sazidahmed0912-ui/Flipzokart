@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import {
-    Plus
+    Plus,
+    MapPin
 } from 'lucide-react';
 import { useApp } from '@/app/store/Context';
 import { useToast } from '@/app/components/toast';
@@ -128,50 +129,89 @@ const AddressBookPage: React.FC = () => {
 
     return (
         <div className="bg-[#F5F7FA] min-h-screen font-sans text-[#1F2937]">
-            <div className="max-w-[1200px] mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
+            <div className="max-w-[1200px] mx-auto px-0 md:px-4 py-4 md:py-8 flex flex-col lg:flex-row gap-4 md:gap-6">
 
                 {/* ──────── LEFT SIDEBAR ──────── */}
-                <ProfileSidebar />
+                <div className="hidden lg:block">
+                    <ProfileSidebar />
+                </div>
 
                 {/* ──────── MAIN CONTENT ──────── */}
-                <div className="flex-1 space-y-6">
+                <div className="flex-1 space-y-4 px-3 md:px-0">
+
+                    {/* Header */}
                     <SmoothReveal direction="down" delay={100}>
                         <div className="flex items-center justify-between">
-                            <h1 className="text-2xl font-bold text-[#1F2937]">Manage Addresses</h1>
+                            <div>
+                                <h1 className="text-xl md:text-2xl font-bold text-[#1F2937]">Manage Addresses</h1>
+                                <p className="text-xs md:text-sm text-gray-500 mt-0.5">
+                                    {addresses.length > 0 ? `${addresses.length} saved address${addresses.length > 1 ? 'es' : ''}` : 'No addresses saved yet'}
+                                </p>
+                            </div>
                         </div>
                     </SmoothReveal>
 
-                    <SmoothReveal direction="up" delay={200}>
-                        {/* Add New Address Button (Trigger Modal) */}
-                        <div className="bg-white p-6 rounded-[2px] shadow-sm mb-6 cursor-pointer hover:shadow-md transition-shadow border border-gray-200 flex items-center gap-3 text-[#2874F0] font-bold"
+                    <SmoothReveal direction="up" delay={150}>
+                        {/* Add New Address Button */}
+                        <button
                             onClick={handleAddNewAddressClick}
+                            className="w-full bg-white border-2 border-dashed border-[#2874F0]/40 hover:border-[#2874F0] hover:bg-blue-50/40 text-[#2874F0] font-bold rounded-xl p-4 md:p-5 flex items-center justify-center gap-2.5 transition-all duration-200 group mb-4"
                         >
-                            <Plus size={20} />
-                            ADD A NEW ADDRESS
-                        </div>
+                            <span className="w-7 h-7 rounded-full bg-[#2874F0]/10 group-hover:bg-[#2874F0]/20 flex items-center justify-center transition-colors">
+                                <Plus size={16} className="text-[#2874F0]" />
+                            </span>
+                            <span className="text-sm md:text-base tracking-wide">ADD A NEW ADDRESS</span>
+                        </button>
 
-                        {/* List utilizing Checkout's AddressCard */}
-                        <div className="space-y-4">
-                            {loading && addresses.length === 0 ? (
-                                <div className="text-center py-8">Loading addresses...</div>
-                            ) : addresses.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">No addresses saved. Add one now!</div>
-                            ) : (
-                                addresses.map((addr) => (
+                        {/* Address Cards Grid */}
+                        {loading && addresses.length === 0 ? (
+                            // Skeleton Loading
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {[1, 2].map(i => (
+                                    <div key={i} className="bg-white rounded-xl border-2 border-gray-100 p-5 animate-pulse">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="w-24 h-4 bg-gray-200 rounded" />
+                                            <div className="w-12 h-4 bg-gray-100 rounded-full" />
+                                        </div>
+                                        <div className="w-full h-3 bg-gray-100 rounded mb-2" />
+                                        <div className="w-3/4 h-3 bg-gray-100 rounded mb-3" />
+                                        <div className="w-24 h-3 bg-gray-100 rounded" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : addresses.length === 0 ? (
+                            // Empty State
+                            <div className="bg-white rounded-xl border border-gray-100 p-10 text-center flex flex-col items-center gap-3">
+                                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-1">
+                                    <MapPin size={28} className="text-[#2874F0]" />
+                                </div>
+                                <h3 className="font-bold text-gray-800 text-lg">No addresses saved</h3>
+                                <p className="text-sm text-gray-500">Add your home or work address for faster checkout.</p>
+                                <button
+                                    onClick={handleAddNewAddressClick}
+                                    className="mt-2 bg-[#2874F0] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors shadow-sm"
+                                >
+                                    Add Address
+                                </button>
+                            </div>
+                        ) : (
+                            // Address Grid
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {addresses.map((addr) => (
                                     <AddressCard
                                         key={addr.id}
                                         address={addr}
-                                        isSelected={true} // Always show actions
-                                        onSelect={handleSelectDummy} // No-op for selection in manager
+                                        isSelected={true}
+                                        onSelect={handleSelectDummy}
                                         onDelete={handleDeleteAddress}
                                         onEdit={handleEditAddress}
                                         onDeliverHere={handleDeliverHereDummy}
                                         isLoading={false}
-                                        hideRadio={true} // Hide Radio for Address Book
+                                        hideRadio={true}
                                     />
-                                ))
-                            )}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </SmoothReveal>
 
                     {/* Modal with Checkout's AddressForm */}
@@ -190,3 +230,4 @@ const AddressBookPage: React.FC = () => {
 };
 
 export default AddressBookPage;
+

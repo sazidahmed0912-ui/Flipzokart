@@ -133,9 +133,10 @@ const CartPage = () => {
     priceDetails.discount = priceDetails.originalPrice - appliedCoupon.cartTotal + appliedCoupon.discountAmount; // Total savings including normal discount + coupon
   }
 
-  // HYDRATION LOCK: Ensure we wait for context to fully initialize
-  // prevent interactions with stale state
-  const loading = !isInitialized || !isMounted;
+  // HYDRATION LOCK: Only show skeleton if we have NO data yet.
+  // If cartItems already has data (e.g. coming back from checkout), render immediately.
+  // This prevents the "crash/broken" design on back navigation.
+  const loading = (!isInitialized || !isMounted) && cartItems.length === 0;
 
   // Loading skeleton component
   const CartItemSkeleton = () => (
