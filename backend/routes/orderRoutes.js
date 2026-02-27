@@ -19,6 +19,7 @@ const {
 // 🏇 Server-authoritative price preview (GST + shipping + coupon) — READ ONLY
 router.post('/preview', protect, previewOrder);
 router.post('/create', protect, createOrder);
+router.post('/checkout', protect, createOrder); // 🔒 ULTRA LOCK alias — same handler
 
 router.post('/razorpay', protect, createRazorpayOrder);
 router.post('/verify-payment', protect, verifyPayment);

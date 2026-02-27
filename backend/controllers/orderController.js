@@ -110,15 +110,53 @@ const previewOrder = async (req, res) => {
 const createOrder = async (req, res) => {
 
   try {
-    console.log('Creating order with user:', req.user?.id);
-    console.log('Request body:', req.body);
-    console.log('req.user object:', req.user); // Added for debugging
-
     console.log('[CreateOrder] Request body keys:', Object.keys(req.body));
-    console.log('[CreateOrder] Address in body:', !!req.body.address);
     console.log('[CreateOrder] Address ID:', req.body.addressId);
 
-    const { products, address: bodyAddress, addressId, subtotal, itemsPrice, deliveryCharges, discount, platformFee, tax, total, mrp, finalAmount } = req.body;
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🔒 ULTRA LOCK: Accept new previewData format from PaymentPage
+    // If previewData is present, extract products/totals from the frozen summary.
+    // Falls back to old format (products, subtotal, total) for backward compat.
+    // ─────────────────────────────────────────────────────────────────────────
+    let requestBody = req.body;
+
+    if (req.body.previewData) {
+      const pd = req.body.previewData;
+      console.log('[CreateOrder] 🔒 ULTRA LOCK mode — previewData received, grandTotal:', pd.grandTotal);
+
+      // Map engine items → products format expected by the rest of the handler
+      const products = (pd.items || []).map(i => ({
+        productId: i.productId,
+        quantity: i.quantity,
+        price: i.unitPrice,
+        productName: i.productName || '',
+        image: i.image || '',
+        color: i.color || null,
+        size: i.size || null,
+        variantId: i.variantId || null,
+        selectedVariants: {}
+      }));
+
+      // Merge into a shape the rest of the function understands
+      requestBody = {
+        ...req.body,
+        products,
+        subtotal: pd.subtotal ?? pd.grandTotal,
+        itemsPrice: pd.subtotal ?? pd.grandTotal,
+        deliveryCharges: pd.deliveryCharge ?? 0,
+        discount: pd.couponDiscount ?? 0,
+        platformFee: pd.platformFee ?? 0,
+        tax: pd.totalGST ?? 0,
+        total: pd.grandTotal,
+        finalAmount: pd.grandTotal,
+        mrp: pd.subtotal ?? pd.grandTotal,
+        // Keep addressId from original body
+        addressId: req.body.addressId,
+        couponCode: req.body.couponCode,
+      };
+    }
+
+    const { products, address: bodyAddress, addressId, subtotal, itemsPrice, deliveryCharges, discount, platformFee, tax, total, mrp, finalAmount } = requestBody;
 
     let address = bodyAddress;
 
@@ -129,7 +167,7 @@ const createOrder = async (req, res) => {
       if (user && user.addresses) {
         const foundAddress = user.addresses.id(addressId);
         if (foundAddress) {
-          address = foundAddress; // Use the found address
+          address = foundAddress;
           console.log('Address found and linked:', address._id);
         } else {
           return res.status(400).json({ message: 'Invalid addressId. Address not found in your profile.' });
@@ -489,17 +527,45 @@ const verifyPayment = async (req, res) => {
     }
 
     console.log("[VerifyPayment] Raw Body Keys:", Object.keys(req.body));
-    console.log("[VerifyPayment] Payload Address Type:", typeof req.body.address);
-    console.log("[VerifyPayment] Payload Address ID:", req.body.addressId);
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🔒 ULTRA LOCK: Accept new previewData format from PaymentPage (Razorpay flow)
+    // ─────────────────────────────────────────────────────────────────────────
+    let patchedBody = req.body;
+    if (req.body.previewData) {
+      const pd = req.body.previewData;
+      console.log('[VerifyPayment] 🔒 ULTRA LOCK mode — previewData.grandTotal:', pd.grandTotal);
+      const products = (pd.items || []).map(i => ({
+        productId: i.productId,
+        quantity: i.quantity,
+        price: i.unitPrice,
+        productName: i.productName || '',
+        image: i.image || '',
+        color: i.color || null,
+        size: i.size || null,
+        variantId: i.variantId || null,
+        selectedVariants: {}
+      }));
+      patchedBody = {
+        ...req.body,
+        products,
+        subtotal: pd.subtotal ?? pd.grandTotal,
+        itemsPrice: pd.subtotal ?? pd.grandTotal,
+        deliveryCharges: pd.deliveryCharge ?? 0,
+        discount: pd.couponDiscount ?? 0,
+        platformFee: pd.platformFee ?? 0,
+        tax: pd.totalGST ?? 0,
+        total: pd.grandTotal,
+        finalAmount: pd.grandTotal,
+        mrp: pd.subtotal ?? pd.grandTotal,
+      };
+    }
 
     const {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-
       products,
-
       subtotal,
       itemsPrice,
       deliveryCharges,
@@ -509,10 +575,10 @@ const verifyPayment = async (req, res) => {
       total,
       mrp,
       finalAmount,
-      addressId // Add addressId to destructuring
-    } = req.body;
+      addressId
+    } = patchedBody;
 
-    let address = req.body.address;
+    let address = patchedBody.address;
 
     // Fix: If addressId is provided but address object is missing, fetch from user profile
     if (!address && addressId) {
@@ -521,7 +587,7 @@ const verifyPayment = async (req, res) => {
       if (user && user.addresses) {
         const foundAddress = user.addresses.id(addressId);
         if (foundAddress) {
-          address = foundAddress; // Use the found address
+          address = foundAddress;
           console.log('[VerifyPayment] Address found and linked:', address._id);
         } else {
           console.warn('[VerifyPayment] Invalid addressId:', addressId);
