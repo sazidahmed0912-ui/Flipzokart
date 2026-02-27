@@ -40,15 +40,6 @@ const AddressCard: React.FC<AddressCardProps> = ({
                     <div className="address-card-actions">
                         <button className="address-btn address-btn-edit" onClick={(e) => { e.stopPropagation(); onEdit(address); }}>Edit</button>
                         <button className="address-btn address-btn-delete" onClick={(e) => { e.stopPropagation(); onDelete(address.id); }}>Delete</button>
-                        {!hideRadio && (
-                            <button
-                                className="address-btn address-btn-deliver"
-                                onClick={(e) => { e.stopPropagation(); onDeliverHere(); }}
-                                disabled={isLoading}
-                            >
-                                {isLoading ? 'Processing...' : 'DELIVER HERE'}
-                            </button>
-                        )}
                     </div>
                 )}
             </div>
