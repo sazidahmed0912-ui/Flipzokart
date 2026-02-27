@@ -36,6 +36,7 @@ interface OrderDetails {
   }>;
   address: {
     fullName: string;
+    email: string;
     street: string;
     city: string;
     state: string;
@@ -267,12 +268,21 @@ const OrderSuccessPage = () => {
               <h3 className="font-bold text-gray-800 mb-2 sm:mb-4 flex items-center gap-2 text-sm sm:text-lg">
                 <MapPin size={16} className="text-[#2874F0] sm:w-5 sm:h-5" /> Delivery Address
               </h3>
-              <div className="pl-0 sm:pl-7 text-xs sm:text-sm">
-                <p className="font-bold text-gray-800 mb-1">{order.address.fullName}</p>
-                <p className="text-gray-500 leading-relaxed mb-1 sm:mb-2">
-                  {order.address.street}, {order.address.city}, {order.address.state} - {order.address.pincode}
-                </p>
+              <div className="pl-0 sm:pl-7 text-xs sm:text-sm space-y-1">
+                <p className="font-bold text-gray-800">{order.address.fullName}</p>
+                {order.address.email && order.address.email !== 'N/A' && (
+                  <p className="text-gray-500">{order.address.email}</p>
+                )}
                 <p className="font-medium text-gray-700">Phone: <span className="text-gray-500">{order.address.phone}</span></p>
+                <p className="text-gray-500 leading-relaxed">
+                  {order.address.street}{(order.address as any).addressLine2 ? `, ${(order.address as any).addressLine2}` : ''}
+                </p>
+                <p className="text-gray-500">
+                  {[order.address.city, order.address.state].filter(Boolean).join(', ')}{order.address.pincode ? ` - ${order.address.pincode}` : ''}
+                </p>
+                {order.address.country && (
+                  <p className="text-gray-500">{order.address.country}</p>
+                )}
               </div>
             </motion.div>
 

@@ -28,19 +28,13 @@ const orderSchema = new mongoose.Schema({
         of: String
       },
       // 🔒 GST FREEZE FIELDS (set at order creation, never recalculated)
-      unitPrice: { type: Number, default: 0 },
-      baseAmount: { type: Number, default: 0 },
-      gstRate: { type: Number, default: 0 },
-      cgst: { type: Number, default: 0 },
-      sgst: { type: Number, default: 0 },
-      totalGST: { type: Number, default: 0 },
-      finalAmount: { type: Number, default: 0 },
-      // 🔒 FINAL ENGINE CANONICAL FIELDS
-      mrp: { type: Number, default: 0 },
-      sellingPrice: { type: Number, default: 0 },
-      itemSubtotal: { type: Number, default: 0 },
-      itemGST: { type: Number, default: 0 },
-      itemFinal: { type: Number, default: 0 },
+      unitPrice: { type: Number, default: 0 },  // price per unit (base, pre-GST)
+      baseAmount: { type: Number, default: 0 },  // unitPrice * quantity
+      gstRate: { type: Number, default: 0 },  // %: 0/5/12/18/28
+      cgst: { type: Number, default: 0 },  // CGST portion
+      sgst: { type: Number, default: 0 },  // SGST portion
+      totalGST: { type: Number, default: 0 },  // cgst + sgst
+      finalAmount: { type: Number, default: 0 },  // baseAmount + totalGST
     },
   ],
   shippingAddress: {
@@ -97,14 +91,11 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  // 🔒 GST FREEZE SUMMARY
-  totalGST: { type: Number, default: 0 },
-  cgst: { type: Number, default: 0 },
-  sgst: { type: Number, default: 0 },
-  grandTotal: { type: Number, default: 0 },
-  // 🔒 CANONICAL FIELD NAMES (finalPriceEngine output)
-  deliveryCharge: { type: Number, default: 0 },   // singular (deliveryCharges = legacy alias)
-  couponDiscount: { type: Number, default: 0 },   // coupon savings (discount = legacy alias)
+  // 🔒 GST FREEZE SUMMARY (set at order creation, never recalculated)
+  totalGST: { type: Number, default: 0 },   // Total GST collected
+  cgst: { type: Number, default: 0 },   // CGST portion
+  sgst: { type: Number, default: 0 },   // SGST portion
+  grandTotal: { type: Number, default: 0 }, // Final amount customer paid (= finalAmount)
   orderSummary: {
     itemsPrice: { type: Number, default: 0 },
     tax: { type: Number, default: 0 },

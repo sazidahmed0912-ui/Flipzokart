@@ -57,8 +57,7 @@ export const fetchProducts = () => API.get("/api/products");
 export const fetchProductById = (id: string) => API.get(`/api/products/${id}`);
 
 // Orders (Base: /api/order)
-// 🔒 ULTRA LOCK: createOrder sends frozen previewData — no price recalculation on backend
-export const createOrder = (data: any) => API.post("/api/order/checkout", data);
+export const createOrder = (data: any) => API.post("/api/order/create", data);
 export const createRazorpayOrder = (data: any) => API.post("/api/order/razorpay", data);
 export const verifyPayment = (data: any) => API.post("/api/order/verify-payment", data);
 

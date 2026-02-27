@@ -7,8 +7,7 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const { sendOrderConfirmationEmail } = require('../utils/email');
-const { calculateFinalOrder, calculateDeliveryCharge } = require('../utils/finalPriceEngine'); // 🔒 FINAL MASTER ENGINE
-
+const { calculateCartSummary } = require('../utils/priceEngine'); // 🏗️ MASTER PRICE ENGINE
 
 // Helper function to update stock
 const updateStock = async (products) => {
@@ -34,129 +33,18 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 🏇 PREVIEW ORDER — server-authoritative price summary (READ-ONLY, no save)
-//    Called by: POST /api/order/preview (PaymentPage)
-//    Same engine as createOrder but does NOT save. Ensures Cart = Checkout = Order.
-// ─────────────────────────────────────────────────────────────────────────────
-const previewOrder = async (req, res) => {
-  try {
-    const { cartItems = [], couponCode, paymentMethod = 'COD' } = req.body;
-
-    if (!cartItems.length) return res.status(400).json({ message: 'cartItems required' });
-
-    // Fetch DB products + real GST rates
-    const dbItems = await Promise.all(
-      cartItems.map(async (ci) => {
-        const id = ci.productId || ci.id;
-        if (!mongoose.Types.ObjectId.isValid(id)) return null;
-        const p = await Product.findById(id).populate('category');
-        if (!p) return null;
-        return {
-          _id: p._id,
-          name: p.name,
-          image: p.thumbnail || (p.images && p.images[0]) || p.image || '',
-          mrp: p.originalPrice || p.price,
-          sellingPrice: p.price,
-          quantity: Number(ci.quantity) || 1,
-          gstRate: p.customGstRate ?? p.category?.gstRate ?? 18,
-          priceType: p.priceType || 'exclusive'
-        };
-      })
-    );
-    const validItems = dbItems.filter(Boolean);
-    if (!validItems.length) return res.status(400).json({ message: 'No valid products found' });
-
-    // Validate coupon server-side
-    let couponDiscount = 0;
-    let couponMeta = null;
-    if (couponCode) {
-      try {
-        const couponResult = await couponController.validateAndCalculateDiscount(
-          req.user.id,
-          validItems.map(i => ({ productId: i._id, quantity: i.quantity, price: i.sellingPrice })),
-          couponCode,
-          paymentMethod
-        );
-        if (couponResult?.isValid) {
-          couponDiscount = couponResult.discountAmount || 0;
-          couponMeta = { code: couponCode, discount: couponDiscount };
-        }
-      } catch (e) {
-        console.warn('[Preview] Coupon validation skipped:', e.message);
-      }
-    }
-
-    // Delivery charge
-    const estimatedTotal = validItems.reduce((s, i) => s + i.sellingPrice * i.quantity, 0);
-    const deliveryCharge = calculateDeliveryCharge(estimatedTotal, paymentMethod);
-
-    // Run final engine — same logic as createOrder
-    const summary = calculateFinalOrder({
-      items: validItems,
-      deliveryCharge,
-      platformFee: 3,
-      couponDiscount
-    });
-
-    return res.json({ ...summary, coupon: couponMeta });
-  } catch (err) {
-    console.error('[previewOrder]', err);
-    return res.status(500).json({ message: 'Preview failed', error: err.message });
-  }
-};
-
 // Create order for COD
 const createOrder = async (req, res) => {
-
   try {
+    console.log('Creating order with user:', req.user?.id);
+    console.log('Request body:', req.body);
+    console.log('req.user object:', req.user); // Added for debugging
+
     console.log('[CreateOrder] Request body keys:', Object.keys(req.body));
+    console.log('[CreateOrder] Address in body:', !!req.body.address);
     console.log('[CreateOrder] Address ID:', req.body.addressId);
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // 🔒 ULTRA LOCK: Accept new previewData format from PaymentPage
-    // If previewData is present, extract products/totals from the frozen summary.
-    // Falls back to old format (products, subtotal, total) for backward compat.
-    // ─────────────────────────────────────────────────────────────────────────
-    let requestBody = req.body;
-
-    if (req.body.previewData) {
-      const pd = req.body.previewData;
-      console.log('[CreateOrder] 🔒 ULTRA LOCK mode — previewData received, grandTotal:', pd.grandTotal);
-
-      // Map engine items → products format expected by the rest of the handler
-      const products = (pd.items || []).map(i => ({
-        productId: i.productId,
-        quantity: i.quantity,
-        price: i.unitPrice,
-        productName: i.productName || '',
-        image: i.image || '',
-        color: i.color || null,
-        size: i.size || null,
-        variantId: i.variantId || null,
-        selectedVariants: {}
-      }));
-
-      // Merge into a shape the rest of the function understands
-      requestBody = {
-        ...req.body,
-        products,
-        subtotal: pd.subtotal ?? pd.grandTotal,
-        itemsPrice: pd.subtotal ?? pd.grandTotal,
-        deliveryCharges: pd.deliveryCharge ?? 0,
-        discount: pd.couponDiscount ?? 0,
-        platformFee: pd.platformFee ?? 0,
-        tax: pd.totalGST ?? 0,
-        total: pd.grandTotal,
-        finalAmount: pd.grandTotal,
-        mrp: pd.subtotal ?? pd.grandTotal,
-        // Keep addressId from original body
-        addressId: req.body.addressId,
-        couponCode: req.body.couponCode,
-      };
-    }
-
-    const { products, address: bodyAddress, addressId, subtotal, itemsPrice, deliveryCharges, discount, platformFee, tax, total, mrp, finalAmount } = requestBody;
+    const { products, address: bodyAddress, addressId, subtotal, itemsPrice, deliveryCharges, discount, platformFee, tax, total, mrp, finalAmount } = req.body;
 
     let address = bodyAddress;
 
@@ -167,7 +55,7 @@ const createOrder = async (req, res) => {
       if (user && user.addresses) {
         const foundAddress = user.addresses.id(addressId);
         if (foundAddress) {
-          address = foundAddress;
+          address = foundAddress; // Use the found address
           console.log('Address found and linked:', address._id);
         } else {
           return res.status(400).json({ message: 'Invalid addressId. Address not found in your profile.' });
@@ -266,26 +154,20 @@ const createOrder = async (req, res) => {
     }
 
     // -------------------------------------------------------------------------
-    // 🔒 FINAL PRICE ENGINE — ONE calculation, then FREEZE
+    // 🛡️ MASTER PRICE ENGINE — ONE CALCULATION, THEN FREEZE
     // -------------------------------------------------------------------------
-    // Fetch real GST rates from DB for each product
-    const dbProducts = await Promise.all(
-      finalOrderProducts.map(fp => Product.findById(fp.productId).populate('category'))
-    );
-
-    const engineItems = finalOrderProducts.map((fp, idx) => {
-      const db = dbProducts[idx];
-      return {
+    // Build engine-compatible items format (product obj + quantity)
+    const engineItems = finalOrderProducts.map(fp => ({
+      product: {
         _id: fp.productId,
         name: fp.productName,
-        image: fp.image,
-        mrp: fp.mrp || fp.price,
-        sellingPrice: fp.price,
-        quantity: fp.quantity,
-        gstRate: db?.customGstRate ?? db?.category?.gstRate ?? 18,
-        priceType: db?.priceType || 'exclusive'
-      };
-    });
+        price: fp.price,
+        originalPrice: fp.mrp,
+        customGstRate: null,  // Already pulled from DB and embedded, use default
+        priceType: 'exclusive'
+      },
+      quantity: fp.quantity
+    }));
 
     // 🎟️ Re-validate coupon server-side
     let couponSnapshot = undefined;
@@ -315,38 +197,24 @@ const createOrder = async (req, res) => {
       }
     }
 
-    // 🔒 ONE final calculation. Values locked forever.
-    const estimatedTotal = engineItems.reduce((s, i) => s + i.sellingPrice * i.quantity, 0);
-    const deliveryChargeAmt = calculateDeliveryCharge(estimatedTotal, 'COD');
+    // 🔒 FREEZE — run master engine, ONE time, values locked forever
+    const summary = calculateCartSummary(engineItems, couponDiscount, 'COD');
+    console.log('🛡️ Frozen Price Summary:', JSON.stringify(summary, null, 2));
 
-    const summary = calculateFinalOrder({
-      items: engineItems,
-      deliveryCharge: deliveryChargeAmt,
-      platformFee: 3,
-      couponDiscount
-    });
-    console.log('🔒 Frozen Summary:', JSON.stringify(summary, null, 2));
-
-    // Merge frozen engine output into product rows — canonical field names
-    const frozenProducts = summary.items.map((eng, idx) => ({
+    // Map engine items back to order product rows (with full GST freeze per item)
+    const frozenProducts = summary.items.map((engineItem, idx) => ({
       ...finalOrderProducts[idx],
-      // 🔒 Canonical final-engine fields
-      mrp: eng.mrp,
-      sellingPrice: eng.sellingPrice,
-      itemSubtotal: eng.itemSubtotal,
-      itemGST: eng.itemGST,
-      itemFinal: eng.itemFinal,
-      gstRate: eng.gstRate,
-      // Legacy-compat aliases
-      unitPrice: eng.sellingPrice,
-      baseAmount: eng.itemSubtotal,
-      cgst: eng.itemGST / 2,
-      sgst: eng.itemGST / 2,
-      totalGST: eng.itemGST,
-      finalAmount: eng.itemFinal
+      // 🔒 FROZEN GST PER ITEM
+      unitPrice: engineItem.unitPrice,
+      baseAmount: engineItem.baseAmount,
+      gstRate: engineItem.gstRate,
+      cgst: engineItem.cgst,
+      sgst: engineItem.sgst,
+      totalGST: engineItem.totalGST,
+      finalAmount: engineItem.finalAmount
     }));
 
-    // 🔒 ALL frozen from finalPriceEngine — no frontend numbers used
+    // Create order with ALL values frozen from engine (no frontend numbers)
     const order = new Order({
       user: req.user.id,
       products: frozenProducts,
@@ -356,24 +224,20 @@ const createOrder = async (req, res) => {
       paymentModeSnapshot,
       couponSnapshot,
 
-      // Canonical final-engine field names
+      // 🔒 ORDER-LEVEL FROZEN SUMMARY
       subtotal: summary.subtotal,
-      totalGST: summary.totalGST,
-      cgst: summary.cgst,
-      sgst: summary.sgst,
-      deliveryCharge: summary.deliveryCharge,
-      platformFee: summary.platformFee,
-      couponDiscount: summary.couponDiscount,
-      grandTotal: summary.grandTotal,
-      mrp: summary.mrp,
-
-      // Legacy-compat aliases (read by old frontend code)
       itemsPrice: summary.subtotal,
       deliveryCharges: summary.deliveryCharge,
       discount: summary.couponDiscount,
-      tax: summary.totalGST,
+      platformFee: summary.platformFee,
+      tax: summary.totalGST,         // backward compat alias
+      totalGST: summary.totalGST,
+      cgst: summary.cgst,
+      sgst: summary.sgst,
+      mrp: summary.mrp,
       total: summary.grandTotal,
       finalAmount: summary.grandTotal,
+      grandTotal: summary.grandTotal,
 
       orderSummary: {
         itemsPrice: summary.subtotal,
@@ -527,45 +391,17 @@ const verifyPayment = async (req, res) => {
     }
 
     console.log("[VerifyPayment] Raw Body Keys:", Object.keys(req.body));
+    console.log("[VerifyPayment] Payload Address Type:", typeof req.body.address);
+    console.log("[VerifyPayment] Payload Address ID:", req.body.addressId);
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // 🔒 ULTRA LOCK: Accept new previewData format from PaymentPage (Razorpay flow)
-    // ─────────────────────────────────────────────────────────────────────────
-    let patchedBody = req.body;
-    if (req.body.previewData) {
-      const pd = req.body.previewData;
-      console.log('[VerifyPayment] 🔒 ULTRA LOCK mode — previewData.grandTotal:', pd.grandTotal);
-      const products = (pd.items || []).map(i => ({
-        productId: i.productId,
-        quantity: i.quantity,
-        price: i.unitPrice,
-        productName: i.productName || '',
-        image: i.image || '',
-        color: i.color || null,
-        size: i.size || null,
-        variantId: i.variantId || null,
-        selectedVariants: {}
-      }));
-      patchedBody = {
-        ...req.body,
-        products,
-        subtotal: pd.subtotal ?? pd.grandTotal,
-        itemsPrice: pd.subtotal ?? pd.grandTotal,
-        deliveryCharges: pd.deliveryCharge ?? 0,
-        discount: pd.couponDiscount ?? 0,
-        platformFee: pd.platformFee ?? 0,
-        tax: pd.totalGST ?? 0,
-        total: pd.grandTotal,
-        finalAmount: pd.grandTotal,
-        mrp: pd.subtotal ?? pd.grandTotal,
-      };
-    }
 
     const {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
+
       products,
+
       subtotal,
       itemsPrice,
       deliveryCharges,
@@ -575,10 +411,10 @@ const verifyPayment = async (req, res) => {
       total,
       mrp,
       finalAmount,
-      addressId
-    } = patchedBody;
+      addressId // Add addressId to destructuring
+    } = req.body;
 
-    let address = patchedBody.address;
+    let address = req.body.address;
 
     // Fix: If addressId is provided but address object is missing, fetch from user profile
     if (!address && addressId) {
@@ -587,7 +423,7 @@ const verifyPayment = async (req, res) => {
       if (user && user.addresses) {
         const foundAddress = user.addresses.id(addressId);
         if (foundAddress) {
-          address = foundAddress;
+          address = foundAddress; // Use the found address
           console.log('[VerifyPayment] Address found and linked:', address._id);
         } else {
           console.warn('[VerifyPayment] Invalid addressId:', addressId);
@@ -1236,7 +1072,6 @@ const deleteOrder = async (req, res) => {
 
 module.exports = {
   createOrder,
-  previewOrder,
   createRazorpayOrder,
   verifyPayment,
   calculateShipping,
@@ -1247,4 +1082,3 @@ module.exports = {
   updateOrderStatus,
   deleteOrder
 };
-

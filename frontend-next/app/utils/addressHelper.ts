@@ -1,10 +1,12 @@
 export interface NormalizedAddress {
     fullName: string;
+    email: string;
     phone: string;
     street: string;
     city: string;
     state: string;
     pincode: string;
+    country: string;
     addressLine2?: string;
     type?: string;
 }
@@ -12,11 +14,13 @@ export interface NormalizedAddress {
 export const getSafeAddress = (source: any): NormalizedAddress => {
     if (!source) return {
         fullName: 'Customer',
+        email: 'N/A',
         phone: 'N/A',
         street: 'Address not available',
         city: 'Unknown',
         state: '',
-        pincode: ''
+        pincode: '',
+        country: ''
     };
 
     // Handle legacy double-nested or stringified addresses
@@ -28,23 +32,27 @@ export const getSafeAddress = (source: any): NormalizedAddress => {
             // Treat string as street if parsing fails
             return {
                 fullName: 'Customer',
+                email: 'N/A',
                 phone: 'N/A',
                 street: source,
                 city: '',
                 state: '',
-                pincode: ''
+                pincode: '',
+                country: ''
             };
         }
     }
 
     return {
         fullName: data.fullName || data.name || 'Customer',
+        email: data.email || 'N/A',
         phone: data.phone || data.mobile || 'N/A',
-        street: data.street || data.address || data.addressLine1 || 'Address details missing',
-        addressLine2: data.addressLine2 || data.locality || '',
+        street: data.street || data.address || data.line1 || data.addressLine1 || 'Address details missing',
+        addressLine2: data.addressLine2 || data.line2 || data.locality || '',
         city: data.city || data.district || '',
         state: data.state || '',
         pincode: data.pincode || data.zip || data.postalCode || '',
+        country: data.country || '',
         type: data.type || 'Home'
     };
 };

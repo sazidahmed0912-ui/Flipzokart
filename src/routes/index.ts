@@ -18,7 +18,6 @@ router.use('/upload', uploadRoutes);
 router.use('/products', productRoutes);
 router.use('/cart', cartRoutes);
 router.use('/orders', orderRoutes);
-router.use('/order', orderRoutes); // Alias — frontend uses /api/order/* (singular)
 router.use('/chat', chatRoutes);
 router.use('/admin', adminRoutes);
 router.use('/reviews', reviewRoutes);

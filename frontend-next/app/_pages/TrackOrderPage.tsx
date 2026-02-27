@@ -251,25 +251,41 @@ export const TrackOrderPage: React.FC = () => {
     const isCancelled = order.status === 'Cancelled';
 
     const renderAddress = () => {
-        const addr = order.shippingAddress;
+        const addr = order.shippingAddress || order.address;
         if (!addr) return <p className="text-sm text-gray-500">Address not available</p>;
 
         // If it's a simple string (legacy or fallback)
-        if (order.shippingAddressIsString || (typeof addr === 'string')) {
-            return <p className="text-sm text-gray-600">{typeof addr === 'string' ? addr : addr.address}</p>;
+        if (typeof addr === 'string') {
+            return <p className="text-sm text-gray-600">{addr}</p>;
         }
 
+        // Resolve each field with safe fallbacks
+        const fullName = addr.fullName || addr.name || order.user?.name || '';
+        const email = addr.email || order.shippingSnapshot?.shippingTo?.email || order.user?.email || '';
+        const phone = addr.phone || order.shippingSnapshot?.shippingTo?.phone || order.user?.phone || '';
+        const street = addr.street || addr.address || addr.line1 || '';
+        const line2 = addr.addressLine2 || addr.line2 || addr.locality || '';
+        const city = addr.city || addr.district || '';
+        const state = addr.state || '';
+        const pincode = addr.pincode || addr.zip || '';
+        const country = addr.country || order.shippingSnapshot?.shippingTo?.country || '';
+
         return (
-            <div className="space-y-1">
-                <p className="font-bold text-sm text-gray-900">{addr.name || order.user?.name || order.userName}</p>
-                <p className="text-sm text-gray-600">{addr.address || addr.street}</p>
-                <p className="text-sm text-gray-600">
-                    {addr.city ? `${addr.city}, ` : ''}{addr.state} {addr.pincode ? `- ${addr.pincode}` : ''}
-                </p>
-                <div className="mt-2 flex items-center gap-2">
-                    <span className="font-bold text-sm text-gray-900">Phone:</span>
-                    <span className="text-sm text-gray-600">{addr.phone || order.user?.phone}</span>
-                </div>
+            <div className="space-y-1 text-sm">
+                {fullName && <p className="font-bold text-gray-900">{fullName}</p>}
+                {email && <p className="text-gray-500">{email}</p>}
+                {phone && <p className="text-gray-600"><span className="font-semibold text-gray-700">Phone:</span> {phone}</p>}
+                {(street || line2) && (
+                    <p className="text-gray-600">
+                        {street}{line2 ? `, ${line2}` : ''}
+                    </p>
+                )}
+                {(city || state || pincode) && (
+                    <p className="text-gray-600">
+                        {[city, state].filter(Boolean).join(', ')}{pincode ? ` - ${pincode}` : ''}
+                    </p>
+                )}
+                {country && <p className="text-gray-600">{country}</p>}
             </div>
         );
     };

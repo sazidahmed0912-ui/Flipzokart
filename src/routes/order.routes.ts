@@ -5,19 +5,9 @@ import { protect, restrictTo } from '../middlewares/auth.middleware';
 const router = Router();
 const orderController = new OrderController();
 
-// ──────────────────────────────────────────────────────────────
-// 🔥 PREVIEW (The ONLY calculation point)
-// Public-ish: no auth required for preview (coupon validation requires auth)
-// POST /api/orders/preview
-// ──────────────────────────────────────────────────────────────
-router.post('/preview', protect, orderController.previewOrder);
-
-// Guarded routes
 router.use(protect);
 
-// POST /api/orders/checkout — hash-verified, no recalculation
-router.post('/checkout', orderController.createOrder);
-
+router.post('/checkout', orderController.createOrder); // /api/v1/orders/checkout
 router.get('/', orderController.getUserOrders);
 router.get('/:id', orderController.getOrder);
 
