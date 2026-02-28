@@ -158,9 +158,9 @@ const HelpCenterPage: React.FC = () => {
                                 <Phone size={18} className="text-[#2874F0]" />
                                 <span className="text-sm font-medium text-gray-700">+91 6033394539</span>
                             </a>
-                            <a href="mailto:fzokartshop@gmail.com" className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-md transition-colors">
+                            <a href="mailto:fzokart@gmail.com" className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-md transition-colors">
                                 <Mail size={18} className="text-[#2874F0]" />
-                                <span className="text-sm font-medium text-gray-700">fzokartshop@gmail.com</span>
+                                <span className="text-sm font-medium text-gray-700">fzokart@gmail.com</span>
                             </a>
                         </div>
                     </div>

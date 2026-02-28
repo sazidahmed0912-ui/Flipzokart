@@ -40,7 +40,7 @@ export const ContactUsPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Email Us</p>
-                    <a href="mailto:fzokart@gmail.com" className="text-[13px] md:text-lg font-bold text-dark hover:text-primary transition-colors">fzokartshop@gmail.com</a>
+                    <a href="mailto:fzokart@gmail.com" className="text-[13px] md:text-lg font-bold text-dark hover:text-primary transition-colors">fzokart@gmail.com</a>
                   </div>
                 </div>
 
@@ -50,7 +50,7 @@ export const ContactUsPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Call Support</p>
-                    <a href="tel:+917636067699" className="text-[13px] md:text-lg font-bold text-dark hover:text-primary transition-colors">+91 7636067699</a>
+                    <a href="tel:+916033394539" className="text-[13px] md:text-lg font-bold text-dark hover:text-primary transition-colors">+91 6033394539</a>
                   </div>
                 </div>
 
@@ -61,7 +61,7 @@ export const ContactUsPage: React.FC = () => {
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">WhatsApp Chat</p>
                     <a
-                      href="https://wa.me/917636067699"
+                      href="https://wa.me/916033394539"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[13px] md:text-lg font-bold text-dark hover:text-[#25D366] transition-colors"
@@ -109,7 +109,7 @@ export const ContactUsPage: React.FC = () => {
             </div>
 
             <a
-              href="https://wa.me/917636067699"
+              href="https://wa.me/91 6033394539"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-[#25D366] p-8 rounded-[2.5rem] text-white flex items-center justify-between group cursor-pointer overflow-hidden relative shadow-lg shadow-[#25D366]/20"
