@@ -9,7 +9,10 @@ const {
   updateReview,
   deleteReview,
   getUserReviews, // Import the new controller function
-  getAllReviews
+  getAllReviews,
+  toggleLikeReview,
+  toggleDislikeReview,
+  addCommentToReview
 } = require("../controllers/reviewController");
 
 // Admin routes
@@ -24,5 +27,10 @@ router.post("/", protect, createReview);
 router.put("/:reviewId", protect, updateReview);
 router.delete("/:reviewId", protect, deleteReview);
 router.get("/user/:userId", protect, getUserReviews); // New route to get reviews by user ID
+
+// Review Actions
+router.put("/:reviewId/like", protect, toggleLikeReview);
+router.put("/:reviewId/dislike", protect, toggleDislikeReview);
+router.post("/:reviewId/comment", protect, addCommentToReview);
 
 module.exports = router;

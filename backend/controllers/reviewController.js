@@ -214,6 +214,111 @@ const getAllReviews = async (req, res) => {
   }
 };
 
+// @desc    Toggle Like on a review
+// @route   PUT /api/reviews/:reviewId/like
+// @access  Private
+const toggleLikeReview = async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.reviewId);
+    if (!review) return res.status(404).json({ message: "Review not found" });
+
+    const userId = req.user._id.toString();
+
+    // Check if user already liked
+    const hasLiked = review.likes.includes(userId);
+
+    if (hasLiked) {
+      // Unlike
+      review.likes = review.likes.filter((id) => id.toString() !== userId);
+    } else {
+      // Like (and remove dislike if exists)
+      review.likes.push(userId);
+      review.dislikes = review.dislikes.filter((id) => id.toString() !== userId);
+    }
+
+    await review.save();
+
+    const populatedReview = await Review.findById(review._id).populate("user", "name email");
+
+    const io = req.app.get("socketio");
+    if (io) io.emit("updatedReview", populatedReview);
+
+    res.status(200).json({ success: true, data: populatedReview });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+// @desc    Toggle Dislike on a review
+// @route   PUT /api/reviews/:reviewId/dislike
+// @access  Private
+const toggleDislikeReview = async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.reviewId);
+    if (!review) return res.status(404).json({ message: "Review not found" });
+
+    const userId = req.user._id.toString();
+
+    // Check if user already disliked
+    const hasDisliked = review.dislikes.includes(userId);
+
+    if (hasDisliked) {
+      // Remove dislike
+      review.dislikes = review.dislikes.filter((id) => id.toString() !== userId);
+    } else {
+      // Dislike (and remove like if exists)
+      review.dislikes.push(userId);
+      review.likes = review.likes.filter((id) => id.toString() !== userId);
+    }
+
+    await review.save();
+
+    const populatedReview = await Review.findById(review._id).populate("user", "name email");
+
+    const io = req.app.get("socketio");
+    if (io) io.emit("updatedReview", populatedReview);
+
+    res.status(200).json({ success: true, data: populatedReview });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+// @desc    Add a comment to a review
+// @route   POST /api/reviews/:reviewId/comment
+// @access  Private
+const addCommentToReview = async (req, res) => {
+  try {
+    const { comment } = req.body;
+    if (!comment) return res.status(400).json({ message: "Comment is required" });
+
+    const review = await Review.findById(req.params.reviewId);
+    if (!review) return res.status(404).json({ message: "Review not found" });
+
+    const newComment = {
+      user: req.user._id,
+      comment
+    };
+
+    review.comments.push(newComment);
+    await review.save();
+
+    const populatedReview = await Review.findById(review._id)
+      .populate("user", "name email")
+      .populate("comments.user", "name");
+
+    const io = req.app.get("socketio");
+    if (io) io.emit("updatedReview", populatedReview);
+
+    res.status(201).json({ success: true, data: populatedReview });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 module.exports = {
   createReview,
   getProductReviews,
@@ -221,5 +326,8 @@ module.exports = {
   updateReview,
   deleteReview,
   getUserReviews,
-  getAllReviews
+  getAllReviews,
+  toggleLikeReview,
+  toggleDislikeReview,
+  addCommentToReview
 };

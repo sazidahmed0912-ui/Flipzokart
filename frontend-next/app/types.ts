@@ -154,4 +154,15 @@ export interface Review {
   video?: string;
   createdAt: string;
   updatedAt: string;
+  likes?: string[];
+  dislikes?: string[];
+  comments?: {
+    _id: string;
+    user: {
+      _id: string;
+      name: string;
+    };
+    comment: string;
+    createdAt: string;
+  }[];
 }
