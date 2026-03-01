@@ -71,7 +71,19 @@ export const ProductDetails: React.FC = () => {
         const res = await fetchProductById(id);
         const data = res.data?.data?.product || res.data;
         setProduct(data);
-        if (data.reviews) setReviews(data.reviews);
+
+        // Fetch reviews separately
+        try {
+          const reviewsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}/reviews`);
+          const reviewsData = await reviewsRes.json();
+          if (reviewsData.success && reviewsData.data) {
+            setReviews(reviewsData.data);
+          } else if (data.reviews) {
+            setReviews(data.reviews); // Fallback if backend was updated
+          }
+        } catch (e) {
+          console.warn("Failed to fetch reviews", e);
+        }
       } catch (e) {
         setProduct(null);
       } finally {

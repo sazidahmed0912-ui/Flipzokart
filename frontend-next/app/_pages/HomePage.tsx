@@ -429,14 +429,14 @@ export const HomePage: React.FC = () => {
                                 <span className="font-semibold text-gray-900">What are the delivery charges and time?</span>
                                 <svg className="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-                            <div className="px-6 pb-4 text-gray-700 text-sm leading-relaxed hidden">We offer free delivery on orders above ₹500. For orders below ₹500, delivery charges are ₹40. Standard delivery takes 2-5 business days.</div>
+                            <div className="px-6 pb-4 text-gray-700 text-sm leading-relaxed hidden">We offer free delivery on orders above ₹500. For orders below ₹500, delivery charges are ₹50. Standard delivery takes 5-7 business days.</div>
                         </div>
                         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                             <button className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors" onClick={(e) => toggleFaq(e.currentTarget)}>
                                 <span className="font-semibold text-gray-900">What is your return and exchange policy?</span>
                                 <svg className="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-                            <div className="px-6 pb-4 text-gray-700 text-sm leading-relaxed hidden">We offer a 30-day return policy for most products. Items must be in original condition with tags attached.</div>
+                            <div className="px-6 pb-4 text-gray-700 text-sm leading-relaxed hidden">We offer a 7-day return policy for most products. Items must be in original condition with tags attached.</div>
                         </div>
                         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                             <button className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors" onClick={(e) => toggleFaq(e.currentTarget)}>
