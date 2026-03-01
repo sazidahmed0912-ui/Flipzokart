@@ -74,7 +74,7 @@ export const ProductDetails: React.FC = () => {
 
         // Fetch reviews separately
         try {
-          const reviewsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}/reviews`);
+          const reviewsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews/products/${id}/reviews`);
           const reviewsData = await reviewsRes.json();
           if (reviewsData.success && reviewsData.data) {
             setReviews(reviewsData.data);
