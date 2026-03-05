@@ -20,6 +20,9 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: "Fzokart - Premium Indian Marketplace",
   description: "A modern, high-performance e-commerce platform with a clean Indian marketplace aesthetic, featuring a full shopping experience and a robust admin dashboard.",
+  other: {
+    "google-adsense-account": "ca-pub-1922737502570845",
+  },
 };
 
 export default function RootLayout({
