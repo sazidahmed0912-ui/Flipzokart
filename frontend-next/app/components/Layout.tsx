@@ -99,18 +99,18 @@ const Header: React.FC = () => {
           </div>
 
           <form onSubmit={handleSearch} className="flex-1 max-w-2xl mx-8 relative">
-            <div className="relative">
+            <div className="search-container relative w-full">
               <input
                 type="text"
                 placeholder="Search for products, brands and more"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f28c28]"
+                className="search-bar w-full"
                 value={searchQuery}
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} // Delay to allow click
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <button type="submit" className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <Search className="w-5 h-5 text-gray-500" />
+                <Search className="search-icon" />
               </button>
             </div>
 

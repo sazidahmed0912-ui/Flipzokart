@@ -839,6 +839,55 @@
     font-weight: 500;
 }
 
+/* ── SEARCH BAR STYLES (Flipkart Style Profile) ────────────────────────── */
+.search-container {
+    background: #f1f3f6;
+    padding: 4px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.search-bar {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+
+.search-bar::placeholder {
+    color: #878787;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.search-bar:focus {
+    border: 1px solid #2874f0;
+    box-shadow: 0 2px 6px rgba(40, 116, 240, 0.15);
+}
+
+.search-icon {
+    color: #2874f0;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .search-bar {
+        height: 38px;
+        font-size: 13px;
+    }
+}
+
 /* ── MOBILE SEARCH HEADER OVERLAY ────────────────────────── */
 .mobile-search-overlay {
     position: fixed;
