@@ -60,6 +60,7 @@ const Header: React.FC = () => {
       setSearchHistory(updateHistory);
 
       router.push(`/shop?q=${term}`);
+      setSearchQuery('');
       setIsMenuOpen(false);
       setIsSearchOpen(false);
       setIsSearchFocused(false);
