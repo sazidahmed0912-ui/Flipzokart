@@ -109,7 +109,7 @@ const Header: React.FC = () => {
                 onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} // Delay to allow click
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button type="submit" className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <button type="submit" className="flex items-center justify-center pr-2 pl-1 shrink-0">
                 <Search className="search-icon" />
               </button>
             </div>
