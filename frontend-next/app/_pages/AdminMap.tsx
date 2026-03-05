@@ -8,7 +8,10 @@ import {
 } from 'lucide-react';
 import { useSocket } from '@/app/hooks/useSocket';
 import { useApp } from '@/app/store/Context';
-import LeafletMap, { MapLocation } from '@/app/components/LeafletMap';
+import type { MapLocation } from '@/app/components/LeafletMap';
+import dynamic from 'next/dynamic';
+
+const LiveUserMap = dynamic(() => import('@/app/components/LiveUserMap'), { ssr: false });
 
 interface UserLocation {
     id: string;
@@ -228,14 +231,8 @@ export const AdminMap: React.FC = () => {
                         <Users size={20} />
                     </button>
 
-                    {/* Map Area */}
                     <div className="flex-1 relative bg-gray-100">
-                        <LeafletMap
-                            locations={mapLocations}
-                            height="100%"
-                            className="w-full h-full rounded-none border-none"
-                            autoFit={true} // Auto fit initially
-                        />
+                        <LiveUserMap locations={mapLocations} />
                     </div>
                 </div>
             </div>

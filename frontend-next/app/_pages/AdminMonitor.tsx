@@ -2,10 +2,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Activity, Users, ShieldAlert,
-    Server, Cpu, Clock, Terminal
+    Globe, Server, Cpu, Clock, Terminal, MapPin, Maximize2
 } from 'lucide-react';
 import { useSocket } from '@/app/hooks/useSocket';
 import { useApp } from '@/app/store/Context';
+import type { MapLocation } from '@/app/components/LeafletMap';
+import dynamic from 'next/dynamic';
+
+const LiveUserMap = dynamic(() => import('@/app/components/LiveUserMap'), { ssr: false });
 
 export const AdminMonitor: React.FC = () => {
     const { user } = useApp();
@@ -71,8 +75,19 @@ export const AdminMonitor: React.FC = () => {
         const m = Math.floor((seconds % 3600) / 60);
         return `${h}h ${m}m`;
     };
-
-
+    // Transform active users to map locations
+    const mapLocations: MapLocation[] = stats.activeUserList
+        .filter((u: any) => u.lat && u.lng)
+        .map((u: any) => ({
+            id: u.id || u.socketId,
+            lat: u.lat,
+            lng: u.lng,
+            title: u.name || 'Visitor',
+            description: u.addresses && u.addresses.length > 0
+                ? `${u.addresses[0].address || ''}, ${u.city || ''}`
+                : `${u.city || 'Unknown Location'}, ${u.country || ''}`,
+            status: 'Online'
+        }));
 
     return (
         <div className="p-8 bg-[#F5F7FA] min-h-screen">
