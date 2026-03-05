@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    Activity, Users, ShieldAlert,
-    Globe, Server, Cpu, Clock, Terminal, MapPin, Maximize2
+    Activity, Users, ShieldAlert, AlertTriangle, XCircle, Info,
+    Globe, Server, Cpu, Clock, Terminal, MapPin, Maximize2, Trash2
 } from 'lucide-react';
 import { useSocket } from '@/app/hooks/useSocket';
 import { useApp } from '@/app/store/Context';
@@ -22,6 +22,8 @@ export const AdminMonitor: React.FC = () => {
         systemStatus: 'Connecting...'
     });
     const [logs, setLogs] = useState<any[]>([]);
+    const [securityEvents, setSecurityEvents] = useState<any[]>([]);
+    const [newSecEventId, setNewSecEventId] = useState<string | null>(null);
 
     // Connect to socket using the hook
     const token = localStorage.getItem("token");
@@ -30,6 +32,7 @@ export const AdminMonitor: React.FC = () => {
     // Auto-scroll logs smart handling
     const logsEndRef = useRef<HTMLDivElement>(null);
     const logsContainerRef = useRef<HTMLDivElement>(null);
+    const secEventsEndRef = useRef<HTMLDivElement>(null);
     const [isAtBottom, setIsAtBottom] = useState(true);
 
     const scrollToBottom = () => {
@@ -59,6 +62,15 @@ export const AdminMonitor: React.FC = () => {
                 if (newLogs.length > 50) newLogs.shift();
                 return newLogs;
             });
+            // Push warnings/errors to dedicated security events list
+            if (log.type === 'warning' || log.type === 'error') {
+                setSecurityEvents(prev => {
+                    const updated = [{ ...log, _ts: Date.now() }, ...prev];
+                    return updated.slice(0, 50);
+                });
+                setNewSecEventId(log.id);
+                setTimeout(() => setNewSecEventId(null), 3000);
+            }
         };
 
         socket.on('monitor:stats', handleStats);
@@ -149,23 +161,50 @@ export const AdminMonitor: React.FC = () => {
                     )}
                 </div>
 
-                {/* Security Events */}
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm col-span-1 lg:col-span-1">
-                    <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <ShieldAlert size={18} className="text-orange-500" /> Security Events
-                    </h2>
-                    <div className="space-y-4">
-                        {logs.filter(l => l.type === 'warning' || l.type === 'error').slice(-5).map(log => (
+                {/* Security Events — Live scrollable panel */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm col-span-1 lg:col-span-1 flex flex-col" style={{ height: '384px' }}>
+                    {/* Header */}
+                    <div className="p-5 border-b border-gray-100 flex items-center justify-between shrink-0">
+                        <h2 className="font-bold text-gray-800 flex items-center gap-2">
+                            <ShieldAlert size={18} className="text-orange-500" /> Security Events
+                            {securityEvents.length > 0 && (
+                                <span className="ml-1 bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+                                    {securityEvents.length}
+                                </span>
+                            )}
+                        </h2>
+                        {securityEvents.length > 0 && (
+                            <button
+                                onClick={() => setSecurityEvents([])}
+                                className="text-gray-400 hover:text-red-500 transition-colors p-1 rounded"
+                                title="Clear all events"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Scrollable events list */}
+                    <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+                        {securityEvents.length === 0 && (
+                            <div className="flex flex-col items-center justify-center h-full text-center py-6">
+                                <ShieldAlert size={36} className="text-gray-200 mb-2" />
+                                <p className="text-sm text-gray-400 font-medium">All clear — no security alerts</p>
+                                <p className="text-xs text-gray-300 mt-1">Events appear here in real-time</p>
+                            </div>
+                        )}
+
+                        {securityEvents.map(log => (
                             <SecurityLog
-                                key={log.id}
-                                time={new Date(log.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                key={log.id || log._ts}
+                                time={new Date(log.timestamp || log._ts || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
                                 message={log.message}
+                                source={log.source}
                                 type={log.type === 'error' ? 'danger' : 'warning'}
+                                isNew={newSecEventId === log.id}
                             />
                         ))}
-                        {logs.filter(l => l.type === 'warning' || l.type === 'error').length === 0 && (
-                            <p className="text-sm text-gray-500 text-center py-4">No recent security alerts.</p>
-                        )}
+                        <div ref={secEventsEndRef} />
                     </div>
                 </div>
             </div>
@@ -199,20 +238,30 @@ const MonitorCard = ({ title, value, icon: Icon, color, change }: any) => {
     );
 };
 
-const SecurityLog = ({ time, message, type }: any) => {
-    const types: any = {
-        warning: "border-l-4 border-yellow-400 bg-yellow-50",
-        danger: "border-l-4 border-red-500 bg-red-50",
-        success: "border-l-4 border-green-500 bg-green-50",
-        info: "border-l-4 border-blue-400 bg-blue-50",
+const SecurityLog = ({ time, message, source, type, isNew }: any) => {
+    const cfg: any = {
+        warning: { bar: 'border-yellow-400', bg: 'bg-yellow-50', icon: <AlertTriangle size={14} className="text-yellow-500 shrink-0" />, label: 'WARN', labelCls: 'bg-yellow-100 text-yellow-700' },
+        danger: { bar: 'border-red-500', bg: 'bg-red-50', icon: <XCircle size={14} className="text-red-500 shrink-0" />, label: 'ERROR', labelCls: 'bg-red-100 text-red-700' },
+        success: { bar: 'border-green-500', bg: 'bg-green-50', icon: <Info size={14} className="text-green-500 shrink-0" />, label: 'OK', labelCls: 'bg-green-100 text-green-700' },
+        info: { bar: 'border-blue-400', bg: 'bg-blue-50', icon: <Info size={14} className="text-blue-500 shrink-0" />, label: 'INFO', labelCls: 'bg-blue-100 text-blue-700' },
     };
+    const c = cfg[type] || cfg.info;
 
     return (
-        <div className={`p-3 text-sm rounded-r-lg ${types[type]} flex justify-between items-center bg-white border shadow-sm`}>
-            <span className="text-gray-700 font-medium truncate pr-2">{message}</span>
-            <span className="text-xs text-gray-400 font-mono shrink-0">
-                {time ? time : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-            </span>
+        <div className={`border-l-4 ${c.bar} ${c.bg} rounded-r-lg px-3 py-2.5 transition-all ${isNew ? 'ring-2 ring-orange-300 scale-[1.01]' : ''
+            }`}>
+            <div className="flex items-start gap-2">
+                {c.icon}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${c.labelCls}`}>{c.label}</span>
+                        {source && <span className="text-[10px] text-gray-400 font-mono">[{source}]</span>}
+                        {isNew && <span className="text-[10px] font-bold text-orange-500 animate-pulse">NEW</span>}
+                        <span className="text-[10px] text-gray-400 font-mono ml-auto">{time}</span>
+                    </div>
+                    <p className="text-xs text-gray-700 font-medium leading-snug break-words">{message}</p>
+                </div>
+            </div>
         </div>
     );
 };
