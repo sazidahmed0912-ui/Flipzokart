@@ -374,48 +374,9 @@ export const HomePage: React.FC = () => {
 
             <GrocerySection />
 
-            <section className="py-12 px-4 bg-white">
-                <SmoothReveal direction="up" delay={600}>
-                    <div className="max-w-7xl mx-auto">
-                        <div className="text-center mb-10">
-                            <h2 className="text-2xl md:text-3xl font-bold mb-2">Customer <span className="text-[#f28c28]">Reviews</span></h2>
-                            <p className="text-gray-600">What our customers say about their shopping experience</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-                                <div className="flex items-center mb-4">
-                                    <LazyImage src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/testimonials/testimonial-1-c51c4110425c47b8af3644baedb35302.png" alt="Priya Sharma" width="60" height="60" className="w-12 h-12 rounded-full object-cover mr-4" />
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900">Priya Sharma</h4>
-                                        <div className="flex text-orange-400 text-sm"><span>★★★★★</span></div>
-                                    </div>
-                                </div>
-                                <p className="text-gray-700 text-sm leading-relaxed">"Amazing shopping experience! Fast delivery and great quality products. The customer service is excellent and I love the easy return policy. Highly recommended!"</p>
-                            </div>
-                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-                                <div className="flex items-center mb-4">
-                                    <LazyImage src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/testimonials/testimonial-2-029873a672194e738bbe51deab6c4bd6.png" alt="Rajesh Kumar" width="60" height="60" className="w-12 h-12 rounded-full object-cover mr-4" />
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900">Rajesh Kumar</h4>
-                                        <div className="flex text-orange-400 text-sm"><span>★★★★★</span></div>
-                                    </div>
-                                </div>
-                                <p className="text-gray-700 text-sm leading-relaxed">"Best prices and authentic products. I've been shopping here for 2 years and never had any issues. The mobile app is very user-friendly and secure payment options."</p>
-                            </div>
-                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-                                <div className="flex items-center mb-4">
-                                    <LazyImage src="https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/testimonials/testimonial-3-241a93ae9ab54cedb61c73fbc99de863.png" alt="Anita Patel" width="60" height="60" className="w-12 h-12 rounded-full object-cover mr-4" />
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900">Anita Patel</h4>
-                                        <div className="flex text-orange-400 text-sm"><span>★★★★★</span></div>
-                                    </div>
-                                </div>
-                                <p className="text-gray-700 text-sm leading-relaxed">"This platform has everything I need! From electronics to fashion, all at great prices. The delivery is always on time and packaging is excellent. Love shopping here!"</p>
-                            </div>
-                        </div>
-                    </div>
-                </SmoothReveal>
-            </section>
+            {/* ✅ Real Customer Reviews — fetched from API */}
+            <RealReviewsSection />
+
 
             <section className="py-12 px-4 bg-gray-50">
                 <div className="max-w-4xl mx-auto">
@@ -469,5 +430,114 @@ export const HomePage: React.FC = () => {
                 </div>
             </section>
         </>
+    );
+};
+
+// ── Real Customer Reviews Section ────────────────────────────────────────────
+const STAR_COLORS = ['text-orange-400', 'text-orange-400', 'text-orange-400', 'text-orange-400', 'text-orange-300'];
+
+const RealReviewsSection: React.FC = () => {
+    const [reviews, setReviews] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        axios.get(`${API_URL}/api/reviews/latest?limit=6`)
+            .then(res => {
+                const data = Array.isArray(res.data) ? res.data
+                    : Array.isArray(res.data?.reviews) ? res.data.reviews : [];
+                setReviews(data);
+            })
+            .catch(() => setReviews([]))
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (!loading && reviews.length === 0) return null;
+
+    return (
+        <section className="py-12 px-4 bg-white">
+            <SmoothReveal direction="up" delay={500}>
+                <div className="max-w-7xl mx-auto">
+                    {/* Section Header */}
+                    <div className="text-center mb-10">
+                        <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                            Customer <span className="text-[#f28c28]">Reviews</span>
+                        </h2>
+                        <p className="text-gray-500 text-sm">Real reviews from our verified buyers</p>
+                    </div>
+
+                    {/* Skeleton */}
+                    {loading && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="bg-gray-100 rounded-2xl h-48 animate-pulse" />
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Review Cards */}
+                    {!loading && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {reviews.map((rev, idx) => {
+                                const name: string = rev.user?.name || rev.userName || 'Customer';
+                                const rating: number = rev.rating || 5;
+                                const comment: string = rev.comment || rev.text || rev.review || '';
+                                const product: string = rev.product?.name || rev.productName || '';
+                                const initial: string = name.charAt(0).toUpperCase();
+                                // Pastel avatar colours cycling
+                                const avatarColors = [
+                                    'bg-orange-100 text-orange-600',
+                                    'bg-blue-100 text-blue-600',
+                                    'bg-green-100 text-green-600',
+                                    'bg-purple-100 text-purple-600',
+                                    'bg-pink-100 text-pink-600',
+                                    'bg-teal-100 text-teal-600',
+                                ];
+                                const avatarCls = avatarColors[idx % avatarColors.length];
+
+                                return (
+                                    <div key={rev._id || rev.id || idx}
+                                        className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 relative">
+                                        {/* Big opening quote */}
+                                        <span className="absolute top-4 left-5 text-5xl leading-none text-orange-200 font-serif select-none" aria-hidden>&ldquo;</span>
+
+                                        {/* Stars */}
+                                        <div className="flex gap-0.5 mt-2">
+                                            {[1, 2, 3, 4, 5].map(star => (
+                                                <span key={star} className={`text-lg ${star <= rating ? 'text-orange-400' : 'text-gray-200'}`}>★</span>
+                                            ))}
+                                        </div>
+
+                                        {/* Review text with " marks */}
+                                        <p className="text-gray-700 text-sm leading-relaxed flex-1 pl-1">
+                                            <span className="text-[#f28c28] font-serif text-lg leading-none mr-0.5">&ldquo;</span>
+                                            {comment.length > 180 ? comment.slice(0, 180) + '…' : comment}
+                                            <span className="text-[#f28c28] font-serif text-lg leading-none ml-0.5">&rdquo;</span>
+                                        </p>
+
+                                        {/* User info */}
+                                        <div className="flex items-center gap-3 pt-2 border-t border-gray-50">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${avatarCls}`}>
+                                                {initial}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-gray-900 text-sm truncate">{name}</p>
+                                                {product && (
+                                                    <p className="text-xs text-gray-400 truncate">on {product}</p>
+                                                )}
+                                            </div>
+                                            {/* Verified badge */}
+                                            <span className="ml-auto shrink-0 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                                                ✓ Verified
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </SmoothReveal>
+        </section>
     );
 };

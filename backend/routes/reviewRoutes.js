@@ -8,8 +8,9 @@ const {
   getReviewById,
   updateReview,
   deleteReview,
-  getUserReviews, // Import the new controller function
+  getUserReviews,
   getAllReviews,
+  getLatestReviews,
   toggleLikeReview,
   toggleDislikeReview,
   addCommentToReview
@@ -19,6 +20,7 @@ const {
 router.get("/admin/all", protect, authorize(['admin']), getAllReviews);
 
 // Public routes
+router.get("/latest", getLatestReviews);           // Homepage real reviews
 router.get("/products/:productId/reviews", getProductReviews);
 router.get("/:reviewId", getReviewById);
 

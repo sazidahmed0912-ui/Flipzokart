@@ -319,6 +319,25 @@ const addCommentToReview = async (req, res) => {
   }
 };
 
+// @desc    Get latest reviews (Public — for homepage)
+// @route   GET /api/reviews/latest?limit=6
+// @access  Public
+const getLatestReviews = async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 6, 12);
+    const reviews = await Review.find({ comment: { $exists: true, $ne: '' } })
+      .populate('user', 'name')
+      .populate('product', 'name')
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    res.status(200).json(reviews);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
 module.exports = {
   createReview,
   getProductReviews,
@@ -327,6 +346,7 @@ module.exports = {
   deleteReview,
   getUserReviews,
   getAllReviews,
+  getLatestReviews,
   toggleLikeReview,
   toggleDislikeReview,
   addCommentToReview
