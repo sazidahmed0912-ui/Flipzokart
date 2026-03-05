@@ -156,7 +156,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
 
         return (
           <div key={r._id} id={`review-${r._id}`} className="flex gap-4 md:gap-8 pt-6 md:pt-10 first:pt-0">
-            <div className="w-10 h-10 md:w-16 md:h-16 bg-dark text-white rounded-xl md:rounded-2xl flex items-center justify-center font-bold text-sm md:text-xl shrink-0 shadow-lg">
+            <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-lg md:text-xl shadow-lg">
               {r.user.name.charAt(0)}
             </div>
             <div className="space-y-4 flex-1">
@@ -171,7 +171,31 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
                   ))}
                 </div>
               </div>
-              <p className="text-gray-600 text-sm md:text-lg leading-relaxed">{r.comment}</p>
+              <div>
+                <div className="review-comment collapsed text-gray-600 text-sm md:text-lg" id={`comment-${r._id}`}>
+                  {r.comment}
+                </div>
+                {r.comment && r.comment.length > 80 && (
+                  <span
+                    className="review-toggle"
+                    onClick={(e) => {
+                      const comment = document.getElementById(`comment-${r._id}`);
+                      const target = e.target as HTMLElement;
+                      if (comment) {
+                        if (comment.classList.contains("collapsed")) {
+                          comment.classList.remove("collapsed");
+                          target.innerText = "Show less";
+                        } else {
+                          comment.classList.add("collapsed");
+                          target.innerText = "Read more";
+                        }
+                      }
+                    }}
+                  >
+                    Read more
+                  </span>
+                )}
+              </div>
 
               {/* Media Gallery */}
               {((r.images && r.images.length > 0) || r.video) && (
