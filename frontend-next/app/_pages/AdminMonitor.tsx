@@ -1,12 +1,11 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    Activity, Users, ShoppingCart, ShieldAlert,
-    Globe, Server, Cpu, Clock, Terminal, Map as MapIcon, Maximize2
+    Activity, Users, ShieldAlert,
+    Server, Cpu, Clock, Terminal
 } from 'lucide-react';
 import { useSocket } from '@/app/hooks/useSocket';
 import { useApp } from '@/app/store/Context';
-import LeafletMap, { MapLocation } from '@/app/components/LeafletMap';
 
 export const AdminMonitor: React.FC = () => {
     const { user } = useApp();
@@ -19,7 +18,6 @@ export const AdminMonitor: React.FC = () => {
         systemStatus: 'Connecting...'
     });
     const [logs, setLogs] = useState<any[]>([]);
-    const [isMapExpanded, setIsMapExpanded] = useState(false);
 
     // Connect to socket using the hook
     const token = localStorage.getItem("token");
@@ -74,20 +72,7 @@ export const AdminMonitor: React.FC = () => {
         return `${h}h ${m}m`;
     };
 
-    // Transform active users to map locations
-    const mapLocations: MapLocation[] = stats.activeUserList
-        .filter((u: any) => u.lat && u.lng)
-        .map((u: any) => ({
-            id: u.id || u.socketId,
-            lat: u.lat,
-            lng: u.lng,
-            title: u.name || 'Visitor',
-            // Show address if available, else City/Country
-            description: u.addresses && u.addresses.length > 0
-                ? `${u.addresses[0].address || ''}, ${u.city || ''}`
-                : `${u.city || 'Unknown Location'}, ${u.country || ''}`,
-            status: 'Online'
-        }));
+
 
     return (
         <div className="p-8 bg-[#F5F7FA] min-h-screen">
@@ -112,43 +97,7 @@ export const AdminMonitor: React.FC = () => {
                 <MonitorCard title="System Uptime" value={formatUptime(stats.uptime)} icon={Clock} color="green" change={stats.systemStatus} />
             </div>
 
-            {/* FULL WIDTH MAP SECTION */}
-            <div className={`mb-8 transition-all duration-500 ease-in-out ${isMapExpanded ? 'h-[800px]' : 'h-[500px]'}`}>
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col h-full overflow-hidden relative">
-                    <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white z-10">
-                        <div>
-                            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                <Globe size={20} className="text-blue-500" /> Live User Map
-                            </h2>
-                            <p className="text-xs text-gray-500 mt-0.5">Real-time geographic distribution of active users</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <span className="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg font-bold">
-                                {mapLocations.length} Users Tracked
-                            </span>
-                            <button onClick={() => setIsMapExpanded(!isMapExpanded)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors" title="Toggle Size">
-                                <Maximize2 size={18} />
-                            </button>
-                        </div>
-                    </div>
-                    <div className="flex-1 relative w-full bg-gray-100">
-                        <LeafletMap
-                            locations={mapLocations}
-                            height="100%"
-                            className="w-full h-full rounded-none border-none z-0"
-                            autoFit={true}
-                        />
-                        {mapLocations.length === 0 && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-gray-50/80 z-[1000] pointer-events-none">
-                                <div className="text-center">
-                                    <MapIcon size={48} className="text-gray-300 mx-auto mb-2" />
-                                    <p className="text-sm text-gray-400 font-medium">Waiting for active users with location data...</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
+
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Real-time Logs Console */}
