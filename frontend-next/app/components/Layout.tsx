@@ -241,328 +241,345 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Search Bar */}
-      {isSearchOpen && pathname !== '/profile' && (
-        <div className="md:hidden px-4 pb-4 border-b">
-          <form onSubmit={handleSearch}>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search for products, brands and more"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f28c28]"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button type="submit" className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <Search className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
+      {/* Mobile Search Bar - Flipkart Style Top Overlay */}
+      <div className={`md:hidden mobile-search-overlay shadow-md ${isSearchOpen && pathname !== '/profile' ? 'active' : ''}`}>
+        <div className="mobile-search-bar flex items-center px-4 h-full bg-white relative z-20">
+          <button
+            type="button"
+            className="search-back text-gray-600 p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+            onClick={() => setIsSearchOpen(false)}
+          >
+            <ChevronRight className="rotate-180" size={24} />
+          </button>
+
+          <form onSubmit={handleSearch} className="flex-1 flex items-center h-full ml-1">
+            <input
+              type="text"
+              placeholder="Search for products, brands and more"
+              className="mobile-search-input w-full bg-transparent focus:outline-none text-base text-gray-800"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus={isSearchOpen}
+            />
           </form>
 
-          {/* Mobile Homepage Search History */}
-          {pathname === '/' && searchHistory.length > 0 && (
-            <div className="mt-3 bg-gray-50 rounded-lg p-2 animate-in fade-in slide-in-from-top-1">
-              <div className="flex justify-between items-center mb-2 px-2">
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Recent Searches</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchHistory([]);
-                    localStorage.removeItem('search_history');
-                  }}
-                  className="text-xs text-blue-600 font-medium"
-                >
-                  Clear All
-                </button>
-              </div>
-              <ul className="space-y-1">
-                {searchHistory.map((item, index) => (
-                  <li key={index} className="flex items-center justify-between bg-white rounded-md p-2 shadow-sm active:scale-[0.98] transition-transform">
-                    <button
-                      type="button"
-                      className="flex-1 text-left flex items-center gap-2 text-sm text-gray-700"
-                      onClick={() => {
-                        setSearchQuery(item);
-                        router.push(`/shop?q=${item}`);
-                        setIsSearchOpen(false);
-                      }}
-                    >
-                      <Clock size={14} className="text-gray-400" />
-                      {item}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const newHistory = [...searchHistory];
-                        newHistory.splice(index, 1);
-                        setSearchHistory(newHistory);
-                        localStorage.setItem('search_history', JSON.stringify(newHistory));
-                      }}
-                      className="p-1 text-gray-400 hover:text-red-500"
-                    >
-                      <X size={16} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="p-2 text-gray-400 hover:text-gray-600 rounded-full"
+            >
+              <X size={18} />
+            </button>
           )}
         </div>
-      )}
+
+        {/* Mobile Homepage Search History */}
+        {pathname === '/' && searchHistory.length > 0 && isSearchOpen && (
+          <div className="absolute top-full left-0 right-0 bg-white border-t border-gray-100 shadow-lg px-4 pb-4 pt-2 z-10 animate-in slide-in-from-top-2">
+            <div className="flex justify-between items-center mb-2 px-2">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Recent Searches</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchHistory([]);
+                  localStorage.removeItem('search_history');
+                }}
+                className="text-xs text-blue-600 font-medium"
+              >
+                Clear All
+              </button>
+            </div>
+            <ul className="space-y-1">
+              {searchHistory.map((item, index) => (
+                <li key={index} className="flex items-center justify-between bg-white rounded-md p-2 shadow-sm active:scale-[0.98] transition-transform">
+                  <button
+                    type="button"
+                    className="flex-1 text-left flex items-center gap-2 text-sm text-gray-700"
+                    onClick={() => {
+                      setSearchQuery(item);
+                      router.push(`/shop?q=${item}`);
+                      setIsSearchOpen(false);
+                    }}
+                  >
+                    <Clock size={14} className="text-gray-400" />
+                    {item}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newHistory = [...searchHistory];
+                      newHistory.splice(index, 1);
+                      setSearchHistory(newHistory);
+                      localStorage.setItem('search_history', JSON.stringify(newHistory));
+                    }}
+                    className="p-1 text-gray-400 hover:text-red-500"
+                  >
+                    <X size={16} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
 
       {/* Mobile Menu Overlay (Premium Redesign) */}
-      {isMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-[100] flex flex-col bg-white/95 backdrop-blur-xl animate-fade-in">
-          {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-gray-100">
-            <div className="text-2xl font-bold">
-              <span className="text-[#222]">Fzo</span><span className="text-[#f28c28]">kart</span>
+      {
+        isMenuOpen && (
+          <div className="md:hidden fixed inset-0 z-[100] flex flex-col bg-white/95 backdrop-blur-xl animate-fade-in">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-100">
+              <div className="text-2xl font-bold">
+                <span className="text-[#222]">Fzo</span><span className="text-[#f28c28]">kart</span>
+              </div>
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
+              >
+                <X size={20} />
+              </button>
             </div>
-            <button
-              onClick={() => setIsMenuOpen(false)}
-              className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
 
-          {/* List Content (Profile Design) */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="flex flex-col">
-              <Link href="/"
-                onClick={closeMenus}
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <Home size={16} />
-                </div>
-                <span className="font-medium text-sm">Home</span>
-                <ChevronRight size={14} className="ml-auto text-gray-400" />
-              </Link>
+            {/* List Content (Profile Design) */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex flex-col">
+                <Link href="/"
+                  onClick={closeMenus}
+                  className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <Home size={16} />
+                  </div>
+                  <span className="font-medium text-sm">Home</span>
+                  <ChevronRight size={14} className="ml-auto text-gray-400" />
+                </Link>
 
-              <Link href="/shop"
-                onClick={closeMenus}
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
-                  <LayoutGrid size={16} />
-                </div>
-                <span className="font-medium text-sm">Shop</span>
-                <ChevronRight size={14} className="ml-auto text-gray-400" />
-              </Link>
+                <Link href="/shop"
+                  onClick={closeMenus}
+                  className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
+                    <LayoutGrid size={16} />
+                  </div>
+                  <span className="font-medium text-sm">Shop</span>
+                  <ChevronRight size={14} className="ml-auto text-gray-400" />
+                </Link>
 
-              {user ? (
-                <>
-                  <Link href="/profile"
-                    onClick={closeMenus}
-                    className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                      <User size={16} />
-                    </div>
-                    <span className="font-medium text-sm">My Profile</span>
-                    <ChevronRight size={14} className="ml-auto text-gray-400" />
-                  </Link>
-
-                  {isAdmin && (
-                    <Link href="/admin"
+                {user ? (
+                  <>
+                    <Link href="/profile"
                       onClick={closeMenus}
                       className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
                     >
-                      <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-800 flex items-center justify-center">
-                        <LayoutDashboard size={16} />
+                      <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <User size={16} />
                       </div>
-                      <span className="font-medium text-sm">Admin Dashboard</span>
+                      <span className="font-medium text-sm">My Profile</span>
                       <ChevronRight size={14} className="ml-auto text-gray-400" />
                     </Link>
-                  )}
 
-                  {/* Mobile Notifications Link */}
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setShowMobileNotifications(true);
-                    }}
-                    className="w-full flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center relative">
-                      <Bell size={16} />
-                      {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white font-bold ring-2 ring-white">
-                          {unreadCount}
-                        </span>
-                      )}
-                    </div>
-                    <span className="font-medium text-sm">Notifications</span>
-                    <ChevronRight size={14} className="ml-auto text-gray-400" />
-                  </button>
+                    {isAdmin && (
+                      <Link href="/admin"
+                        onClick={closeMenus}
+                        className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-800 flex items-center justify-center">
+                          <LayoutDashboard size={16} />
+                        </div>
+                        <span className="font-medium text-sm">Admin Dashboard</span>
+                        <ChevronRight size={14} className="ml-auto text-gray-400" />
+                      </Link>
+                    )}
 
-                  {/* Sell on Flipzokart Link */}
-                  <Link href="/sell"
-                    onClick={closeMenus}
-                    className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center">
-                      <Store size={16} />
-                    </div>
-                    <span className="font-medium text-sm">Sell on Fzokart</span>
-                    <ChevronRight size={14} className="ml-auto text-gray-400" />
-                  </Link>
-
-                  {/* Pages Group - Moved below Profile as requested */}
-                  <div className="flex flex-col bg-gray-50/50">
-                    <Link href="/about"
-                      onClick={closeMenus}
-                      className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                    {/* Mobile Notifications Link */}
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setShowMobileNotifications(true);
+                      }}
+                      className="w-full flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
                     >
-                      <div className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
-                        <Tag size={14} />
+                      <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center relative">
+                        <Bell size={16} />
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white font-bold ring-2 ring-white">
+                            {unreadCount}
+                          </span>
+                        )}
                       </div>
-                      <span className="font-medium text-xs">About Us</span>
+                      <span className="font-medium text-sm">Notifications</span>
                       <ChevronRight size={14} className="ml-auto text-gray-400" />
-                    </Link>
-                    <Link href="/contact"
+                    </button>
+
+                    {/* Sell on Flipzokart Link */}
+                    <Link href="/sell"
                       onClick={closeMenus}
-                      className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                      className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
                     >
-                      <div className="w-7 h-7 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center">
-                        <MessageCircle size={14} />
+                      <div className="w-8 h-8 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center">
+                        <Store size={16} />
                       </div>
-                      <span className="font-medium text-xs">Contact Us</span>
+                      <span className="font-medium text-sm">Sell on Fzokart</span>
                       <ChevronRight size={14} className="ml-auto text-gray-400" />
                     </Link>
+
+                    {/* Pages Group - Moved below Profile as requested */}
+                    <div className="flex flex-col bg-gray-50/50">
+                      <Link href="/about"
+                        onClick={closeMenus}
+                        className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
+                          <Tag size={14} />
+                        </div>
+                        <span className="font-medium text-xs">About Us</span>
+                        <ChevronRight size={14} className="ml-auto text-gray-400" />
+                      </Link>
+                      <Link href="/contact"
+                        onClick={closeMenus}
+                        className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center">
+                          <MessageCircle size={14} />
+                        </div>
+                        <span className="font-medium text-xs">Contact Us</span>
+                        <ChevronRight size={14} className="ml-auto text-gray-400" />
+                      </Link>
+                    </div>
+
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 border-b border-gray-100 transition-colors w-full text-left"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
+                        <LogOut size={16} />
+                      </div>
+                      <span className="font-medium text-sm">Logout</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Pages Group for Guests */}
+                    <div className="flex flex-col bg-gray-50/50">
+                      <Link href="/about"
+                        onClick={closeMenus}
+                        className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
+                          <Tag size={14} />
+                        </div>
+                        <span className="font-medium text-xs">About Us</span>
+                        <ChevronRight size={14} className="ml-auto text-gray-400" />
+                      </Link>
+                      <Link href="/contact"
+                        onClick={closeMenus}
+                        className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center">
+                          <MessageCircle size={14} />
+                        </div>
+                        <span className="font-medium text-xs">Contact Us</span>
+                        <ChevronRight size={14} className="ml-auto text-gray-400" />
+                      </Link>
+                    </div>
+
+                    <Link href="/login"
+                      onClick={closeMenus}
+                      className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-[#f28c28] text-white flex items-center justify-center">
+                        <User size={16} />
+                      </div>
+                      <span className="font-medium text-sm">Login / Sign Up</span>
+                      <ChevronRight size={14} className="ml-auto text-gray-400" />
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Mobile Notification Panel Overlay */}
+      {
+        showMobileNotifications && (
+          <div className="md:hidden fixed inset-0 z-[110] bg-white flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowMobileNotifications(false)}
+                  className="p-2 -ml-2 hover:bg-gray-100 rounded-full"
+                >
+                  <ChevronRight className="rotate-180" size={24} />
+                </button>
+                <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
+              </div>
+              {notifications.length > 0 && (
+                <button
+                  onClick={clearAllNotifications}
+                  className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            <div className="flex-1 overflow-y-auto bg-gray-50">
+              {notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full p-8 text-center text-gray-500">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Bell size={32} className="text-gray-400" />
                   </div>
-
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 border-b border-gray-100 transition-colors w-full text-left"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
-                      <LogOut size={16} />
-                    </div>
-                    <span className="font-medium text-sm">Logout</span>
-                  </button>
-                </>
+                  <p className="font-medium">No notifications yet</p>
+                  <p className="text-sm mt-1">We'll let you know when something update arrives.</p>
+                </div>
               ) : (
-                <>
-                  {/* Pages Group for Guests */}
-                  <div className="flex flex-col bg-gray-50/50">
-                    <Link href="/about"
-                      onClick={closeMenus}
-                      className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
+                <div className="divide-y divide-gray-100">
+                  {notifications.map((notif) => (
+                    <div
+                      key={notif._id}
+                      className={`p-4 bg-white ${!notif.isRead ? 'bg-blue-50/50' : ''}`}
+                      onClick={() => markNotificationAsRead(notif._id)}
                     >
-                      <div className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
-                        <Tag size={14} />
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 flex-shrink-0">
+                          {getNotificationIcon(notif.status)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+                            {notif.message}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(notif.createdAt).toLocaleString('en-IN', {
+                              day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
+                            })}
+                          </p>
+                          {notif.note && (
+                            <p className="text-xs text-gray-500 italic mt-1 border-l-2 border-gray-300 pl-2">
+                              Note: {notif.note}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteNotification(notif._id);
+                          }}
+                          className="p-2 text-gray-300 hover:text-red-500"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </div>
-                      <span className="font-medium text-xs">About Us</span>
-                      <ChevronRight size={14} className="ml-auto text-gray-400" />
-                    </Link>
-                    <Link href="/contact"
-                      onClick={closeMenus}
-                      className="flex items-center gap-3 px-5 py-3 text-gray-600 hover:bg-gray-100 border-b border-gray-100 transition-colors"
-                    >
-                      <div className="w-7 h-7 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center">
-                        <MessageCircle size={14} />
-                      </div>
-                      <span className="font-medium text-xs">Contact Us</span>
-                      <ChevronRight size={14} className="ml-auto text-gray-400" />
-                    </Link>
-                  </div>
-
-                  <Link href="/login"
-                    onClick={closeMenus}
-                    className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-[#f28c28] text-white flex items-center justify-center">
-                      <User size={16} />
                     </div>
-                    <span className="font-medium text-sm">Login / Sign Up</span>
-                    <ChevronRight size={14} className="ml-auto text-gray-400" />
-                  </Link>
-                </>
+                  ))}
+                </div>
               )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Mobile Notification Panel Overlay */}
-      {showMobileNotifications && (
-        <div className="md:hidden fixed inset-0 z-[110] bg-white flex flex-col animate-in slide-in-from-right duration-300">
-          <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowMobileNotifications(false)}
-                className="p-2 -ml-2 hover:bg-gray-100 rounded-full"
-              >
-                <ChevronRight className="rotate-180" size={24} />
-              </button>
-              <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
-            </div>
-            {notifications.length > 0 && (
-              <button
-                onClick={clearAllNotifications}
-                className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-
-          <div className="flex-1 overflow-y-auto bg-gray-50">
-            {notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full p-8 text-center text-gray-500">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <Bell size={32} className="text-gray-400" />
-                </div>
-                <p className="font-medium">No notifications yet</p>
-                <p className="text-sm mt-1">We'll let you know when something update arrives.</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {notifications.map((notif) => (
-                  <div
-                    key={notif._id}
-                    className={`p-4 bg-white ${!notif.isRead ? 'bg-blue-50/50' : ''}`}
-                    onClick={() => markNotificationAsRead(notif._id)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1 flex-shrink-0">
-                        {getNotificationIcon(notif.status)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
-                          {notif.message}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {new Date(notif.createdAt).toLocaleString('en-IN', {
-                            day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
-                          })}
-                        </p>
-                        {notif.note && (
-                          <p className="text-xs text-gray-500 italic mt-1 border-l-2 border-gray-300 pl-2">
-                            Note: {notif.note}
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotification(notif._id);
-                        }}
-                        className="p-2 text-gray-300 hover:text-red-500"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )
+        )
       }
     </header >
   );
