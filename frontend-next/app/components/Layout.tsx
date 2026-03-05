@@ -109,7 +109,7 @@ const Header: React.FC = () => {
                 onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} // Delay to allow click
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button type="submit" className="flex items-center justify-center pr-2 pl-1 shrink-0">
+              <button type="submit" className="absolute right-3 top-1/2 transform -translate-y-1/2">
                 <Search className="search-icon" />
               </button>
             </div>
@@ -261,6 +261,9 @@ const Header: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               autoFocus={isSearchOpen}
             />
+            <button type="submit" className="p-2 text-gray-400 hover:text-[#2874f0] transition-colors">
+              <Search size={20} />
+            </button>
           </form>
 
           {searchQuery && (
