@@ -453,25 +453,34 @@ const RealReviewsSection: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    // 4s Auto slide logic
     useEffect(() => {
         if (loading || reviews.length === 0) return;
-        const interval = setInterval(() => {
-            if (scrollRef.current) {
-                const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-                const maxScrollLeft = scrollWidth - clientWidth;
 
-                // If we reached the end, scroll back to start, else scroll right by clientWidth
-                if (scrollLeft >= maxScrollLeft - 10) {
-                    scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    scrollRef.current.scrollBy({ left: clientWidth, behavior: 'smooth' });
-                }
+        const interval = setInterval(() => {
+            const el = scrollRef.current;
+            if (!el) return;
+
+            const firstCard = el.firstElementChild as HTMLElement;
+            if (!firstCard) return;
+
+            // Calculate scroll amount (card width + gap)
+            const cardWidth = firstCard.offsetWidth;
+            const gap = parseInt(window.getComputedStyle(el).gap) || 24;
+            const scrollAmount = cardWidth + gap;
+
+            const maxScroll = el.scrollWidth - el.clientWidth;
+
+            if (el.scrollLeft >= maxScroll - 10) {
+                // Loop back to start smoothly
+                el.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                // Scroll next by exact card width
+                el.scrollTo({ left: el.scrollLeft + scrollAmount, behavior: 'smooth' });
             }
-        }, 4000);
+        }, 4000); // 4 Seconds Auto Slide
 
         return () => clearInterval(interval);
-    }, [loading, reviews.length]);
+    }, [reviews, loading]);
 
     if (!loading && reviews.length === 0) return null;
 
@@ -489,19 +498,19 @@ const RealReviewsSection: React.FC = () => {
 
                     {/* Skeleton */}
                     {loading && (
-                        <div className="flex flex-nowrap gap-6 overflow-hidden">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {[...Array(3)].map((_, i) => (
-                                <div key={i} className="flex-none w-full md:w-[calc(50%-12px)] lg:w-[calc(33.33%-16px)] bg-gray-100 rounded-2xl h-48 animate-pulse" />
+                                <div key={i} className="bg-gray-100 rounded-2xl h-48 animate-pulse" />
                             ))}
                         </div>
                     )}
 
-                    {/* Review Cards Auto-Slider */}
+                    {/* Review Cards */}
                     {!loading && (
                         <div
                             ref={scrollRef}
-                            className="flex flex-nowrap overflow-x-auto hide-scrollbar gap-6 snap-x snap-mandatory"
-                            style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
+                            className="flex flex-row flex-nowrap overflow-x-auto snap-x snap-mandatory gap-6 pb-4 hide-scrollbar"
+                            style={{ scrollBehavior: 'smooth' }}
                         >
                             {reviews.map((rev, idx) => {
                                 const name: string = rev.user?.name || rev.userName || 'Customer';
@@ -523,7 +532,7 @@ const RealReviewsSection: React.FC = () => {
                                 const productId: string = rev.product?._id || rev.product?.id || rev.productId || '';
 
                                 const cardContent = (
-                                    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 h-full ${productId ? 'hover:shadow-lg hover:scale-[1.02] hover:ring-1 hover:ring-orange-200 cursor-pointer' : 'hover:shadow-md'}`}>
+                                    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 ${productId ? 'hover:shadow-lg hover:scale-[1.02] hover:ring-1 hover:ring-orange-200 cursor-pointer' : 'hover:shadow-md'}`}>
                                         {/* Big opening quote */}
                                         <span className="absolute top-4 left-5 text-5xl leading-none text-orange-200 font-serif select-none" aria-hidden>&ldquo;</span>
 
@@ -563,15 +572,13 @@ const RealReviewsSection: React.FC = () => {
                                 );
 
                                 return (
-                                    <div key={rev._id || rev.id || idx} className="flex-none w-[90vw] md:w-[calc(50%-12px)] lg:w-[calc(33.33%-16px)] snap-start">
+                                    <div key={rev._id || rev.id || idx} className="snap-start snap-always shrink-0 w-[85vw] md:w-[400px]">
                                         {productId ? (
                                             <Link href={`/product/${productId}`} className="block h-full">
                                                 {cardContent}
                                             </Link>
                                         ) : (
-                                            <div className="h-full">
-                                                {cardContent}
-                                            </div>
+                                            <div className="h-full">{cardContent}</div>
                                         )}
                                     </div>
                                 );
