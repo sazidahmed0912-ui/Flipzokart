@@ -155,8 +155,8 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
         const hasDisliked = currentUserId && (r.dislikes || []).some((id: any) => id === currentUserId || id._id === currentUserId);
 
         return (
-          <div key={r._id} id={`review-${r._id}`} className="flex gap-4 md:gap-8 pt-6 md:pt-10 first:pt-0">
-            <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-lg md:text-xl shadow-lg">
+          <div key={r._id} id={`review-${r._id}`} className="flex gap-3 md:gap-8 pt-5 md:pt-10 first:pt-0">
+            <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-base md:text-xl shadow-lg !w-9 !h-9 md:!w-10 md:!h-10">
               {r.user.name.charAt(0)}
             </div>
             <div className="space-y-4 flex-1">
@@ -167,12 +167,12 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
                 </div>
                 <div className="flex text-yellow-400">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} size={16} fill={s <= r.rating ? "currentColor" : "none"} />
+                    <Star key={s} className="w-3.5 h-3.5 md:w-4 md:h-4" fill={s <= r.rating ? "currentColor" : "none"} />
                   ))}
                 </div>
               </div>
               <div>
-                <div className="review-comment collapsed text-gray-600 text-sm md:text-lg" id={`comment-${r._id}`}>
+                <div className="review-comment collapsed text-gray-600 text-[13px] md:text-lg leading-relaxed md:leading-normal" id={`comment-${r._id}`}>
                   {r.comment}
                 </div>
                 {r.comment && r.comment.length > 80 && (
@@ -204,7 +204,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
                   {r.images && r.images.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {r.images.map((img, idx) => (
-                        <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity">
+                        <div key={idx} className="relative w-16 h-16 md:w-24 md:h-24 rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity">
                           <img
                             src={img}
                             alt={`Review image ${idx + 1}`}
@@ -229,43 +229,43 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
                 </div>
               )}
 
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+              <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1 md:mt-0">
                 Posted {new Date(r.createdAt).toLocaleDateString()}
               </p>
 
               {/* Actions: Like, Dislike, Comment, Share */}
-              <div className="flex flex-wrap items-center gap-4 md:gap-6 mt-4 pt-4 border-t border-gray-100">
+              <div className="flex flex-wrap items-center gap-3 md:gap-6 mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-100">
                 <button
                   onClick={() => handleLike(r._id)}
                   disabled={loadingAction === `like-${r._id}`}
-                  className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${hasLiked ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
+                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasLiked ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
                 >
-                  <ThumbsUp size={16} className={hasLiked ? "fill-current" : ""} />
+                  <ThumbsUp className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasLiked ? "fill-current" : ""}`} />
                   <span>{(r.likes || []).length > 0 ? (r.likes || []).length : 'Helpful'}</span>
                 </button>
 
                 <button
                   onClick={() => handleDislike(r._id)}
                   disabled={loadingAction === `dislike-${r._id}`}
-                  className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${hasDisliked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
+                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasDisliked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
                 >
-                  <ThumbsDown size={16} className={hasDisliked ? "fill-current" : ""} />
+                  <ThumbsDown className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasDisliked ? "fill-current" : ""}`} />
                   <span>{(r.dislikes || []).length > 0 ? (r.dislikes || []).length : ''}</span>
                 </button>
 
                 <button
                   onClick={() => setActiveCommentId(activeCommentId === r._id ? null : r._id)}
-                  className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${activeCommentId === r._id ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${activeCommentId === r._id ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
                 >
-                  <MessageSquare size={16} />
+                  <MessageSquare className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   <span>{(r.comments || []).length > 0 ? (r.comments || []).length : 'Comment'}</span>
                 </button>
 
                 <button
                   onClick={() => handleShare(r)}
-                  className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-green-600 transition-colors ml-auto"
+                  className="flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium text-gray-500 hover:text-green-600 transition-colors ml-auto"
                 >
-                  <Share2 size={16} />
+                  <Share2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   <span className="hidden sm:inline">Share</span>
                 </button>
               </div>

@@ -133,8 +133,8 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmi
   };
 
   return (
-    <div className="p-8 bg-gray-50 rounded-[2.5rem] border border-gray-100 mb-10">
-      <h3 className="text-2xl font-bold mb-6 text-dark">Write a Review</h3>
+    <div className="p-5 md:p-8 bg-gray-50 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 mb-8 md:mb-10">
+      <h3 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-dark">Write a Review</h3>
       {!user ? (
         <p className="text-gray-500">Please <a href="/login" className="text-primary hover:underline">log in</a> to write a review.</p>
       ) : (
@@ -145,8 +145,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmi
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  size={28}
-                  className={`cursor-pointer transition-colors ${(hoveredRating || rating) >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+                  className={`cursor-pointer transition-colors w-7 h-7 md:w-8 md:h-8 ${(hoveredRating || rating) >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
                     }`}
                   onClick={() => setRating(star)}
                   onMouseEnter={() => setHoveredRating(star)}
@@ -159,7 +158,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmi
             <label htmlFor="comment" className="block text-sm font-bold text-gray-700 mb-2">Your Comment</label>
             <textarea
               id="comment"
-              className="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              className="w-full p-3 md:p-4 text-sm md:text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
               rows={4}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -179,9 +178,9 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmi
                 type="button"
                 onClick={() => imageInputRef.current?.click()}
                 disabled={images.length >= 5 || isLoading}
-                className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex flex-col items-center justify-center w-20 h-20 md:w-24 md:h-24 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ImageIcon size={24} className="text-gray-400 mb-1" />
+                <ImageIcon className="w-5 h-5 md:w-6 md:h-6 text-gray-400 mb-1" />
                 <span className="text-xs text-gray-500 font-medium">Add Photo</span>
                 <span className="text-[9px] text-gray-400">{images.length}/5</span>
               </button>
@@ -200,9 +199,9 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmi
                   type="button"
                   onClick={() => videoInputRef.current?.click()}
                   disabled={isLoading}
-                  className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex flex-col items-center justify-center w-20 h-20 md:w-24 md:h-24 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Video size={24} className="text-gray-400 mb-1" />
+                  <Video className="w-5 h-5 md:w-6 md:h-6 text-gray-400 mb-1" />
                   <span className="text-xs text-gray-500 font-medium">Add Video</span>
                 </button>
               )}
@@ -220,31 +219,31 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmi
               <div className="flex flex-wrap gap-3 mt-4">
                 {/* Images */}
                 {images.map((file, idx) => (
-                  <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                  <div key={idx} className="relative w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border border-gray-200">
                     <img src={URL.createObjectURL(file)} alt="preview" className="w-full h-full object-cover" />
                     <button
                       type="button"
                       onClick={() => removeImage(idx)}
                       className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-red-500 transition-colors"
                     >
-                      <X size={12} />
+                      <X className="w-3 h-3 md:w-4 md:h-4" />
                     </button>
                   </div>
                 ))}
 
                 {/* Video */}
                 {video && (
-                  <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-black">
+                  <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border border-gray-200 bg-black">
                     <video src={URL.createObjectURL(video)} className="w-full h-full object-cover opacity-80" />
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <PlayCircle size={20} className="text-white bg-black/50 rounded-full" />
+                      <PlayCircle className="w-6 h-6 md:w-8 md:h-8 text-white bg-black/50 rounded-full" />
                     </div>
                     <button
                       type="button"
                       onClick={() => setVideo(null)}
                       className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-red-500 transition-colors z-10"
                     >
-                      <X size={12} />
+                      <X className="w-3 h-3 md:w-4 md:h-4" />
                     </button>
                   </div>
                 )}
@@ -258,7 +257,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmi
 
           <button
             type="submit"
-            className="px-8 py-4 bg-blue-600 text-white font-bold rounded-2xl flex items-center justify-center gap-3 transition-all hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-100"
+            className="px-6 py-3 md:px-8 md:py-4 text-sm md:text-base bg-blue-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2 md:gap-3 transition-all hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-100"
             disabled={isLoading || rating === 0 || comment.trim() === ''}
           >
             {isLoading ? (
