@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import { useApp } from '@/app/store/Context';
@@ -439,6 +439,7 @@ const STAR_COLORS = ['text-orange-400', 'text-orange-400', 'text-orange-400', 't
 const RealReviewsSection: React.FC = () => {
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -451,6 +452,26 @@ const RealReviewsSection: React.FC = () => {
             .catch(() => setReviews([]))
             .finally(() => setLoading(false));
     }, []);
+
+    // 4s Auto slide logic
+    useEffect(() => {
+        if (loading || reviews.length === 0) return;
+        const interval = setInterval(() => {
+            if (scrollRef.current) {
+                const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+                const maxScrollLeft = scrollWidth - clientWidth;
+
+                // If we reached the end, scroll back to start, else scroll right by clientWidth
+                if (scrollLeft >= maxScrollLeft - 10) {
+                    scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    scrollRef.current.scrollBy({ left: clientWidth, behavior: 'smooth' });
+                }
+            }
+        }, 4000);
+
+        return () => clearInterval(interval);
+    }, [loading, reviews.length]);
 
     if (!loading && reviews.length === 0) return null;
 
@@ -468,16 +489,20 @@ const RealReviewsSection: React.FC = () => {
 
                     {/* Skeleton */}
                     {loading && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="flex flex-nowrap gap-6 overflow-hidden">
                             {[...Array(3)].map((_, i) => (
-                                <div key={i} className="bg-gray-100 rounded-2xl h-48 animate-pulse" />
+                                <div key={i} className="flex-none w-full md:w-[calc(50%-12px)] lg:w-[calc(33.33%-16px)] bg-gray-100 rounded-2xl h-48 animate-pulse" />
                             ))}
                         </div>
                     )}
 
-                    {/* Review Cards */}
+                    {/* Review Cards Auto-Slider */}
                     {!loading && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div
+                            ref={scrollRef}
+                            className="flex flex-nowrap overflow-x-auto hide-scrollbar gap-6 snap-x snap-mandatory"
+                            style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
+                        >
                             {reviews.map((rev, idx) => {
                                 const name: string = rev.user?.name || rev.userName || 'Customer';
                                 const rating: number = rev.rating || 5;
@@ -498,7 +523,7 @@ const RealReviewsSection: React.FC = () => {
                                 const productId: string = rev.product?._id || rev.product?.id || rev.productId || '';
 
                                 const cardContent = (
-                                    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 ${productId ? 'hover:shadow-lg hover:scale-[1.02] hover:ring-1 hover:ring-orange-200 cursor-pointer' : 'hover:shadow-md'}`}>
+                                    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 h-full ${productId ? 'hover:shadow-lg hover:scale-[1.02] hover:ring-1 hover:ring-orange-200 cursor-pointer' : 'hover:shadow-md'}`}>
                                         {/* Big opening quote */}
                                         <span className="absolute top-4 left-5 text-5xl leading-none text-orange-200 font-serif select-none" aria-hidden>&ldquo;</span>
 
@@ -538,13 +563,15 @@ const RealReviewsSection: React.FC = () => {
                                 );
 
                                 return (
-                                    <div key={rev._id || rev.id || idx}>
+                                    <div key={rev._id || rev.id || idx} className="flex-none w-[90vw] md:w-[calc(50%-12px)] lg:w-[calc(33.33%-16px)] snap-start">
                                         {productId ? (
-                                            <Link href={`/product/${productId}`} className="block">
+                                            <Link href={`/product/${productId}`} className="block h-full">
                                                 {cardContent}
                                             </Link>
                                         ) : (
-                                            cardContent
+                                            <div className="h-full">
+                                                {cardContent}
+                                            </div>
                                         )}
                                     </div>
                                 );
