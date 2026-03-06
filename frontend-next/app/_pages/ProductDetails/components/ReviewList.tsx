@@ -149,22 +149,21 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-10 divide-y divide-gray-50">
       {reviews.map((r) => {
         const hasLiked = currentUserId && (r.likes || []).some((id: any) => id === currentUserId || id._id === currentUserId);
         const hasDisliked = currentUserId && (r.dislikes || []).some((id: any) => id === currentUserId || id._id === currentUserId);
 
-        const reviewerName = r.user?.name || (r as any).userName || 'Anonymous';
-
         return (
-          <div key={r._id} id={`review-${r._id}`} className="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)] mb-4 flex gap-2.5 md:gap-4 relative">
-            <div className="w-[40px] h-[40px] rounded-full bg-dark text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
-              {reviewerName.charAt(0).toUpperCase()}
+          <div key={r._id} id={`review-${r._id}`} className="flex gap-3 md:gap-8 pt-5 md:pt-10 first:pt-0">
+            <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-base md:text-xl shadow-lg !w-9 !h-9 md:!w-10 md:!h-10">
+              {r.user.name.charAt(0)}
             </div>
-            <div className="space-y-3 flex-1">
+            <div className="space-y-4 flex-1">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <span className="font-bold text-dark text-sm md:text-base">{reviewerName}</span>
+                  <span className="font-bold text-dark text-sm md:text-xl">{r.user.name}</span>
+                  {/* <span className="bg-green-100 text-green-700 text-[9px] px-3 py-1 rounded-full font-bold uppercase tracking-widest shadow-sm">Verified Premium Member</span> */}
                 </div>
                 <div className="flex text-yellow-400">
                   {[1, 2, 3, 4, 5].map((s) => (
@@ -173,34 +172,39 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
                 </div>
               </div>
               <div>
-                <div
-                  className="review-comment collapsed text-gray-700 text-[14px] leading-[1.6] cursor-pointer cursor-expand"
-                  id={`comment-${r._id}`}
-                  onClick={(e) => {
-                    const comment = e.currentTarget;
-                    if (comment.classList.contains("collapsed")) {
-                      comment.classList.remove("collapsed");
-                      comment.style.display = "block";
-                      comment.style.webkitLineClamp = "unset";
-                    } else {
-                      comment.classList.add("collapsed");
-                      comment.style.display = "-webkit-box";
-                      comment.style.webkitLineClamp = "2";
-                    }
-                  }}
-                >
+                <div className="review-comment collapsed text-gray-600 text-[13px] md:text-lg leading-relaxed md:leading-normal" id={`comment-${r._id}`}>
                   {r.comment}
                 </div>
+                {r.comment && r.comment.length > 80 && (
+                  <span
+                    className="review-toggle"
+                    onClick={(e) => {
+                      const comment = document.getElementById(`comment-${r._id}`);
+                      const target = e.target as HTMLElement;
+                      if (comment) {
+                        if (comment.classList.contains("collapsed")) {
+                          comment.classList.remove("collapsed");
+                          target.innerText = "Show less";
+                        } else {
+                          comment.classList.add("collapsed");
+                          target.innerText = "Read more";
+                        }
+                      }
+                    }}
+                  >
+                    Read more
+                  </span>
+                )}
               </div>
 
               {/* Media Gallery */}
               {((r.images && r.images.length > 0) || r.video) && (
-                <div className="mt-4 space-y-3">
-                  {/* Images Grid */}
+                <div className="mt-1.5 md:mt-4 mb-1 md:mb-0 space-y-2 md:space-y-3">
+                  {/* Images Grid - Horizontal scroll on mobile, wrap on desktop */}
                   {r.images && r.images.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-nowrap md:flex-wrap gap-1 md:gap-2 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0 hide-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
                       {r.images.map((img, idx) => (
-                        <div key={idx} className="relative w-16 h-16 md:w-24 md:h-24 rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity">
+                        <div key={idx} className="relative flex-none w-[52px] h-[52px] md:w-24 md:h-24 rounded-md md:rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity">
                           <img
                             src={img}
                             alt={`Review image ${idx + 1}`}
@@ -214,7 +218,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
 
                   {/* Video Player */}
                   {r.video && (
-                    <div className="w-full max-w-xs rounded-lg overflow-hidden bg-black aspect-video relative group">
+                    <div className="w-full max-w-[200px] md:max-w-xs rounded-md md:rounded-lg overflow-hidden bg-black aspect-video relative group mt-1 md:mt-0">
                       <video
                         src={r.video}
                         controls
@@ -234,26 +238,34 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
                 <button
                   onClick={() => handleLike(r._id)}
                   disabled={loadingAction === `like-${r._id}`}
-                  className={`flex items-center gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasLiked ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
+                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasLiked ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
                 >
-                  <ThumbsUp className={`w-4 h-4 ${hasLiked ? "fill-current" : ""}`} />
+                  <ThumbsUp className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasLiked ? "fill-current" : ""}`} />
                   <span>{(r.likes || []).length > 0 ? (r.likes || []).length : 'Helpful'}</span>
                 </button>
 
                 <button
                   onClick={() => handleDislike(r._id)}
                   disabled={loadingAction === `dislike-${r._id}`}
-                  className={`flex items-center gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasDisliked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
+                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasDisliked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
                 >
-                  <ThumbsDown className={`w-4 h-4 ${hasDisliked ? "fill-current" : ""}`} />
+                  <ThumbsDown className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasDisliked ? "fill-current" : ""}`} />
                   <span>{(r.dislikes || []).length > 0 ? (r.dislikes || []).length : ''}</span>
                 </button>
 
                 <button
-                  onClick={() => handleShare(r)}
-                  className="flex items-center gap-1.5 text-xs md:text-sm font-medium text-gray-500 hover:text-green-600 transition-colors ml-auto"
+                  onClick={() => setActiveCommentId(activeCommentId === r._id ? null : r._id)}
+                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${activeCommentId === r._id ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
                 >
-                  <Share2 className="w-4 h-4" />
+                  <MessageSquare className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                  <span>{(r.comments || []).length > 0 ? (r.comments || []).length : 'Comment'}</span>
+                </button>
+
+                <button
+                  onClick={() => handleShare(r)}
+                  className="flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium text-gray-500 hover:text-green-600 transition-colors ml-auto"
+                >
+                  <Share2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   <span className="hidden sm:inline">Share</span>
                 </button>
               </div>
@@ -270,6 +282,29 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
                       <p className="text-gray-700">{c.comment}</p>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Comment Input Box */}
+              {activeCommentId === r._id && (
+                <div className="mt-4 flex gap-2">
+                  <input
+                    type="text"
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder="Add a comment..."
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleCommentSubmit(r._id);
+                    }}
+                  />
+                  <button
+                    onClick={() => handleCommentSubmit(r._id)}
+                    disabled={!commentText.trim() || loadingAction === `comment-${r._id}`}
+                    className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                  >
+                    Post
+                  </button>
                 </div>
               )}
 
