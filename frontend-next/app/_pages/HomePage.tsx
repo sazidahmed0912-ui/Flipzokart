@@ -11,6 +11,10 @@ import { HeroSlider } from '@/app/components/HeroSlider';
 import { RecentlyViewed } from '@/app/components/RecentlyViewed';
 import { SuggestedForYou } from '@/app/components/SuggestedForYou';
 
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay } from 'swiper/modules';
+import 'swiper/css';
+
 // Fallback data
 const initialCategories = [
     { name: 'Groceries', imageUrl: 'https://cdn.ailandingpage.ai/landingpage_io/user-generate/f879b101-45e2-4516-a58c-9fcdd0b65870/f879b101-45e2-4516-a58c-9fcdd0b65870/categories/categories-groceries-e6814d7f00ef4f7d92268edd5246a637.png', href: '/groceries' },
@@ -434,7 +438,10 @@ export const HomePage: React.FC = () => {
 };
 
 // ── Real Customer Reviews Section ────────────────────────────────────────────
-const STAR_COLORS = ['text-orange-400', 'text-orange-400', 'text-orange-400', 'text-orange-400', 'text-orange-300'];
+// Ensure Swiper is imported at the top of the file:
+// import { Swiper, SwiperSlide } from 'swiper/react';
+// import { Autoplay } from 'swiper/modules';
+// import 'swiper/css';
 
 const RealReviewsSection: React.FC = () => {
     const [reviews, setReviews] = useState<any[]>([]);
@@ -442,7 +449,7 @@ const RealReviewsSection: React.FC = () => {
 
     useEffect(() => {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-        axios.get(`${API_URL}/api/reviews/latest?limit=6`)
+        axios.get(`${API_URL}/api/reviews/latest?limit=8`) // Fetch a few more for better carousel
             .then(res => {
                 const data = Array.isArray(res.data) ? res.data
                     : Array.isArray(res.data?.reviews) ? res.data.reviews : [];
@@ -455,104 +462,128 @@ const RealReviewsSection: React.FC = () => {
     if (!loading && reviews.length === 0) return null;
 
     return (
-        <section className="py-12 px-4 bg-white">
+        <section className="py-12 px-0 md:px-4 bg-gray-50 overflow-hidden">
             <SmoothReveal direction="up" delay={500}>
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-7xl mx-auto mb-10 px-4 md:px-0">
                     {/* Section Header */}
-                    <div className="text-center mb-10">
-                        <h2 className="text-2xl md:text-3xl font-bold mb-2">
-                            Customer <span className="text-[#f28c28]">Reviews</span>
-                        </h2>
-                        <p className="text-gray-500 text-sm">Real reviews from our verified buyers</p>
-                    </div>
-
-                    {/* Skeleton */}
-                    {loading && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {[...Array(3)].map((_, i) => (
-                                <div key={i} className="bg-gray-100 rounded-2xl h-48 animate-pulse" />
-                            ))}
+                    <div className="text-left flex flex-col md:flex-row md:items-end justify-between gap-4">
+                        <div>
+                            <h2 className="text-2xl md:text-3xl font-bold mb-1 text-gray-900">
+                                Rated <span className="text-[#f28c28]">Excellent</span>
+                            </h2>
+                            <p className="text-gray-500 text-sm">Real reviews from our verified buyers</p>
                         </div>
-                    )}
+                    </div>
+                </div>
 
-                    {/* Review Cards */}
-                    {!loading && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Skeleton */}
+                {loading && (
+                    <div className="max-w-7xl mx-auto flex gap-4 px-4 overflow-hidden">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="review-card-pro h-48 animate-pulse bg-gray-200" />
+                        ))}
+                    </div>
+                )}
+
+                {/* Review Cards Auto Carousel */}
+                {!loading && (
+                    <div className="reviews-carousel-wrapper" style={{ paddingLeft: 'theme(space.4)', paddingRight: 'theme(space.4)' }}>
+                        <Swiper
+                            modules={[Autoplay]}
+                            spaceBetween={16}
+                            slidesPerView={1.2} // Mobile view
+                            breakpoints={{
+                                640: { slidesPerView: 2.2 },
+                                1024: { slidesPerView: 3, spaceBetween: 24 }
+                            }}
+                            loop={reviews.length >= 3} // Only loop if enough slides
+                            autoplay={{
+                                delay: 0,
+                                disableOnInteraction: false,
+                                pauseOnMouseEnter: true
+                            }}
+                            speed={4000}
+                            cssMode={false} // Required for smooth linear transition
+                            grabCursor={true}
+                            allowTouchMove={true}
+                            className="w-full !pb-8"
+                            style={{ transitionTimingFunction: 'linear' }} // Force linear slide
+                        >
                             {reviews.map((rev, idx) => {
                                 const name: string = rev.user?.name || rev.userName || 'Customer';
                                 const rating: number = rev.rating || 5;
                                 const comment: string = rev.comment || rev.text || rev.review || '';
                                 const product: string = rev.product?.name || rev.productName || '';
                                 const initial: string = name.charAt(0).toUpperCase();
-                                // Pastel avatar colours cycling
-                                const avatarColors = [
-                                    'bg-orange-100 text-orange-600',
-                                    'bg-blue-100 text-blue-600',
-                                    'bg-green-100 text-green-600',
-                                    'bg-purple-100 text-purple-600',
-                                    'bg-pink-100 text-pink-600',
-                                    'bg-teal-100 text-teal-600',
-                                ];
-                                const avatarCls = avatarColors[idx % avatarColors.length];
 
                                 const productId: string = rev.product?._id || rev.product?.id || rev.productId || '';
 
                                 const cardContent = (
-                                    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 ${productId ? 'hover:shadow-lg hover:scale-[1.02] hover:ring-1 hover:ring-orange-200 cursor-pointer' : 'hover:shadow-md'}`}>
-                                        {/* Big opening quote */}
-                                        <span className="absolute top-4 left-5 text-5xl leading-none text-orange-200 font-serif select-none" aria-hidden>&ldquo;</span>
-
-                                        {/* Stars */}
-                                        <div className="flex gap-0.5 mt-2">
-                                            {[1, 2, 3, 4, 5].map(star => (
-                                                <span key={star} className={`text-lg ${star <= rating ? 'text-orange-400' : 'text-gray-200'}`}>★</span>
-                                            ))}
-                                        </div>
-
-                                        {/* Review text with " marks */}
-                                        <p className="text-gray-700 text-sm leading-relaxed flex-1 pl-1">
-                                            <span className="text-[#f28c28] font-serif text-lg leading-none mr-0.5">&ldquo;</span>
-                                            {comment.length > 180 ? comment.slice(0, 180) + '…' : comment}
-                                            <span className="text-[#f28c28] font-serif text-lg leading-none ml-0.5">&rdquo;</span>
-                                        </p>
-
-                                        {/* User info */}
-                                        <div className="flex items-center gap-3 pt-2 border-t border-gray-50">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${avatarCls}`}>
+                                    <div className={`review-card-pro h-full w-full relative transition-transform ${productId ? 'hover:-translate-y-1 cursor-pointer' : ''}`}>
+                                        {/* User Info Header */}
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white bg-gray-900 shrink-0 shadow-md">
                                                 {initial}
                                             </div>
-                                            <div className="min-w-0">
-                                                <p className="font-semibold text-gray-900 text-sm truncate">{name}</p>
-                                                {product && (
-                                                    <p className="text-xs text-[#f28c28] truncate font-medium">
-                                                        {productId ? '🔗 ' : ''}on {product}
-                                                    </p>
-                                                )}
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center justify-between">
+                                                    <p className="font-bold text-gray-900 text-sm truncate pr-2">{name}</p>
+                                                    <span className="shrink-0 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100 uppercase tracking-wide">
+                                                        ✓ Verified
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-1 mt-0.5">
+                                                    {[1, 2, 3, 4, 5].map(star => (
+                                                        <span key={star} className={`text-sm ${star <= rating ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
+                                                    ))}
+                                                </div>
                                             </div>
-                                            {/* Verified badge */}
-                                            <span className="ml-auto shrink-0 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
-                                                ✓ Verified
-                                            </span>
                                         </div>
+
+                                        {/* Review text with subtle quotes */}
+                                        <div className="relative flex-1">
+                                            <span className="absolute -top-2 -left-2 text-4xl text-gray-100 font-serif leading-none select-none z-0" aria-hidden>&ldquo;</span>
+                                            <p className="text-gray-700 text-sm leading-relaxed relative z-10 line-clamp-4">
+                                                {comment}
+                                            </p>
+                                        </div>
+
+                                        {/* Product Tag */}
+                                        {product && (
+                                            <div className="mt-4 pt-3 border-t border-gray-100">
+                                                <p className="text-xs text-[#f28c28] truncate font-semibold flex items-center gap-1">
+                                                    {productId ? <span className="text-gray-400">🔗</span> : ''} {product}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 );
 
                                 return (
-                                    <div key={rev._id || rev.id || idx}>
+                                    <SwiperSlide key={rev._id || rev.id || idx} className="h-auto">
                                         {productId ? (
-                                            <Link href={`/product/${productId}`} className="block">
+                                            <Link href={`/product/${productId}`} className="block h-full">
                                                 {cardContent}
                                             </Link>
                                         ) : (
-                                            cardContent
+                                            <div className="h-full">{cardContent}</div>
                                         )}
-                                    </div>
+                                    </SwiperSlide>
                                 );
                             })}
-                        </div>
-                    )}
-                </div>
+                        </Swiper>
+                    </div>
+                )}
             </SmoothReveal>
+
+            {/* Inject a tiny bit of CSS specific to linear sliding */}
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                .swiper-wrapper {
+                    -webkit-transition-timing-function: linear !important; 
+                    transition-timing-function: linear !important; 
+                }
+            `}} />
         </section>
     );
 };

@@ -930,3 +930,35 @@
         display: none;
     }
 }
+
+/* ── SWIPEABLE REVIEW CAROUSEL SYSTEM ────────────────────────── */
+.no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+.review-card-pro {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    min-width: 260px;
+    max-width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 769px) {
+    .review-card-pro {
+        min-width: 300px;
+        /* Slightly wider on desktop */
+    }
+}

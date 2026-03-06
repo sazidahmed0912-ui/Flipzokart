@@ -149,30 +149,37 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
   }
 
   return (
-    <div className="space-y-10 divide-y divide-gray-50">
+    <div className="flex overflow-x-auto gap-4 md:gap-6 no-scrollbar snap-x snap-mandatory py-2 px-1">
       {reviews.map((r) => {
         const hasLiked = currentUserId && (r.likes || []).some((id: any) => id === currentUserId || id._id === currentUserId);
         const hasDisliked = currentUserId && (r.dislikes || []).some((id: any) => id === currentUserId || id._id === currentUserId);
 
         return (
-          <div key={r._id} id={`review-${r._id}`} className="flex gap-3 md:gap-8 pt-5 md:pt-10 first:pt-0">
-            <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-base md:text-xl shadow-lg !w-9 !h-9 md:!w-10 md:!h-10">
-              {r.user.name.charAt(0)}
-            </div>
-            <div className="space-y-4 flex-1">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-dark text-sm md:text-xl">{r.user.name}</span>
-                  {/* <span className="bg-green-100 text-green-700 text-[9px] px-3 py-1 rounded-full font-bold uppercase tracking-widest shadow-sm">Verified Premium Member</span> */}
+          <div key={r._id} id={`review-${r._id}`} className="review-card-pro snap-center relative w-[85vw] md:w-[400px] lg:w-[450px] shrink-0 border border-gray-100 transition-all duration-200 hover:shadow-md">
+            {/* Header: Avatar, Name, Stars */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-base md:text-xl shadow-lg !w-10 !h-10 md:!w-12 md:!h-12 shrink-0">
+                {r.user.name.charAt(0)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-gray-900 text-sm md:text-base pr-2 truncate">{r.user.name}</span>
+                  <span className="shrink-0 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100 uppercase tracking-wide">
+                    ✓ Verified
+                  </span>
                 </div>
-                <div className="flex text-yellow-400">
+                <div className="flex text-yellow-400 mt-0.5">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <Star key={s} className="w-3.5 h-3.5 md:w-4 md:h-4" fill={s <= r.rating ? "currentColor" : "none"} />
                   ))}
                 </div>
               </div>
-              <div>
-                <div className="review-comment collapsed text-gray-600 text-[13px] md:text-lg leading-relaxed md:leading-normal" id={`comment-${r._id}`}>
+            </div>
+
+            <div className="flex-1 flex flex-col justify-between">
+              <div className="relative mb-4">
+                <span className="absolute -top-2 -left-2 text-4xl text-gray-100 font-serif leading-none select-none z-0" aria-hidden>&ldquo;</span>
+                <div className="review-comment collapsed text-gray-700 text-[13px] md:text-[15px] leading-relaxed relative z-10" id={`comment-${r._id}`}>
                   {r.comment}
                 </div>
                 {r.comment && r.comment.length > 80 && (
@@ -229,45 +236,47 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
                 </div>
               )}
 
-              <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1 md:mt-0">
-                Posted {new Date(r.createdAt).toLocaleDateString()}
-              </p>
+              {/* Bottom Info: Date & Actions */}
+              <div className="mt-auto pt-3 border-t border-gray-100">
+                <p className="text-[10px] md:text-sm text-gray-400 font-medium tracking-wide">
+                  Posted {new Date(r.createdAt).toLocaleDateString()}
+                </p>
 
-              {/* Actions: Like, Dislike, Comment, Share */}
-              <div className="flex flex-wrap items-center gap-3 md:gap-6 mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-100">
-                <button
-                  onClick={() => handleLike(r._id)}
-                  disabled={loadingAction === `like-${r._id}`}
-                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasLiked ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
-                >
-                  <ThumbsUp className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasLiked ? "fill-current" : ""}`} />
-                  <span>{(r.likes || []).length > 0 ? (r.likes || []).length : 'Helpful'}</span>
-                </button>
+                {/* Actions: Like, Dislike, Comment, Share */}
+                <div className="flex flex-wrap items-center gap-4 mt-2">
+                  <button
+                    onClick={() => handleLike(r._id)}
+                    disabled={loadingAction === `like-${r._id}`}
+                    className={`flex items-center gap-1 text-xs md:text-sm font-medium transition-colors ${hasLiked ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
+                  >
+                    <ThumbsUp className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasLiked ? "fill-current" : ""}`} />
+                    <span>{(r.likes || []).length > 0 ? (r.likes || []).length : 'Helpful'}</span>
+                  </button>
 
-                <button
-                  onClick={() => handleDislike(r._id)}
-                  disabled={loadingAction === `dislike-${r._id}`}
-                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasDisliked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
-                >
-                  <ThumbsDown className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasDisliked ? "fill-current" : ""}`} />
-                  <span>{(r.dislikes || []).length > 0 ? (r.dislikes || []).length : ''}</span>
-                </button>
+                  <button
+                    onClick={() => handleDislike(r._id)}
+                    disabled={loadingAction === `dislike-${r._id}`}
+                    className={`flex items-center gap-1 text-xs md:text-sm font-medium transition-colors ${hasDisliked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
+                  >
+                    <ThumbsDown className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasDisliked ? "fill-current" : ""}`} />
+                    <span>{(r.dislikes || []).length > 0 ? (r.dislikes || []).length : ''}</span>
+                  </button>
 
-                <button
-                  onClick={() => setActiveCommentId(activeCommentId === r._id ? null : r._id)}
-                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${activeCommentId === r._id ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                >
-                  <MessageSquare className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                  <span>{(r.comments || []).length > 0 ? (r.comments || []).length : 'Comment'}</span>
-                </button>
+                  <button
+                    onClick={() => setActiveCommentId(activeCommentId === r._id ? null : r._id)}
+                    className={`flex items-center gap-1 text-xs md:text-sm font-medium transition-colors ${activeCommentId === r._id ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                    <span>{(r.comments || []).length > 0 ? (r.comments || []).length : 'Comment'}</span>
+                  </button>
 
-                <button
-                  onClick={() => handleShare(r)}
-                  className="flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium text-gray-500 hover:text-green-600 transition-colors ml-auto"
-                >
-                  <Share2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                  <span className="hidden sm:inline">Share</span>
-                </button>
+                  <button
+                    onClick={() => handleShare(r)}
+                    className="flex items-center gap-1 text-xs md:text-sm text-gray-500 hover:text-green-600 font-medium transition-colors ml-auto"
+                  >
+                    <Share2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* Comments Section */}
@@ -283,34 +292,37 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
                     </div>
                   ))}
                 </div>
-              )}
+              )
+              }
 
               {/* Comment Input Box */}
-              {activeCommentId === r._id && (
-                <div className="mt-4 flex gap-2">
-                  <input
-                    type="text"
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Add a comment..."
-                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleCommentSubmit(r._id);
-                    }}
-                  />
-                  <button
-                    onClick={() => handleCommentSubmit(r._id)}
-                    disabled={!commentText.trim() || loadingAction === `comment-${r._id}`}
-                    className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 disabled:opacity-50 transition-colors"
-                  >
-                    Post
-                  </button>
-                </div>
-              )}
+              {
+                activeCommentId === r._id && (
+                  <div className="mt-4 flex gap-2">
+                    <input
+                      type="text"
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder="Add a comment..."
+                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleCommentSubmit(r._id);
+                      }}
+                    />
+                    <button
+                      onClick={() => handleCommentSubmit(r._id)}
+                      disabled={!commentText.trim() || loadingAction === `comment-${r._id}`}
+                      className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                    >
+                      Post
+                    </button>
+                  </div>
+                )
+              }
 
             </div>
           </div>
-        )
+        );
       })}
     </div>
   );
