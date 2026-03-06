@@ -495,9 +495,10 @@ const RealReviewsSection: React.FC = () => {
                                 ];
                                 const avatarCls = avatarColors[idx % avatarColors.length];
 
-                                return (
-                                    <div key={rev._id || rev.id || idx}
-                                        className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 relative">
+                                const productId: string = rev.product?._id || rev.product?.id || rev.productId || '';
+
+                                const cardContent = (
+                                    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 ${productId ? 'hover:shadow-lg hover:scale-[1.02] hover:ring-1 hover:ring-orange-200 cursor-pointer' : 'hover:shadow-md'}`}>
                                         {/* Big opening quote */}
                                         <span className="absolute top-4 left-5 text-5xl leading-none text-orange-200 font-serif select-none" aria-hidden>&ldquo;</span>
 
@@ -523,7 +524,9 @@ const RealReviewsSection: React.FC = () => {
                                             <div className="min-w-0">
                                                 <p className="font-semibold text-gray-900 text-sm truncate">{name}</p>
                                                 {product && (
-                                                    <p className="text-xs text-gray-400 truncate">on {product}</p>
+                                                    <p className="text-xs text-[#f28c28] truncate font-medium">
+                                                        {productId ? '🔗 ' : ''}on {product}
+                                                    </p>
                                                 )}
                                             </div>
                                             {/* Verified badge */}
@@ -531,6 +534,18 @@ const RealReviewsSection: React.FC = () => {
                                                 ✓ Verified
                                             </span>
                                         </div>
+                                    </div>
+                                );
+
+                                return (
+                                    <div key={rev._id || rev.id || idx}>
+                                        {productId ? (
+                                            <Link href={`/product/${productId}`} className="block">
+                                                {cardContent}
+                                            </Link>
+                                        ) : (
+                                            cardContent
+                                        )}
                                     </div>
                                 );
                             })}

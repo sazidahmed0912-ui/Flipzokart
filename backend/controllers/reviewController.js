@@ -327,7 +327,7 @@ const getLatestReviews = async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 6, 12);
     const reviews = await Review.find({ comment: { $exists: true, $ne: '' } })
       .populate('user', 'name')
-      .populate('product', 'name')
+      .populate('product', 'name _id')
       .sort({ createdAt: -1 })
       .limit(limit);
 
