@@ -169,18 +169,18 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
             className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3 relative w-screen md:w-auto md:min-w-[320px] lg:min-w-[360px]"
             style={{ flexShrink: 0 }}
           >
-            {/* User header */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-base shadow-lg !w-9 !h-9 md:!w-10 md:!h-10">
-                  {r.user.name.charAt(0)}
-                </div>
-                <span className="font-bold text-dark text-sm md:text-base">{r.user.name}</span>
+            {/* User header: avatar → name → stars (inline, close) */}
+            <div className="flex items-center gap-3">
+              <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-base shadow-lg !w-9 !h-9 md:!w-10 md:!h-10">
+                {r.user.name.charAt(0)}
               </div>
-              <div className="flex text-yellow-400">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} className="w-3.5 h-3.5 md:w-4 md:h-4" fill={s <= r.rating ? "currentColor" : "none"} />
-                ))}
+              <div className="flex flex-col gap-0.5">
+                <span className="font-bold text-dark text-sm md:text-base leading-tight">{r.user.name}</span>
+                <div className="flex text-yellow-400 gap-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="w-3.5 h-3.5" fill={s <= r.rating ? "currentColor" : "none"} />
+                  ))}
+                </div>
               </div>
             </div>
 
