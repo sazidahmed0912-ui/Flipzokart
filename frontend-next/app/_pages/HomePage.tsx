@@ -520,7 +520,7 @@ const RealReviewsSection: React.FC = () => {
                             style={{
                                 display: 'flex',
                                 overflowX: 'scroll',
-                                gap: '0px',
+                                gap: '24px',
                             }}
                         >
                             {reviews.map((rev, idx) => {
