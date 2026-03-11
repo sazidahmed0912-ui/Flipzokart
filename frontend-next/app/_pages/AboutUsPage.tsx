@@ -5,54 +5,25 @@ import Image from 'next/image';
 import { ShieldCheck, Zap, Heart, Award, Users, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export const AboutUsPage: React.FC = () => {
-  const [activeUsers, setActiveUsers] = useState(2400);
+  const [achievements, setAchievements] = useState({
+    activeUsers: 2400,
+    dailyShipments: 500000,
+    verifiedBrands: 10000,
+    satisfactionRate: 99.9
+  });
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/analytics/active-users`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/achievements`)
       .then(res => res.json())
       .then(data => {
-        if (data.activeUsers !== undefined) {
-          setActiveUsers(data.activeUsers);
+        if (!data.error) {
+          setAchievements(data);
         }
       })
-      .catch(err => console.error("Failed to fetch analytics:", err));
+      .catch(err => console.error("Failed to fetch achievements:", err));
   }, []);
 
   useEffect(() => {
-    async function loadAchievementsData() {
-      try {
-        const response = await fetch("/api/achievements-stats");
-        const data = await response.json();
-        updateCounters(data);
-      } catch (error) {
-        console.error("Achievements data error:", error);
-      }
-    }
-
-    function updateCounters(data: any) {
-      const counters = document.querySelectorAll(".counter");
-      counters.forEach(counter => {
-        // Find the adjacent <p> tag inside the same achievement-card
-        const typeElement = counter.parentElement?.querySelector("p");
-        if (!typeElement) return;
-
-        const type = typeElement.innerText;
-
-        if (type === "Active Users") {
-          counter.setAttribute("data-target", data.activeUsers.toString());
-        }
-        if (type === "Daily Shipments") {
-          counter.setAttribute("data-target", data.dailyShipments.toString());
-        }
-        if (type === "Verified Brands") {
-          counter.setAttribute("data-target", data.verifiedBrands.toString());
-        }
-        if (type === "Satisfaction Rate") {
-          counter.setAttribute("data-target", data.satisfactionRate.toString());
-        }
-      });
-    }
-
     function startCounterAnimation() {
       const counters = document.querySelectorAll(".counter");
       counters.forEach(counter => {
@@ -72,7 +43,7 @@ export const AboutUsPage: React.FC = () => {
           if (num >= 1000) {
             return (num / 1000).toFixed(1).replace('.0', '') + "K+";
           }
-          if (target === 99.9) { // Handle satisfaction rate display rule
+          if (target > 0 && target <= 100) { // Satisfaction rate percentage
             return num.toFixed(1) + "%";
           }
           return num.toFixed(0);
@@ -95,9 +66,6 @@ export const AboutUsPage: React.FC = () => {
       });
     }
 
-    // Call data load instantly on mount before scrolling down
-    loadAchievementsData();
-
     const section = document.querySelector("#achievements-section");
     if (!section) return;
 
@@ -113,7 +81,7 @@ export const AboutUsPage: React.FC = () => {
     observer.observe(section);
 
     return () => observer.disconnect();
-  }, []);
+  }, [achievements]); // Re-run if achievements update before intersection
 
   return (
     <div className="bg-white">
@@ -255,22 +223,22 @@ export const AboutUsPage: React.FC = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10" id="achievements-section">
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">👥</span>
-              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={activeUsers}>0</h2>
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={achievements.activeUsers}>0</h2>
               <p className="text-sm font-medium text-gray-300">Active Users</p>
             </div>
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">📦</span>
-              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target="500000">0</h2>
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={achievements.dailyShipments}>0</h2>
               <p className="text-sm font-medium text-gray-300">Daily Shipments</p>
             </div>
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">🛍️</span>
-              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target="10000">0</h2>
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={achievements.verifiedBrands}>0</h2>
               <p className="text-sm font-medium text-gray-300">Verified Brands</p>
             </div>
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">⭐</span>
-              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target="99.9">0</h2>
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={achievements.satisfactionRate}>0</h2>
               <p className="text-sm font-medium text-gray-300">Satisfaction Rate</p>
             </div>
           </div>

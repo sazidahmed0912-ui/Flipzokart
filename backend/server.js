@@ -304,6 +304,9 @@ app.use('/api/upload', require('./routes/uploadRoutes'));
 // 📈 Analytics Tracker
 app.use("/api/analytics", require("./routes/analytics"));
 
+// 🏆 Achievements Section Stats
+app.use("/api", require("./routes/achievements"));
+
 /* ===============================
    ✅ SERVER START
    =============================== */
