@@ -439,7 +439,7 @@ const STAR_COLORS = ['text-orange-400', 'text-orange-400', 'text-orange-400', 't
 const RealReviewsSection: React.FC = () => {
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const wrapperRef = React.useRef<HTMLDivElement>(null);
+    const [currentIdx, setCurrentIdx] = useState(0);
 
     useEffect(() => {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com';
@@ -453,35 +453,14 @@ const RealReviewsSection: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    // Continuous smooth swipe via requestAnimationFrame
+    // 120fps-capable GPU-accelerated auto-swipe: 1 card per 1s
     useEffect(() => {
-        if (!wrapperRef.current || reviews.length === 0) return;
-
-        const wrapper = wrapperRef.current;
-        let scrollPos = 0;
-        let rafId: number;
-
-        const cardEl = wrapper.querySelector('.review-card') as HTMLElement | null;
-        if (!cardEl) return;
-
-        const cardWidth = cardEl.offsetWidth + 10; // width + gap
-        const totalCards = wrapper.querySelectorAll('.review-card').length;
-
-        function continuousSwipe() {
-            scrollPos += 1.5; // 1.5px per frame → 0.5x faster smooth swipe
-
-            if (scrollPos >= cardWidth * totalCards) {
-                scrollPos = 0; // loop back to start
-            }
-
-            wrapper.scrollLeft = scrollPos;
-            rafId = requestAnimationFrame(continuousSwipe);
-        }
-
-        rafId = requestAnimationFrame(continuousSwipe);
-
-        return () => cancelAnimationFrame(rafId);
-    }, [reviews]);
+        if (reviews.length === 0) return;
+        const timer = setInterval(() => {
+            setCurrentIdx(prev => (prev + 1) % reviews.length);
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [reviews.length]);
 
     if (!loading && reviews.length === 0) return null;
 
@@ -506,17 +485,18 @@ const RealReviewsSection: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Review Cards — Horizontal Auto-Swipe Row */}
+                    {/* Review Cards — GPU-accelerated transform swipe */}
                     {!loading && (
-                        <div
-                            ref={wrapperRef}
-                            className="review-card-wrapper no-scrollbar"
-                            style={{
-                                display: 'flex',
-                                overflowX: 'scroll',
-                                gap: '0px',
-                            }}
-                        >
+                        <div className="overflow-hidden w-full">
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    gap: '0px',
+                                    transform: `translateX(-${currentIdx * 100}vw)`,
+                                    transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                                    willChange: 'transform',
+                                }}
+                            >
                             {reviews.map((rev, idx) => {
                                 const name: string = rev.user?.name || rev.userName || 'Customer';
                                 const rating: number = rev.rating || 5;
@@ -586,6 +566,7 @@ const RealReviewsSection: React.FC = () => {
                                     </div>
                                 );
                             })}
+                        </div>
                         </div>
                     )}
                 </div>
