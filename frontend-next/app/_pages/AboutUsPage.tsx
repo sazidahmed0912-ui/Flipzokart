@@ -5,6 +5,19 @@ import Image from 'next/image';
 import { ShieldCheck, Zap, Heart, Award, Users, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export const AboutUsPage: React.FC = () => {
+  const [activeUsers, setActiveUsers] = useState(2400);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/analytics/active-users`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.activeUsers !== undefined) {
+          setActiveUsers(data.activeUsers);
+        }
+      })
+      .catch(err => console.error("Failed to fetch analytics:", err));
+  }, []);
+
   useEffect(() => {
     async function loadAchievementsData() {
       try {
@@ -242,7 +255,7 @@ export const AboutUsPage: React.FC = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10" id="achievements-section">
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">👥</span>
-              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target="2400">0</h2>
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={activeUsers}>0</h2>
               <p className="text-sm font-medium text-gray-300">Active Users</p>
             </div>
             <div className="space-y-3 flex flex-col items-center achievement-card">

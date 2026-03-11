@@ -301,6 +301,9 @@ app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 // 📤 Upload Route
 app.use('/api/upload', require('./routes/uploadRoutes'));
 
+// 📈 Analytics Tracker
+app.use("/api/analytics", require("./routes/analytics"));
+
 /* ===============================
    ✅ SERVER START
    =============================== */
