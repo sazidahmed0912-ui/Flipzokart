@@ -4,17 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ShieldCheck, Zap, Heart, Award, Users, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
 
-const formatNumber = (num: number) => {
-  if (num >= 1000) {
-    // Keeps exactly one decimal, e.g., 2.4K or 2.0K, except if it's perfectly round like 1000, maybe format beautifully.
-    // The prompt shows Example: 2400 = 2.4K. 1000 = 1K. 10000 = 10K.
-    const formatted = (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1);
-    return formatted.replace('.0', '') + 'K';
-  }
-  return num.toString();
-};
-
-const AnimatedCounter = ({ start, end, duration, suffix = '' }: { start: number, end: number, duration: number, suffix?: string }) => {
+const AnimatedCounter = ({ start, end, duration, suffix = '', isDecimal = false }: { start: number, end: number, duration: number, suffix?: string, isDecimal?: boolean }) => {
   const [count, setCount] = useState(start);
   const elementRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
@@ -40,7 +30,7 @@ const AnimatedCounter = ({ start, end, duration, suffix = '' }: { start: number,
             // Ease out quad formula for smooth ending
             const easeOutProgress = 1 - Math.pow(1 - progressRatio, 3);
             
-            const currentCount = Math.floor(start + (end - start) * easeOutProgress);
+            const currentCount = start + (end - start) * easeOutProgress;
             setCount(currentCount);
 
             if (progress < duration) {
@@ -53,7 +43,7 @@ const AnimatedCounter = ({ start, end, duration, suffix = '' }: { start: number,
           animationRef.current = requestAnimationFrame(step);
         }
       },
-      { threshold: 0.5 } // Start when 50% visible
+      { threshold: 0.6 } // Start when 60% visible
     );
 
     observer.observe(element);
@@ -64,8 +54,18 @@ const AnimatedCounter = ({ start, end, duration, suffix = '' }: { start: number,
     };
   }, [start, end, duration, hasAnimated]);
 
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(0) + 'K';
+    }
+    return isDecimal ? num.toFixed(1) : Math.floor(num).toString();
+  };
+
   return (
-    <div ref={elementRef} className="text-4xl lg:text-6xl font-bold tracking-tighter inline-block">
+    <div ref={elementRef} className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={end}>
       {formatNumber(count)}{suffix}
     </div>
   );
@@ -209,26 +209,26 @@ export const AboutUsPage: React.FC = () => {
         <div className="bg-dark rounded-[4rem] p-12 lg:p-20 text-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2"></div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10">
-            <div className="space-y-3 flex flex-col items-center">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10" id="achievements-section">
+            <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">👥</span>
-              <AnimatedCounter start={0} end={2400} duration={5000} suffix="+" />
+              <AnimatedCounter start={0} end={1000000} duration={5000} suffix="+" />
               <p className="text-sm font-medium text-gray-300">Active Users</p>
             </div>
-            <div className="space-y-3 flex flex-col items-center">
+            <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">📦</span>
-              <AnimatedCounter start={0} end={3800} duration={5000} suffix="+" />
-              <p className="text-sm font-medium text-gray-300">Orders Delivered</p>
+              <AnimatedCounter start={0} end={500000} duration={5000} suffix="+" />
+              <p className="text-sm font-medium text-gray-300">Daily Shipments</p>
             </div>
-            <div className="space-y-3 flex flex-col items-center">
+            <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">🛍️</span>
-              <AnimatedCounter start={0} end={520} duration={5000} suffix="+" />
-              <p className="text-sm font-medium text-gray-300">Products</p>
+              <AnimatedCounter start={0} end={10000} duration={5000} suffix="+" />
+              <p className="text-sm font-medium text-gray-300">Verified Brands</p>
             </div>
-            <div className="space-y-3 flex flex-col items-center">
-              <span className="text-3xl lg:text-4xl">🏢</span>
-              <AnimatedCounter start={0} end={120} duration={5000} suffix="+" />
-              <p className="text-sm font-medium text-gray-300">Cities</p>
+            <div className="space-y-3 flex flex-col items-center achievement-card">
+              <span className="text-3xl lg:text-4xl">⭐</span>
+              <AnimatedCounter start={0} end={99.9} duration={5000} suffix="%" isDecimal={true} />
+              <p className="text-sm font-medium text-gray-300">Satisfaction Rate</p>
             </div>
           </div>
         </div>
