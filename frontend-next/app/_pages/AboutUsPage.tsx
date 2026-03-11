@@ -4,73 +4,67 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ShieldCheck, Zap, Heart, Award, Users, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
 
-const AnimatedCounter = ({ start, end, duration, suffix = '', isDecimal = false }: { start: number, end: number, duration: number, suffix?: string, isDecimal?: boolean }) => {
-  const [count, setCount] = useState(start);
-  const elementRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number | null>(null);
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !hasAnimated) {
-          setHasAnimated(true);
-          const target = end;
-          if (!target) return;
-          
-          let startTime: number | null = null;
-
-          const animateCounter = (currentTime: number) => {
-            if (!startTime) startTime = currentTime;
-            
-            const progress = Math.min((currentTime - startTime) / duration, 1);
-            const value = start + (target - start) * progress;
-
-            setCount(value);
-
-            if (progress < 1) {
-              animationRef.current = requestAnimationFrame(animateCounter);
-            } else {
-              setCount(target);
-            }
-          };
-
-          animationRef.current = requestAnimationFrame(animateCounter);
-          observer.unobserve(element);
-        }
-      },
-      { threshold: 0.5 }
-    );
-
-    observer.observe(element);
-
-    return () => {
-      observer.disconnect();
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    };
-  }, [start, end, duration, hasAnimated]);
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
-    }
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K';
-    }
-    return isDecimal ? num.toFixed(1) : Math.floor(num).toString();
-  };
-
-  return (
-    <div ref={elementRef} className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={end}>
-      {formatNumber(count)}{suffix}
-    </div>
-  );
-};
-
 export const AboutUsPage: React.FC = () => {
+  useEffect(() => {
+    function startCounterAnimation() {
+      const counters = document.querySelectorAll(".counter");
+      counters.forEach(counter => {
+        const targetAttr = counter.getAttribute("data-target");
+        if (!targetAttr) return;
+        const target = parseFloat(targetAttr);
+        if (!target) return;
+
+        let start = 0;
+        const duration = 5000;
+        const startTime = performance.now();
+
+        function formatNumber(num: number) {
+          if (num >= 1000000) {
+            return (num / 1000000).toFixed(1).replace('.0', '') + "M+";
+          }
+          if (num >= 1000) {
+            return (num / 1000).toFixed(1).replace('.0', '') + "K+";
+          }
+          if (target === 99.9) {
+            return num.toFixed(1) + "%";
+          }
+          return num.toFixed(0);
+        }
+
+        function animateCounter(currentTime: number) {
+          const progress = Math.min((currentTime - startTime) / duration, 1);
+          const value = start + (target - start) * progress;
+
+          counter.innerHTML = formatNumber(value);
+
+          if (progress < 1) {
+            requestAnimationFrame(animateCounter);
+          } else {
+            counter.innerHTML = formatNumber(target);
+          }
+        }
+
+        requestAnimationFrame(animateCounter);
+      });
+    }
+
+    const section = document.querySelector("#achievements-section");
+    if (!section) return;
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          startCounterAnimation();
+          observer.disconnect();
+        }
+      });
+    }, { threshold: 0.5 });
+
+    observer.observe(section);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -211,22 +205,22 @@ export const AboutUsPage: React.FC = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10" id="achievements-section">
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">👥</span>
-              <AnimatedCounter start={0} end={2400} duration={5000} suffix="+" />
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target="2400">0</h2>
               <p className="text-sm font-medium text-gray-300">Active Users</p>
             </div>
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">📦</span>
-              <AnimatedCounter start={0} end={500000} duration={5000} suffix="+" />
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target="500000">0</h2>
               <p className="text-sm font-medium text-gray-300">Daily Shipments</p>
             </div>
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">🛍️</span>
-              <AnimatedCounter start={0} end={10000} duration={5000} suffix="+" />
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target="10000">0</h2>
               <p className="text-sm font-medium text-gray-300">Verified Brands</p>
             </div>
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">⭐</span>
-              <AnimatedCounter start={0} end={99.9} duration={5000} suffix="%" isDecimal={true} />
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target="99.9">0</h2>
               <p className="text-sm font-medium text-gray-300">Satisfaction Rate</p>
             </div>
           </div>
