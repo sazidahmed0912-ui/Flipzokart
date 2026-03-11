@@ -640,6 +640,7 @@ const Footer: React.FC = () => {
             <h3 className="font-semibold text-gray-900 mb-3">Support</h3>
             <ul className="space-y-2 text-[11px] leading-4 md:text-sm text-gray-600">
               <li><Link href="/contact" className="hover:text-[#f28c28]">Contact Us</Link></li>
+              <li><Link href="/faq" className="hover:text-[#f28c28]">FAQ</Link></li>
               <li><Link href="/returns-refunds-policy" className="hover:text-[#f28c28]">Returns & Refunds</Link></li>
             </ul>
           </div>
@@ -647,7 +648,8 @@ const Footer: React.FC = () => {
             <h3 className="font-semibold text-gray-900 mb-3">Legal</h3>
             <ul className="space-y-2 text-[11px] leading-4 md:text-sm text-gray-600">
               <li><Link href="/privacy-policy" className="hover:text-[#f28c28]">Privacy Policy</Link></li>
-              <li><Link href="/terms-of-service" className="hover:text-[#f28c28]">Terms of Service</Link></li>
+              <li><Link href="/terms-of-service" className="hover:text-[#f28c28]">Terms & Conditions</Link></li>
+              <li><Link href="/shipping-policy" className="hover:text-[#f28c28]">Shipping Policy</Link></li>
             </ul>
           </div>
           <div className="text-2xl font-bold">
