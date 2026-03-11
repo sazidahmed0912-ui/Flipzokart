@@ -76,6 +76,7 @@ const getProductReviews = async (req, res) => {
   try {
     const reviews = await Review.find({ product: req.params.productId })
       .populate("user", "name email")
+      .populate("comments.user", "name")   // ← fix: populate comment authors
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, count: reviews.length, data: reviews });
