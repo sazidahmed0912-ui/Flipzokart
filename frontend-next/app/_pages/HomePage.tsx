@@ -535,30 +535,27 @@ const RealReviewsSection: React.FC = () => {
                                 const productId: string = rev.product?._id || rev.product?.id || rev.productId || '';
 
                                 const cardInner = (
-                                    <div
-                                        className="review-card bg-white rounded-3xl border border-gray-100 shadow-sm p-3 md:p-6 flex flex-col gap-2 md:gap-4 relative transition-all duration-200 hover:shadow-lg min-w-[50vw] min-h-[220px] md:min-w-[280px] md:min-h-0"
-                                        style={{ flexShrink: 0 }}
-                                    >
+                                    <div className={`review-card bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 min-w-[85vw] md:min-w-[320px] lg:min-w-[360px] ${productId ? 'hover:shadow-lg hover:scale-[1.02] hover:ring-1 hover:ring-orange-200 cursor-pointer' : 'hover:shadow-md'}`} style={{ flexShrink: 0 }}>
                                         {/* Big opening quote */}
-                                        <span className="absolute top-2 left-3 md:top-4 md:left-5 text-3xl md:text-5xl leading-none text-orange-200 font-serif select-none" aria-hidden>&ldquo;</span>
+                                        <span className="absolute top-4 left-5 text-5xl leading-none text-orange-200 font-serif select-none" aria-hidden>&ldquo;</span>
 
                                         {/* Stars */}
-                                        <div className="flex gap-0.5 mt-3 md:mt-2">
+                                        <div className="flex gap-0.5 mt-2">
                                             {[1, 2, 3, 4, 5].map(star => (
-                                                <span key={star} className={`text-sm md:text-lg ${star <= rating ? 'text-orange-400' : 'text-gray-200'}`}>★</span>
+                                                <span key={star} className={`text-lg ${star <= rating ? 'text-orange-400' : 'text-gray-200'}`}>★</span>
                                             ))}
                                         </div>
 
-                                        {/* Review text */}
-                                        <p className="text-gray-700 text-xs md:text-sm leading-relaxed flex-1 pl-1 line-clamp-4">
-                                            <span className="text-[#f28c28] font-serif text-base md:text-lg leading-none mr-0.5">&ldquo;</span>
-                                            {comment.length > 100 ? comment.slice(0, 100) + '…' : comment}
-                                            <span className="text-[#f28c28] font-serif text-base md:text-lg leading-none ml-0.5">&rdquo;</span>
+                                        {/* Review text with " marks */}
+                                        <p className="text-gray-700 text-sm leading-relaxed flex-1 pl-1">
+                                            <span className="text-[#f28c28] font-serif text-lg leading-none mr-0.5">&ldquo;</span>
+                                            {comment.length > 180 ? comment.slice(0, 180) + '…' : comment}
+                                            <span className="text-[#f28c28] font-serif text-lg leading-none ml-0.5">&rdquo;</span>
                                         </p>
 
                                         {/* User info */}
-                                        <div className="flex items-center gap-2 pt-1 md:pt-2 border-t border-gray-50">
-                                            <div className={`w-7 h-7 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-xs md:text-sm shrink-0 ${avatarCls}`}>
+                                        <div className="flex items-center gap-3 pt-2 border-t border-gray-50">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${avatarCls}`}>
                                                 {initial}
                                             </div>
                                             <div className="min-w-0">
