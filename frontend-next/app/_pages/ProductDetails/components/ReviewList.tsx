@@ -272,8 +272,8 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
               </button>
             </div>
 
-            {/* Comments Section */}
-            {(r.comments && r.comments.length > 0) && (
+            {/* Comments Section — only visible on Comment button click */}
+            {activeCommentId === r._id && (r.comments && r.comments.length > 0) && (
               <div className="pl-4 border-l-2 border-gray-100 space-y-4">
                 {r.comments.map(c => (
                   <div key={c._id} className="bg-gray-50 rounded-lg p-3 text-sm">
