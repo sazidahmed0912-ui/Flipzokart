@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import { useApp } from '@/app/store/Context';
@@ -439,7 +439,6 @@ const STAR_COLORS = ['text-orange-400', 'text-orange-400', 'text-orange-400', 't
 const RealReviewsSection: React.FC = () => {
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -452,35 +451,6 @@ const RealReviewsSection: React.FC = () => {
             .catch(() => setReviews([]))
             .finally(() => setLoading(false));
     }, []);
-
-    useEffect(() => {
-        if (loading || reviews.length === 0) return;
-
-        const interval = setInterval(() => {
-            const el = scrollRef.current;
-            if (!el) return;
-
-            const firstCard = el.firstElementChild as HTMLElement;
-            if (!firstCard) return;
-
-            // Calculate scroll amount (card width + gap)
-            const cardWidth = firstCard.offsetWidth;
-            const gap = parseInt(window.getComputedStyle(el).gap) || 24;
-            const scrollAmount = cardWidth + gap;
-
-            const maxScroll = el.scrollWidth - el.clientWidth;
-
-            if (el.scrollLeft >= maxScroll - 10) {
-                // Loop back to start smoothly
-                el.scrollTo({ left: 0, behavior: 'smooth' });
-            } else {
-                // Scroll next by exact card width
-                el.scrollTo({ left: el.scrollLeft + scrollAmount, behavior: 'smooth' });
-            }
-        }, 4000); // 4 Seconds Auto Slide
-
-        return () => clearInterval(interval);
-    }, [reviews, loading]);
 
     if (!loading && reviews.length === 0) return null;
 
@@ -507,11 +477,7 @@ const RealReviewsSection: React.FC = () => {
 
                     {/* Review Cards */}
                     {!loading && (
-                        <div
-                            ref={scrollRef}
-                            className="flex flex-row flex-nowrap overflow-x-auto snap-x snap-mandatory gap-6 pb-4 hide-scrollbar"
-                            style={{ scrollBehavior: 'smooth' }}
-                        >
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {reviews.map((rev, idx) => {
                                 const name: string = rev.user?.name || rev.userName || 'Customer';
                                 const rating: number = rev.rating || 5;
@@ -572,13 +538,13 @@ const RealReviewsSection: React.FC = () => {
                                 );
 
                                 return (
-                                    <div key={rev._id || rev.id || idx} className="snap-start snap-always shrink-0 w-[85vw] md:w-[400px]">
+                                    <div key={rev._id || rev.id || idx}>
                                         {productId ? (
-                                            <Link href={`/product/${productId}`} className="block h-full">
+                                            <Link href={`/product/${productId}`} className="block">
                                                 {cardContent}
                                             </Link>
                                         ) : (
-                                            <div className="h-full">{cardContent}</div>
+                                            cardContent
                                         )}
                                     </div>
                                 );

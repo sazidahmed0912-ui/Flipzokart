@@ -149,13 +149,13 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
   }
 
   return (
-    <div className="flex flex-row flex-nowrap overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-6 pb-4">
+    <div className="space-y-10 divide-y divide-gray-50">
       {reviews.map((r) => {
         const hasLiked = currentUserId && (r.likes || []).some((id: any) => id === currentUserId || id._id === currentUserId);
         const hasDisliked = currentUserId && (r.dislikes || []).some((id: any) => id === currentUserId || id._id === currentUserId);
 
         return (
-          <div key={r._id} id={`review-${r._id}`} className="snap-start snap-always shrink-0 w-[85vw] md:w-[700px] flex gap-3 md:gap-8 pt-5 md:pt-10 first:pt-0">
+          <div key={r._id} id={`review-${r._id}`} className="flex gap-3 md:gap-8 pt-5 md:pt-10 first:pt-0">
             <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-base md:text-xl shadow-lg !w-9 !h-9 md:!w-10 md:!h-10">
               {r.user.name.charAt(0)}
             </div>
