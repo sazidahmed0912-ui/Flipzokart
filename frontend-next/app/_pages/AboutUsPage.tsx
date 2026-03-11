@@ -59,7 +59,7 @@ const AnimatedCounter = ({ start, end, duration, suffix = '', isDecimal = false 
       return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
     }
     if (num >= 1000) {
-      return (num / 1000).toFixed(0) + 'K';
+      return (num / 1000).toFixed(1).replace('.0', '') + 'K';
     }
     return isDecimal ? num.toFixed(1) : Math.floor(num).toString();
   };
@@ -212,7 +212,7 @@ export const AboutUsPage: React.FC = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10" id="achievements-section">
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">👥</span>
-              <AnimatedCounter start={0} end={1000000} duration={5000} suffix="+" />
+              <AnimatedCounter start={0} end={2400} duration={5000} suffix="+" />
               <p className="text-sm font-medium text-gray-300">Active Users</p>
             </div>
             <div className="space-y-3 flex flex-col items-center achievement-card">
