@@ -175,12 +175,12 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
                 {r.user.name.charAt(0)}
               </div>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                <span className="font-bold text-dark text-sm md:text-base leading-tight">{r.user.name}</span>
+                <span className="font-bold text-dark text-sm md:text-base leading-tight pr-1">{r.user.name}</span>
                 <div className="flex items-center text-yellow-400 gap-0.5">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <Star key={s} className="w-3.5 h-3.5" fill={s <= r.rating ? "currentColor" : "none"} />
                   ))}
-                  <span className="text-gray-500 text-xs ml-1 font-medium">({r.rating || 5}★)</span>
+                  <span className="text-gray-500 text-xs ml-1 font-medium">({r.rating || 5}<span className="text-yellow-400">★</span>)</span>
                 </div>
               </div>
             </div>
