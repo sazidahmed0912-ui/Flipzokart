@@ -439,7 +439,7 @@ const STAR_COLORS = ['text-orange-400', 'text-orange-400', 'text-orange-400', 't
 const RealReviewsSection: React.FC = () => {
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [currentIdx, setCurrentIdx] = useState(0);
+    const wrapperRef = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com';
@@ -453,14 +453,41 @@ const RealReviewsSection: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    // 120fps-capable GPU-accelerated auto-swipe: 1 card per 1s
+    // 120fps-capable GPU-accelerated auto-swipe via delta-time RAF
     useEffect(() => {
-        if (reviews.length === 0) return;
-        const timer = setInterval(() => {
-            setCurrentIdx(prev => (prev + 1) % reviews.length);
-        }, 1000);
-        return () => clearInterval(timer);
-    }, [reviews.length]);
+        if (!wrapperRef.current || reviews.length === 0) return;
+
+        const wrapper = wrapperRef.current;
+        let scrollPos = 0;
+        let rafId: number;
+        let lastTime: number | null = null;
+        const SPEED = 0.09; // px per ms → 90px/sec at any refresh rate (60/90/120fps)
+
+        const cardEl = wrapper.querySelector('.review-card') as HTMLElement | null;
+        if (!cardEl) return;
+
+        const cardWidth = cardEl.offsetWidth; // no gap since gap is 0
+        const totalCards = wrapper.querySelectorAll('.review-card').length;
+
+        function continuousSwipe(timestamp: number) {
+            if (lastTime !== null) {
+                const delta = timestamp - lastTime; // ms since last frame
+                scrollPos += SPEED * delta; // frame-rate independent speed
+
+                if (scrollPos >= cardWidth * totalCards) {
+                    scrollPos = 0; // loop back to start smoothly
+                }
+
+                wrapper.scrollLeft = scrollPos;
+            }
+            lastTime = timestamp;
+            rafId = requestAnimationFrame(continuousSwipe);
+        }
+
+        rafId = requestAnimationFrame(continuousSwipe);
+
+        return () => cancelAnimationFrame(rafId);
+    }, [reviews]);
 
     if (!loading && reviews.length === 0) return null;
 
@@ -485,18 +512,17 @@ const RealReviewsSection: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Review Cards — GPU-accelerated transform swipe */}
+                    {/* Review Cards — Horizontal Auto-Swipe Row */}
                     {!loading && (
-                        <div className="overflow-hidden w-full">
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    gap: '0px',
-                                    transform: `translateX(-${currentIdx * 100}vw)`,
-                                    transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                    willChange: 'transform',
-                                }}
-                            >
+                        <div
+                            ref={wrapperRef}
+                            className="review-card-wrapper no-scrollbar"
+                            style={{
+                                display: 'flex',
+                                overflowX: 'scroll',
+                                gap: '0px',
+                            }}
+                        >
                             {reviews.map((rev, idx) => {
                                 const name: string = rev.user?.name || rev.userName || 'Customer';
                                 const rating: number = rev.rating || 5;
@@ -566,7 +592,6 @@ const RealReviewsSection: React.FC = () => {
                                     </div>
                                 );
                             })}
-                        </div>
                         </div>
                     )}
                 </div>
