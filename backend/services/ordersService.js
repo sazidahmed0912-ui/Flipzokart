@@ -1,15 +1,15 @@
 const Order = require("../models/Order");
 
 async function getDailyShipments() {
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
 
-  return await Order.countDocuments({
+  const count = await Order.countDocuments({
     status: 'Shipped',
-    createdAt: { $gte: startOfDay, $lte: endOfDay }
+    updatedAt: { $gte: startOfToday }
   });
+  
+  return count || 0;
 }
 
 module.exports = { getDailyShipments };

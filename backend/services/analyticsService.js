@@ -1,23 +1,11 @@
 const { BetaAnalyticsDataClient } = require("@google-analytics/data");
 const path = require("path");
 
-const fs = require("fs");
-const keyPath = path.join(__dirname, "../config/analytics-service.json");
-
-let analyticsDataClient = null;
-
-if (fs.existsSync(keyPath)) {
-  analyticsDataClient = new BetaAnalyticsDataClient({
-    keyFilename: keyPath
-  });
-} else {
-  console.warn("⚠️ Google Analytics Service Account key missing. Using fallbacks.");
-}
+const analyticsDataClient = new BetaAnalyticsDataClient({
+  keyFilename: path.join(__dirname, "../config/analytics-service.json")
+});
 
 async function getActiveUsers() {
-  if (!analyticsDataClient) {
-    return 0;
-  }
   try {
     const [response] = await analyticsDataClient.runRealtimeReport({
       property: "properties/520375126",

@@ -21,8 +21,7 @@ const CLIENT_URLS = [
   "http://192.168.31.152:3000",
   "http://127.0.0.1:63790",
   "https://flipzokart.com",
-  "https://www.flipzokart.com",
-  "https://flipzokart-backend.onrender.com"
+  "https://www.flipzokart.com"
 ];
 
 /* ===============================
@@ -199,16 +198,13 @@ app.use(express.json({ limit: "200mb" }));
 app.use(express.urlencoded({ limit: "200mb", extended: true, parameterLimit: 1000000 }));
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (CLIENT_URLS.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.warn("CORS blocked for origin:", origin);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://flipzokart.com",
+    "https://www.flipzokart.com",
+    "https://flipzokart-backend.onrender.com"
+  ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin", "Cache-Control"]
@@ -305,11 +301,11 @@ app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 // 📤 Upload Route
 app.use('/api/upload', require('./routes/uploadRoutes'));
 
+// 🏆 Achievements Section (Real-Time)
+app.use("/api", require("./routes/achievements"));
+
 // 📈 Analytics Tracker
 app.use("/api/analytics", require("./routes/analytics"));
-
-// 🏆 Achievements Section Stats
-app.use("/api", require("./routes/achievements"));
 
 /* ===============================
    ✅ SERVER START

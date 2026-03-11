@@ -5,83 +5,54 @@ import Image from 'next/image';
 import { ShieldCheck, Zap, Heart, Award, Users, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export const AboutUsPage: React.FC = () => {
-  const [achievements, setAchievements] = useState({
-    activeUsers: 2400,
-    dailyShipments: 500000,
-    verifiedBrands: 10000,
-    satisfactionRate: 99.9
-  });
-
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/achievements`)
-      .then(res => res.json())
-      .then(data => {
-        if (!data.error) {
-          setAchievements(data);
+    function animateCounter(elementId: string, target: number, duration: number = 5000) {
+      let start = 0;
+      const stepTime = 50;
+      const increment = target / (duration / stepTime);
+      const el = document.getElementById(elementId);
+      if (!el) return;
+
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= target) {
+          el.innerText = target.toLocaleString();
+          clearInterval(timer);
+        } else {
+          el.innerText = Math.floor(start).toLocaleString();
         }
-      })
-      .catch(err => console.error("Failed to fetch achievements:", err));
-  }, []);
-
-  useEffect(() => {
-    function startCounterAnimation() {
-      const counters = document.querySelectorAll(".counter");
-      counters.forEach(counter => {
-        const targetAttr = counter.getAttribute("data-target");
-        if (!targetAttr) return;
-        const target = parseFloat(targetAttr);
-        if (!target) return;
-
-        let start = 0;
-        const duration = 5000;
-        const startTime = performance.now();
-
-        function formatNumber(num: number) {
-          if (num >= 1000000) {
-            return (num / 1000000).toFixed(1).replace('.0', '') + "M+";
-          }
-          if (num >= 1000) {
-            return (num / 1000).toFixed(1).replace('.0', '') + "K+";
-          }
-          if (target > 0 && target <= 100) { // Satisfaction rate percentage
-            return num.toFixed(1) + "%";
-          }
-          return num.toFixed(0);
-        }
-
-        function animateCounter(currentTime: number) {
-          const progress = Math.min((currentTime - startTime) / duration, 1);
-          const value = start + (target - start) * progress;
-
-          counter.innerHTML = formatNumber(value);
-
-          if (progress < 1) {
-            requestAnimationFrame(animateCounter);
-          } else {
-            counter.innerHTML = formatNumber(target);
-          }
-        }
-
-        requestAnimationFrame(animateCounter);
-      });
+      }, stepTime);
     }
 
     const section = document.querySelector("#achievements-section");
     if (!section) return;
 
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          startCounterAnimation();
-          observer.disconnect();
-        }
-      });
+    let fetched = false;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !fetched) {
+        fetched = true;
+
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/achievements`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (!data.error) {
+              animateCounter("activeUsers", data.activeUsers);
+              animateCounter("dailyShipments", data.dailyShipments);
+              animateCounter("verifiedBrands", data.verifiedBrands);
+              animateCounter("satisfactionRate", data.satisfactionRate);
+            }
+          })
+          .catch((err) => console.error("Achievements fetch failed:", err));
+        
+        observer.disconnect();
+      }
     }, { threshold: 0.5 });
 
     observer.observe(section);
 
     return () => observer.disconnect();
-  }, [achievements]); // Re-run if achievements update before intersection
+  }, []);
 
   return (
     <div className="bg-white">
@@ -223,22 +194,22 @@ export const AboutUsPage: React.FC = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10" id="achievements-section">
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">👥</span>
-              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={achievements.activeUsers}>0</h2>
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block"><span id="activeUsers">0</span>+</h2>
               <p className="text-sm font-medium text-gray-300">Active Users</p>
             </div>
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">📦</span>
-              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={achievements.dailyShipments}>0</h2>
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block"><span id="dailyShipments">0</span>K+</h2>
               <p className="text-sm font-medium text-gray-300">Daily Shipments</p>
             </div>
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">🛍️</span>
-              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={achievements.verifiedBrands}>0</h2>
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block"><span id="verifiedBrands">0</span>K+</h2>
               <p className="text-sm font-medium text-gray-300">Verified Brands</p>
             </div>
             <div className="space-y-3 flex flex-col items-center achievement-card">
               <span className="text-3xl lg:text-4xl">⭐</span>
-              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block" data-target={achievements.satisfactionRate}>0</h2>
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block"><span id="satisfactionRate">0</span>%</h2>
               <p className="text-sm font-medium text-gray-300">Satisfaction Rate</p>
             </div>
           </div>

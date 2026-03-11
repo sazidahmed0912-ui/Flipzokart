@@ -9,16 +9,16 @@ router.get("/achievements", async (req, res) => {
   try {
     const [activeUsers, dailyShipments, verifiedBrands, satisfactionRate] =
       await Promise.all([
-        getActiveUsers().catch(() => 2400), // Default fallback
-        getDailyShipments().catch(() => 0),
-        getVerifiedBrands().catch(() => 0),
-        getSatisfactionRate().catch(() => 0),
+        getActiveUsers(),
+        getDailyShipments(),
+        getVerifiedBrands(),
+        getSatisfactionRate(),
       ]);
 
     res.json({
-      activeUsers: parseInt(activeUsers) || 0,
-      dailyShipments: parseInt(dailyShipments) || 0,
-      verifiedBrands: parseInt(verifiedBrands) || 0,
+      activeUsers: parseInt(activeUsers, 10) || 0,
+      dailyShipments: parseInt(dailyShipments, 10) || 0,
+      verifiedBrands: parseInt(verifiedBrands, 10) || 0,
       satisfactionRate: parseFloat(satisfactionRate) || 0,
     });
   } catch (error) {
