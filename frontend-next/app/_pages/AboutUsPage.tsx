@@ -6,6 +6,40 @@ import { ShieldCheck, Zap, Heart, Award, Users, Globe, ArrowRight, CheckCircle2 
 
 export const AboutUsPage: React.FC = () => {
   useEffect(() => {
+    async function loadAchievementsData() {
+      try {
+        const response = await fetch("/api/achievements-stats");
+        const data = await response.json();
+        updateCounters(data);
+      } catch (error) {
+        console.error("Achievements data error:", error);
+      }
+    }
+
+    function updateCounters(data: any) {
+      const counters = document.querySelectorAll(".counter");
+      counters.forEach(counter => {
+        // Find the adjacent <p> tag inside the same achievement-card
+        const typeElement = counter.parentElement?.querySelector("p");
+        if (!typeElement) return;
+
+        const type = typeElement.innerText;
+
+        if (type === "Active Users") {
+          counter.setAttribute("data-target", data.activeUsers.toString());
+        }
+        if (type === "Daily Shipments") {
+          counter.setAttribute("data-target", data.dailyShipments.toString());
+        }
+        if (type === "Verified Brands") {
+          counter.setAttribute("data-target", data.verifiedBrands.toString());
+        }
+        if (type === "Satisfaction Rate") {
+          counter.setAttribute("data-target", data.satisfactionRate.toString());
+        }
+      });
+    }
+
     function startCounterAnimation() {
       const counters = document.querySelectorAll(".counter");
       counters.forEach(counter => {
@@ -25,7 +59,7 @@ export const AboutUsPage: React.FC = () => {
           if (num >= 1000) {
             return (num / 1000).toFixed(1).replace('.0', '') + "K+";
           }
-          if (target === 99.9) {
+          if (target === 99.9) { // Handle satisfaction rate display rule
             return num.toFixed(1) + "%";
           }
           return num.toFixed(0);
@@ -47,6 +81,9 @@ export const AboutUsPage: React.FC = () => {
         requestAnimationFrame(animateCounter);
       });
     }
+
+    // Call data load instantly on mount before scrolling down
+    loadAchievementsData();
 
     const section = document.querySelector("#achievements-section");
     if (!section) return;
