@@ -510,11 +510,10 @@ const RealReviewsSection: React.FC = () => {
                     {!loading && (
                         <div
                             ref={wrapperRef}
-                            className="review-card-wrapper"
+                            className="review-card-wrapper no-scrollbar"
                             style={{
                                 display: 'flex',
-                                overflowX: 'hidden',
-                                scrollBehavior: 'smooth',
+                                overflowX: 'scroll',
                                 gap: '10px',
                             }}
                         >
@@ -537,8 +536,8 @@ const RealReviewsSection: React.FC = () => {
 
                                 const cardInner = (
                                     <div
-                                        className="review-card bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 hover:shadow-lg"
-                                        style={{ minWidth: '280px', flexShrink: 0 }}
+                                        className="review-card bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 hover:shadow-lg min-w-[220px] md:min-w-[280px]"
+                                        style={{ flexShrink: 0 }}
                                     >
                                         {/* Big opening quote */}
                                         <span className="absolute top-4 left-5 text-5xl leading-none text-orange-200 font-serif select-none" aria-hidden>&ldquo;</span>
