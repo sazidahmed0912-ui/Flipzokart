@@ -453,34 +453,34 @@ const RealReviewsSection: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    // Auto-swipe logic: every 5 seconds
+    // Continuous smooth swipe via requestAnimationFrame
     useEffect(() => {
         if (!wrapperRef.current || reviews.length === 0) return;
 
         const wrapper = wrapperRef.current;
-        let scrollAmount = 0;
+        let scrollPos = 0;
+        let rafId: number;
 
         const cardEl = wrapper.querySelector('.review-card') as HTMLElement | null;
         if (!cardEl) return;
 
-        const cardWidth = cardEl.offsetWidth + 10; // card width + gap
+        const cardWidth = cardEl.offsetWidth + 10; // width + gap
         const totalCards = wrapper.querySelectorAll('.review-card').length;
 
-        const interval = setInterval(() => {
-            scrollAmount += cardWidth;
+        function continuousSwipe() {
+            scrollPos += 1; // 1px per frame → smooth continuous swipe
 
-            // If last card reached, scroll back to start
-            if (scrollAmount >= cardWidth * totalCards) {
-                scrollAmount = 0;
+            if (scrollPos >= cardWidth * totalCards) {
+                scrollPos = 0; // loop back to start
             }
 
-            wrapper.scrollTo({
-                left: scrollAmount,
-                behavior: 'smooth'
-            });
-        }, 5000); // Every 5 seconds
+            wrapper.scrollLeft = scrollPos;
+            rafId = requestAnimationFrame(continuousSwipe);
+        }
 
-        return () => clearInterval(interval);
+        rafId = requestAnimationFrame(continuousSwipe);
+
+        return () => cancelAnimationFrame(rafId);
     }, [reviews]);
 
     if (!loading && reviews.length === 0) return null;
