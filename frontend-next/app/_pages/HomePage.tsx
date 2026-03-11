@@ -486,11 +486,11 @@ const RealReviewsSection: React.FC = () => {
     if (!loading && reviews.length === 0) return null;
 
     return (
-        <section id="reviewsSection" className="py-12 px-4 bg-white">
+        <section id="reviewsSection" className="py-12 bg-white">
             <SmoothReveal direction="up" delay={500}>
-                <div className="max-w-7xl mx-auto">
+                <div className="md:max-w-7xl md:mx-auto md:px-4">
                     {/* Section Header */}
-                    <div className="text-center mb-10">
+                    <div className="text-center mb-10 px-4 md:px-0">
                         <h2 className="text-2xl md:text-3xl font-bold mb-2">
                             Customer <span className="text-[#f28c28]">Reviews</span>
                         </h2>
@@ -514,7 +514,7 @@ const RealReviewsSection: React.FC = () => {
                             style={{
                                 display: 'flex',
                                 overflowX: 'scroll',
-                                gap: '10px',
+                                gap: '0px',
                             }}
                         >
                             {reviews.map((rev, idx) => {
@@ -535,7 +535,7 @@ const RealReviewsSection: React.FC = () => {
                                 const productId: string = rev.product?._id || rev.product?.id || rev.productId || '';
 
                                 const cardInner = (
-                                    <div className={`review-card bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 min-w-[calc(100vw-2rem)] md:min-w-[320px] lg:min-w-[360px] ${productId ? 'hover:shadow-lg hover:scale-[1.02] hover:ring-1 hover:ring-orange-200 cursor-pointer' : 'hover:shadow-md'}`} style={{ flexShrink: 0 }}>
+                                    <div className={`review-card bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 w-screen md:w-auto md:min-w-[320px] lg:min-w-[360px] ${productId ? 'hover:shadow-lg hover:scale-[1.02] hover:ring-1 hover:ring-orange-200 cursor-pointer' : 'hover:shadow-md'}`} style={{ flexShrink: 0 }}>
                                         {/* Big opening quote */}
                                         <span className="absolute top-4 left-5 text-5xl leading-none text-orange-200 font-serif select-none" aria-hidden>&ldquo;</span>
 
