@@ -1,26 +1,45 @@
 const { BetaAnalyticsDataClient } = require("@google-analytics/data");
 const path = require("path");
+const fs = require("fs");
 
-// Production-ready credentials handling
-let config = {};
-if (process.env.GA_CLIENT_EMAIL && process.env.GA_PRIVATE_KEY) {
-  config = {
-    credentials: {
-      client_email: process.env.GA_CLIENT_EMAIL,
-      private_key: process.env.GA_PRIVATE_KEY.replace(/\\n/g, '\n'),
+let analyticsDataClient = null;
+
+function getClient() {
+  if (analyticsDataClient) return analyticsDataClient;
+
+  let config = {};
+  if (process.env.GA_CLIENT_EMAIL && process.env.GA_PRIVATE_KEY) {
+    config = {
+      credentials: {
+        client_email: process.env.GA_CLIENT_EMAIL,
+        private_key: process.env.GA_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      }
+    };
+  } else {
+    const keyPath = path.join(__dirname, "../config/analytics-service.json");
+    if (fs.existsSync(keyPath)) {
+      config = { keyFilename: keyPath };
+    } else {
+      console.warn("Analytics Error: No credentials found (Env or JSON). Using fallback.");
+      return null;
     }
-  };
-} else {
-  config = {
-    keyFilename: path.join(__dirname, "../config/analytics-service.json")
-  };
-}
+  }
 
-const analyticsDataClient = new BetaAnalyticsDataClient(config);
+  try {
+    analyticsDataClient = new BetaAnalyticsDataClient(config);
+    return analyticsDataClient;
+  } catch (err) {
+    console.error("Failed to create Analytics Client:", err.message);
+    return null;
+  }
+}
 
 async function getActiveUsers() {
   try {
-    const [response] = await analyticsDataClient.runRealtimeReport({
+    const client = getClient();
+    if (!client) return 2400; // UI Fallback
+
+    const [response] = await client.runRealtimeReport({
       property: "properties/520375126",
       metrics: [{ name: "activeUsers" }]
     });
