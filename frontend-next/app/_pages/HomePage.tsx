@@ -439,9 +439,10 @@ const STAR_COLORS = ['text-orange-400', 'text-orange-400', 'text-orange-400', 't
 const RealReviewsSection: React.FC = () => {
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const wrapperRef = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com';
         axios.get(`${API_URL}/api/reviews/latest?limit=6`)
             .then(res => {
                 const data = Array.isArray(res.data) ? res.data
@@ -452,10 +453,40 @@ const RealReviewsSection: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    // Auto-swipe logic: every 5 seconds
+    useEffect(() => {
+        if (!wrapperRef.current || reviews.length === 0) return;
+
+        const wrapper = wrapperRef.current;
+        let scrollAmount = 0;
+
+        const cardEl = wrapper.querySelector('.review-card') as HTMLElement | null;
+        if (!cardEl) return;
+
+        const cardWidth = cardEl.offsetWidth + 10; // card width + gap
+        const totalCards = wrapper.querySelectorAll('.review-card').length;
+
+        const interval = setInterval(() => {
+            scrollAmount += cardWidth;
+
+            // If last card reached, scroll back to start
+            if (scrollAmount >= cardWidth * totalCards) {
+                scrollAmount = 0;
+            }
+
+            wrapper.scrollTo({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+        }, 5000); // Every 5 seconds
+
+        return () => clearInterval(interval);
+    }, [reviews]);
+
     if (!loading && reviews.length === 0) return null;
 
     return (
-        <section className="py-12 px-4 bg-white">
+        <section id="reviewsSection" className="py-12 px-4 bg-white">
             <SmoothReveal direction="up" delay={500}>
                 <div className="max-w-7xl mx-auto">
                     {/* Section Header */}
@@ -468,23 +499,31 @@ const RealReviewsSection: React.FC = () => {
 
                     {/* Skeleton */}
                     {loading && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="flex gap-4 overflow-hidden">
                             {[...Array(3)].map((_, i) => (
-                                <div key={i} className="bg-gray-100 rounded-2xl h-48 animate-pulse" />
+                                <div key={i} className="bg-gray-100 rounded-2xl h-48 min-w-[280px] animate-pulse" />
                             ))}
                         </div>
                     )}
 
-                    {/* Review Cards */}
+                    {/* Review Cards — Horizontal Auto-Swipe Row */}
                     {!loading && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div
+                            ref={wrapperRef}
+                            className="review-card-wrapper"
+                            style={{
+                                display: 'flex',
+                                overflowX: 'hidden',
+                                scrollBehavior: 'smooth',
+                                gap: '10px',
+                            }}
+                        >
                             {reviews.map((rev, idx) => {
                                 const name: string = rev.user?.name || rev.userName || 'Customer';
                                 const rating: number = rev.rating || 5;
                                 const comment: string = rev.comment || rev.text || rev.review || '';
                                 const product: string = rev.product?.name || rev.productName || '';
                                 const initial: string = name.charAt(0).toUpperCase();
-                                // Pastel avatar colours cycling
                                 const avatarColors = [
                                     'bg-orange-100 text-orange-600',
                                     'bg-blue-100 text-blue-600',
@@ -494,11 +533,13 @@ const RealReviewsSection: React.FC = () => {
                                     'bg-teal-100 text-teal-600',
                                 ];
                                 const avatarCls = avatarColors[idx % avatarColors.length];
-
                                 const productId: string = rev.product?._id || rev.product?.id || rev.productId || '';
 
-                                const cardContent = (
-                                    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 ${productId ? 'hover:shadow-lg hover:scale-[1.02] hover:ring-1 hover:ring-orange-200 cursor-pointer' : 'hover:shadow-md'}`}>
+                                const cardInner = (
+                                    <div
+                                        className="review-card bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 hover:shadow-lg"
+                                        style={{ minWidth: '280px', flexShrink: 0 }}
+                                    >
                                         {/* Big opening quote */}
                                         <span className="absolute top-4 left-5 text-5xl leading-none text-orange-200 font-serif select-none" aria-hidden>&ldquo;</span>
 
@@ -509,7 +550,7 @@ const RealReviewsSection: React.FC = () => {
                                             ))}
                                         </div>
 
-                                        {/* Review text with " marks */}
+                                        {/* Review text */}
                                         <p className="text-gray-700 text-sm leading-relaxed flex-1 pl-1">
                                             <span className="text-[#f28c28] font-serif text-lg leading-none mr-0.5">&ldquo;</span>
                                             {comment.length > 180 ? comment.slice(0, 180) + '…' : comment}
@@ -541,10 +582,10 @@ const RealReviewsSection: React.FC = () => {
                                     <div key={rev._id || rev.id || idx}>
                                         {productId ? (
                                             <Link href={`/product/${productId}`} className="block">
-                                                {cardContent}
+                                                {cardInner}
                                             </Link>
                                         ) : (
-                                            cardContent
+                                            cardInner
                                         )}
                                     </div>
                                 );
