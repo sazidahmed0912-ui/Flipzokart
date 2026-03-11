@@ -169,17 +169,18 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
             className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3 relative w-screen md:w-auto md:min-w-[320px] lg:min-w-[360px]"
             style={{ flexShrink: 0 }}
           >
-            {/* User header: avatar → name → stars (inline, close) */}
+            {/* User header: avatar → name & stars (inline) */}
             <div className="flex items-center gap-3">
-              <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-base shadow-lg !w-9 !h-9 md:!w-10 md:!h-10">
+              <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-base shadow-lg !w-9 !h-9 md:!w-10 md:!h-10 shrink-0">
                 {r.user.name.charAt(0)}
               </div>
-              <div className="flex flex-col gap-0.5">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 <span className="font-bold text-dark text-sm md:text-base leading-tight">{r.user.name}</span>
-                <div className="flex text-yellow-400 gap-0.5">
+                <div className="flex items-center text-yellow-400 gap-0.5">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <Star key={s} className="w-3.5 h-3.5" fill={s <= r.rating ? "currentColor" : "none"} />
                   ))}
+                  <span className="text-gray-500 text-xs ml-1 font-medium">({r.rating || 5}★)</span>
                 </div>
               </div>
             </div>
