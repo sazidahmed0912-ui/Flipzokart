@@ -18,6 +18,7 @@ const AnimatedCounter = ({ start, end, duration, suffix = '' }: { start: number,
   const [count, setCount] = useState(start);
   const elementRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
@@ -47,6 +48,18 @@ const AnimatedCounter = ({ start, end, duration, suffix = '' }: { start: number,
               animationRef.current = requestAnimationFrame(step);
             } else {
               setCount(end); // Ensure it cleanly lands on the exact end number
+              
+              // Start real-time simulation loop after initial animation completes
+              const scheduleNextIncrement = () => {
+                const randomDelay = Math.floor(Math.random() * (15000 - 10000 + 1) + 10000); // 10s to 15s
+                timeoutRef.current = setTimeout(() => {
+                  const randomIncrement = Math.floor(Math.random() * (8 - 2 + 1) + 2); // +2 to +8
+                  setCount(prev => prev + randomIncrement);
+                  scheduleNextIncrement(); // Schedule next recursively
+                }, randomDelay);
+              };
+              
+              scheduleNextIncrement();
             }
           };
 
@@ -61,6 +74,7 @@ const AnimatedCounter = ({ start, end, duration, suffix = '' }: { start: number,
     return () => {
       observer.disconnect();
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [start, end, duration, hasAnimated]);
 
@@ -208,21 +222,25 @@ export const AboutUsPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10">
-            <div className="space-y-2">
+            <div className="space-y-3 flex flex-col items-center">
+              <span className="text-3xl lg:text-4xl">👥</span>
               <AnimatedCounter start={2400} end={2600} duration={5000} suffix="+" />
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Active Users</p>
+              <p className="text-sm font-medium text-gray-300">Active Users</p>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3 flex flex-col items-center">
+              <span className="text-3xl lg:text-4xl">📦</span>
               <AnimatedCounter start={3500} end={3800} duration={5000} suffix="+" />
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Orders Delivered</p>
+              <p className="text-sm font-medium text-gray-300">Orders Delivered</p>
             </div>
-            <div className="space-y-2">
-              <AnimatedCounter start={400} end={500} duration={5000} suffix="+" />
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Products Available</p>
+            <div className="space-y-3 flex flex-col items-center">
+              <span className="text-3xl lg:text-4xl">🛍️</span>
+              <AnimatedCounter start={400} end={520} duration={5000} suffix="+" />
+              <p className="text-sm font-medium text-gray-300">Products</p>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3 flex flex-col items-center">
+              <span className="text-3xl lg:text-4xl">🏢</span>
               <AnimatedCounter start={80} end={120} duration={5000} suffix="+" />
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Cities Served</p>
+              <p className="text-sm font-medium text-gray-300">Cities</p>
             </div>
           </div>
         </div>
