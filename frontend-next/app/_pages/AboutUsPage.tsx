@@ -200,12 +200,14 @@ export const AboutUsPage: React.FC = () => {
 
       {/* Stats Section */}
       <section className="container mx-auto px-4 py-24 about-us-content">
+        <div className="flex flex-col items-center mb-4">
+          <h2 className="text-[24px] lg:text-[32px] font-bold text-black text-center">
+            Ou<span className="text-[#FFC107]">r Achievements</span>
+          </h2>
+          <div className="w-[50%] h-[3px] bg-black mt-2 rounded-full"></div>
+        </div>
         <div className="bg-dark rounded-[4rem] p-12 lg:p-20 text-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2"></div>
-          
-          <div className="text-center mb-10 relative z-10">
-             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">Our Community</h2>
-          </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10">
             <div className="space-y-3 flex flex-col items-center">
