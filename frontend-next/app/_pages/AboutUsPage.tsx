@@ -33,7 +33,7 @@ export const AboutUsPage: React.FC = () => {
       if (entries[0].isIntersecting && !fetched) {
         fetched = true;
 
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/achievements`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://flipzokart-backend.onrender.com"}/api/achievements`)
           .then((res) => res.json())
           .then((data) => {
             if (!data.error) {
