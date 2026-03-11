@@ -166,7 +166,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
           <div
             key={r._id}
             id={`review-${r._id}`}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3 relative w-fit max-w-[90vw] md:max-w-md"
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3 relative w-max max-w-[90vw] lg:max-w-md"
             style={{ flexShrink: 0 }}
           >
             {/* User header: avatar → name & stars (inline) */}
