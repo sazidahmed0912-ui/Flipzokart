@@ -166,8 +166,8 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
           <div
             key={r._id}
             id={`review-${r._id}`}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative"
-            style={{ flexShrink: 0, width: 'calc(100vw - 2rem)', minWidth: 'min(calc(100vw - 2rem), 320px)' }}
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative w-screen md:w-auto md:min-w-[320px] lg:min-w-[360px]"
+            style={{ flexShrink: 0 }}
           >
             {/* User header */}
             <div className="flex items-center justify-between gap-4">
