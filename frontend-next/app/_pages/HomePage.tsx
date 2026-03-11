@@ -536,7 +536,7 @@ const RealReviewsSection: React.FC = () => {
 
                                 const cardInner = (
                                     <div
-                                        className="review-card bg-white rounded-3xl border border-gray-100 shadow-sm p-3 md:p-6 flex flex-col gap-2 md:gap-4 relative transition-all duration-200 hover:shadow-lg min-w-[60vw] md:min-w-[280px]"
+                                        className="review-card bg-white rounded-3xl border border-gray-100 shadow-sm p-3 md:p-6 flex flex-col gap-2 md:gap-4 relative transition-all duration-200 hover:shadow-lg min-w-[50vw] min-h-[220px] md:min-w-[280px] md:min-h-0"
                                         style={{ flexShrink: 0 }}
                                     >
                                         {/* Big opening quote */}
