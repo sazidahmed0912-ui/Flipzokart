@@ -63,7 +63,7 @@ export const CareersPage: React.FC = () => {
                         <section>
                             <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">How to Apply</h2>
                             <p>If you are interested in working with us, please send your resume along with a short introduction about yourself to our email address.</p>
-                            <p>Email: <a href="mailto:fzokart@gmail.com" className="text-blue-600 hover:underline">careers@flipzokart.com</a></p>
+                            <p>Email: <a href="mailto:fzokart@gmail.com" className="text-blue-600 hover:underline">fzokart@gmail.com</a></p>
                             <p className="mt-2">Our team will review your application and contact you if a suitable opportunity becomes available.</p>
                         </section>
 
