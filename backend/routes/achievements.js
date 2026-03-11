@@ -1,28 +1,34 @@
 const express = require("express");
 const router = express.Router();
-const { getActiveUsers } = require("../services/analyticsService");
-const { getDailyShipments } = require("../services/ordersService");
-const { getVerifiedBrands } = require("../services/vendorsService");
-const { getSatisfactionRate } = require("../services/reviewsService");
+
+// Existing service functions (Admin Panel logic)
+const { getActiveUsers } = require("../services/analyticsService"); // GA real-time
+const { getShippedOrdersCount } = require("../services/ordersService"); // Admin Panel shipped orders
+const { getVerifiedSellers } = require("../services/sellersService"); // Admin Panel verified sellers
+const { getApprovedReviewsAvg } = require("../services/reviewsService"); // Admin Panel approved reviews
 
 router.get("/achievements", async (req, res) => {
   try {
-    const [activeUsers, dailyShipments, verifiedBrands, satisfactionRate] =
-      await Promise.all([
-        getActiveUsers(),
-        getDailyShipments(),
-        getVerifiedBrands(),
-        getSatisfactionRate(),
-      ]);
+    const [
+      activeUsers,
+      dailyShipments,
+      verifiedBrands,
+      satisfactionRate
+    ] = await Promise.all([
+      getActiveUsers(),           // Google Analytics
+      getShippedOrdersCount(),    // Only orders with status 'shipped'
+      getVerifiedSellers(),       // Only sellers with verified flag true
+      getApprovedReviewsAvg()     // Only reviews submitted and approved
+    ]);
 
     res.json({
-      activeUsers: parseInt(activeUsers, 10) || 0,
-      dailyShipments: parseInt(dailyShipments, 10) || 0,
-      verifiedBrands: parseInt(verifiedBrands, 10) || 0,
-      satisfactionRate: parseFloat(satisfactionRate) || 0,
+      activeUsers,
+      dailyShipments,
+      verifiedBrands,
+      satisfactionRate
     });
   } catch (error) {
-    console.error("Achievements API Error:", error);
+    console.error("Achievements fetch failed:", error);
     res.status(500).json({ error: "Achievements fetch failed" });
   }
 });

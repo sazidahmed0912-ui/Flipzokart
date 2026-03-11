@@ -1,6 +1,6 @@
 const Review = require("../models/Review");
 
-async function getSatisfactionRate() {
+async function getApprovedReviewsAvg() {
   try {
     const result = await Review.aggregate([
       {
@@ -23,4 +23,4 @@ async function getSatisfactionRate() {
   }
 }
 
-module.exports = { getSatisfactionRate };
+module.exports = { getApprovedReviewsAvg };

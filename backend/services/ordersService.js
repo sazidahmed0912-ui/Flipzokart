@@ -1,6 +1,6 @@
 const Order = require("../models/Order");
 
-async function getDailyShipments() {
+async function getShippedOrdersCount() {
   try {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
@@ -17,4 +17,4 @@ async function getDailyShipments() {
   }
 }
 
-module.exports = { getDailyShipments };
+module.exports = { getShippedOrdersCount };

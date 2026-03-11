@@ -1,6 +1,6 @@
 const User = require("../models/User");
 
-async function getVerifiedBrands() {
+async function getVerifiedSellers() {
   try {
     const count = await User.countDocuments({
       role: 'seller',
@@ -14,4 +14,4 @@ async function getVerifiedBrands() {
   }
 }
 
-module.exports = { getVerifiedBrands };
+module.exports = { getVerifiedSellers };

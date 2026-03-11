@@ -6,36 +6,21 @@ import { ShieldCheck, Zap, Heart, Award, Users, Globe, ArrowRight, CheckCircle2 
 
 export const AboutUsPage: React.FC = () => {
   useEffect(() => {
-    function animateCounter(elementId: string, target: number, duration: number = 5000) {
-      let start = 0;
-      const stepTime = 50;
-      const increment = target / (duration / stepTime);
-      const el = document.getElementById(elementId);
-      if (!el) return;
-
-      const timer = setInterval(() => {
-        start += increment;
-        if (start >= target) {
-          el.innerText = target.toLocaleString();
-          clearInterval(timer);
-        } else {
-          el.innerText = Math.floor(start).toLocaleString();
-        }
-      }, stepTime);
-    }
-
-    const section = document.querySelector("#achievements-section");
-    if (!section) return;
+    // Section ID
+    const achievementsSection = document.querySelector("#ourAchievements");
+    if (!achievementsSection) return;
 
     let fetched = false;
 
+    // Intersection Observer to trigger animation only when visible
     const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && !fetched) {
+      if(entries[0].isIntersecting && !fetched){
         fetched = true;
 
+        // Fetch Real-Time Data from backend
         fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://flipzokart-backend.onrender.com"}/api/achievements`)
-          .then((res) => res.json())
-          .then((data) => {
+          .then(res => res.json())
+          .then(data => {
             if (!data.error) {
               animateCounter("activeUsers", data.activeUsers);
               animateCounter("dailyShipments", data.dailyShipments);
@@ -43,13 +28,30 @@ export const AboutUsPage: React.FC = () => {
               animateCounter("satisfactionRate", data.satisfactionRate);
             }
           })
-          .catch((err) => console.error("Achievements fetch failed:", err));
-        
-        observer.disconnect();
+          .catch(err => console.error("Achievements fetch failed:", err));
       }
     }, { threshold: 0.5 });
 
-    observer.observe(section);
+    observer.observe(achievementsSection);
+
+    // Animate function: 0 -> final value, 5s smooth
+    function animateCounter(elementId: string, targetValue: number){
+      const el = document.getElementById(elementId);
+      if (!el || targetValue === undefined || targetValue === null) return;
+      const duration = 5000; // 5 seconds
+      let start = 0;
+      const increment = targetValue / (duration / 50); // update every 50ms
+
+      const counter = setInterval(() => {
+        start += increment;
+        if(start >= targetValue){
+          el.innerText = targetValue.toLocaleString();
+          clearInterval(counter);
+        } else {
+          el.innerText = Math.floor(start).toLocaleString();
+        }
+      }, 50);
+    }
 
     return () => observer.disconnect();
   }, []);
@@ -191,23 +193,23 @@ export const AboutUsPage: React.FC = () => {
         <div className="bg-dark rounded-[4rem] p-12 lg:p-20 text-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2"></div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10" id="achievements-section">
-            <div className="space-y-3 flex flex-col items-center achievement-card">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10" id="ourAchievements">
+            <div className="space-y-3 flex flex-col items-center achievement">
               <span className="text-3xl lg:text-4xl">👥</span>
               <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block"><span id="activeUsers">0</span>+</h2>
               <p className="text-sm font-medium text-gray-300">Active Users</p>
             </div>
-            <div className="space-y-3 flex flex-col items-center achievement-card">
+            <div className="space-y-3 flex flex-col items-center achievement">
               <span className="text-3xl lg:text-4xl">📦</span>
-              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block"><span id="dailyShipments">0</span>K+</h2>
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block"><span id="dailyShipments">0</span>+</h2>
               <p className="text-sm font-medium text-gray-300">Daily Shipments</p>
             </div>
-            <div className="space-y-3 flex flex-col items-center achievement-card">
+            <div className="space-y-3 flex flex-col items-center achievement">
               <span className="text-3xl lg:text-4xl">🛍️</span>
-              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block"><span id="verifiedBrands">0</span>K+</h2>
+              <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block"><span id="verifiedBrands">0</span>+</h2>
               <p className="text-sm font-medium text-gray-300">Verified Brands</p>
             </div>
-            <div className="space-y-3 flex flex-col items-center achievement-card">
+            <div className="space-y-3 flex flex-col items-center achievement">
               <span className="text-3xl lg:text-4xl">⭐</span>
               <h2 className="counter text-4xl lg:text-6xl font-bold tracking-tighter inline-block"><span id="satisfactionRate">0</span>%</h2>
               <p className="text-sm font-medium text-gray-300">Satisfaction Rate</p>
