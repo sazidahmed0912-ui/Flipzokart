@@ -18,32 +18,31 @@ const AnimatedCounter = ({ start, end, duration, suffix = '', isDecimal = false 
       (entries) => {
         if (entries[0].isIntersecting && !hasAnimated) {
           setHasAnimated(true);
-          let startTime: number | null = null;
+          const target = end;
+          if (!target) return;
           
-          const step = (timestamp: number) => {
-            if (!startTime) startTime = timestamp;
-            const progress = timestamp - startTime;
-            
-            // Calculate progress ratio (0 to 1)
-            const progressRatio = Math.min(progress / duration, 1);
-            
-            // Ease out quad formula for smooth ending
-            const easeOutProgress = 1 - Math.pow(1 - progressRatio, 3);
-            
-            const currentCount = start + (end - start) * easeOutProgress;
-            setCount(currentCount);
+          let startTime: number | null = null;
 
-            if (progress < duration) {
-              animationRef.current = requestAnimationFrame(step);
+          const animateCounter = (currentTime: number) => {
+            if (!startTime) startTime = currentTime;
+            
+            const progress = Math.min((currentTime - startTime) / duration, 1);
+            const value = start + (target - start) * progress;
+
+            setCount(value);
+
+            if (progress < 1) {
+              animationRef.current = requestAnimationFrame(animateCounter);
             } else {
-              setCount(end); // Ensure it cleanly lands on the exact end number
+              setCount(target);
             }
           };
 
-          animationRef.current = requestAnimationFrame(step);
+          animationRef.current = requestAnimationFrame(animateCounter);
+          observer.unobserve(element);
         }
       },
-      { threshold: 0.6 } // Start when 60% visible
+      { threshold: 0.5 }
     );
 
     observer.observe(element);
@@ -59,7 +58,7 @@ const AnimatedCounter = ({ start, end, duration, suffix = '', isDecimal = false 
       return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
     }
     if (num >= 1000) {
-      return (num / 1000).toFixed(1).replace('.0', '') + 'K';
+      return (num / 1000).toFixed(1) + 'K';
     }
     return isDecimal ? num.toFixed(1) : Math.floor(num).toString();
   };
