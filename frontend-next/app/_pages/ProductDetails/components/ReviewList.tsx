@@ -149,168 +149,166 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
   }
 
   return (
-    <div className="space-y-10 divide-y divide-gray-50">
+    <div
+      className="no-scrollbar"
+      style={{
+        display: 'flex',
+        overflowX: 'scroll',
+        gap: '16px',
+        WebkitOverflowScrolling: 'touch', // smooth momentum scroll on iOS
+      }}
+    >
       {reviews.map((r) => {
         const hasLiked = currentUserId && (r.likes || []).some((id: any) => id === currentUserId || id._id === currentUserId);
         const hasDisliked = currentUserId && (r.dislikes || []).some((id: any) => id === currentUserId || id._id === currentUserId);
 
         return (
-          <div key={r._id} id={`review-${r._id}`} className="flex gap-3 md:gap-8 pt-5 md:pt-10 first:pt-0">
-            <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-base md:text-xl shadow-lg !w-9 !h-9 md:!w-10 md:!h-10">
-              {r.user.name.charAt(0)}
-            </div>
-            <div className="space-y-4 flex-1">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-dark text-sm md:text-xl">{r.user.name}</span>
-                  {/* <span className="bg-green-100 text-green-700 text-[9px] px-3 py-1 rounded-full font-bold uppercase tracking-widest shadow-sm">Verified Premium Member</span> */}
+          <div
+            key={r._id}
+            id={`review-${r._id}`}
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative"
+            style={{ flexShrink: 0, width: 'calc(100vw - 2rem)', minWidth: 'min(calc(100vw - 2rem), 320px)' }}
+          >
+            {/* User header */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="review-user-avatar bg-dark text-white flex items-center justify-center font-bold text-base shadow-lg !w-9 !h-9 md:!w-10 md:!h-10">
+                  {r.user.name.charAt(0)}
                 </div>
-                <div className="flex text-yellow-400">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className="w-3.5 h-3.5 md:w-4 md:h-4" fill={s <= r.rating ? "currentColor" : "none"} />
-                  ))}
-                </div>
+                <span className="font-bold text-dark text-sm md:text-base">{r.user.name}</span>
               </div>
-              <div>
-                <div className="review-comment collapsed text-gray-600 text-[13px] md:text-lg leading-relaxed md:leading-normal" id={`comment-${r._id}`}>
-                  {r.comment}
-                </div>
-                {r.comment && r.comment.length > 80 && (
-                  <span
-                    className="review-toggle"
-                    onClick={(e) => {
-                      const comment = document.getElementById(`comment-${r._id}`);
-                      const target = e.target as HTMLElement;
-                      if (comment) {
-                        if (comment.classList.contains("collapsed")) {
-                          comment.classList.remove("collapsed");
-                          target.innerText = "Show less";
-                        } else {
-                          comment.classList.add("collapsed");
-                          target.innerText = "Read more";
-                        }
+              <div className="flex text-yellow-400">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} className="w-3.5 h-3.5 md:w-4 md:h-4" fill={s <= r.rating ? "currentColor" : "none"} />
+                ))}
+              </div>
+            </div>
+
+            {/* Review comment */}
+            <div>
+              <div className="review-comment collapsed text-gray-600 text-[13px] md:text-sm leading-relaxed" id={`comment-${r._id}`}>
+                {r.comment}
+              </div>
+              {r.comment && r.comment.length > 80 && (
+                <span
+                  className="review-toggle"
+                  onClick={(e) => {
+                    const comment = document.getElementById(`comment-${r._id}`);
+                    const target = e.target as HTMLElement;
+                    if (comment) {
+                      if (comment.classList.contains("collapsed")) {
+                        comment.classList.remove("collapsed");
+                        target.innerText = "Show less";
+                      } else {
+                        comment.classList.add("collapsed");
+                        target.innerText = "Read more";
                       }
-                    }}
-                  >
-                    Read more
-                  </span>
+                    }
+                  }}
+                >
+                  Read more
+                </span>
+              )}
+            </div>
+
+            {/* Media Gallery */}
+            {((r.images && r.images.length > 0) || r.video) && (
+              <div className="mt-1.5 space-y-2">
+                {r.images && r.images.length > 0 && (
+                  <div className="flex flex-nowrap gap-1 overflow-x-auto pb-1 hide-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    {r.images.map((img, idx) => (
+                      <div key={idx} className="relative flex-none w-[52px] h-[52px] md:w-20 md:h-20 rounded-md overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity">
+                        <img src={img} alt={`Review image ${idx + 1}`} className="w-full h-full object-cover" onClick={() => window.open(img, '_blank')} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {r.video && (
+                  <div className="w-full max-w-[200px] rounded-md overflow-hidden bg-black aspect-video relative group">
+                    <video src={r.video} controls className="w-full h-full object-contain" />
+                  </div>
                 )}
               </div>
+            )}
 
-              {/* Media Gallery */}
-              {((r.images && r.images.length > 0) || r.video) && (
-                <div className="mt-1.5 md:mt-4 mb-1 md:mb-0 space-y-2 md:space-y-3">
-                  {/* Images Grid - Horizontal scroll on mobile, wrap on desktop */}
-                  {r.images && r.images.length > 0 && (
-                    <div className="flex flex-nowrap md:flex-wrap gap-1 md:gap-2 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0 hide-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
-                      {r.images.map((img, idx) => (
-                        <div key={idx} className="relative flex-none w-[52px] h-[52px] md:w-24 md:h-24 rounded-md md:rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity">
-                          <img
-                            src={img}
-                            alt={`Review image ${idx + 1}`}
-                            className="w-full h-full object-cover"
-                            onClick={() => window.open(img, '_blank')}
-                          />
-                        </div>
-                      ))}
+            <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+              Posted {new Date(r.createdAt).toLocaleDateString()}
+            </p>
+
+            {/* Actions */}
+            <div className="flex flex-wrap items-center gap-3 md:gap-6 pt-3 border-t border-gray-100 mt-auto">
+              <button
+                onClick={() => handleLike(r._id)}
+                disabled={loadingAction === `like-${r._id}`}
+                className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasLiked ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
+              >
+                <ThumbsUp className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasLiked ? "fill-current" : ""}`} />
+                <span>{(r.likes || []).length > 0 ? (r.likes || []).length : 'Helpful'}</span>
+              </button>
+
+              <button
+                onClick={() => handleDislike(r._id)}
+                disabled={loadingAction === `dislike-${r._id}`}
+                className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasDisliked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
+              >
+                <ThumbsDown className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasDisliked ? "fill-current" : ""}`} />
+                <span>{(r.dislikes || []).length > 0 ? (r.dislikes || []).length : ''}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveCommentId(activeCommentId === r._id ? null : r._id)}
+                className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${activeCommentId === r._id ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                <MessageSquare className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span>{(r.comments || []).length > 0 ? (r.comments || []).length : 'Comment'}</span>
+              </button>
+
+              <button
+                onClick={() => handleShare(r)}
+                className="flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium text-gray-500 hover:text-green-600 transition-colors ml-auto"
+              >
+                <Share2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+            </div>
+
+            {/* Comments Section */}
+            {(r.comments && r.comments.length > 0) && (
+              <div className="pl-4 border-l-2 border-gray-100 space-y-4">
+                {r.comments.map(c => (
+                  <div key={c._id} className="bg-gray-50 rounded-lg p-3 text-sm">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-gray-900">{c.user?.name || 'User'}</span>
+                      <span className="text-[10px] text-gray-400">{new Date(c.createdAt).toLocaleDateString()}</span>
                     </div>
-                  )}
+                    <p className="text-gray-700">{c.comment}</p>
+                  </div>
+                ))}
+              </div>
+            )}
 
-                  {/* Video Player */}
-                  {r.video && (
-                    <div className="w-full max-w-[200px] md:max-w-xs rounded-md md:rounded-lg overflow-hidden bg-black aspect-video relative group mt-1 md:mt-0">
-                      <video
-                        src={r.video}
-                        controls
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1 md:mt-0">
-                Posted {new Date(r.createdAt).toLocaleDateString()}
-              </p>
-
-              {/* Actions: Like, Dislike, Comment, Share */}
-              <div className="flex flex-wrap items-center gap-3 md:gap-6 mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-100">
+            {/* Comment Input */}
+            {activeCommentId === r._id && (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Add a comment..."
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleCommentSubmit(r._id); }}
+                />
                 <button
-                  onClick={() => handleLike(r._id)}
-                  disabled={loadingAction === `like-${r._id}`}
-                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasLiked ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
+                  onClick={() => handleCommentSubmit(r._id)}
+                  disabled={!commentText.trim() || loadingAction === `comment-${r._id}`}
+                  className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 disabled:opacity-50 transition-colors"
                 >
-                  <ThumbsUp className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasLiked ? "fill-current" : ""}`} />
-                  <span>{(r.likes || []).length > 0 ? (r.likes || []).length : 'Helpful'}</span>
-                </button>
-
-                <button
-                  onClick={() => handleDislike(r._id)}
-                  disabled={loadingAction === `dislike-${r._id}`}
-                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${hasDisliked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
-                >
-                  <ThumbsDown className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasDisliked ? "fill-current" : ""}`} />
-                  <span>{(r.dislikes || []).length > 0 ? (r.dislikes || []).length : ''}</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveCommentId(activeCommentId === r._id ? null : r._id)}
-                  className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium transition-colors ${activeCommentId === r._id ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                >
-                  <MessageSquare className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                  <span>{(r.comments || []).length > 0 ? (r.comments || []).length : 'Comment'}</span>
-                </button>
-
-                <button
-                  onClick={() => handleShare(r)}
-                  className="flex items-center gap-1 md:gap-1.5 text-xs md:text-sm font-medium text-gray-500 hover:text-green-600 transition-colors ml-auto"
-                >
-                  <Share2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                  <span className="hidden sm:inline">Share</span>
+                  Post
                 </button>
               </div>
-
-              {/* Comments Section */}
-              {(r.comments && r.comments.length > 0) && (
-                <div className="mt-4 pl-4 md:pl-6 border-l-2 border-gray-100 space-y-4">
-                  {r.comments.map(c => (
-                    <div key={c._id} className="bg-gray-50 rounded-lg p-3 text-sm">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-bold text-gray-900">{c.user?.name || 'User'}</span>
-                        <span className="text-[10px] text-gray-400">{new Date(c.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <p className="text-gray-700">{c.comment}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Comment Input Box */}
-              {activeCommentId === r._id && (
-                <div className="mt-4 flex gap-2">
-                  <input
-                    type="text"
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Add a comment..."
-                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleCommentSubmit(r._id);
-                    }}
-                  />
-                  <button
-                    onClick={() => handleCommentSubmit(r._id)}
-                    disabled={!commentText.trim() || loadingAction === `comment-${r._id}`}
-                    className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 disabled:opacity-50 transition-colors"
-                  >
-                    Post
-                  </button>
-                </div>
-              )}
-
-            </div>
+            )}
           </div>
-        )
+        );
       })}
     </div>
   );
