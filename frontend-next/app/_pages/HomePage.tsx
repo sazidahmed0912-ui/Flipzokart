@@ -506,15 +506,15 @@ const RealReviewsSection: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Review Cards — Horizontal Auto-Swipe Row */}
+                    {/* Review Cards — Full Width One-Card-At-A-Time */}
                     {!loading && (
                         <div
                             ref={wrapperRef}
                             className="review-card-wrapper no-scrollbar"
                             style={{
                                 display: 'flex',
-                                overflowX: 'scroll',
-                                gap: '10px',
+                                overflow: 'hidden',
+                                gap: '0',
                             }}
                         >
                             {reviews.map((rev, idx) => {
@@ -535,7 +535,17 @@ const RealReviewsSection: React.FC = () => {
                                 const productId: string = rev.product?._id || rev.product?.id || rev.productId || '';
 
                                 const cardInner = (
-                                    <div className={`review-card bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4 relative transition-all duration-200 min-w-[85vw] md:min-w-[320px] lg:min-w-[360px] ${productId ? 'hover:shadow-lg hover:scale-[1.02] hover:ring-1 hover:ring-orange-200 cursor-pointer' : 'hover:shadow-md'}`} style={{ flexShrink: 0 }}>
+                                    <div
+                                        className={`review-card bg-white flex flex-col gap-4 relative transition-all duration-200 ${productId ? 'cursor-pointer' : ''}`}
+                                        style={{
+                                            minWidth: '100%',
+                                            height: 'clamp(220px, 30vw, 250px)',
+                                            borderRadius: '16px',
+                                            padding: '20px',
+                                            flexShrink: 0,
+                                            boxSizing: 'border-box',
+                                        }}
+                                    >
                                         {/* Big opening quote */}
                                         <span className="absolute top-4 left-5 text-5xl leading-none text-orange-200 font-serif select-none" aria-hidden>&ldquo;</span>
 
