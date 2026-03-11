@@ -1,7 +1,75 @@
-import React from 'react';
+"use client";
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShieldCheck, Zap, Heart, Award, Users, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
+
+const formatNumber = (num: number) => {
+  if (num >= 1000) {
+    // Keeps exactly one decimal, e.g., 2.4K or 2.0K, except if it's perfectly round like 1000, maybe format beautifully.
+    // The prompt shows Example: 2400 = 2.4K. 1000 = 1K. 10000 = 10K.
+    const formatted = (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1);
+    return formatted.replace('.0', '') + 'K';
+  }
+  return num.toString();
+};
+
+const AnimatedCounter = ({ start, end, duration, suffix = '' }: { start: number, end: number, duration: number, suffix?: string }) => {
+  const [count, setCount] = useState(start);
+  const elementRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<number | null>(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  useEffect(() => {
+    const element = elementRef.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+          let startTime: number | null = null;
+          
+          const step = (timestamp: number) => {
+            if (!startTime) startTime = timestamp;
+            const progress = timestamp - startTime;
+            
+            // Calculate progress ratio (0 to 1)
+            const progressRatio = Math.min(progress / duration, 1);
+            
+            // Ease out quad formula for smooth ending
+            const easeOutProgress = 1 - Math.pow(1 - progressRatio, 3);
+            
+            const currentCount = Math.floor(start + (end - start) * easeOutProgress);
+            setCount(currentCount);
+
+            if (progress < duration) {
+              animationRef.current = requestAnimationFrame(step);
+            } else {
+              setCount(end); // Ensure it cleanly lands on the exact end number
+            }
+          };
+
+          animationRef.current = requestAnimationFrame(step);
+        }
+      },
+      { threshold: 0.1 } // Start when 10% visible
+    );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, [start, end, duration, hasAnimated]);
+
+  return (
+    <div ref={elementRef} className="text-4xl lg:text-6xl font-bold tracking-tighter inline-block">
+      {formatNumber(count)}{suffix}
+    </div>
+  );
+};
 
 export const AboutUsPage: React.FC = () => {
   return (
@@ -134,23 +202,27 @@ export const AboutUsPage: React.FC = () => {
       <section className="container mx-auto px-4 py-24 about-us-content">
         <div className="bg-dark rounded-[4rem] p-12 lg:p-20 text-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2"></div>
+          
+          <div className="text-center mb-10 relative z-10">
+             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">Our Community</h2>
+          </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10">
             <div className="space-y-2">
-              <p className="text-4xl lg:text-6xl font-bold tracking-tighter">1M+</p>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Users</p>
+              <AnimatedCounter start={2400} end={2600} duration={5000} suffix="+" />
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Active Users</p>
             </div>
             <div className="space-y-2">
-              <p className="text-4xl lg:text-6xl font-bold tracking-tighter">500k+</p>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Daily Shipments</p>
+              <AnimatedCounter start={3500} end={3800} duration={5000} suffix="+" />
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Orders Delivered</p>
             </div>
             <div className="space-y-2">
-              <p className="text-4xl lg:text-6xl font-bold tracking-tighter">10k+</p>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Verified Brands</p>
+              <AnimatedCounter start={400} end={500} duration={5000} suffix="+" />
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Products Available</p>
             </div>
             <div className="space-y-2">
-              <p className="text-4xl lg:text-6xl font-bold tracking-tighter">99.9%</p>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Satisfied Rate</p>
+              <AnimatedCounter start={80} end={120} duration={5000} suffix="+" />
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Cities Served</p>
             </div>
           </div>
         </div>
