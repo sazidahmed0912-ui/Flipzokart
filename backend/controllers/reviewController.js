@@ -215,6 +215,32 @@ const getAllReviews = async (req, res) => {
   }
 };
 
+// @desc    Update review status (Admin)
+// @route   PATCH /api/reviews/:reviewId/status
+// @access  Private/Admin
+const updateReviewStatus = async (req, res) => {
+  try {
+    const { isApproved } = req.body;
+    let review = await Review.findById(req.params.reviewId);
+
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    review.isApproved = isApproved;
+    await review.save();
+
+    // Re-calculate product stats if approval changed
+    const io = req.app.get("socketio");
+    await calculateProductStats(review.product, io);
+
+    res.status(200).json({ success: true, message: "Review status updated", data: review });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 // @desc    Toggle Like on a review
 // @route   PUT /api/reviews/:reviewId/like
 // @access  Private

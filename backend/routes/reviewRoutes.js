@@ -13,11 +13,13 @@ const {
   getLatestReviews,
   toggleLikeReview,
   toggleDislikeReview,
-  addCommentToReview
+  addCommentToReview,
+  updateReviewStatus
 } = require("../controllers/reviewController");
 
 // Admin routes
 router.get("/admin/all", protect, authorize(['admin']), getAllReviews);
+router.patch("/:reviewId/status", protect, authorize(['admin']), updateReviewStatus);
 
 // Public routes
 router.get("/latest", getLatestReviews);           // Homepage real reviews
