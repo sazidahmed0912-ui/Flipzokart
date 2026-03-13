@@ -234,6 +234,19 @@ const updateReviewStatus = async (req, res) => {
     const io = req.app.get("socketio");
     await calculateProductStats(review.product, io);
 
+    // Emit event so frontend can update the review list in real-time
+    const populatedReview = await Review.findById(review._id)
+      .populate("user", "name email")
+      .populate("product", "name");
+      
+    if (io) {
+      if (isApproved) {
+        io.emit("newReview", populatedReview);
+      } else {
+        io.emit("reviewHidden", review._id);
+      }
+    }
+
     res.status(200).json({ success: true, message: "Review status updated", data: review });
   } catch (error) {
     console.error(error);

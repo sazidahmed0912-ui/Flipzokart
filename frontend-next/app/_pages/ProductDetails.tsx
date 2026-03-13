@@ -162,8 +162,27 @@ export const ProductDetails: React.FC = () => {
         setSelections({});
       }
     };
+
+    const handleNewReview = (review: Review) => {
+      const productId = typeof review.product === 'object' ? review.product._id : review.product;
+      if (productId === id) {
+        setReviews(prev => [review, ...prev.filter(r => r._id !== review._id)]);
+      }
+    };
+
+    const handleReviewHidden = (reviewId: string) => {
+      setReviews(prev => prev.filter(r => r._id !== reviewId));
+    };
+
     socket.on('productUpdated', handleUpdate);
-    return () => { socket.off('productUpdated', handleUpdate); };
+    socket.on('newReview', handleNewReview);
+    socket.on('reviewHidden', handleReviewHidden);
+
+    return () => { 
+      socket.off('productUpdated', handleUpdate); 
+      socket.off('newReview', handleNewReview);
+      socket.off('reviewHidden', handleReviewHidden);
+    };
   }, [socket, id]);
 
   // --- Core Logic: Variant Groups & Defaults ---
