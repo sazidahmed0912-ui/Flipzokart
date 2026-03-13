@@ -158,14 +158,17 @@ model Brand {
 }
 
 model Review {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  rating    Int
-  comment   String?
-  userId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  productId String   @db.ObjectId
-  product   Product  @relation(fields: [productId], references: [id])
-  createdAt DateTime @default(now())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  rating     Int
+  comment    String?
+  images     String[] // Array of image URLs
+  video      String?  // Video URL
+  isApproved Boolean  @default(false)
+  userId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id])
+  productId  String   @db.ObjectId
+  product    Product  @relation(fields: [productId], references: [id])
+  createdAt  DateTime @default(now())
 
   @@unique([userId, productId])
 }

@@ -9,7 +9,7 @@ import {
 import { AdminSidebar } from '@/app/components/AdminSidebar';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
-import { fetchAllReviews, deleteReview } from '@/app/services/adminService';
+import { fetchAllReviews, deleteReview, updateReviewStatus } from '@/app/services/adminService';
 import { useToast } from '@/app/components/toast';
 import { useApp } from '@/app/store/Context';
 import { Review } from '@/app/types';
@@ -74,6 +74,17 @@ export const AdminReviews: React.FC = () => {
         } catch (error) {
             console.error("Delete failed", error);
             addToast('error', 'Failed to delete review');
+        }
+    };
+
+    const handleUpdateStatus = async (id: string, isApproved: boolean) => {
+        try {
+            await updateReviewStatus(id, isApproved);
+            addToast('success', 'Review status updated successfully');
+            setReviews(reviews.map(r => r._id === id ? { ...r, isApproved } : r));
+        } catch (error) {
+            console.error("Update failed", error);
+            addToast('error', 'Failed to update review status');
         }
     };
 
@@ -169,7 +180,14 @@ export const AdminReviews: React.FC = () => {
                                                 {review.user?.name?.charAt(0) || 'U'}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-gray-800">{review.user?.name || 'Unknown User'}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-bold text-gray-800">{review.user?.name || 'Unknown User'}</p>
+                                                    {review.isApproved ? (
+                                                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">Approved</span>
+                                                    ) : (
+                                                        <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] font-bold rounded-full">Pending</span>
+                                                    )}
+                                                </div>
                                                 <div className="flex gap-2 items-center mt-0.5">
                                                     {renderStars(review.rating)}
                                                     <span className="text-[10px] text-gray-400 font-medium">
@@ -178,18 +196,48 @@ export const AdminReviews: React.FC = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => handleDelete(review._id)}
-                                            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="Delete Review"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
+                                        <div className="flex gap-2 items-center">
+                                            {!review.isApproved && (
+                                                <button
+                                                    onClick={() => handleUpdateStatus(review._id, true)}
+                                                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors border border-transparent hover:border-green-100"
+                                                    title="Approve Review"
+                                                >
+                                                    <Check size={16} />
+                                                </button>
+                                            )}
+                                            {review.isApproved && (
+                                                <button
+                                                    onClick={() => handleUpdateStatus(review._id, false)}
+                                                    className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors border border-transparent hover:border-yellow-100"
+                                                    title="Reject/Hide Review"
+                                                >
+                                                    <Filter size={16} />
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => handleDelete(review._id)}
+                                                className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                                                title="Delete Review"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {/* Content */}
                                     <div className="mb-4">
                                         <p className="text-sm text-gray-600 leading-relaxed italic line-clamp-3">"{review.comment}"</p>
+                                        {((review.images && review.images.length > 0) || review.video) && (
+                                            <div className="mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-200">
+                                                {review.video && (
+                                                    <video src={review.video} controls className="w-16 h-16 rounded-md object-cover bg-gray-100 flex-shrink-0" />
+                                                )}
+                                                {review.images?.map((img, i) => (
+                                                    <img key={i} src={img} alt="Review upload" className="w-16 h-16 rounded-md object-cover bg-gray-100 flex-shrink-0 border border-gray-200" />
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Product Footer */}

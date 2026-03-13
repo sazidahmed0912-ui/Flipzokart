@@ -168,7 +168,15 @@ export class ProductService {
             where: query,
             include: {
                 category: true,
-                reviews: true,
+                reviews: {
+                    // @ts-ignore
+                    where: { isApproved: true },
+                    include: {
+                        user: {
+                            select: { id: true, name: true, email: true }
+                        }
+                    }
+                },
                 variants: true,
             },
         });
@@ -178,7 +186,7 @@ export class ProductService {
             ...product,
             name: product.title,
             image: product.thumbnail || (product.images.length > 0 ? product.images[0] : ''),
-            category: product.category?.name || 'Unknown'
+            category: (product as any).category?.name || 'Unknown'
         };
     }
 

@@ -152,6 +152,7 @@ export interface Review {
   comment: string;
   images?: string[];
   video?: string;
+  isApproved?: boolean;
   createdAt: string;
   updatedAt: string;
   likes?: string[];

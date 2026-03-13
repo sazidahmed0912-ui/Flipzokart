@@ -33,6 +33,7 @@ export default API;
 
 // Review Management
 export const fetchAllReviews = () => API.get("/api/reviews/admin/all");
+export const updateReviewStatus = (id: string, isApproved: boolean) => API.patch(`/api/reviews/${id}/status`, { isApproved });
 export const deleteReview = (id: string) => API.delete(`/api/reviews/${id}`);
 
 // 📤 Upload Management

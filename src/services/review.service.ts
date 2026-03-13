@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export class ReviewService {
     async createReview(userId: string, data: any) {
-        const { product: productId, rating, comment } = data;
+        const { product: productId, rating, comment, images, video } = data;
 
         // Check if product exists
         const product = await prisma.product.findUnique({ where: { id: productId } });
@@ -33,8 +33,11 @@ export class ReviewService {
                 userId,
                 productId,
                 rating: Number(rating),
-                comment
-            },
+                comment,
+                images: Array.isArray(images) ? images : [],
+                video: video || null,
+                isApproved: false // Requires admin approval, defaults to false
+            } as any,
             include: {
                 user: {
                     select: {
@@ -60,7 +63,7 @@ export class ReviewService {
     }
 
     async updateProductRating(productId: string) {
-        const reviews = await prisma.review.findMany({ where: { productId } });
+        const reviews = await prisma.review.findMany({ where: { productId, isApproved: true } as any });
         if (reviews.length === 0) {
             await prisma.product.update({
                 where: { id: productId },
@@ -75,5 +78,33 @@ export class ReviewService {
             where: { id: productId },
             data: { rating: avgRating }
         });
+    }
+
+    // Admin Methods
+    async getAllReviewsAdmin() {
+        return await prisma.review.findMany({
+            include: {
+                user: { select: { id: true, name: true, email: true } },
+                product: { select: { id: true, title: true, thumbnail: true, images: true } }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
+    async updateReviewStatus(id: string, isApproved: boolean) {
+        const review = await prisma.review.update({
+            where: { id },
+            data: { isApproved } as any
+        });
+        await this.updateProductRating(review.productId);
+        return review;
+    }
+
+    async deleteReviewAdmin(id: string) {
+        const review = await prisma.review.delete({
+            where: { id }
+        });
+        await this.updateProductRating(review.productId);
+        return review;
     }
 }
