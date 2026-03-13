@@ -376,5 +376,6 @@ module.exports = {
   getLatestReviews,
   toggleLikeReview,
   toggleDislikeReview,
-  addCommentToReview
+  addCommentToReview,
+  updateReviewStatus
 };
