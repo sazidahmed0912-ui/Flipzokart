@@ -63,6 +63,10 @@ const reviewSchema = new mongoose.Schema(
         },
       }
     ],
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
