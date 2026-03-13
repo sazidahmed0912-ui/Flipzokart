@@ -74,7 +74,7 @@ const createReview = async (req, res) => {
 // @access  Public
 const getProductReviews = async (req, res) => {
   try {
-    const reviews = await Review.find({ product: req.params.productId })
+    const reviews = await Review.find({ product: req.params.productId, isApproved: true })
       .populate("user", "name email")
       .populate("comments.user", "name")   // ← fix: populate comment authors
       .sort({ createdAt: -1 });
@@ -326,7 +326,7 @@ const addCommentToReview = async (req, res) => {
 const getLatestReviews = async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 6, 12);
-    const reviews = await Review.find({ comment: { $exists: true, $ne: '' } })
+    const reviews = await Review.find({ comment: { $exists: true, $ne: '' }, isApproved: true })
       .populate('user', 'name')
       .populate('product', 'name _id')
       .sort({ createdAt: -1 })

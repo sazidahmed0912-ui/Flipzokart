@@ -14,6 +14,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
 
@@ -219,14 +220,17 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
                   <div className="flex flex-nowrap gap-1 overflow-x-auto pb-1 hide-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
                     {r.images.map((img, idx) => (
                       <div key={idx} className="relative flex-none w-[52px] h-[52px] md:w-20 md:h-20 rounded-md overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity">
-                        <img src={img} alt={`Review image ${idx + 1}`} className="w-full h-full object-cover" onClick={() => window.open(img, '_blank')} />
+                        <img src={img} alt={`Review image ${idx + 1}`} className="w-full h-full object-cover" onClick={() => setSelectedMedia({ url: img, type: 'image' })} />
                       </div>
                     ))}
                   </div>
                 )}
                 {r.video && (
-                  <div className="w-full max-w-[200px] rounded-md overflow-hidden bg-black aspect-video relative group">
-                    <video src={r.video} controls className="w-full h-full object-contain" />
+                  <div className="w-full max-w-[200px] rounded-md overflow-hidden bg-black aspect-video relative group cursor-pointer" onClick={() => setSelectedMedia({ url: r.video as string, type: 'video' })}>
+                    <video src={r.video} className="w-full h-full object-contain pointer-events-none" />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/20 group-hover:bg-black/40 transition-colors">
+                      <PlayCircle className="w-8 h-8 text-white opacity-80 group-hover:opacity-100" />
+                    </div>
                   </div>
                 )}
               </div>
@@ -311,6 +315,35 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews: initialReviews 
           </div>
         );
       })}
+
+      {/* Full Screen Media Overlay */}
+      {selectedMedia && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 md:p-8" onClick={() => setSelectedMedia(null)}>
+          <button 
+            className="absolute top-4 right-4 text-white hover:text-gray-300 p-2 z-[101]"
+            onClick={() => setSelectedMedia(null)}
+          >
+            <X className="w-8 h-8" />
+          </button>
+          
+          <div className="relative w-full max-w-5xl h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            {selectedMedia.type === 'image' ? (
+              <img 
+                src={selectedMedia.url} 
+                alt="Review Media" 
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            ) : (
+              <video 
+                src={selectedMedia.url} 
+                controls 
+                autoPlay 
+                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

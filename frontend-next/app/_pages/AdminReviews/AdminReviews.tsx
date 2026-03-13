@@ -4,7 +4,7 @@ import Link from 'next/link';
 ;
 import {
     Search, Filter, Star, Trash2, MessageSquare,
-    ChevronDown, User, Package, AlertTriangle, Check
+    ChevronDown, User, Package, AlertTriangle, Check, X, PlayCircle
 } from 'lucide-react';
 import { AdminSidebar } from '@/app/components/AdminSidebar';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
@@ -25,6 +25,7 @@ export const AdminReviews: React.FC = () => {
     const [ratingFilter, setRatingFilter] = useState('All');
     const { addToast } = useToast();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [selectedMedia, setSelectedMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
 
     useEffect(() => {
         loadReviews();
@@ -231,10 +232,24 @@ export const AdminReviews: React.FC = () => {
                                         {((review.images && review.images.length > 0) || review.video) && (
                                             <div className="mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-200">
                                                 {review.video && (
-                                                    <video src={review.video} controls className="w-16 h-16 rounded-md object-cover bg-gray-100 flex-shrink-0" />
+                                                    <div 
+                                                        className="relative w-16 h-16 flex-shrink-0 cursor-pointer group rounded-md overflow-hidden bg-black"
+                                                        onClick={() => setSelectedMedia({ url: review.video as string, type: 'video' })}
+                                                    >
+                                                        <video src={review.video} className="w-full h-full object-cover pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity" />
+                                                        <div className="absolute inset-0 flex items-center justify-center">
+                                                            <PlayCircle size={20} className="text-white opacity-90" />
+                                                        </div>
+                                                    </div>
                                                 )}
                                                 {review.images?.map((img, i) => (
-                                                    <img key={i} src={img} alt="Review upload" className="w-16 h-16 rounded-md object-cover bg-gray-100 flex-shrink-0 border border-gray-200" />
+                                                    <img 
+                                                        key={i} 
+                                                        src={img} 
+                                                        alt="Review upload" 
+                                                        className="w-16 h-16 rounded-md object-cover bg-gray-100 flex-shrink-0 border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity" 
+                                                        onClick={() => setSelectedMedia({ url: img, type: 'image' })}
+                                                    />
                                                 ))}
                                             </div>
                                         )}
@@ -272,6 +287,35 @@ export const AdminReviews: React.FC = () => {
 
                 </div>
             </div>
+
+            {/* Full Screen Media Overlay for Admin */}
+            {selectedMedia && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 md:p-8" onClick={() => setSelectedMedia(null)}>
+                    <button 
+                        className="absolute top-4 right-4 text-white hover:text-gray-300 p-2 z-[101]"
+                        onClick={() => setSelectedMedia(null)}
+                    >
+                        <X className="w-8 h-8" />
+                    </button>
+                    
+                    <div className="relative w-full max-w-5xl h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                        {selectedMedia.type === 'image' ? (
+                            <img 
+                                src={selectedMedia.url} 
+                                alt="Review Media" 
+                                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                            />
+                        ) : (
+                            <video 
+                                src={selectedMedia.url} 
+                                controls 
+                                autoPlay 
+                                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                            />
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
