@@ -26,7 +26,7 @@ export const AdminSections: React.FC = () => {
     const fetchSections = async () => {
         try {
             setLoading(true);
-            const API_URL = process.env.NEXT_PUBLIC_API_URL === 'http://localhost:5000' ? '' : (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com');
+            const API_URL = process.env.NEXT_PUBLIC_IS_CAPACITOR === 'true' ? (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com') : '';
             const res = await axios.get(`${API_URL}/api/sections`);
             setSections((res.data || []).sort((a: Section, b: Section) => a.order - b.order));
         } catch {
@@ -45,7 +45,7 @@ export const AdminSections: React.FC = () => {
             setAdding(true);
             setError('');
             const token = localStorage.getItem('token');
-            const API_URL = process.env.NEXT_PUBLIC_API_URL === 'http://localhost:5000' ? '' : (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com');
+            const API_URL = process.env.NEXT_PUBLIC_IS_CAPACITOR === 'true' ? (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com') : '';
             const res = await axios.post(`${API_URL}/api/sections`, { title: newTitle.trim() }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -65,7 +65,7 @@ export const AdminSections: React.FC = () => {
         try {
             setDeletingId(id);
             const token = localStorage.getItem('token');
-            const API_URL = process.env.NEXT_PUBLIC_API_URL === 'http://localhost:5000' ? '' : (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com');
+            const API_URL = process.env.NEXT_PUBLIC_IS_CAPACITOR === 'true' ? (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com') : '';
             await axios.delete(`${API_URL}/api/sections/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });

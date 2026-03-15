@@ -123,7 +123,7 @@ export const AgriculturePage: React.FC = () => {
         const fetchRandomAgriProducts = async () => {
             try {
                 setLoading(true);
-                const API_URL = process.env.NEXT_PUBLIC_API_URL === 'http://localhost:5000' ? '' : (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com');
+                const API_URL = process.env.NEXT_PUBLIC_IS_CAPACITOR === 'true' ? (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com') : '';
                 const res = await axios.get(`${API_URL}/api/products/random/Agriculture?limit=20`, {
                     headers: { 'Cache-Control': 'no-store' }
                 });

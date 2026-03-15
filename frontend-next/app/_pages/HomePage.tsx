@@ -100,8 +100,9 @@ export const HomePage: React.FC = () => {
 
     const fetchHomeSections = async () => {
         try {
-            // Prevent CORS in local web dev by using relative path to hit Next Proxy
-            const API_URL = process.env.NEXT_PUBLIC_API_URL === 'http://localhost:5000' ? '' : (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com');
+            // Prevent CORS in local and live web by using relative path to hit Next Proxy.
+            // ONLY use absolute URLs inside the Capacitor native app.
+            const API_URL = process.env.NEXT_PUBLIC_IS_CAPACITOR === 'true' ? (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com') : '';
             const res = await axios.get(`${API_URL}/api/sections`);
             
             // Defend against HTML interceptors
@@ -114,7 +115,7 @@ export const HomePage: React.FC = () => {
     };
 
     const fetchContent = () => {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL === 'http://localhost:5000' ? '' : (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com');
+        const API_URL = process.env.NEXT_PUBLIC_IS_CAPACITOR === 'true' ? (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com') : '';
         
         // Fetch Banners
         axios.get(`${API_URL}/api/content/banners`).then(res => {
