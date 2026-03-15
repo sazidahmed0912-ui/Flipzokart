@@ -77,7 +77,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
     const isDynamic = banners.length > 0;
 
     useEffect(() => {
-        if (paused) return;
+        if (paused || activeSlides.length <= 1) return;
         const timer = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
         }, 4000);
@@ -235,16 +235,18 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ banners = [] }) => {
             </AnimatePresence>
 
             {/* Flipkart-style progress dot indicators */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
-                {activeSlides.map((_, index) => (
-                    <button
-                        key={index}
-                        onClick={() => { setCurrentIndex(index); setPaused(false); }}
-                        className={`hero-dot relative overflow-hidden rounded-full transition-all duration-300 shadow-sm ${index === currentIndex ? 'hero-dot-active' : 'hero-dot-inactive'}`}
-                        aria-label={`Go to slide ${index + 1}`}
-                    />
-                ))}
-            </div>
+            {activeSlides.length > 1 && (
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                    {activeSlides.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => { setCurrentIndex(index); setPaused(false); }}
+                            className={`hero-dot relative overflow-hidden rounded-full transition-all duration-300 shadow-sm ${index === currentIndex ? 'hero-dot-active' : 'hero-dot-inactive'}`}
+                            aria-label={`Go to slide ${index + 1}`}
+                        />
+                    ))}
+                </div>
+            )}
         </section>
     );
 };

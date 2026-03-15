@@ -1,0 +1,15 @@
+[
+  {
+    "_id": "69919934b531b46d4cbf2b2a",
+    "imageUrl": "/assets/banner_seller.png",
+    "mobileImageUrl": "/assets/banner_seller.png",
+    "redirectUrl": "/sell",
+    "position": 1,
+    "isActive": true,
+    "section": "main",
+    "createdAt": "2026-02-15T10:00:20.385Z",
+    "updatedAt": "2026-02-15T10:00:20.385Z",
+    "__v": 0,
+    "id": "69919934b531b46d4cbf2b2a"
+  }
+]
