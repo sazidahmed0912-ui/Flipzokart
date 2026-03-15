@@ -110,7 +110,8 @@ export const FashionPage: React.FC = () => {
         const fetchRandomFashionProducts = async () => {
             try {
                 setLoading(true);
-                const res = await axios.get('/api/products/random/Fashion?limit=20', {
+                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com';
+                const res = await axios.get(`${API_URL}/api/products/random/Fashion?limit=20`, {
                     headers: { 'Cache-Control': 'no-store' }
                 });
                 setFashionProducts(res.data);

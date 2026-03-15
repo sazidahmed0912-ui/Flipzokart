@@ -100,25 +100,32 @@ export const HomePage: React.FC = () => {
 
     const fetchHomeSections = async () => {
         try {
-            const res = await axios.get('/api/sections');
-            setHomeSections(res.data || []);
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com';
+            const res = await axios.get(`${API_URL}/api/sections`);
+            const data = Array.isArray(res.data) ? res.data : [];
+            setHomeSections(data);
         } catch (error) {
             // sections are optional — fail silently
+            setHomeSections([]);
         }
     };
 
     const fetchContent = () => {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com';
+        
         // Fetch Banners
-        axios.get('/api/content/banners').then(res => {
-            if (res.data && res.data.length > 0) {
-                setBanners(res.data);
+        axios.get(`${API_URL}/api/content/banners`).then(res => {
+            const data = Array.isArray(res.data) ? res.data : [];
+            if (data.length > 0) {
+                setBanners(data);
             }
         }).catch(err => console.error(err));
 
         // Fetch Categories
-        axios.get('/api/content/home-categories').then(res => {
-            if (res.data && res.data.length > 0) {
-                const mapped = res.data.map((c: any) => ({
+        axios.get(`${API_URL}/api/content/home-categories`).then(res => {
+            const data = Array.isArray(res.data) ? res.data : [];
+            if (data.length > 0) {
+                const mapped = data.map((c: any) => ({
                     name: c.categoryName,
                     imageUrl: c.iconUrl,
                     href: (() => {

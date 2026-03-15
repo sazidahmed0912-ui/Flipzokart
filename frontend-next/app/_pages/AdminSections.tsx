@@ -26,7 +26,8 @@ export const AdminSections: React.FC = () => {
     const fetchSections = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('/api/sections');
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com';
+            const res = await axios.get(`${API_URL}/api/sections`);
             setSections((res.data || []).sort((a: Section, b: Section) => a.order - b.order));
         } catch {
             setError('Failed to load sections.');
@@ -44,7 +45,8 @@ export const AdminSections: React.FC = () => {
             setAdding(true);
             setError('');
             const token = localStorage.getItem('token');
-            const res = await axios.post('/api/sections', { title: newTitle.trim() }, {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com';
+            const res = await axios.post(`${API_URL}/api/sections`, { title: newTitle.trim() }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSections(prev => [...prev, res.data].sort((a, b) => a.order - b.order));
@@ -63,7 +65,8 @@ export const AdminSections: React.FC = () => {
         try {
             setDeletingId(id);
             const token = localStorage.getItem('token');
-            await axios.delete(`/api/sections/${id}`, {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com';
+            await axios.delete(`${API_URL}/api/sections/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSections(prev => prev.filter(s => s._id !== id));

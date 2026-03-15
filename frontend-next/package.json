@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:app": "cross-env CAPACITOR_BUILD=true next build",
+    "build:app": "cross-env CAPACITOR_BUILD=true NEXT_PUBLIC_API_URL=https://flipzokart-backend.onrender.com next build",
     "start": "next start",
     "lint": "eslint"
   },
