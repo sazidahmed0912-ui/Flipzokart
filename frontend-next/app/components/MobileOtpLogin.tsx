@@ -121,17 +121,21 @@ export default function MobileOtpLogin() {
         };
 
         try {
-            const res = await fetch("/api/mobile-otp-verify", {
+            const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            
+            // 1. Direct login to backend instead of local Next.js proxy
+            // Local Next.js api routes do not work in Capacitor static export
+            const res = await fetch(`${API_BASE_URL}/api/auth/mobile-login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
+                body: JSON.stringify({ phone: mobile }),
             });
 
             const result = await res.json();
 
-            if (result.success) {
-                const token = result.data?.token;
-                const user = result.data?.user;
+            if (result.success || result.token) {
+                const token = result.token;
+                const user = result.user;
 
                 if (token) {
                     await loginSequence(token, { ...user, phone: user.phone || mobile, authMethod: 'mobile-otp' });

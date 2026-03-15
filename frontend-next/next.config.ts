@@ -1,13 +1,16 @@
-
 import type { NextConfig } from "next";
+
+const isCapacitorBuild = process.env.CAPACITOR_BUILD === 'true';
 
 const nextConfig: NextConfig = {
   /* config options here */
-  distDir: 'dist',
+  distDir: isCapacitorBuild ? 'out' : 'dist',
+  output: isCapacitorBuild ? 'export' : undefined,
   compress: true, // 🟢 Enable Gzip compression
   poweredByHeader: false, // 🟢 Security & Performance (save bytes)
   reactStrictMode: false, // 🟢 Disable strict mode for production performance (optional)
   images: {
+    unoptimized: isCapacitorBuild, // Required for static export
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 31536000, // 1 year cache for maximum bandwidth saving
     deviceSizes: [320, 420, 768, 1024, 1200], // Minimal breakpoint sizes
@@ -26,18 +29,20 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "localhost" },
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: "http://localhost:5000/api/:path*", // Proxy API requests
-      },
-      {
-        source: "/uploads/:path*",
-        destination: "http://localhost:5000/uploads/:path*", // Proxy static uploads
-      },
-    ];
-  },
+  ...(isCapacitorBuild ? {} : {
+    async rewrites() {
+      return [
+        {
+          source: "/api/:path*",
+          destination: "http://localhost:5000/api/:path*", // Proxy API requests
+        },
+        {
+          source: "/uploads/:path*",
+          destination: "http://localhost:5000/uploads/:path*", // Proxy static uploads
+        },
+      ];
+    }
+  }),
 };
 
 export default nextConfig;

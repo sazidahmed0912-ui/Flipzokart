@@ -1,0 +1,9 @@
+app/admin/content/categories/[slug]/builder/page.tsx
+app/admin/content/categories/[slug]/page.tsx
+app/admin/orders/[id]/page.tsx
+app/admin/products/edit/[id]/page.tsx
+app/invoice/[orderId]/page.tsx
+app/product/[id]/page.tsx
+app/reset-password/[token]/page.tsx
+app/track/[trackingId]/page.tsx
+app/tracking/[orderId]/page.tsx

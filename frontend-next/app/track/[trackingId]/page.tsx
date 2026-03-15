@@ -8,3 +8,8 @@ export default function Page() {
     </Suspense>
   );
 }
+
+
+export function generateStaticParams() {
+  return [{ trackingId: '1' }]; // Fallback ID for static export
+}

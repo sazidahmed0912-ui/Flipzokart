@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">flipzokart</string>
+    <string name="title_activity_main">flipzokart</string>
+    <string name="package_name">com.flipzokart.app</string>
+    <string name="custom_url_scheme">com.flipzokart.app</string>
+</resources>

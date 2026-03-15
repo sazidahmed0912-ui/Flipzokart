@@ -8,3 +8,8 @@ export default function Page() {
     </AdminRoute>
   );
 }
+
+
+export function generateStaticParams() {
+  return [{ id: '1' }]; // Fallback ID for static export
+}
