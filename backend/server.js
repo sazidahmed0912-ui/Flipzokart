@@ -21,7 +21,9 @@ const CLIENT_URLS = [
   "http://192.168.31.152:3000",
   "http://127.0.0.1:63790",
   "https://flipzokart.com",
-  "https://www.flipzokart.com"
+  "https://www.flipzokart.com",
+  "capacitor://localhost",   // 🔑 Android Capacitor app
+  "http://localhost"        // 🔑 Android WebView fallback
 ];
 
 /* ===============================
@@ -203,7 +205,9 @@ app.use(cors({
     "http://localhost:5173",
     "https://flipzokart.com",
     "https://www.flipzokart.com",
-    "https://flipzokart-backend.onrender.com"
+    "https://flipzokart-backend.onrender.com",
+    "capacitor://localhost",   // 🔑 Android Capacitor app
+    "http://localhost"        // 🔑 Android WebView fallback
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],

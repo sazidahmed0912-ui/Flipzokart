@@ -31,14 +31,17 @@ const nextConfig: NextConfig = {
   },
   ...(isCapacitorBuild ? {} : {
     async rewrites() {
+      // Use NEXT_PUBLIC_API_URL if set (for Vercel deployment),
+      // otherwise fall back to localhost:5000 (for local dev)
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       return [
         {
           source: "/api/:path*",
-          destination: "http://localhost:5000/api/:path*", // Proxy API requests
+          destination: `${backendUrl}/api/:path*`,
         },
         {
           source: "/uploads/:path*",
-          destination: "http://localhost:5000/uploads/:path*", // Proxy static uploads
+          destination: `${backendUrl}/uploads/:path*`,
         },
       ];
     }
