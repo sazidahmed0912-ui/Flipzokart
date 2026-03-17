@@ -145,18 +145,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Fetch products
+  // Fetch products - always try live API first
   useEffect(() => {
     const loadProducts = async () => {
       try {
         const { data } = await fetchProducts();
         const productList = Array.isArray(data) ? data : (data.products || data.data || []);
         setProducts(productList);
-        localStorage.setItem('flipzokart_products', JSON.stringify(productList));
+        // Only cache REAL products (not mock)
+        if (productList.length > 0) {
+          localStorage.setItem('flipzokart_products', JSON.stringify(productList));
+        }
       } catch (error) {
+        // Try localStorage cache, but ONLY if it contains real products (not mock)
         const saved = localStorage.getItem('flipzokart_products');
-        if (saved) setProducts(JSON.parse(saved));
-        else setProducts(MOCK_PRODUCTS.slice().reverse());
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            // Mock products always contain 'Demo Product' or have fake IDs starting with 'p'
+            const isMockData = parsed.length > 0 && parsed[0]?.id?.startsWith?.('p') && !parsed[0]?._id;
+            if (!isMockData && parsed.length > 0) {
+              setProducts(parsed);
+              return;
+            }
+          } catch {}
+        }
+        // Clear stale cache to prevent mock data from persisting
+        localStorage.removeItem('flipzokart_products');
+        setProducts(MOCK_PRODUCTS.slice().reverse());
       }
     };
     loadProducts();
