@@ -24,7 +24,10 @@ const LazyImage: React.FC<LazyImageProps> = ({
     onLoad,
     ...props
 }) => {
-    const [isLoaded, setIsLoaded] = useState(false);
+    // On Android Capacitor, images may never fire onLoad in static exports
+    // so we start as loaded to avoid permanent opacity-0 freeze
+    const isCapacitor = process.env.NEXT_PUBLIC_IS_CAPACITOR === 'true';
+    const [isLoaded, setIsLoaded] = useState(isCapacitor);
 
     const [imgSrc, setImgSrc] = useState(src);
 
