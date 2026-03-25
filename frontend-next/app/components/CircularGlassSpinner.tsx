@@ -32,7 +32,7 @@ export default function CircularGlassSpinner() {
 
     return (
         <div
-            className="min-h-screen flex items-center justify-center"
+            className="min-h-screen w-full flex items-center justify-center"
             style={{ background: 'radial-gradient(ellipse at center, #1a0a2e 0%, #0d0d1a 60%, #000000 100%)' }}
         >
             <div className="relative flex flex-col items-center gap-6">
@@ -51,18 +51,19 @@ export default function CircularGlassSpinner() {
                     pointerEvents: 'none',
                 }} />
 
-                {/* Circle container */}
+                {/* Circle container — responsive via clamp */}
                 <div style={{
-                    width: '160px',
-                    height: '160px',
+                    width: 'clamp(110px, 22vw, 140px)',
+                    height: 'clamp(110px, 22vw, 140px)',
                     borderRadius: '50%',
                     background: 'rgba(255,255,255,0.04)',
                     backdropFilter: 'blur(12px)',
                     border: '1.5px solid rgba(255,255,255,0.1)',
-                    boxShadow: '0 0 40px rgba(255,135,9,0.12), inset 0 0 30px rgba(147,51,234,0.06)',
+                    boxShadow: '0 0 36px rgba(255,135,9,0.12), inset 0 0 24px rgba(147,51,234,0.06)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    flexShrink: 0,
                 }}>
                     {/* GSAP SVG Logo */}
                     <svg
@@ -74,8 +75,8 @@ export default function CircularGlassSpinner() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         style={{
-                            width: '90px',
-                            height: '90px',
+                            width: 'clamp(64px, 14vw, 80px)',
+                            height: 'clamp(64px, 14vw, 80px)',
                             overflow: 'visible',
                             opacity: 0,
                             filter: 'drop-shadow(0 0 8px rgba(255,135,9,0.7)) drop-shadow(0 0 20px rgba(247,189,248,0.35))',
