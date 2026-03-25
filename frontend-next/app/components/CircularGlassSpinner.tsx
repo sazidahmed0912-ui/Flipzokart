@@ -1,50 +1,96 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
 
 export default function CircularGlassSpinner() {
+    const svgRef = useRef<SVGSVGElement>(null);
+    const pathRef = useRef<SVGPathElement>(null);
+
+    useEffect(() => {
+        const svg = svgRef.current;
+        const path = pathRef.current;
+        if (!svg || !path) return;
+
+        const totalLength = path.getTotalLength();
+
+        // Initial state: stroke hidden
+        gsap.set(path, {
+            strokeDasharray: totalLength,
+            strokeDashoffset: totalLength,
+        });
+        gsap.set(svg, { opacity: 1 });
+
+        // 2.5x speed → base duration 3 / 2.5 = 1.2s
+        const dur = 3 / 2.5;
+
+        const tl = gsap.timeline({
+            repeat: -1,
+            defaults: { ease: 'power1.inOut' },
+        });
+
+        tl
+            // Draw in: stroke appears from 0% → 100%
+            .to(path, { strokeDashoffset: 0, duration: dur })
+            // Erase out: stroke exits from start
+            .to(path, { strokeDashoffset: -totalLength, duration: dur });
+
+        return () => { tl.kill(); };
+    }, []);
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-8">
             {/* Main Container */}
-            <div className="relative w-20 h-20">
-                {/* Outer Glow - Reduced */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-purple-400/20 to-pink-400/20 rounded-full blur-md animate-pulse"></div>
+            <div className="relative flex flex-col items-center gap-4">
 
-                {/* Rotating Glass Circle */}
-                <div className="absolute inset-0 animate-spin" style={{ animationDuration: '2s' }}>
-                    {/* Clean Ring - NO Glass Effect Inside */}
-                    <div className="absolute inset-0 rounded-full border-2 border-white/20 shadow-xl">
-                        {/* Rotating Gradient Segment */}
-                        <div className="absolute inset-0 rounded-full" style={{
-                            background: 'conic-gradient(from 0deg, transparent 0deg, rgba(147, 51, 234, 0.3) 90deg, transparent 180deg)',
-                        }}></div>
-
-                        {/* Bright Spinner Arc */}
-                        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-white/80 border-r-blue-300/60 shadow-[0_0_15px_rgba(255,255,255,0.5)]"></div>
-                    </div>
-                </div>
-
-                {/* Center Letter 'f' - Static - Solid White */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-5xl font-bold text-white select-none" style={{
+                {/* Center Letter 'f' */}
+                <span
+                    className="text-6xl font-black select-none text-white"
+                    style={{
                         fontFamily: 'Arial, sans-serif',
                         textShadow: '0 0 20px rgba(255,255,255,0.8), 0 0 30px rgba(147,51,234,0.4)',
-                        fontWeight: '900'
-                    }}>
-                        f
-                    </span>
+                        fontWeight: '900',
+                    }}
+                >
+                    f
+                </span>
+
+                {/* GSAP SVG Logo Animation — below "f" */}
+                <svg
+                    ref={svgRef}
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="-1 -1 103 103"
+                    fill="none"
+                    strokeWidth="2.2"
+                    style={{
+                        width: '64px',
+                        height: '64px',
+                        overflow: 'visible',
+                        opacity: 0,
+                    }}
+                >
+                    <defs>
+                        <linearGradient
+                            id="fz-grad"
+                            x1="0" y1="0"
+                            x2="100" y2="100"
+                            gradientUnits="userSpaceOnUse"
+                        >
+                            <stop offset="0.2" stopColor="rgb(255, 135, 9)" />
+                            <stop offset="0.8" stopColor="rgb(247, 189, 248)" />
+                        </linearGradient>
+                    </defs>
+                    <path
+                        ref={pathRef}
+                        stroke="url(#fz-grad)"
+                        d="M50.5 50.5h50v50s-19.2 1.3-37.2-16.7S56 35.4 35.5 15.5C18.5-1 .5.5.5.5v50h50s25.6-.6 38-18 12-32 12-32h-50v100H.5S.2 80.7 11.8 68.2 40 49.7 50.5 50.5Z"
+                    />
+                </svg>
+
+                {/* Loading text */}
+                <div className="text-white/50 text-xs tracking-[0.3em] animate-pulse mt-2">
+                    LOADING
                 </div>
-
-                {/* Inner Glass Circle - REMOVED for Clear Visibility */}
-
-                {/* Orbiting Particles */}
-                <div className="absolute inset-0 animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }}>
-                    <div className="absolute top-0 left-1/2 w-1.5 h-1.5 bg-blue-300 rounded-full blur-[1px] -translate-x-1/2 shadow-[0_0_8px_rgba(147,197,253,0.8)]"></div>
-                    <div className="absolute bottom-0 right-1/2 w-1.5 h-1.5 bg-purple-300 rounded-full blur-[1px] translate-x-1/2 shadow-[0_0_8px_rgba(216,180,254,0.8)]"></div>
-                </div>
-            </div>
-
-            {/* Loading Text */}
-            <div className="absolute mt-32 text-white/50 text-xs tracking-[0.3em] animate-pulse">
-                LOADING
             </div>
         </div>
     );
