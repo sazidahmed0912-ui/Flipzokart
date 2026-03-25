@@ -14,15 +14,14 @@ export default function CircularGlassSpinner() {
 
         const totalLength = path.getTotalLength();
 
-        // Initial state: stroke hidden
         gsap.set(path, {
             strokeDasharray: totalLength,
             strokeDashoffset: totalLength,
         });
         gsap.set(svg, { opacity: 1 });
 
-        // 2.5x speed → base duration 3 / 2.5 = 1.2s
-        const dur = 3 / 2.5;
+        // Speed 3x → duration = 3 / 3 = 1s per phase
+        const dur = 3 / 3;
 
         const tl = gsap.timeline({
             repeat: -1,
@@ -30,9 +29,7 @@ export default function CircularGlassSpinner() {
         });
 
         tl
-            // Draw in: stroke appears from 0% → 100%
             .to(path, { strokeDashoffset: 0, duration: dur })
-            // Erase out: stroke exits from start
             .to(path, { strokeDashoffset: -totalLength, duration: dur });
 
         return () => { tl.kill(); };
@@ -40,22 +37,9 @@ export default function CircularGlassSpinner() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-8">
-            {/* Main Container */}
             <div className="relative flex flex-col items-center gap-4">
 
-                {/* Center Letter 'f' */}
-                <span
-                    className="text-6xl font-black select-none text-white"
-                    style={{
-                        fontFamily: 'Arial, sans-serif',
-                        textShadow: '0 0 20px rgba(255,255,255,0.8), 0 0 30px rgba(147,51,234,0.4)',
-                        fontWeight: '900',
-                    }}
-                >
-                    f
-                </span>
-
-                {/* GSAP SVG Logo Animation — below "f" */}
+                {/* GSAP SVG Logo — replaces F + circle */}
                 <svg
                     ref={svgRef}
                     xmlns="http://www.w3.org/2000/svg"
@@ -63,8 +47,8 @@ export default function CircularGlassSpinner() {
                     fill="none"
                     strokeWidth="2.2"
                     style={{
-                        width: '64px',
-                        height: '64px',
+                        width: '80px',
+                        height: '80px',
                         overflow: 'visible',
                         opacity: 0,
                     }}
@@ -88,7 +72,7 @@ export default function CircularGlassSpinner() {
                 </svg>
 
                 {/* Loading text */}
-                <div className="text-white/50 text-xs tracking-[0.3em] animate-pulse mt-2">
+                <div className="text-white/50 text-xs tracking-[0.3em] animate-pulse">
                     LOADING
                 </div>
             </div>
