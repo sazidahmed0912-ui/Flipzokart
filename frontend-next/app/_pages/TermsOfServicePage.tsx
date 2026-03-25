@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect } from 'react';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
+import { TextReveal } from '@/app/components/ui/TextReveal';
 
 export const TermsOfServicePage: React.FC = () => {
     useEffect(() => {
@@ -14,14 +15,14 @@ export const TermsOfServicePage: React.FC = () => {
                     <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 border-b pb-4">Terms and Conditions for Fzokart</h1>
 
                     <div className="prose prose-blue max-w-none text-gray-700 space-y-6 legal-content mobile-legal-page [&_p]:!text-[13px] [&_p]:!leading-[1.7] md:[&_p]:!text-base md:[&_p]:!leading-relaxed [&_li]:!text-[13px] md:[&_li]:!text-base [&_h2]:!text-[16px] md:[&_h2]:!text-xl [&_h2]:!mb-2 [&_ul]:!pl-5">
-                        <p className="font-semibold">Effective Date: [24/01/2026]</p>
+                        <TextReveal className="font-semibold">Effective Date: [24/01/2026]</TextReveal>
 
-                        <p>
+                        <TextReveal>
                             Welcome to Fzokart. These Terms and Conditions ("Terms") govern your access to and use of the Fzokart website, mobile application, products, and services. This document is drafted specifically for a full ecommerce platform integrated with Razorpay payment gateway and is compliant with Razorpay merchant approval requirements.
-                        </p>
-                        <p>
+                        </TextReveal>
+                        <TextReveal>
                             By accessing or using Fzokart, you agree to be bound by these Terms.
-                        </p>
+                        </TextReveal>
 
                         <hr className="my-6 border-gray-100" />
 
@@ -82,16 +83,16 @@ export const TermsOfServicePage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">6. Order Confirmation & Cancellation</h2>
-                            <p>Orders are confirmed only after successful payment.</p>
-                            <p className="mt-2">Fzokart reserves the right to cancel orders due to:</p>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3"><TextReveal>6. Order Confirmation & Cancellation</TextReveal></h2>
+                            <TextReveal>Orders are confirmed only after successful payment.</TextReveal>
+                            <TextReveal className="mt-2">Fzokart reserves the right to cancel orders due to:</TextReveal>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Payment failure</li>
                                 <li>Pricing errors</li>
                                 <li>Stock unavailability</li>
                                 <li>Suspected fraud</li>
                             </ul>
-                            <p className="mt-2">Refunds (if applicable) will be processed as per our Refund Policy.</p>
+                            <TextReveal className="mt-2">Refunds (if applicable) will be processed as per our Refund Policy.</TextReveal>
                         </section>
 
                         <hr className="my-6 border-gray-100" />

@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect } from 'react';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
+import { TextReveal } from '@/app/components/ui/TextReveal';
 
 export const ReturnsRefundsPolicyPage: React.FC = () => {
     useEffect(() => {
@@ -15,17 +16,17 @@ export const ReturnsRefundsPolicyPage: React.FC = () => {
 
                     <div className="prose prose-blue max-w-none text-gray-700 space-y-6 legal-content mobile-legal-page [&_p]:!text-[13px] [&_p]:!leading-[1.7] md:[&_p]:!text-base md:[&_p]:!leading-relaxed [&_li]:!text-[13px] md:[&_li]:!text-base [&_ol]:!text-[13px] md:[&_ol]:!text-base [&_h2]:!text-[16px] md:[&_h2]:!text-xl [&_h2]:!mb-2 [&_ul]:!pl-5 [&_ol]:!pl-5">
                         
-                        <p>
+                        <TextReveal>
                             At Flipzokart, customer satisfaction is our top priority. Most products available on our platform are eligible for a 7-day return policy from the date of delivery.
-                        </p>
+                        </TextReveal>
 
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">7 Day Return Policy</h2>
-                            <p>Most products purchased from Flipzokart are eligible for return within 7 days from the date of delivery.</p>
-                            <p>If you receive a damaged, defective, or incorrect product, you can request a return within 7 days of receiving the item.</p>
-                            <p>The product must be unused and in its original condition with all packaging, tags, and accessories included.</p>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3"><TextReveal>7 Day Return Policy</TextReveal></h2>
+                            <TextReveal>Most products purchased from Flipzokart are eligible for return within 7 days from the date of delivery.</TextReveal>
+                            <TextReveal>If you receive a damaged, defective, or incorrect product, you can request a return within 7 days of receiving the item.</TextReveal>
+                            <TextReveal>The product must be unused and in its original condition with all packaging, tags, and accessories included.</TextReveal>
                         </section>
 
                         <hr className="my-6 border-gray-100" />

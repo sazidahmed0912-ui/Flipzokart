@@ -1,9 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import SplitType from 'split-type';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Store, ShoppingCart, Heart, User, Search, Menu, X, LogOut, LayoutDashboard, ChevronDown, Home, MessageCircle, LayoutGrid, Tag, ChevronRight, Bell, CheckCircle, XCircle, AlertTriangle, Info, Clock, Trash2 } from 'lucide-react';
@@ -628,87 +625,39 @@ const BottomNav: React.FC = () => {
 };
 
 const Footer: React.FC = () => {
-  const footerRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-    
-    // We only animate AFTER fonts are ready to avoid weird split sizes
-    document.fonts.ready.then(() => {
-      if (!footerRef.current) return;
-      
-      const elements = footerRef.current.querySelectorAll('.footer-anim');
-      
-      let splitInstance: any;
-
-      // Make elements visible now that we are ready to split and animate
-      gsap.set(elements, { opacity: 1 });
-
-      // Split text into lines, then words inside those lines
-      splitInstance = new SplitType(elements as any, { types: 'lines,words', lineClass: 'split-line', wordClass: 'split-word' });
-      
-      // Apply mask to the lines by hiding overflow
-      gsap.set('.split-line', { overflow: 'hidden' });
-
-      // Create scroll trigger for the footer
-      gsap.from(splitInstance.words, {
-        scrollTrigger: {
-          trigger: footerRef.current,
-          start: 'top 90%', // Trigger when footer top hits 90% of viewport down
-        },
-        duration: 0.6,
-        yPercent: 100,
-        opacity: 0,
-        stagger: 0.05,
-        ease: 'expo.out',
-      });
-
-      // We attach the instance to ref so the generic cleanup can access it, or just handle cleanup here:
-      (footerRef.current as any)._splitInstance = splitInstance;
-    });
-
-    return () => {
-      ScrollTrigger.getAll().forEach(t => t.kill());
-      // Revert splitting when component unmounts
-      if (footerRef.current && (footerRef.current as any)._splitInstance) {
-        (footerRef.current as any)._splitInstance.revert();
-      }
-    };
-  }, []);
-
   return (
-    <footer ref={footerRef} className="bg-gray-100 border-t border-gray-200 mt-16 mb-16 md:mb-0">
+    <footer className="bg-gray-100 border-t border-gray-200 mt-16 mb-16 md:mb-0">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3 footer-anim opacity-0">Company</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">Company</h3>
             <ul className="space-y-2 text-[11px] leading-4 md:text-sm text-gray-600">
-              <li className="footer-anim opacity-0"><Link href="/about" className="hover:text-[#f28c28]">About Us</Link></li>
-              <li className="footer-anim opacity-0"><Link href="/careers" className="hover:text-[#f28c28]">Careers</Link></li>
+              <li><Link href="/about" className="hover:text-[#f28c28]">About Us</Link></li>
+              <li><Link href="/careers" className="hover:text-[#f28c28]">Careers</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3 footer-anim opacity-0">Support</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">Support</h3>
             <ul className="space-y-2 text-[11px] leading-4 md:text-sm text-gray-600">
-              <li className="footer-anim opacity-0"><Link href="/contact" className="hover:text-[#f28c28]">Contact Us</Link></li>
-              <li className="footer-anim opacity-0"><Link href="/faq" className="hover:text-[#f28c28]">FAQ</Link></li>
-              <li className="footer-anim opacity-0"><Link href="/returns-refunds-policy" className="hover:text-[#f28c28]">Returns & Refunds</Link></li>
+              <li><Link href="/contact" className="hover:text-[#f28c28]">Contact Us</Link></li>
+              <li><Link href="/faq" className="hover:text-[#f28c28]">FAQ</Link></li>
+              <li><Link href="/returns-refunds-policy" className="hover:text-[#f28c28]">Returns & Refunds</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3 footer-anim opacity-0">Legal</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">Legal</h3>
             <ul className="space-y-2 text-[11px] leading-4 md:text-sm text-gray-600">
-              <li className="footer-anim opacity-0"><Link href="/privacy-policy" className="hover:text-[#f28c28]">Privacy Policy</Link></li>
-              <li className="footer-anim opacity-0"><Link href="/terms-of-service" className="hover:text-[#f28c28]">Terms & Conditions</Link></li>
-              <li className="footer-anim opacity-0"><Link href="/shipping-policy" className="hover:text-[#f28c28]">Shipping Policy</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-[#f28c28]">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-service" className="hover:text-[#f28c28]">Terms & Conditions</Link></li>
+              <li><Link href="/shipping-policy" className="hover:text-[#f28c28]">Shipping Policy</Link></li>
             </ul>
           </div>
           <div className="text-2xl font-bold">
-            <p className="text-gray-600 text-sm mt-2 footer-anim opacity-0">India's leading online shopping platform</p>
+            <p className="text-gray-600 text-sm mt-2">India's leading online shopping platform</p>
           </div>
         </div>
         <div className="border-t border-gray-300 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-600 text-sm footer-anim opacity-0">© 2024 Fzokart. All rights reserved.</p>
+          <p className="text-gray-600 text-sm">© 2024 Fzokart. All rights reserved.</p>
         </div>
       </div>
     </footer>

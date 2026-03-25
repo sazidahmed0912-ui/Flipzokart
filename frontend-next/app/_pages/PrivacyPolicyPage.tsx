@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect } from 'react';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
+import { TextReveal } from '@/app/components/ui/TextReveal';
 
 export const PrivacyPolicyPage: React.FC = () => {
     useEffect(() => {
@@ -14,19 +15,19 @@ export const PrivacyPolicyPage: React.FC = () => {
                     <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 border-b pb-4">Privacy Policy for Fzokart</h1>
 
                     <div className="prose prose-blue max-w-none text-gray-700 space-y-6 legal-content mobile-legal-page [&_p]:!text-[13px] [&_p]:!leading-[1.7] md:[&_p]:!text-base md:[&_p]:!leading-relaxed [&_li]:!text-[13px] md:[&_li]:!text-base [&_h2]:!text-[16px] md:[&_h2]:!text-xl [&_h2]:!mb-2 [&_ul]:!pl-5">
-                        <p className="font-semibold">Effective Date: [24/01/2026]</p>
+                        <TextReveal>Effective Date: [24/01/2026]</TextReveal>
 
-                        <p>
+                        <TextReveal>
                             Fzokart ("Fzokart", "we", "our", "us") operates a full-scale ecommerce website and mobile application. We are committed to protecting user privacy and maintaining the highest standards of data security. This Privacy Policy is specifically designed to comply with Razorpay payment gateway approval requirements and applicable Indian IT laws.
-                        </p>
-                        <p>
+                        </TextReveal>
+                        <TextReveal>
                             By using Fzokart, you agree to the practices described in this policy.
-                        </p>
+                        </TextReveal>
 
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">1. Information We Collect</h2>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3"><TextReveal>1. Information We Collect</TextReveal></h2>
 
                             <h3 className="text-[15px] md:text-lg font-semibold text-gray-800 mt-4 mb-2">1.1 Personal Information</h3>
                             <p>We collect personal information only when necessary to provide our services, including:</p>
@@ -97,23 +98,23 @@ export const PrivacyPolicyPage: React.FC = () => {
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">4. Data Sharing & Third Parties</h2>
-                            <p>Fzokart does not sell or misuse customer data.</p>
-                            <p>Data may be shared only with:</p>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3"><TextReveal>4. Data Sharing & Third Parties</TextReveal></h2>
+                            <TextReveal>Fzokart does not sell or misuse customer data.</TextReveal>
+                            <TextReveal>Data may be shared only with:</TextReveal>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Razorpay (for payment processing)</li>
                                 <li>Logistics & delivery partners (for order fulfillment)</li>
                                 <li>Government authorities when legally required</li>
                                 <li>Technology service providers under strict confidentiality</li>
                             </ul>
-                            <p className="mt-2">All third parties follow applicable data protection laws.</p>
+                            <TextReveal className="mt-2">All third parties follow applicable data protection laws.</TextReveal>
                         </section>
 
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">5. Cookies & Tracking</h2>
-                            <p>Fzokart uses cookies to:</p>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3"><TextReveal>5. Cookies & Tracking</TextReveal></h2>
+                            <TextReveal>Fzokart uses cookies to:</TextReveal>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Maintain secure login sessions</li>
                                 <li>Store cart and checkout preferences</li>

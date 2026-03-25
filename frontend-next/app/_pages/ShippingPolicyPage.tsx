@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect } from 'react';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
+import { TextReveal } from '@/app/components/ui/TextReveal';
 
 export const ShippingPolicyPage: React.FC = () => {
     useEffect(() => {
@@ -15,16 +16,16 @@ export const ShippingPolicyPage: React.FC = () => {
 
                     <div className="prose prose-blue max-w-none text-gray-700 space-y-6 legal-content mobile-legal-page [&_p]:!text-[13px] [&_p]:!leading-[1.7] md:[&_p]:!text-base md:[&_p]:!leading-relaxed [&_li]:!text-[13px] md:[&_li]:!text-base [&_h2]:!text-[16px] md:[&_h2]:!text-xl [&_h2]:!mb-2 [&_ul]:!pl-5">
                         
-                        <p>
+                        <TextReveal>
                             Thank you for shopping with Flipzokart. We aim to provide a smooth and reliable shipping experience for all our customers. This Shipping Policy explains how orders are processed, shipped, and delivered.
-                        </p>
+                        </TextReveal>
 
                         <hr className="my-6 border-gray-100" />
 
                         <section>
-                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3">Order Processing Time</h2>
-                            <p>All orders are usually processed within 24 to 48 hours after successful payment confirmation. Orders are not shipped or delivered on Sundays or public holidays.</p>
-                            <p>If we are experiencing a high volume of orders, shipments may be delayed by a few days. If there is a significant delay in shipping your order, we will contact you via email or phone.</p>
+                            <h2 className="text-[16px] md:text-xl font-bold text-gray-900 mb-2 md:mb-3"><TextReveal>Order Processing Time</TextReveal></h2>
+                            <TextReveal>All orders are usually processed within 24 to 48 hours after successful payment confirmation. Orders are not shipped or delivered on Sundays or public holidays.</TextReveal>
+                            <TextReveal>If we are experiencing a high volume of orders, shipments may be delayed by a few days. If there is a significant delay in shipping your order, we will contact you via email or phone.</TextReveal>
                         </section>
 
                         <hr className="my-6 border-gray-100" />

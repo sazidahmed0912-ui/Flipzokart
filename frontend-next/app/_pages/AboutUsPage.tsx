@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShieldCheck, Zap, Heart, Award, Users, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { TextReveal } from '@/app/components/ui/TextReveal';
 
 export const AboutUsPage: React.FC = () => {
   useEffect(() => {
@@ -77,9 +78,9 @@ export const AboutUsPage: React.FC = () => {
           <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-1000">
             About <span className="text-primary">Us</span>
           </h1>
-          <p className="text-gray-300 max-w-2xl mx-auto text-lg lg:text-xl font-medium animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            Redefining the Indian digital marketplace through innovation, quality, and unwavering trust.
-          </p>
+          <div className="text-gray-300 max-w-2xl mx-auto text-lg lg:text-xl font-medium animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <TextReveal>Redefining the Indian digital marketplace through innovation, quality, and unwavering trust.</TextReveal>
+          </div>
         </div>
       </section>
 
@@ -96,15 +97,15 @@ export const AboutUsPage: React.FC = () => {
               </div>
 
               <div className="space-y-6 text-gray-500 !text-[13px] !leading-[1.7] md:!text-xl md:!leading-relaxed">
-                <p className="font-medium text-dark">
+                <TextReveal className="font-medium text-dark">
                   This is a modern e-commerce platform built to provide customers with high-quality products, affordable prices, and a smooth online shopping experience.
-                </p>
-                <p>
+                </TextReveal>
+                <TextReveal>
                   We combine technology and trust to create a marketplace where shopping is simple, fast, and secure. Our journey began with a single mission: to bridge the gap between premium global brands and the vibrant Indian consumer base.
-                </p>
-                <p>
+                </TextReveal>
+                <TextReveal>
                   By leveraging cutting-edge logistics and a curated selection process, we ensure that every click leads to a smile. We don't just sell products; we deliver experiences.
-                </p>
+                </TextReveal>
               </div>
 
               <div className="flex flex-wrap gap-4 pt-4">
