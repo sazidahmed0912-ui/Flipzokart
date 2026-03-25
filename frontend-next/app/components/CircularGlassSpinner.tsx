@@ -53,8 +53,8 @@ export default function CircularGlassSpinner() {
 
                 {/* Circle container — responsive via clamp */}
                 <div style={{
-                    width: 'clamp(110px, 22vw, 140px)',
-                    height: 'clamp(110px, 22vw, 140px)',
+                    width: 'clamp(90px, 16vw, 120px)',
+                    height: 'clamp(90px, 16vw, 120px)',
                     borderRadius: '50%',
                     background: 'rgba(255,255,255,0.04)',
                     backdropFilter: 'blur(12px)',
@@ -75,8 +75,8 @@ export default function CircularGlassSpinner() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         style={{
-                            width: 'clamp(64px, 14vw, 80px)',
-                            height: 'clamp(64px, 14vw, 80px)',
+                            width: 'clamp(50px, 9vw, 65px)',
+                            height: 'clamp(50px, 9vw, 65px)',
                             overflow: 'visible',
                             opacity: 0,
                             filter: 'drop-shadow(0 0 8px rgba(255,135,9,0.7)) drop-shadow(0 0 20px rgba(247,189,248,0.35))',
@@ -100,8 +100,8 @@ export default function CircularGlassSpinner() {
                 {/* Animated Loading text */}
                 <p className="loading-text" style={{
                     color: 'rgba(255,255,255,0.6)',
-                    fontSize: '15px',
-                    letterSpacing: '0.3em',
+                    fontSize: 'clamp(11px, 1.5vw, 13px)',
+                    letterSpacing: '0.25em',
                     fontFamily: 'system-ui, sans-serif',
                     fontWeight: 500,
                     textTransform: 'uppercase',
