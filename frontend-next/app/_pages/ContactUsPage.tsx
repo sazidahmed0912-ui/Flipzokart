@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { Mail, Phone, Clock, MapPin, Send, MessageSquare, ShieldCheck, CheckCircle2, MessageCircle } from 'lucide-react';
+import { HeadingReveal } from '@/app/components/ui/HeadingReveal';
+import { TextReveal } from '@/app/components/ui/TextReveal';
 
 export const ContactUsPage: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -18,10 +20,10 @@ export const ContactUsPage: React.FC = () => {
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
         <div className="container mx-auto px-4 relative z-10 text-center">
           <h4 className="text-primary font-bold uppercase tracking-[0.3em] text-xs mb-4">Support Center</h4>
-          <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tighter">Get in <span className="text-primary">Touch</span></h1>
-          <p className="text-gray-400 max-w-2xl mx-auto mt-6 text-[13px] md:text-lg">
-            Have questions about your order or our services? Our dedicated support team is here to assist you.
-          </p>
+          <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tighter"><HeadingReveal>Get in </HeadingReveal><span className="text-primary"><HeadingReveal>Touch</HeadingReveal></span></h1>
+          <div className="text-gray-400 max-w-2xl mx-auto mt-6 text-[13px] md:text-lg">
+            <TextReveal>Have questions about your order or our services? Our dedicated support team is here to assist you.</TextReveal>
+          </div>
         </div>
       </section>
 
