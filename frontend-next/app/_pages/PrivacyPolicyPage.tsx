@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import { TextReveal } from '@/app/components/ui/TextReveal';
+import { HeadingReveal } from '@/app/components/ui/HeadingReveal';
 
 export const PrivacyPolicyPage: React.FC = () => {
     useEffect(() => {
@@ -12,7 +13,7 @@ export const PrivacyPolicyPage: React.FC = () => {
         <div className="bg-gray-50 min-h-screen py-10 px-4 md:px-8 font-sans text-gray-800">
             <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8 md:p-12">
                 <SmoothReveal>
-                    <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 border-b pb-4">Privacy Policy for Fzokart</h1>
+                    <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 border-b pb-4"><HeadingReveal>Privacy Policy for Fzokart</HeadingReveal></h1>
 
                     <div className="prose prose-blue max-w-none text-gray-700 space-y-6 legal-content mobile-legal-page [&_p]:!text-[13px] [&_p]:!leading-[1.7] md:[&_p]:!text-base md:[&_p]:!leading-relaxed [&_li]:!text-[13px] md:[&_li]:!text-base [&_h2]:!text-[16px] md:[&_h2]:!text-xl [&_h2]:!mb-2 [&_ul]:!pl-5">
                         <TextReveal>Effective Date: [24/01/2026]</TextReveal>

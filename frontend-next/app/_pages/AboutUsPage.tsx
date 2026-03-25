@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ShieldCheck, Zap, Heart, Award, Users, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { TextReveal } from '@/app/components/ui/TextReveal';
+import { HeadingReveal } from '@/app/components/ui/HeadingReveal';
 
 export const AboutUsPage: React.FC = () => {
   useEffect(() => {
@@ -76,7 +77,7 @@ export const AboutUsPage: React.FC = () => {
         <div className="container mx-auto px-4 relative z-10 text-center space-y-6">
           <h4 className="text-primary font-bold uppercase tracking-[0.3em] text-xs animate-in fade-in slide-in-from-bottom-4 duration-700">Established 2024</h4>
           <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-1000">
-            About <span className="text-primary">Us</span>
+            <HeadingReveal>About </HeadingReveal><span className="text-primary"><HeadingReveal>Us</HeadingReveal></span>
           </h1>
           <div className="text-gray-300 max-w-2xl mx-auto text-lg lg:text-xl font-medium animate-in fade-in slide-in-from-bottom-8 duration-1000">
             <TextReveal>Redefining the Indian digital marketplace through innovation, quality, and unwavering trust.</TextReveal>
