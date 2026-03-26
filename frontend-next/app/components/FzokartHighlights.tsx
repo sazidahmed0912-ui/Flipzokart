@@ -155,29 +155,50 @@ export const FzokartHighlights: React.FC = () => {
   };
 
   useEffect(() => {
-    // DEVICE PERFORMANCE DETECTION
-    const ram = (navigator as any).deviceMemory || 4;
-    const cores = navigator.hardwareConcurrency || 4;
-    let devClass = "high-device";
-    if (ram <= 4 || cores <= 4) devClass = "low-device";
-    else if (ram <= 8) devClass = "mid-device";
-    if (sectionRef.current) sectionRef.current.classList.add(devClass);
+    let observer: IntersectionObserver | null = null;
+    let idleId: any = null;
+    let toId: any = null;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const sec = sectionRef.current;
-        inViewRef.current = entry.isIntersecting;
-        if (entry.isIntersecting) {
-          setHasInitialized(true);
-          sec?.classList.remove("fzh-paused");
-        } else {
-          sec?.classList.add("fzh-paused");
-        }
-      },
-      { rootMargin: "400px 0px" }
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
+    const initTask = () => {
+      // DEVICE PERFORMANCE & NETWORK AWARE LOADING
+      const ram = (navigator as any).deviceMemory || 4;
+      const cores = navigator.hardwareConcurrency || 4;
+      const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+      const effType = conn?.effectiveType || '4g';
+      
+      let devClass = "high-device";
+      if (ram <= 4 || cores <= 4 || effType === '2g' || effType === 'slow-2g') devClass = "low-device";
+      else if (ram <= 8 || effType === '3g') devClass = "mid-device";
+      
+      if (sectionRef.current) sectionRef.current.classList.add(devClass);
+
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          const sec = sectionRef.current;
+          inViewRef.current = entry.isIntersecting;
+          if (entry.isIntersecting) {
+            setHasInitialized(true);
+            sec?.classList.remove("fzh-paused");
+          } else {
+            sec?.classList.add("fzh-paused");
+          }
+        },
+        { rootMargin: "400px 0px" }
+      );
+      if (sectionRef.current) observer.observe(sectionRef.current);
+    };
+
+    if ('requestIdleCallback' in window) {
+      idleId = (window as any).requestIdleCallback(() => initTask());
+    } else {
+      toId = setTimeout(initTask, 1);
+    }
+    
+    return () => {
+      if (idleId) (window as any).cancelIdleCallback(idleId);
+      if (toId) clearTimeout(toId);
+      if (observer) observer.disconnect();
+    };
   }, []);
 
   useEffect(() => {
