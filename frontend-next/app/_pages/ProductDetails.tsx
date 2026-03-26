@@ -67,8 +67,15 @@ export const ProductDetails: React.FC = () => {
     if (!id) return;
     const loadData = async () => {
       setIsLoading(true);
+      // 5 second timeout via AbortController
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 5000);
+
       try {
         const res = await fetchProductById(id);
+        clearTimeout(timeoutId);
         const data = res.data?.data?.product || res.data;
         setProduct(data);
 
@@ -79,12 +86,13 @@ export const ProductDetails: React.FC = () => {
           if (reviewsData.success && reviewsData.data) {
             setReviews(reviewsData.data);
           } else if (data.reviews) {
-            setReviews(data.reviews); // Fallback if backend was updated
+            setReviews(data.reviews);
           }
         } catch (e) {
           console.warn("Failed to fetch reviews", e);
         }
       } catch (e) {
+        clearTimeout(timeoutId);
         setProduct(null);
       } finally {
         setIsLoading(false);
@@ -322,15 +330,16 @@ export const ProductDetails: React.FC = () => {
     }
   };
 
-  // Show animated 404 page when product doesn't exist
+  // Redirect to animated 404 when product doesn't exist
+  // Guard: skip redirect if id is 'not-found' to avoid loops
   useEffect(() => {
-    if (!isLoading && !product) {
-      router.replace('/product/not-found');
+    if (!isLoading && !product && id && id !== 'not-found') {
+      router.replace('/product-not-found');
     }
-  }, [isLoading, product, router]);
+  }, [isLoading, product, router, id]);
 
   if (isLoading) return <CircularGlassSpinner />;
-  if (!product) return <CircularGlassSpinner />; // Show spinner while redirect happens
+  if (!product) return <CircularGlassSpinner />; // Spinner while redirect fires
 
   return (
     <div className="bg-gray-50 min-h-screen">
