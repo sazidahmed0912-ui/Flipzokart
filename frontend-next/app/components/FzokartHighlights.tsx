@@ -143,6 +143,14 @@ export const FzokartHighlights: React.FC = () => {
     window.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
   };
 
+  /* skip entire section */
+  const skipSection = () => {
+    const sec = sectionRef.current;
+    if (!sec) return;
+    const target = sec.offsetTop + sec.offsetHeight;
+    window.scrollTo({ top: target, behavior: "smooth" });
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const section = sectionRef.current;
@@ -184,8 +192,8 @@ export const FzokartHighlights: React.FC = () => {
     const uBg = gl.getUniformLocation(prog, "uBg");
     gl.uniform3f(uBg, 0.039, 0.039, 0.059);
 
-    let qualityScale = 0.9;
-    const MAX_DPR = 1.0, MIN_Q = 0.70, MAX_Q = 0.90;
+    let qualityScale = 1.0;
+    const MAX_DPR = 1.5, MIN_Q = 0.82, MAX_Q = 1.0;
 
     const resize = () => {
       const w = canvas.offsetWidth, h = canvas.offsetHeight;
@@ -326,6 +334,41 @@ export const FzokartHighlights: React.FC = () => {
         }
         .fzh-dot.act { background: #c8ff47; scale: 1.8; }
 
+        /* Bottom Controls (Meter + Skip) */
+        .fzh-bottom-ctrls {
+          position: absolute;
+          bottom: 2rem; right: 2rem;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+        }
+        .fzh-layer-meter {
+          font-family: "DM Mono", monospace;
+          font-size: 0.65rem; letter-spacing: 0.15em;
+          color: #e8e4d9;
+          text-transform: uppercase;
+        }
+        .fzh-skip-btn {
+          display: inline-flex; align-items: center; gap: 0.4rem;
+          background: rgba(10,10,15,0.4);
+          border: 1px solid rgba(255,255,255,0.15);
+          color: rgba(232,228,217,0.7);
+          padding: 0.4rem 0.8rem;
+          border-radius: 40px;
+          font-family: "DM Mono", monospace;
+          font-size: 0.6rem; letter-spacing: 0.1em;
+          text-transform: uppercase; cursor: pointer;
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          transition: all 0.2s ease;
+        }
+        .fzh-skip-btn:hover {
+          color: #fff; border-color: rgba(255,255,255,0.4);
+          background: rgba(10,10,15,0.6);
+        }
+        .fzh-skip-btn svg { width: 0.6rem; height: 0.6rem; }
+
         /* Credit */
         .fzh-credit {
           position: absolute;
@@ -348,10 +391,6 @@ export const FzokartHighlights: React.FC = () => {
           padding: 6rem 5rem;
           opacity: 0; pointer-events: none;
           transition: opacity 0.45s ease;
-          /* Force hardware layer */
-          transform: translateZ(0);
-          backface-visibility: hidden;
-          perspective: 1000px;
         }
         .fzh-panel.vis { opacity: 1; pointer-events: auto; }
 
@@ -359,15 +398,14 @@ export const FzokartHighlights: React.FC = () => {
         .fzh-card {
           max-width: 23.75rem;
           padding: 2.25rem 2rem;
-          background: rgba(10,10,15,0.75); /* Removed expensive backdrop-filter */
+          background: rgba(10,10,15,0.16);
           border: 1px solid rgba(200,255,71,0.18);
           border-radius: 14px;
+          backdrop-filter: blur(14px) saturate(130%);
+          -webkit-backdrop-filter: blur(14px) saturate(130%);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.35);
           font-family: "DM Mono", monospace;
           color: #e8e4d9;
-          /* Extreme hardware acceleration */
-          transform: translateZ(0);
-          backface-visibility: hidden;
-          transform-style: preserve-3d;
         }
         .fzh-card.right { margin-left: auto; text-align: right; }
         .fzh-card.center { margin: 0 auto; text-align: center; max-width: 28.75rem; }
@@ -476,16 +514,16 @@ export const FzokartHighlights: React.FC = () => {
         /* ── CARD THEME ANIMATIONS ─────────────────────────────────── */
 
         /* Sunrise – animated sun orb + radial glow */
-        .fzh-card-sunrise { position: relative; overflow: hidden; transform: translateZ(0); backface-visibility: hidden; }
+        .fzh-card-sunrise { position: relative; overflow: hidden; }
         .fzh-card-sunrise::before {
           content: ''; position: absolute;
           top: 12px; right: 12px;
           width: 36px; height: 36px;
           background: radial-gradient(circle, #ffd700 40%, #ff8c00 100%);
           border-radius: 50%;
+          box-shadow: 0 0 22px 8px rgba(255,200,50,0.30);
           animation: fzh-sun-move 6s ease-in-out infinite;
           pointer-events: none; z-index: 0;
-          will-change: transform;
         }
         .fzh-card-sunrise::after {
           content: ''; position: absolute;
@@ -495,107 +533,100 @@ export const FzokartHighlights: React.FC = () => {
           border-radius: 50%;
           animation: fzh-glow-pulse 3s ease-in-out infinite;
           pointer-events: none; z-index: 0;
-          will-change: transform, opacity;
         }
         @keyframes fzh-sun-move {
-          0%,100% { transform: translateY(0) translateZ(0); }
-          50% { transform: translateY(-10px) translateZ(0); }
+          0%,100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
         }
         @keyframes fzh-glow-pulse {
-          0%,100% { opacity:.5; transform:scale(1) translateZ(0); }
-          50%      { opacity:1; transform:scale(1.22) translateZ(0); }
+          0%,100% { opacity:.5; transform:scale(1); }
+          50%      { opacity:1; transform:scale(1.22); }
         }
 
         /* Midday – diagonal shine sweep + floating dot grid */
-        .fzh-card-midday { position: relative; overflow: hidden; transform: translateZ(0); backface-visibility: hidden; }
+        .fzh-card-midday { position: relative; overflow: hidden; }
         .fzh-card-midday::before {
-          content: ''; position: absolute; inset: -20%;
-          width: 140%; height: 140%;
-          background: linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.08) 50%,transparent 70%);
+          content: ''; position: absolute; inset: 0;
+          width: 200%; height: 100%;
+          background: linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.13) 50%,transparent 70%);
           animation: fzh-shine 4.5s linear infinite;
           pointer-events: none; z-index: 0;
-          will-change: transform;
         }
         .fzh-card-midday::after {
-          content: ''; position: absolute; inset: -10%;
-          width: 120%; height: 120%;
+          content: ''; position: absolute; inset: 0;
           background: radial-gradient(circle, rgba(255,220,80,0.18) 1px, transparent 1px);
           background-size: 22px 22px;
           animation: fzh-float-dots 7s ease-in-out infinite alternate;
           pointer-events: none; z-index: 0;
-          will-change: transform;
         }
         @keyframes fzh-shine {
-          0%  { transform: translateX(-60%) translateZ(0); }
-          100%{ transform: translateX(60%) translateZ(0); }
+          0%  { transform: translateX(-50%); }
+          100%{ transform: translateX(50%); }
         }
         @keyframes fzh-float-dots {
-          0%  { transform: translateY(0) translateZ(0); }
-          100%{ transform: translateY(-9px) translateZ(0); }
+          0%  { transform: translateY(0); }
+          100%{ transform: translateY(-9px); }
         }
 
-        /* Sunset – sliding oversized gradient for 60fps */
-        .fzh-card-sunset { position: relative; overflow: hidden; transform: translateZ(0); backface-visibility: hidden; }
+        /* Sunset – slowly morphing warm gradient overlay */
+        .fzh-card-sunset { position: relative; overflow: hidden; }
         .fzh-card-sunset::before {
-          content: ''; position: absolute; top: -50%; left: -50%;
-          width: 300%; height: 200%;
+          content: ''; position: absolute; inset: 0;
           background: linear-gradient(270deg,
-            rgba(255,100,0,0.10) 0%,
-            rgba(255,60,120,0.08) 33%,
-            rgba(130,60,180,0.07) 66%,
-            rgba(255,100,0,0.10) 100%);
-          animation: fzh-grad-move 9s linear infinite;
+            rgba(255,100,0,0.13),
+            rgba(255,60,120,0.11),
+            rgba(130,60,180,0.10));
+          background-size: 600% 600%;
+          animation: fzh-grad-move 9s ease infinite;
+          border-radius: inherit;
           pointer-events: none; z-index: 0;
-          will-change: transform;
         }
         @keyframes fzh-grad-move {
-          0%  { transform: translateX(0) translateZ(0); }
-          100%{ transform: translateX(-33.33%) translateZ(0); }
+          0%  { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100%{ background-position: 0% 50%; }
         }
 
         /* Storm – rain drops + lightning flash */
-        .fzh-card-storm { position: relative; overflow: hidden; transform: translateZ(0); backface-visibility: hidden; }
+        .fzh-card-storm { position: relative; overflow: hidden; }
         .fzh-rain {
           position: absolute;
           width: 1.5px; height: 18px;
-          background: rgba(180,210,255,0.25);
+          background: rgba(180,210,255,0.38);
           top: -20px;
           animation: fzh-rain 0.5s linear infinite;
           pointer-events: none; z-index: 0;
-          will-change: transform, opacity;
         }
         @keyframes fzh-rain {
-          0%  { transform: translateY(-20px) translateZ(0); opacity: 0; }
+          0%  { transform: translateY(-20px); opacity: 0; }
           15% { opacity: 1; }
-          100%{ transform: translateY(130vmax) translateZ(0); opacity: 0.3; }
+          100%{ transform: translateY(130%); opacity: 0.3; }
         }
         .fzh-card-storm::after {
           content: ''; position: absolute; inset: 0;
-          background: rgba(190,210,255,0.45);
+          background: rgba(190,210,255,0.65);
           opacity: 0; pointer-events: none;
           border-radius: inherit;
           animation: fzh-flash 5.5s infinite;
-          will-change: opacity;
           z-index: 1;
         }
         @keyframes fzh-flash {
-          0%,95%,100%{ opacity: 0; transform: translateZ(0); }
-          96%{ opacity: 0.15; transform: translateZ(0); }
-          97%{ opacity: 0; transform: translateZ(0); }
-          98%{ opacity: 0.10; transform: translateZ(0); }
+          0%,95%,100%{ opacity: 0; }
+          96%{ opacity: 0.22; }
+          97%{ opacity: 0; }
+          98%{ opacity: 0.14; }
         }
 
         /* Night Sea – wave at bottom + twinkling star grid */
-        .fzh-card-night { position: relative; overflow: hidden; transform: translateZ(0); backface-visibility: hidden; }
+        .fzh-card-night { position: relative; overflow: hidden; }
         .fzh-card-night::before {
           content: ''; position: absolute;
           width: 120%; height: 38%;
           bottom: -8%; left: -10%;
-          background: rgba(79,195,247,0.06);
+          background: rgba(79,195,247,0.09);
           border-radius: 50% 50% 0 0;
           animation: fzh-wave 4.5s ease-in-out infinite;
           pointer-events: none; z-index: 0;
-          will-change: transform;
         }
         .fzh-card-night::after {
           content: ''; position: absolute; inset: 0;
@@ -604,11 +635,10 @@ export const FzokartHighlights: React.FC = () => {
           opacity: 0.22;
           animation: fzh-twinkle 2.8s ease-in-out infinite;
           pointer-events: none; z-index: 0;
-          will-change: opacity;
         }
         @keyframes fzh-wave {
-          0%,100%{ transform: translateX(0) scale(1) translateZ(0); }
-          50%    { transform: translateX(10px) scaleX(1.04) translateZ(0); }
+          0%,100%{ transform: translateX(0) scaleX(1); }
+          50%    { transform: translateX(10px) scaleX(1.04); }
         }
         @keyframes fzh-twinkle {
           0%,100%{ opacity: 0.18; }
@@ -630,6 +660,7 @@ export const FzokartHighlights: React.FC = () => {
           .fzh-card.center .fzh-hline { transform-origin: left; margin: 0 0 1.2rem; }
           .fzh-dots { display: none; }
           .fzh-hud { top: 1rem; right: 1rem; }
+          .fzh-bottom-ctrls { bottom: 1rem; right: 1rem; gap: 1rem; }
           .fzh-stats { gap: 1.5rem; }
           .fzh-panel.right.vis .fzh-stats { justify-content: flex-start; }
           .fzh-panel.center.vis .fzh-stats { justify-content: flex-start; }
@@ -661,6 +692,19 @@ export const FzokartHighlights: React.FC = () => {
                 onClick={() => scrollToPanel(Math.round((i / (N_WGL - 1)) * (N_PANELS - 1)))}
               />
             ))}
+          </div>
+
+          {/* Bottom Controls (Layer Meter + Skip) */}
+          <div className="fzh-bottom-ctrls">
+            <div className="fzh-layer-meter">
+              LAYER {activePanel === 0 ? 0 : activePanel} / 5
+            </div>
+            <button className="fzh-skip-btn" onClick={skipSection}>
+              Skip Section
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M1 6h10M1 1l5 5-5 5" />
+              </svg>
+            </button>
           </div>
 
           {/* Credit */}
