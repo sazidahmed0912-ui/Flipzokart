@@ -11,8 +11,8 @@ const PANELS = [
     align: "center" as const,
     tag: "A journey through the horizon",
     icon: "",
-    heading1: "FROM BRIGHT BEGINNINGS\nTO TRUSTED ENDINGS",
-    heading2: "— THE FZOKART PROMISE",
+    heading1: `"FROM BRIGHT BEGINNINGS\nTO TRUSTED ENDINGS"`,
+    heading2: <>— THE FZO<span style={{ color: "#ffd700" }}>KART</span> PROMISE</>,
     body: "Seamless shopping, secure transactions, and trust at every step.",
     cta: "Continue",
     ctaTarget: 1,
@@ -705,10 +705,19 @@ export const FzokartHighlights: React.FC = () => {
           }
 
           .fzh-section-title {
-            top: 1.5rem; left: 1.5rem; transform: none; font-size: 0.75rem;
+            top: 2rem; left: 50%; transform: translateX(-50%); font-size: 1rem; width: 100%;
+          }
+          .fzh-section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #c8ff47, #00f2fe);
+            margin: 6px auto 0;
+            border-radius: 4px;
           }
           .fzh-section-title.vis {
-            top: 1.5rem;
+            top: 2rem;
           }
           
           /* Place bottom controls exactly under the card on mobile */
@@ -750,7 +759,7 @@ export const FzokartHighlights: React.FC = () => {
           <canvas ref={canvasRef} className="fzh-canvas" />
 
           {/* HUD */}
-          <div className="fzh-hud">
+          <div className="fzh-hud" style={{ opacity: activePanel === 0 ? 0 : 1, transition: 'opacity 0.4s ease' }}>
             <div className="fzh-hud-num">{String(hudPct).padStart(3, "0")}%</div>
             <div className="fzh-prog-bar">
               <div className="fzh-prog-fill" style={{ width: `${hudPct}%` }} />
