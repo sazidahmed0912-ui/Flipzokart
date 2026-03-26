@@ -3,11 +3,26 @@ const Otp = require("../models/Otp");
 const sendEmailService = require("../services/emailService");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const axios = require("axios");
+
+// ReCAPTCHA Verify Helper
+const verifyRecaptcha = async (token) => {
+    if (!token) return false;
+    try {
+        const response = await axios.post(
+            `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
+        );
+        return response.data.success;
+    } catch (error) {
+        console.error("ReCAPTCHA verification error:", error);
+        return false;
+    }
+};
 
 // SEND EMAIL OTP
 const sendEmailOtp = async (req, res) => {
     try {
-        const { email, name, type } = req.body; // 'login' or 'seller_register'
+        const { email, name, type, recaptchaToken } = req.body; // 'login' or 'seller_register'
 
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
@@ -19,6 +34,16 @@ const sendEmailOtp = async (req, res) => {
             if (userExists) {
                 return res.status(409).json({ message: "This email is already registered. Please log in." });
             }
+        }
+
+        // 🟢 ReCAPTCHA Verification
+        if (!recaptchaToken) {
+            return res.status(400).json({ message: "Please complete the reCAPTCHA verification." });
+        }
+        
+        const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+        if (!isRecaptchaValid) {
+            return res.status(400).json({ message: "reCAPTCHA verification failed. Please try again." });
         }
 
         // Generate 6-digit OTP

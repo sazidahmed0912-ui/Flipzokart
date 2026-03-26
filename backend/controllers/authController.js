@@ -8,6 +8,21 @@ const crypto = require("crypto");
 const { sendPasswordResetEmail } = require("../services/emailService");
 const SellerBusiness = require("../models/SellerBusiness");
 const SellerStore = require("../models/SellerStore");
+const axios = require("axios");
+
+// ReCAPTCHA Verify Helper
+const verifyRecaptcha = async (token) => {
+    if (!token) return false;
+    try {
+        const response = await axios.post(
+            `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
+        );
+        return response.data.success;
+    } catch (error) {
+        console.error("ReCAPTCHA verification error:", error);
+        return false;
+    }
+};
 
 // REGISTER
 const register = async (req, res) => {
@@ -74,10 +89,20 @@ const register = async (req, res) => {
 // LOGIN
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, recaptchaToken } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: "Email and password are required." });
+    }
+
+    // 🟢 ReCAPTCHA Verification
+    if (!recaptchaToken) {
+        return res.status(400).json({ success: false, message: "Please complete the reCAPTCHA verification." });
+    }
+    
+    const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+    if (!isRecaptchaValid) {
+        return res.status(400).json({ success: false, message: "reCAPTCHA verification failed. Please try again." });
     }
 
     const trimmedEmail = email.trim().toLowerCase();

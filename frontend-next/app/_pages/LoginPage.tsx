@@ -9,6 +9,7 @@ import { SmoothReveal } from '@/app/components/SmoothReveal';
 import { useToast } from '@/app/components/toast';
 import { createOrder } from '@/app/services/api';
 import { Eye, EyeOff } from 'lucide-react';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 interface LoginPageProps {
   isAdmin?: boolean;
@@ -29,6 +30,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
   const [timer, setTimer] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = React.useRef<ReCAPTCHA>(null);
 
   useEffect(() => {
     let interval: any;
@@ -54,9 +57,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
       return;
     }
 
+    if (!recaptchaToken) {
+      addToast('error', 'Please complete the reCAPTCHA verification');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await authService.sendEmailOtp(email);
+      await authService.sendEmailOtp(email, 'login', recaptchaToken);
       setOtpSent(true);
       setTimer(300); // 5 minutes
       addToast('success', 'OTP Sent to your email!');
@@ -86,6 +94,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
       return;
     }
 
+    if (!recaptchaToken && !hasOtp) {
+      // If logging in with password, require recaptcha. (OTP implies recaptcha was already done during sendEmailOtp)
+      addToast('error', 'Please complete the reCAPTCHA verification');
+      return;
+    }
+
     setIsLoading(true);
     try {
       let user;
@@ -93,7 +107,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
       if (hasPassword) {
         // LOGIN WITH PASSWORD
         console.log('Logging in with Password...');
-        user = await authService.login({ email, password });
+        user = await authService.login({ email, password, recaptchaToken: recaptchaToken || undefined });
       } else {
         // LOGIN WITH OTP
         console.log('Logging in with OTP...');
@@ -148,6 +162,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
       } else {
         addToast('error', err.response?.data?.message || err.message || 'Login failed');
       }
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
     } finally {
       setIsLoading(false);
     }
@@ -264,7 +280,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
                           <button
                             type="button"
                             onClick={handleSendOtp}
-                            disabled={isLoading || !email}
+                            disabled={isLoading || !email || !recaptchaToken}
                             className="text-[11px] text-[#2874F0] font-bold cursor-pointer hover:underline bg-transparent border-none p-0 disabled:opacity-50"
                           >
                             GET OTP
@@ -285,13 +301,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
                       )}
                     </div>
 
+                    {/* Google ReCAPTCHA v2 */}
+                    {!otpSent && (
+                      <div className="flex justify-center mt-4">
+                        <ReCAPTCHA
+                          ref={recaptchaRef}
+                          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                          onChange={(token) => setRecaptchaToken(token)}
+                          onExpired={() => setRecaptchaToken(null)}
+                        />
+                      </div>
+                    )}
 
                   </div>
 
                   {/* LOGIN / VERIFY BUTTON */}
                   <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || (!recaptchaToken && !otpSent)}
                     className="w-full h-[44px] md:h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[14px] md:text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center mb-4"
                   >
                     {isLoading ? 'Processing...' : (otpSent ? 'Verify OTP' : 'Login')}

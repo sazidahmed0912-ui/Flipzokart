@@ -10,7 +10,7 @@ import { createOrder } from '@/app/services/api';
 import { SmoothReveal } from '@/app/components/SmoothReveal';
 import { useToast } from '@/app/components/toast';
 import { Eye, EyeOff, Smartphone, CheckCircle } from 'lucide-react';
-
+import ReCAPTCHA from 'react-google-recaptcha';
 
 export const SignupPage: React.FC = () => {
   const { setUser, loginSequence } = useApp();
@@ -28,6 +28,8 @@ export const SignupPage: React.FC = () => {
   const [timer, setTimer] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = React.useRef<ReCAPTCHA>(null);
 
   // Mobile Verification State
   const [isMobileVerified, setIsMobileVerified] = useState(false);
@@ -72,6 +74,10 @@ export const SignupPage: React.FC = () => {
       addToast('error', 'Please agree to the Terms & Conditions');
       return;
     }
+    if (!recaptchaToken) {
+      addToast('error', 'Please complete the reCAPTCHA verification');
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -85,7 +91,7 @@ export const SignupPage: React.FC = () => {
         return;
       }
 
-      await authService.sendEmailOtp(email, 'signup');
+      await authService.sendEmailOtp(email, 'signup', recaptchaToken);
       setStep(2);
       setTimer(300); // 5 minutes
       addToast('success', 'OTP Sent to your verified email!');
@@ -96,6 +102,8 @@ export const SignupPage: React.FC = () => {
       } else {
         addToast('error', err.message || 'Failed to send OTP');
       }
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
     } finally {
       setIsLoading(false);
     }
@@ -354,9 +362,19 @@ export const SignupPage: React.FC = () => {
                         </label>
                       </div>
 
+                      {/* Google ReCAPTCHA v2 */}
+                      <div className="flex justify-center mb-4">
+                        <ReCAPTCHA
+                          ref={recaptchaRef}
+                          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                          onChange={(token) => setRecaptchaToken(token)}
+                          onExpired={() => setRecaptchaToken(null)}
+                        />
+                      </div>
+
                       <button
                         type="submit"
-                        disabled={isLoading || !email || !name || !password || !acceptedTerms}
+                        disabled={isLoading || !email || !name || !password || !acceptedTerms || !recaptchaToken}
                         className="w-full h-[44px] md:h-11 rounded-[10px] border-none bg-[#F9C74F] text-[#1F2937] font-semibold text-[15px] cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_18px_rgba(40,116,240,0.35)] active:scale-95 disabled:opacity-70 flex items-center justify-center disabled:cursor-not-allowed"
                       >
                         {isLoading ? 'Sending OTP...' : 'Continue'}
