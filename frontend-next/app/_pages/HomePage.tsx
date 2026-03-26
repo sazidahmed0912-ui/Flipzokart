@@ -10,6 +10,7 @@ import { SmoothReveal } from '@/app/components/SmoothReveal';
 import { HeroSlider } from '@/app/components/HeroSlider';
 import { RecentlyViewed } from '@/app/components/RecentlyViewed';
 import { SuggestedForYou } from '@/app/components/SuggestedForYou';
+import { FzokartHighlights } from '@/app/components/FzokartHighlights';
 
 // Fallback data
 const initialCategories = [
@@ -386,6 +387,9 @@ export const HomePage: React.FC = () => {
             {/* ✅ Real Customer Reviews — fetched from API */}
             <RealReviewsSection />
 
+
+            {/* 🌅 Fzokart Highlights — ocean-themed brand story section */}
+            <FzokartHighlights />
 
             <section className="py-12 px-4 bg-gray-50">
                 <div className="max-w-4xl mx-auto">
