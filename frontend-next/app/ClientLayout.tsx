@@ -45,13 +45,18 @@ const OFFLINE_CSS = `
 .fzk-offline-retry:hover { background: #0599d9; }
 `;
 
-function OfflineOverlay({ isOnline }: { isOnline: boolean }) {
+function OfflineOverlay({ isOnline, isSlowTimeout, onDismiss }: { 
+  isOnline: boolean; 
+  isSlowTimeout: boolean;
+  onDismiss: () => void;
+}) {
   const [d1, setD1] = useState<number | string>('');
   const [d2, setD2] = useState<number | string>('');
   const [d3, setD3] = useState<number | string>('');
+  const show = !isOnline || isSlowTimeout;
 
   useEffect(() => {
-    if (isOnline) return;
+    if (!show) return;
     const rnd = () => Math.floor(Math.random() * 9) + 1;
     let i = 0;
     const t = 35;
@@ -59,19 +64,34 @@ function OfflineOverlay({ isOnline }: { isOnline: boolean }) {
     const l2 = setInterval(() => { if (i > 80) { clearInterval(l2); setD2(0); } else { setD2(rnd()); } }, t);
     const l1 = setInterval(() => { if (i > 100) { clearInterval(l1); setD1(4); } else { setD1(rnd()); } }, t);
     return () => { clearInterval(l1); clearInterval(l2); clearInterval(l3); };
-  }, [isOnline]);
+  }, [show]);
+
+  const slowMsg = isSlowTimeout && isOnline;
 
   return (
-    <div className={`fzk-offline-overlay${isOnline ? '' : ' active'}`}>
+    <div className={`fzk-offline-overlay${show ? ' active' : ''}`}>
       <style dangerouslySetInnerHTML={{ __html: OFFLINE_CSS }} />
       <div className="fzk-offline-digits">
         <div className="fzk-offline-clip"><div className="fzk-offline-shadow"><div className="fzk-offline-digit">{d3}</div></div></div>
         <div className="fzk-offline-clip"><div className="fzk-offline-shadow"><div className="fzk-offline-digit">{d2}</div></div></div>
         <div className="fzk-offline-clip"><div className="fzk-offline-shadow"><div className="fzk-offline-digit">{d1}</div></div></div>
       </div>
-      <p className="fzk-offline-msg">📡 Sorry! Network Error — Please check your internet connection</p>
-      <p className="fzk-offline-sub">Turn on your data or connect to Wi-Fi to continue</p>
-      <button className="fzk-offline-retry" onClick={() => window.location.reload()}>Retry</button>
+      {slowMsg ? (
+        <>
+          <p className="fzk-offline-msg">🐢 Sorry! Slow Network — Page took too long to load</p>
+          <p className="fzk-offline-sub">Your connection is slow. Please wait or try again.</p>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+            <button className="fzk-offline-retry" onClick={() => window.location.reload()}>Retry</button>
+            <button className="fzk-offline-retry" style={{ background: '#aaa' }} onClick={onDismiss}>Go Back</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="fzk-offline-msg">📡 Sorry! Network Error — Please check your internet connection</p>
+          <p className="fzk-offline-sub">Turn on your data or connect to Wi-Fi to continue</p>
+          <button className="fzk-offline-retry" onClick={() => window.location.reload()}>Retry</button>
+        </>
+      )}
     </div>
   );
 }
@@ -80,10 +100,19 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const { user, setUser } = useApp();
     const { showToast } = useNotifications();
     const [isOnline, setIsOnline] = useState(true);
+    const [isSlowTimeout, setIsSlowTimeout] = useState(false);
+
+    const handleSlowNetwork = React.useCallback(() => {
+        setIsSlowTimeout(true);
+    }, []);
+
+    const handleDismiss = React.useCallback(() => {
+        setIsSlowTimeout(false);
+    }, []);
 
     useEffect(() => {
         setIsOnline(navigator.onLine);
-        const handleOnline  = () => setIsOnline(true);
+        const handleOnline  = () => { setIsOnline(true); setIsSlowTimeout(false); };
         const handleOffline = () => setIsOnline(false);
         window.addEventListener('online',  handleOnline);
         window.addEventListener('offline', handleOffline);
@@ -163,9 +192,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     return (
         <Layout>
-            <OfflineOverlay isOnline={isOnline} />
+            <OfflineOverlay isOnline={isOnline} isSlowTimeout={isSlowTimeout} onDismiss={handleDismiss} />
             <Suspense fallback={<CircularGlassSpinner />}>
-                <PageTransition key={pathname}>
+                <PageTransition key={pathname} onSlowNetwork={handleSlowNetwork}>
                     {children}
                 </PageTransition>
                 <ToastListener />

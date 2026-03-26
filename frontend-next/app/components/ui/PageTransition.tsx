@@ -6,48 +6,48 @@ import CircularGlassSpinner from '../CircularGlassSpinner';
 
 interface PageTransitionProps {
     children: React.ReactNode;
+    onSlowNetwork?: () => void;
 }
 
-const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
+const PageTransition: React.FC<PageTransitionProps> = ({ children, onSlowNetwork }) => {
     const pathname = usePathname();
     const location = useMemo(() => ({
         pathname: pathname || '/',
-        search: '' // searchParams removed to fix missing suspense boundary error
+        search: ''
     }), [pathname]);
 
     const [displayLocation, setDisplayLocation] = useState(location);
     const [transitionStage, setTransitionStage] = useState<'fadeIn' | 'fadeOut'>('fadeIn');
     const { isSlow } = useNetworkStatus();
-
-    // Controls the loader visibility
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (location.pathname !== displayLocation.pathname) {
-            // 1. ROUTE CHANGE DETECTED -> START EXIT
             setTransitionStage('fadeOut');
             setIsLoading(true);
 
-            // 2. WAIT FOR EXIT ANIMATION + ARTIFICIAL DELAY
             const baseDelay = 400;
             const delay = isSlow ? 800 : baseDelay;
 
+            // 12-second slow-network timeout
+            const slowTimer = setTimeout(() => {
+                onSlowNetwork?.();
+                setIsLoading(false);
+            }, 12000);
+
             const timer = setTimeout(() => {
+                clearTimeout(slowTimer);
                 setDisplayLocation(location);
                 setTransitionStage('fadeIn');
-
-                // 3. FADE OUT LOADER AFTER CONTENT IS READY
                 setTimeout(() => {
                     setIsLoading(false);
-                    // Scroll to top on new page load
                     if (typeof window !== 'undefined') window.scrollTo(0, 0);
-                }, 300); // Loader stay duration
+                }, 300);
+            }, delay);
 
-            }, delay); // Transition duration
-
-            return () => clearTimeout(timer);
+            return () => { clearTimeout(timer); clearTimeout(slowTimer); };
         }
-    }, [location, displayLocation, isSlow]);
+    }, [location, displayLocation, isSlow, onSlowNetwork]);
 
     return (
         <>
