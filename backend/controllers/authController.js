@@ -529,17 +529,17 @@ const googleLogin = async (req, res) => {
 
       // Log google signup activity
       await Activity.create({
-        userId: user._id,
-        action: "Signed Up",
-        details: "User registered via Google Sign-In.",
+        user: user._id,
+        type: "security",
+        message: "User registered via Google Sign-In.",
       });
     }
 
     // Log Activity for Google Login
     await Activity.create({
-      userId: user._id,
-      action: "Logged In",
-      details: "User logged in via Google.",
+      user: user._id,
+      type: "login",
+      message: "User logged in via Google.",
     });
 
     // Generate JWT
