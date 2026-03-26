@@ -650,7 +650,7 @@ export const FzokartHighlights: React.FC = () => {
         .fzh-rain { z-index: 0 !important; }
 
         @media (max-width: 37.5em) {
-          .fzh-panel { padding: 4rem 1.25rem; }
+          .fzh-panel { padding: 5rem 1.25rem 4rem; }
           .fzh-card, .fzh-card.right, .fzh-card.center {
             max-width: 100%; margin: 0; text-align: left;
             border-right: none; border-top: none;
@@ -659,8 +659,30 @@ export const FzokartHighlights: React.FC = () => {
           .fzh-card.right  .fzh-hline { transform-origin: left; margin-left: 0; }
           .fzh-card.center .fzh-hline { transform-origin: left; margin: 0 0 1.2rem; }
           .fzh-dots { display: none; }
-          .fzh-hud { top: 1rem; right: 1rem; }
-          .fzh-bottom-ctrls { bottom: 1rem; right: 1rem; gap: 1rem; }
+          
+          /* Move controls to top & bottom safe zones to avoid text overlap */
+          .fzh-hud { 
+            top: 1.25rem; right: 1.25rem; 
+            background: rgba(10,10,15,0.4);
+            padding: 0.4rem 0.6rem;
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+          }
+          .fzh-bottom-ctrls { 
+            bottom: 2rem; right: 50%;
+            transform: translateX(50%);
+            width: max-content;
+            gap: 1rem;
+            background: rgba(10,10,15,0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+          }
+          
           .fzh-stats { gap: 1.5rem; }
           .fzh-panel.right.vis .fzh-stats { justify-content: flex-start; }
           .fzh-panel.center.vis .fzh-stats { justify-content: flex-start; }
