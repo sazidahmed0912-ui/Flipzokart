@@ -132,6 +132,9 @@ export const FzokartHighlights: React.FC = () => {
   const [activeDot,   setActiveDot]   = useState(0);
   const [activePanel, setActivePanel] = useState(0);
 
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const inViewRef = useRef(false);
+
   /* scroll to panel index (relative to section) */
   const scrollToPanel = (idx: number) => {
     const sec = sectionRef.current;
@@ -152,6 +155,25 @@ export const FzokartHighlights: React.FC = () => {
   };
 
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const sec = sectionRef.current;
+        inViewRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          setHasInitialized(true);
+          sec?.classList.remove("fzh-paused");
+        } else {
+          sec?.classList.add("fzh-paused");
+        }
+      },
+      { rootMargin: "400px 0px" }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!hasInitialized) return;
     const canvas = canvasRef.current;
     const section = sectionRef.current;
     if (!canvas || !section) return;
@@ -217,6 +239,7 @@ export const FzokartHighlights: React.FC = () => {
 
     const frame = (now: number) => {
       rafRef.current = requestAnimationFrame(frame);
+      if (!inViewRef.current) { lastNow = now; return; }
       const dt = Math.min((now - lastNow) / 1000, 0.05);
       lastNow = now;
 
@@ -263,7 +286,7 @@ export const FzokartHighlights: React.FC = () => {
 
     rafRef.current = requestAnimationFrame(frame);
     return () => { cancelAnimationFrame(rafRef.current); ro.disconnect(); };
-  }, []);
+  }, [hasInitialized]);
 
   return (
     <>
@@ -273,6 +296,11 @@ export const FzokartHighlights: React.FC = () => {
         .fzh-outer {
           position: relative;
           height: ${N_PANELS * 100}vh;
+          content-visibility: auto;
+          contain-intrinsic-size: 0 ${N_PANELS * 100}vh;
+        }
+        .fzh-outer.fzh-paused * {
+          animation-play-state: paused !important;
         }
         .fzh-sticky {
           position: sticky;
@@ -747,7 +775,8 @@ export const FzokartHighlights: React.FC = () => {
         }
       `}</style>
 
-      <section ref={sectionRef} className="fzh-outer" aria-label="Fzokart Highlights">
+      <section ref={sectionRef} className="fzh-outer fzh-paused" aria-label="Fzokart Highlights">
+        {hasInitialized && (
         <div className="fzh-sticky">
 
           {/* Section Title */}
@@ -881,6 +910,7 @@ export const FzokartHighlights: React.FC = () => {
           </div>
 
         </div>
+        )}
       </section>
     </>
   );
