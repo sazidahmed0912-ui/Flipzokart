@@ -10,6 +10,7 @@ import authService from '@/app/services/authService';
 import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import PageTransition from '@/app/components/ui/PageTransition';
 import ToastListener from '@/app/components/ToastListener';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 /* ─── Offline Overlay ─────────────────────────────────────────── */
 const OFFLINE_CSS = `
@@ -191,14 +192,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }, [user, pathname, router]);
 
     return (
-        <Layout>
-            <OfflineOverlay isOnline={isOnline} isSlowTimeout={isSlowTimeout} onDismiss={handleDismiss} />
-            <Suspense fallback={<CircularGlassSpinner />}>
-                <PageTransition key={pathname} onSlowNetwork={handleSlowNetwork}>
-                    {children}
-                </PageTransition>
-                <ToastListener />
-            </Suspense>
-        </Layout>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+            <Layout>
+                <OfflineOverlay isOnline={isOnline} isSlowTimeout={isSlowTimeout} onDismiss={handleDismiss} />
+                <Suspense fallback={<CircularGlassSpinner />}>
+                    <PageTransition key={pathname} onSlowNetwork={handleSlowNetwork}>
+                        {children}
+                    </PageTransition>
+                    <ToastListener />
+                </Suspense>
+            </Layout>
+        </GoogleOAuthProvider>
     );
 }

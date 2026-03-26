@@ -59,6 +59,26 @@ const authService = {
   },
 
   // =========================
+  // ✅ GOOGLE LOGIN
+  // =========================
+  async googleLogin(tokenStr: string): Promise<User> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: tokenStr }),
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || "Google Login failed");
+    }
+
+    localStorage.setItem("token", result.token);
+    return result.user;
+  },
+
+  // =========================
   // ✅ LOGOUT
   // =========================
   async logout(): Promise<void> {

@@ -11,6 +11,7 @@ import { SmoothReveal } from '@/app/components/SmoothReveal';
 import { useToast } from '@/app/components/toast';
 import { Eye, EyeOff, Smartphone, CheckCircle } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { GoogleLogin } from '@react-oauth/google';
 
 export const SignupPage: React.FC = () => {
   const { setUser, loginSequence } = useApp();
@@ -369,6 +370,68 @@ export const SignupPage: React.FC = () => {
                           sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
                           onChange={(token) => setRecaptchaToken(token)}
                           onExpired={() => setRecaptchaToken(null)}
+                        />
+                      </div>
+
+                      {/* GOOGLE SIGNUP */}
+                      <div className="flex items-center gap-3 my-4 text-[#6B7280] text-[11px] md:text-[12px] font-medium before:h-[1px] before:flex-1 before:bg-[#d1d5db] after:h-[1px] after:flex-1 after:bg-[#d1d5db]">
+                        OR CONTINUE WITH
+                      </div>
+                      
+                      <div className="flex justify-center mb-4">
+                        <GoogleLogin
+                          onSuccess={async (credentialResponse: any) => {
+                            if (credentialResponse.credential) {
+                              setIsLoading(true);
+                              try {
+                                const user = await authService.googleLogin(credentialResponse.credential);
+                                
+                                const token = localStorage.getItem("token");
+                                if (token && user) {
+                                  await loginSequence(token, user);
+                                } else {
+                                  setUser(user);
+                                }
+                                addToast('success', '✅ Google Signup successful!');
+
+                                const checkoutIntentStr = localStorage.getItem("checkout_intent");
+                                if (checkoutIntentStr) {
+                                  try {
+                                    const intent = JSON.parse(checkoutIntentStr);
+                                    if (intent.fromCheckout && intent.paymentMethod) {
+                                      if (intent.paymentMethod === "COD") {
+                                        localStorage.removeItem("checkout_intent");
+                                        router.push("/checkout/place-order-cod");
+                                        return;
+                                      }
+                                      if (intent.paymentMethod === "RAZORPAY") {
+                                        localStorage.removeItem("checkout_intent");
+                                        router.push("/payment");
+                                        return;
+                                      }
+                                    }
+                                  } catch (e) {
+                                    console.error("Intent Parse Error", e);
+                                  }
+                                }
+
+                                const redirectPath = searchParams.get('redirect');
+                                if (redirectPath && redirectPath !== 'place-order' && redirectPath !== 'checkout') {
+                                  router.push(decodeURIComponent(redirectPath));
+                                } else {
+                                  router.push('/');
+                                }
+                              } catch (err: any) {
+                                addToast('error', err.message || 'Google Signup failed');
+                              } finally {
+                                setIsLoading(false);
+                              }
+                            }
+                          }}
+                          onError={() => {
+                            addToast('error', 'Google Signup Failed');
+                          }}
+                          useOneTap
                         />
                       </div>
 

@@ -11,7 +11,8 @@ const {
   registerSeller,
   registerBusiness,
   registerStore,
-  mobileLogin
+  mobileLogin,
+  googleLogin
 } = require("../controllers/authController");
 
 const {
@@ -21,6 +22,7 @@ const {
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/google", googleLogin);
 router.post("/mobile-login", mobileLogin);
 router.post("/logout", logout);
 router.post("/forgot-password", forgotPassword);

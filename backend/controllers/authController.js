@@ -9,6 +9,9 @@ const { sendPasswordResetEmail } = require("../services/emailService");
 const SellerBusiness = require("../models/SellerBusiness");
 const SellerStore = require("../models/SellerStore");
 const axios = require("axios");
+const { OAuth2Client } = require('google-auth-library');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ReCAPTCHA Verify Helper
 const verifyRecaptcha = async (token) => {
@@ -478,6 +481,90 @@ const mobileLogin = async (req, res) => {
   }
 };
 
+// =========================
+// GOOGLE LOGIN
+// =========================
+const googleLogin = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ success: false, message: "No token provided" });
+    }
+
+    // Verify token with Google
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      return res.status(400).json({ success: false, message: "Invalid Google token payload" });
+    }
+
+    const { email, name, email_verified } = payload;
+
+    if (!email_verified) {
+      return res.status(400).json({ success: false, message: "Google email is not verified." });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      console.log(`[Google Login] New user detected for ${email}. Creating account...`);
+      // Register New User
+      const randomPassword = crypto.randomBytes(16).toString("hex");
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
+      user = await User.create({
+        email,
+        name,
+        password: hashedPassword,
+        role: "user",
+        status: "Active"
+      });
+
+      // Log google signup activity
+      await Activity.create({
+        userId: user._id,
+        action: "Signed Up",
+        details: "User registered via Google Sign-In.",
+      });
+    }
+
+    // Log Activity for Google Login
+    await Activity.create({
+      userId: user._id,
+      action: "Logged In",
+      details: "User logged in via Google.",
+    });
+
+    // Generate JWT
+    const jwtToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: "30d",
+    });
+
+    res.status(200).json({
+      success: true,
+      token: jwtToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
+    });
+
+  } catch (error) {
+    console.error("Google Login Error:", error);
+    res.status(500).json({ success: false, message: "Google Login failed", error: error.message });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -487,5 +574,6 @@ module.exports = {
   registerSeller,
   registerBusiness,
   registerStore,
-  mobileLogin
+  mobileLogin,
+  googleLogin
 };
