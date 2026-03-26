@@ -184,8 +184,8 @@ export const FzokartHighlights: React.FC = () => {
     const uBg = gl.getUniformLocation(prog, "uBg");
     gl.uniform3f(uBg, 0.039, 0.039, 0.059);
 
-    let qualityScale = 1.0;
-    const MAX_DPR = 1.5, MIN_Q = 0.82, MAX_Q = 1.0;
+    let qualityScale = 0.7; // Start lower for immediate 60fps on mobile
+    const MAX_DPR = 1.0, MIN_Q = 0.4, MAX_Q = 1.0;
 
     const resize = () => {
       const w = canvas.offsetWidth, h = canvas.offsetHeight;
@@ -358,11 +358,12 @@ export const FzokartHighlights: React.FC = () => {
           background: rgba(10,10,15,0.16);
           border: 1px solid rgba(200,255,71,0.18);
           border-radius: 14px;
-          backdrop-filter: blur(14px) saturate(130%);
-          -webkit-backdrop-filter: blur(14px) saturate(130%);
+          backdrop-filter: blur(8px) saturate(120%);
+          -webkit-backdrop-filter: blur(8px) saturate(120%);
           box-shadow: 0 10px 30px rgba(0,0,0,0.35);
           font-family: "DM Mono", monospace;
           color: #e8e4d9;
+          transform: translateZ(0); /* force hardware composite layer */
         }
         .fzh-card.right { margin-left: auto; text-align: right; }
         .fzh-card.center { margin: 0 auto; text-align: center; max-width: 28.75rem; }
@@ -480,6 +481,7 @@ export const FzokartHighlights: React.FC = () => {
           border-radius: 50%;
           box-shadow: 0 0 22px 8px rgba(255,200,50,0.30);
           animation: fzh-sun-move 6s ease-in-out infinite;
+          transform: translateZ(0); will-change: transform;
           pointer-events: none; z-index: 0;
         }
         .fzh-card-sunrise::after {
@@ -489,6 +491,7 @@ export const FzokartHighlights: React.FC = () => {
           background: radial-gradient(circle, rgba(255,200,50,0.14) 0%, transparent 70%);
           border-radius: 50%;
           animation: fzh-glow-pulse 3s ease-in-out infinite;
+          transform: translateZ(0); will-change: transform, opacity;
           pointer-events: none; z-index: 0;
         }
         @keyframes fzh-sun-move {
@@ -507,6 +510,7 @@ export const FzokartHighlights: React.FC = () => {
           width: 200%; height: 100%;
           background: linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.13) 50%,transparent 70%);
           animation: fzh-shine 4.5s linear infinite;
+          transform: translateZ(0); will-change: transform;
           pointer-events: none; z-index: 0;
         }
         .fzh-card-midday::after {
@@ -514,6 +518,7 @@ export const FzokartHighlights: React.FC = () => {
           background: radial-gradient(circle, rgba(255,220,80,0.18) 1px, transparent 1px);
           background-size: 22px 22px;
           animation: fzh-float-dots 7s ease-in-out infinite alternate;
+          transform: translateZ(0); will-change: transform;
           pointer-events: none; z-index: 0;
         }
         @keyframes fzh-shine {
@@ -552,12 +557,13 @@ export const FzokartHighlights: React.FC = () => {
           background: rgba(180,210,255,0.38);
           top: -20px;
           animation: fzh-rain 0.5s linear infinite;
+          transform: translateZ(0); will-change: transform, opacity;
           pointer-events: none; z-index: 0;
         }
         @keyframes fzh-rain {
-          0%  { transform: translateY(-20px); opacity: 0; }
+          0%  { transform: translate3d(0, -20px, 0); opacity: 0; }
           15% { opacity: 1; }
-          100%{ transform: translateY(130%); opacity: 0.3; }
+          100%{ transform: translate3d(0, 130%, 0); opacity: 0.3; }
         }
         .fzh-card-storm::after {
           content: ''; position: absolute; inset: 0;
@@ -583,6 +589,7 @@ export const FzokartHighlights: React.FC = () => {
           background: rgba(79,195,247,0.09);
           border-radius: 50% 50% 0 0;
           animation: fzh-wave 4.5s ease-in-out infinite;
+          transform: translateZ(0); will-change: transform;
           pointer-events: none; z-index: 0;
         }
         .fzh-card-night::after {
@@ -591,6 +598,7 @@ export const FzokartHighlights: React.FC = () => {
           background-size: 20px 20px;
           opacity: 0.22;
           animation: fzh-twinkle 2.8s ease-in-out infinite;
+          will-change: opacity;
           pointer-events: none; z-index: 0;
         }
         @keyframes fzh-wave {
@@ -612,6 +620,10 @@ export const FzokartHighlights: React.FC = () => {
             max-width: 100%; margin: 0; text-align: left;
             border-right: none; border-top: none;
             border-left: 1px solid rgba(200,255,71,0.18);
+            /* Disable expensive backdrop-filter on mobile to guarantee 60fps */
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            background: rgba(8, 8, 12, 0.85); /* fallback solid/opaque color */
           }
           .fzh-card.right  .fzh-hline { transform-origin: left; margin-left: 0; }
           .fzh-card.center .fzh-hline { transform-origin: left; margin: 0 0 1.2rem; }
