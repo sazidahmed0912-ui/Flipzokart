@@ -155,6 +155,14 @@ export const FzokartHighlights: React.FC = () => {
   };
 
   useEffect(() => {
+    // DEVICE PERFORMANCE DETECTION
+    const ram = (navigator as any).deviceMemory || 4;
+    const cores = navigator.hardwareConcurrency || 4;
+    let devClass = "high-device";
+    if (ram <= 4 || cores <= 4) devClass = "low-device";
+    else if (ram <= 8) devClass = "mid-device";
+    if (sectionRef.current) sectionRef.current.classList.add(devClass);
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         const sec = sectionRef.current;
@@ -243,12 +251,27 @@ export const FzokartHighlights: React.FC = () => {
       const dt = Math.min((now - lastNow) / 1000, 0.05);
       lastNow = now;
 
-      /* FPS-adaptive quality */
+      /* FPS-adaptive quality & Auto CSS Optimizer */
       fpsA += dt; fpsF++;
-      if (fpsA >= 0.75) {
+      if (fpsA >= 1.0) { // check every 1 second
         const fps = fpsF / fpsA; fpsA = 0; fpsF = 0;
-        if (fps < 50)      { lowT  += 0.75; highT = 0; }
-        else if (fps > 57) { highT += 0.75; lowT  = 0; }
+        
+        const sec = sectionRef.current;
+        if (sec) {
+          if (fps < 30) {
+            sec.classList.remove('high-performance', 'mid-performance');
+            sec.classList.add('low-performance');
+          } else if (fps < 50) {
+            sec.classList.remove('high-performance', 'low-performance');
+            sec.classList.add('mid-performance');
+          } else {
+            sec.classList.remove('low-performance', 'mid-performance');
+            sec.classList.add('high-performance');
+          }
+        }
+
+        if (fps < 50)      { lowT  += 1.0; highT = 0; }
+        else if (fps > 57) { highT += 1.0; lowT  = 0; }
         else               { lowT = highT = 0; }
         if (lowT  >= 1.5 && qualityScale > MIN_Q) { qualityScale = Math.max(MIN_Q, +(qualityScale - 0.06).toFixed(2)); lowT  = 0; resize(); }
         if (highT >= 3.0 && qualityScale < MAX_Q) { qualityScale = Math.min(MAX_Q, +(qualityScale + 0.04).toFixed(2)); highT = 0; resize(); }
@@ -676,6 +699,41 @@ export const FzokartHighlights: React.FC = () => {
           50%    { opacity: 0.48; }
         }
 
+        /* Auto FPS Optimizer Rules */
+        .fzh-outer.low-performance .fzh-card-midday::after,
+        .fzh-outer.low-performance .fzh-card-night::after,
+        .fzh-outer.low-performance .fzh-card-sunrise::after,
+        .fzh-outer.low-device .fzh-card-midday::after,
+        .fzh-outer.low-device .fzh-card-night::after,
+        .fzh-outer.low-device .fzh-card-sunrise::after {
+          display: none !important;
+          animation: none !important;
+        }
+        
+        .fzh-outer.low-performance .fzh-rain:nth-child(n+11),
+        .fzh-outer.low-device .fzh-rain:nth-child(n+11) {
+          display: none !important;
+          animation: none !important;
+        }
+        
+        .fzh-outer.mid-performance .fzh-rain:nth-child(n+21),
+        .fzh-outer.mid-device .fzh-rain:nth-child(n+21) {
+          display: none !important;
+          animation: none !important;
+        }
+
+        .fzh-outer.low-performance .fzh-card,
+        .fzh-outer.low-device .fzh-card {
+           backdrop-filter: blur(4px) saturate(100%);
+           -webkit-backdrop-filter: blur(4px) saturate(100%);
+           box-shadow: none;
+        }
+        .fzh-outer.mid-performance .fzh-card,
+        .fzh-outer.mid-device .fzh-card {
+           backdrop-filter: blur(8px) saturate(110%);
+           -webkit-backdrop-filter: blur(8px) saturate(110%);
+        }
+
         /* Ensure z-index: 1 on card content so animations stay behind text */
         .fzh-card > * { position: relative; z-index: 2; }
         .fzh-rain { z-index: 0 !important; }
@@ -837,14 +895,12 @@ export const FzokartHighlights: React.FC = () => {
                     {i > 0 && <div className="fzh-hline" />}
 
                     {/* Storm rain drops */}
-                    {p.id === 'storm' && [
-                      [8,'0s','0.42s'],[18,'0.06s','0.48s'],[28,'0.12s','0.38s'],
-                      [38,'0.18s','0.45s'],[48,'0.03s','0.52s'],[58,'0.09s','0.40s'],
-                      [68,'0.15s','0.46s'],[78,'0.21s','0.44s'],[88,'0.07s','0.50s'],
-                      [95,'0.24s','0.36s'],
-                    ].map(([l,d,dur],ri) => (
-                      <span key={ri} className="fzh-rain" style={{ left:`${l}%`, animationDelay:d as string, animationDuration:dur as string }} />
-                    ))}
+                    {p.id === 'storm' && Array.from({ length: 30 }).map((_, ri) => {
+                      const l = (ri * 7.3) % 100;
+                      const d = (ri * 0.11) % 0.5;
+                      const dur = 0.35 + ((ri * 0.05) % 0.2);
+                      return <span key={ri} className="fzh-rain" style={{ left:`${l}%`, animationDelay:`${d}s`, animationDuration:`${dur}s` }} />
+                    })}
 
                     {/* Tag */}
                     <span className="fzh-tag">{p.tag}</span>
