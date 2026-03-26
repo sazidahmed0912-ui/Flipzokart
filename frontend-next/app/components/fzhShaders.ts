@@ -11,8 +11,8 @@ uniform vec2  uR;
 uniform float uT, uS, uSc, uBl;
 uniform vec3  uBg;
 #define PI 3.14159265359
-#define MARCH_STEPS 16
-#define REFINE_STEPS 3
+#define MARCH_STEPS 22
+#define REFINE_STEPS 5
 
 float sat(float x){return clamp(x,0.0,1.0);}
 float smoother(float x){x=sat(x);return x*x*x*(x*(x*6.0-15.0)+10.0);}
