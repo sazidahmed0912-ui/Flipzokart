@@ -689,7 +689,7 @@ export const FzokartHighlights: React.FC = () => {
             transform: none;
             width: 100%;
             justify-content: flex-start;
-            margin-top: 2.5rem;
+            margin-top: 1.5rem;
             background: transparent;
             padding: 0;
             border: none;
@@ -698,9 +698,9 @@ export const FzokartHighlights: React.FC = () => {
             box-shadow: none;
             border-left: 1px solid rgba(200,255,71,0.18);
             padding-left: 1.25rem;
-            align-items: flex-start;
-            flex-direction: column;
-            gap: 0.8rem;
+            align-items: center;
+            flex-direction: row;
+            gap: 1.25rem;
           }
           
           .fzh-stats { gap: 1.5rem; }
