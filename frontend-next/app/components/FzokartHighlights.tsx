@@ -468,6 +468,144 @@ export const FzokartHighlights: React.FC = () => {
           .fzh-panel { padding: 5rem 3rem; }
           .fzh-card  { max-width: 20rem; }
         }
+        /* ── CARD THEME ANIMATIONS ─────────────────────────────────── */
+
+        /* Sunrise – animated sun orb + radial glow */
+        .fzh-card-sunrise { position: relative; overflow: hidden; }
+        .fzh-card-sunrise::before {
+          content: ''; position: absolute;
+          top: 12px; right: 12px;
+          width: 36px; height: 36px;
+          background: radial-gradient(circle, #ffd700 40%, #ff8c00 100%);
+          border-radius: 50%;
+          box-shadow: 0 0 22px 8px rgba(255,200,50,0.30);
+          animation: fzh-sun-move 6s ease-in-out infinite;
+          pointer-events: none; z-index: 0;
+        }
+        .fzh-card-sunrise::after {
+          content: ''; position: absolute;
+          top: -10px; right: -10px;
+          width: 130px; height: 130px;
+          background: radial-gradient(circle, rgba(255,200,50,0.14) 0%, transparent 70%);
+          border-radius: 50%;
+          animation: fzh-glow-pulse 3s ease-in-out infinite;
+          pointer-events: none; z-index: 0;
+        }
+        @keyframes fzh-sun-move {
+          0%,100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes fzh-glow-pulse {
+          0%,100% { opacity:.5; transform:scale(1); }
+          50%      { opacity:1; transform:scale(1.22); }
+        }
+
+        /* Midday – diagonal shine sweep + floating dot grid */
+        .fzh-card-midday { position: relative; overflow: hidden; }
+        .fzh-card-midday::before {
+          content: ''; position: absolute; inset: 0;
+          width: 200%; height: 100%;
+          background: linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.13) 50%,transparent 70%);
+          animation: fzh-shine 4.5s linear infinite;
+          pointer-events: none; z-index: 0;
+        }
+        .fzh-card-midday::after {
+          content: ''; position: absolute; inset: 0;
+          background: radial-gradient(circle, rgba(255,220,80,0.18) 1px, transparent 1px);
+          background-size: 22px 22px;
+          animation: fzh-float-dots 7s ease-in-out infinite alternate;
+          pointer-events: none; z-index: 0;
+        }
+        @keyframes fzh-shine {
+          0%  { transform: translateX(-50%); }
+          100%{ transform: translateX(50%); }
+        }
+        @keyframes fzh-float-dots {
+          0%  { transform: translateY(0); }
+          100%{ transform: translateY(-9px); }
+        }
+
+        /* Sunset – slowly morphing warm gradient overlay */
+        .fzh-card-sunset { position: relative; overflow: hidden; }
+        .fzh-card-sunset::before {
+          content: ''; position: absolute; inset: 0;
+          background: linear-gradient(270deg,
+            rgba(255,100,0,0.13),
+            rgba(255,60,120,0.11),
+            rgba(130,60,180,0.10));
+          background-size: 600% 600%;
+          animation: fzh-grad-move 9s ease infinite;
+          border-radius: inherit;
+          pointer-events: none; z-index: 0;
+        }
+        @keyframes fzh-grad-move {
+          0%  { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100%{ background-position: 0% 50%; }
+        }
+
+        /* Storm – rain drops + lightning flash */
+        .fzh-card-storm { position: relative; overflow: hidden; }
+        .fzh-rain {
+          position: absolute;
+          width: 1.5px; height: 18px;
+          background: rgba(180,210,255,0.38);
+          top: -20px;
+          animation: fzh-rain 0.5s linear infinite;
+          pointer-events: none; z-index: 0;
+        }
+        @keyframes fzh-rain {
+          0%  { transform: translateY(-20px); opacity: 0; }
+          15% { opacity: 1; }
+          100%{ transform: translateY(130%); opacity: 0.3; }
+        }
+        .fzh-card-storm::after {
+          content: ''; position: absolute; inset: 0;
+          background: rgba(190,210,255,0.65);
+          opacity: 0; pointer-events: none;
+          border-radius: inherit;
+          animation: fzh-flash 5.5s infinite;
+          z-index: 1;
+        }
+        @keyframes fzh-flash {
+          0%,95%,100%{ opacity: 0; }
+          96%{ opacity: 0.22; }
+          97%{ opacity: 0; }
+          98%{ opacity: 0.14; }
+        }
+
+        /* Night Sea – wave at bottom + twinkling star grid */
+        .fzh-card-night { position: relative; overflow: hidden; }
+        .fzh-card-night::before {
+          content: ''; position: absolute;
+          width: 120%; height: 38%;
+          bottom: -8%; left: -10%;
+          background: rgba(79,195,247,0.09);
+          border-radius: 50% 50% 0 0;
+          animation: fzh-wave 4.5s ease-in-out infinite;
+          pointer-events: none; z-index: 0;
+        }
+        .fzh-card-night::after {
+          content: ''; position: absolute; inset: 0;
+          background: radial-gradient(circle, rgba(200,230,255,0.7) 1px, transparent 1px);
+          background-size: 20px 20px;
+          opacity: 0.22;
+          animation: fzh-twinkle 2.8s ease-in-out infinite;
+          pointer-events: none; z-index: 0;
+        }
+        @keyframes fzh-wave {
+          0%,100%{ transform: translateX(0) scaleX(1); }
+          50%    { transform: translateX(10px) scaleX(1.04); }
+        }
+        @keyframes fzh-twinkle {
+          0%,100%{ opacity: 0.18; }
+          50%    { opacity: 0.48; }
+        }
+
+        /* Ensure z-index: 1 on card content so animations stay behind text */
+        .fzh-card > * { position: relative; z-index: 2; }
+        .fzh-rain { z-index: 0 !important; }
+
         @media (max-width: 37.5em) {
           .fzh-panel { padding: 4rem 1.25rem; }
           .fzh-card, .fzh-card.right, .fzh-card.center {
@@ -519,13 +657,23 @@ export const FzokartHighlights: React.FC = () => {
           <div className="fzh-panels">
             {PANELS.map((p, i) => {
               const vis = activePanel === i;
-              const cardCls = `fzh-card ${p.align}`;
+              const cardCls = `fzh-card fzh-card-${p.id} ${p.align}`;
               return (
                 <div key={p.id} className={`fzh-panel ${p.align}${vis ? " vis" : ""}`}>
                   <div className={cardCls}>
 
                     {/* Horizontal line (all except hero) */}
                     {i > 0 && <div className="fzh-hline" />}
+
+                    {/* Storm rain drops */}
+                    {p.id === 'storm' && [
+                      [8,'0s','0.42s'],[18,'0.06s','0.48s'],[28,'0.12s','0.38s'],
+                      [38,'0.18s','0.45s'],[48,'0.03s','0.52s'],[58,'0.09s','0.40s'],
+                      [68,'0.15s','0.46s'],[78,'0.21s','0.44s'],[88,'0.07s','0.50s'],
+                      [95,'0.24s','0.36s'],
+                    ].map(([l,d,dur],ri) => (
+                      <span key={ri} className="fzh-rain" style={{ left:`${l}%`, animationDelay:d as string, animationDuration:dur as string }} />
+                    ))}
 
                     {/* Tag */}
                     <span className="fzh-tag">{p.tag}</span>
