@@ -652,6 +652,28 @@ export const FzokartHighlights: React.FC = () => {
         .fzh-card > * { position: relative; z-index: 2; }
         .fzh-rain { z-index: 0 !important; }
 
+        /* Section Title (Top) */
+        .fzh-section-title {
+          position: absolute;
+          top: 3.5rem;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 20;
+          font-family: "DM Mono", monospace;
+          font-size: 0.85rem;
+          letter-spacing: 0.35em;
+          text-transform: uppercase;
+          color: rgba(232, 228, 217, 0.9);
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.6s ease, top 0.6s ease;
+          text-align: center;
+        }
+        .fzh-section-title.vis {
+          opacity: 1;
+          top: 4rem;
+        }
+
         @media (max-width: 37.5em) {
           .fzh-panel { 
             padding: 5rem 1.25rem 4rem; 
@@ -680,6 +702,13 @@ export const FzokartHighlights: React.FC = () => {
           .fzh-sticky > .fzh-bottom-ctrls { display: none; }
           .fzh-panel .fzh-bottom-ctrls.mobile-only {
             display: flex;
+          }
+
+          .fzh-section-title {
+            top: 1.5rem; left: 1.5rem; transform: none; font-size: 0.75rem;
+          }
+          .fzh-section-title.vis {
+            top: 1.5rem;
           }
           
           /* Place bottom controls exactly under the card on mobile */
@@ -711,6 +740,11 @@ export const FzokartHighlights: React.FC = () => {
 
       <section ref={sectionRef} className="fzh-outer" aria-label="Fzokart Highlights">
         <div className="fzh-sticky">
+
+          {/* Section Title */}
+          <div className={`fzh-section-title ${activePanel === 0 ? "vis" : ""}`}>
+            FZOKART HIGHLIGHTS
+          </div>
 
           {/* WebGL canvas */}
           <canvas ref={canvasRef} className="fzh-canvas" />
