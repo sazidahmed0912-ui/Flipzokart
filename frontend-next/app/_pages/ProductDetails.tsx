@@ -322,14 +322,15 @@ export const ProductDetails: React.FC = () => {
     }
   };
 
+  // Show animated 404 page when product doesn't exist
+  useEffect(() => {
+    if (!isLoading && !product) {
+      router.replace('/product/not-found');
+    }
+  }, [isLoading, product, router]);
+
   if (isLoading) return <CircularGlassSpinner />;
-  if (!product) return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center p-10 text-center">
-      <div className="p-4 bg-red-50 text-red-500 rounded-full mb-4"><AlertCircle size={40} /></div>
-      <h2 className="text-2xl font-bold">Product Not Found</h2>
-      <button onClick={() => router.push('/shop')} className="mt-4 text-blue-600 font-bold hover:underline">Return to Shop</button>
-    </div>
-  );
+  if (!product) return <CircularGlassSpinner />; // Show spinner while redirect happens
 
   return (
     <div className="bg-gray-50 min-h-screen">
