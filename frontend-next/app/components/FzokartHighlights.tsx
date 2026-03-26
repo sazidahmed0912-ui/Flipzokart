@@ -184,8 +184,8 @@ export const FzokartHighlights: React.FC = () => {
     const uBg = gl.getUniformLocation(prog, "uBg");
     gl.uniform3f(uBg, 0.039, 0.039, 0.059);
 
-    let qualityScale = 1.0;
-    const MAX_DPR = 1.5, MIN_Q = 0.82, MAX_Q = 1.0;
+    let qualityScale = 0.9;
+    const MAX_DPR = 1.0, MIN_Q = 0.70, MAX_Q = 0.90;
 
     const resize = () => {
       const w = canvas.offsetWidth, h = canvas.offsetHeight;
@@ -348,6 +348,10 @@ export const FzokartHighlights: React.FC = () => {
           padding: 6rem 5rem;
           opacity: 0; pointer-events: none;
           transition: opacity 0.45s ease;
+          /* Force hardware layer */
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          perspective: 1000px;
         }
         .fzh-panel.vis { opacity: 1; pointer-events: auto; }
 
@@ -355,14 +359,15 @@ export const FzokartHighlights: React.FC = () => {
         .fzh-card {
           max-width: 23.75rem;
           padding: 2.25rem 2rem;
-          background: rgba(10,10,15,0.16);
+          background: rgba(10,10,15,0.75); /* Removed expensive backdrop-filter */
           border: 1px solid rgba(200,255,71,0.18);
           border-radius: 14px;
-          backdrop-filter: blur(14px) saturate(130%);
-          -webkit-backdrop-filter: blur(14px) saturate(130%);
-          box-shadow: 0 10px 30px rgba(0,0,0,0.35);
           font-family: "DM Mono", monospace;
           color: #e8e4d9;
+          /* Extreme hardware acceleration */
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          transform-style: preserve-3d;
         }
         .fzh-card.right { margin-left: auto; text-align: right; }
         .fzh-card.center { margin: 0 auto; text-align: center; max-width: 28.75rem; }
@@ -471,14 +476,13 @@ export const FzokartHighlights: React.FC = () => {
         /* ── CARD THEME ANIMATIONS ─────────────────────────────────── */
 
         /* Sunrise – animated sun orb + radial glow */
-        .fzh-card-sunrise { position: relative; overflow: hidden; transform: translateZ(0); }
+        .fzh-card-sunrise { position: relative; overflow: hidden; transform: translateZ(0); backface-visibility: hidden; }
         .fzh-card-sunrise::before {
           content: ''; position: absolute;
           top: 12px; right: 12px;
           width: 36px; height: 36px;
           background: radial-gradient(circle, #ffd700 40%, #ff8c00 100%);
           border-radius: 50%;
-          box-shadow: 0 0 22px 8px rgba(255,200,50,0.30);
           animation: fzh-sun-move 6s ease-in-out infinite;
           pointer-events: none; z-index: 0;
           will-change: transform;
@@ -503,11 +507,11 @@ export const FzokartHighlights: React.FC = () => {
         }
 
         /* Midday – diagonal shine sweep + floating dot grid */
-        .fzh-card-midday { position: relative; overflow: hidden; transform: translateZ(0); }
+        .fzh-card-midday { position: relative; overflow: hidden; transform: translateZ(0); backface-visibility: hidden; }
         .fzh-card-midday::before {
           content: ''; position: absolute; inset: -20%;
           width: 140%; height: 140%;
-          background: linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.13) 50%,transparent 70%);
+          background: linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.08) 50%,transparent 70%);
           animation: fzh-shine 4.5s linear infinite;
           pointer-events: none; z-index: 0;
           will-change: transform;
@@ -531,15 +535,15 @@ export const FzokartHighlights: React.FC = () => {
         }
 
         /* Sunset – sliding oversized gradient for 60fps */
-        .fzh-card-sunset { position: relative; overflow: hidden; transform: translateZ(0); }
+        .fzh-card-sunset { position: relative; overflow: hidden; transform: translateZ(0); backface-visibility: hidden; }
         .fzh-card-sunset::before {
           content: ''; position: absolute; top: -50%; left: -50%;
           width: 300%; height: 200%;
           background: linear-gradient(270deg,
-            rgba(255,100,0,0.13) 0%,
-            rgba(255,60,120,0.11) 33%,
-            rgba(130,60,180,0.10) 66%,
-            rgba(255,100,0,0.13) 100%);
+            rgba(255,100,0,0.10) 0%,
+            rgba(255,60,120,0.08) 33%,
+            rgba(130,60,180,0.07) 66%,
+            rgba(255,100,0,0.10) 100%);
           animation: fzh-grad-move 9s linear infinite;
           pointer-events: none; z-index: 0;
           will-change: transform;
@@ -550,11 +554,11 @@ export const FzokartHighlights: React.FC = () => {
         }
 
         /* Storm – rain drops + lightning flash */
-        .fzh-card-storm { position: relative; overflow: hidden; transform: translateZ(0); }
+        .fzh-card-storm { position: relative; overflow: hidden; transform: translateZ(0); backface-visibility: hidden; }
         .fzh-rain {
           position: absolute;
           width: 1.5px; height: 18px;
-          background: rgba(180,210,255,0.38);
+          background: rgba(180,210,255,0.25);
           top: -20px;
           animation: fzh-rain 0.5s linear infinite;
           pointer-events: none; z-index: 0;
@@ -567,7 +571,7 @@ export const FzokartHighlights: React.FC = () => {
         }
         .fzh-card-storm::after {
           content: ''; position: absolute; inset: 0;
-          background: rgba(190,210,255,0.65);
+          background: rgba(190,210,255,0.45);
           opacity: 0; pointer-events: none;
           border-radius: inherit;
           animation: fzh-flash 5.5s infinite;
@@ -575,19 +579,19 @@ export const FzokartHighlights: React.FC = () => {
           z-index: 1;
         }
         @keyframes fzh-flash {
-          0%,95%,100%{ opacity: 0; }
-          96%{ opacity: 0.22; }
-          97%{ opacity: 0; }
-          98%{ opacity: 0.14; }
+          0%,95%,100%{ opacity: 0; transform: translateZ(0); }
+          96%{ opacity: 0.15; transform: translateZ(0); }
+          97%{ opacity: 0; transform: translateZ(0); }
+          98%{ opacity: 0.10; transform: translateZ(0); }
         }
 
         /* Night Sea – wave at bottom + twinkling star grid */
-        .fzh-card-night { position: relative; overflow: hidden; transform: translateZ(0); }
+        .fzh-card-night { position: relative; overflow: hidden; transform: translateZ(0); backface-visibility: hidden; }
         .fzh-card-night::before {
           content: ''; position: absolute;
           width: 120%; height: 38%;
           bottom: -8%; left: -10%;
-          background: rgba(79,195,247,0.09);
+          background: rgba(79,195,247,0.06);
           border-radius: 50% 50% 0 0;
           animation: fzh-wave 4.5s ease-in-out infinite;
           pointer-events: none; z-index: 0;
