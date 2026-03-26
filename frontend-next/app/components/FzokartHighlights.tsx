@@ -766,57 +766,16 @@ export const FzokartHighlights: React.FC = () => {
           left: 50%;
           transform: translateX(-50%);
           z-index: 20;
+          font-family: "DM Mono", monospace;
+          font-size: 0.85rem;
+          letter-spacing: 0.35em;
+          text-transform: uppercase;
+          color: rgba(232, 228, 217, 0.9);
           opacity: 0;
           pointer-events: none;
           transition: opacity 0.6s ease, top 0.6s ease;
-        }
-        
-        /* ❄️ Snow Shine Heading Overlay */
-        .fz-highlight-heading {
-          font-size: 38px;
-          font-weight: 800;
           text-align: center;
-          letter-spacing: 2px;
-          color: #ffffff;
-          position: relative;
-          
-          /* Slight Glow (Premium feel) */
-          text-shadow: 
-            0 0 5px rgba(255,255,255,0.4),
-            0 0 10px rgba(255,255,255,0.2);
-
-          /* Smooth render */
-          will-change: transform, opacity;
         }
-
-        .fz-highlight-heading::after {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: -120%;
-          width: 60%;
-          height: 100%;
-          
-          /* White soft gradient shine */
-          background: linear-gradient(
-            120deg,
-            rgba(255,255,255,0) 0%,
-            rgba(255,255,255,0.25) 50%,
-            rgba(255,255,255,0) 100%
-          );
-
-          transform: skewX(-20deg);
-          opacity: 0.5;
-
-          /* Animation */
-          animation: fzk-snowShine 4s infinite linear;
-        }
-
-        @keyframes fzk-snowShine {
-          0% { left: -120%; }
-          100% { left: 120%; }
-        }
-
         .fzh-section-title.vis {
           opacity: 1;
           top: 4rem;
@@ -852,12 +811,17 @@ export const FzokartHighlights: React.FC = () => {
             display: flex;
           }
 
-          .fz-highlight-heading {
-            font-size: 24px;
-            letter-spacing: 1px;
-          }
           .fzh-section-title {
-            top: 2rem; left: 50%; transform: translateX(-50%); width: 100%;
+            top: 2rem; left: 50%; transform: translateX(-50%); font-size: 1rem; width: 100%;
+          }
+          .fzh-section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #c8ff47, #00f2fe);
+            margin: 6px auto 0;
+            border-radius: 4px;
           }
           .fzh-section-title.vis {
             top: 2rem;
@@ -895,9 +859,9 @@ export const FzokartHighlights: React.FC = () => {
         <div className="fzh-sticky">
 
           {/* Section Title */}
-          <h2 className={`fz-highlight-heading fzh-section-title ${activePanel === 0 ? "vis" : ""}`}>
+          <div className={`fzh-section-title ${activePanel === 0 ? "vis" : ""}`}>
             FZOKART HIGHLIGHTS
-          </h2>
+          </div>
 
           {/* WebGL canvas */}
           <canvas ref={canvasRef} className="fzh-canvas" />

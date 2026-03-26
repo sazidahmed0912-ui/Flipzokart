@@ -67,11 +67,11 @@ export const ProductDetails: React.FC = () => {
     if (!id) return;
     const loadData = async () => {
       setIsLoading(true);
-      // 5 second timeout via AbortController
+      // 12 second timeout via AbortController (Slow Network Fallback)
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         controller.abort();
-      }, 5000);
+      }, 12000);
 
       try {
         const res = await fetchProductById(id);
