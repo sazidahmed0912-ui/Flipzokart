@@ -343,6 +343,9 @@ export const FzokartHighlights: React.FC = () => {
           align-items: center;
           gap: 1.5rem;
         }
+        .fzh-bottom-ctrls.mobile-only {
+          display: none;
+        }
         .fzh-layer-meter {
           font-family: "DM Mono", monospace;
           font-size: 0.65rem; letter-spacing: 0.15em;
@@ -650,7 +653,11 @@ export const FzokartHighlights: React.FC = () => {
         .fzh-rain { z-index: 0 !important; }
 
         @media (max-width: 37.5em) {
-          .fzh-panel { padding: 5rem 1.25rem 4rem; }
+          .fzh-panel { 
+            padding: 5rem 1.25rem 4rem; 
+            flex-direction: column;
+            justify-content: center;
+          }
           .fzh-card, .fzh-card.right, .fzh-card.center {
             max-width: 100%; margin: 0; text-align: left;
             border-right: none; border-top: none;
@@ -669,18 +676,31 @@ export const FzokartHighlights: React.FC = () => {
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
           }
+          
+          .fzh-sticky > .fzh-bottom-ctrls { display: none; }
+          .fzh-panel .fzh-bottom-ctrls.mobile-only {
+            display: flex;
+          }
+          
+          /* Place bottom controls exactly under the card on mobile */
           .fzh-bottom-ctrls { 
-            bottom: 2rem; right: 50%;
-            transform: translateX(50%);
-            width: max-content;
-            gap: 1rem;
-            background: rgba(10,10,15,0.7);
-            padding: 0.5rem 1rem;
-            border-radius: 40px;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            bottom: auto; right: auto;
+            transform: none;
+            width: 100%;
+            justify-content: flex-start;
+            margin-top: 2.5rem;
+            background: transparent;
+            padding: 0;
+            border: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            box-shadow: none;
+            border-left: 1px solid rgba(200,255,71,0.18);
+            padding-left: 1.25rem;
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 0.8rem;
           }
           
           .fzh-stats { gap: 1.5rem; }
@@ -716,7 +736,7 @@ export const FzokartHighlights: React.FC = () => {
             ))}
           </div>
 
-          {/* Bottom Controls (Layer Meter + Skip) */}
+          {/* Bottom Controls (Desktop Global) */}
           <div className="fzh-bottom-ctrls">
             <div className="fzh-layer-meter">
               LAYER {activePanel === 0 ? 0 : activePanel} / 5
@@ -798,6 +818,20 @@ export const FzokartHighlights: React.FC = () => {
                       </button>
                     )}
                   </div>
+                  
+                  {/* Bottom Controls (Mobile only layout helper) */}
+                  <div className="fzh-bottom-ctrls mobile-only">
+                    <div className="fzh-layer-meter">
+                      LAYER {activePanel === 0 ? 0 : activePanel} / 5
+                    </div>
+                    <button className="fzh-skip-btn" onClick={skipSection}>
+                      Skip Section
+                      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M1 6h10M1 1l5 5-5 5" />
+                      </svg>
+                    </button>
+                  </div>
+                  
                 </div>
               );
             })}
