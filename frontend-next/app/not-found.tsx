@@ -125,11 +125,20 @@ export default function NotFound() {
       if (typeof window === "undefined") return "Sorry! Page Not Found";
       const url = window.location.href.toLowerCase();
 
-      // 🌐 Network Error (Offline)
+      // 🌐 Network Error (Offline) — Check FIRST
       if (!navigator.onLine) {
         return "Sorry! Network Error — Please check your internet connection";
       }
-      // 📦 Product Not Found
+
+      // 🐢 Slow Network — Check BEFORE URL patterns
+      const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+      const effType = conn?.effectiveType || "4g";
+      const rtt = conn?.rtt ?? 0;
+      if (effType === "slow-2g" || effType === "2g" || effType === "3g" || rtt > 800) {
+        return "Sorry! Slow Network — Your connection is too slow to load this page";
+      }
+
+      // 📦 Product Not Found — Only if network is fine
       if (url.includes("product") || url.includes("item")) {
         return "Sorry! Product Not Found — This item may be unavailable";
       }
