@@ -1,7 +1,7 @@
 
 import React from "react";
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Roboto, Bebas_Neue, DM_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Providers } from "./Providers";
@@ -14,8 +14,22 @@ import { DelayedScripts } from "./components/DelayedScripts";
 const roboto = Roboto({
   weight: ['300', '400', '500', '700', '900'],
   subsets: ['latin'],
-  display: 'optional',
+  display: 'swap',
   variable: '--font-roboto',
+});
+
+const bebas = Bebas_Neue({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-bebas',
+  display: 'swap',
+});
+
+const dmMono = DM_Mono({
+  weight: ['300', '400'],
+  subsets: ['latin'],
+  variable: '--font-dm-mono',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -34,8 +48,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_IS_CAPACITOR === 'true' ? (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com') : 'https://flipzokart-backend.onrender.com'} crossOrigin="anonymous" />
       </head>
-      <body className={`${roboto.className} font-roboto`}>
+      <body className={`${roboto.className} ${bebas.variable} ${dmMono.variable} font-roboto`}>
         <DelayedScripts />
 
 

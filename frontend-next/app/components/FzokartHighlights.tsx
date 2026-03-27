@@ -335,7 +335,13 @@ export const FzokartHighlights: React.FC = () => {
   return (
     <>
       <style>{`
-        @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400&display=swap");
+        /* Custom Fonts defined natively in layout via next/font/google */
+        .font-bebas {
+          font-family: var(--font-bebas), "Bebas Neue", sans-serif;
+        }
+        .font-mono {
+          font-family: var(--font-dm-mono), "DM Mono", monospace;
+        }
 
         .fzh-outer {
           position: relative;
@@ -513,7 +519,7 @@ export const FzokartHighlights: React.FC = () => {
         .fzh-panel.vis .fzh-icon { opacity: 1; }
 
         .fzh-h1 {
-          font-family: "Bebas Neue", sans-serif;
+          font-family: var(--font-bebas), "Bebas Neue", sans-serif;
           font-size: clamp(3rem, 8vw, 6.5rem);
           font-weight: 400; letter-spacing: 0.03em;
           line-height: 0.92; white-space: pre-line;
@@ -521,7 +527,7 @@ export const FzokartHighlights: React.FC = () => {
           transition: opacity 0.5s ease 0.08s, translate 0.5s ease 0.08s;
         }
         .fzh-h2 {
-          font-family: "Bebas Neue", sans-serif;
+          font-family: var(--font-bebas), "Bebas Neue", sans-serif;
           font-size: clamp(2.2rem, 6vw, 5rem);
           font-weight: 400; letter-spacing: 0.03em;
           line-height: 0.92; white-space: pre-line;
@@ -558,7 +564,7 @@ export const FzokartHighlights: React.FC = () => {
         .fzh-panel.vis .fzh-stats { opacity: 1; translate: 0 0; }
         .fzh-stat { display: flex; flex-direction: column; gap: 0.15rem; }
         .fzh-stat-num {
-          font-family: "Bebas Neue", sans-serif;
+          font-family: var(--font-bebas), "Bebas Neue", sans-serif;
           font-size: 2.2rem; color: #c8ff47; line-height: 1;
         }
         .fzh-stat-lbl {

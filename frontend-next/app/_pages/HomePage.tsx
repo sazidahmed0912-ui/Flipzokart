@@ -303,19 +303,11 @@ export const HomePage: React.FC = () => {
                             )}
                         </div>
 
-                        {/* Skeleton — structurally matches ProductCard to zero out CLS */}
+                        {/* Skeleton — matches Featured on Fzokart exactly */}
                         {trendingLoading && (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6">
                                 {[...Array(4)].map((_, i) => (
-                                    <div key={i} className="flex flex-col bg-white rounded-lg md:rounded-xl overflow-hidden shadow-sm animate-pulse border border-gray-100">
-                                        <div className="w-full aspect-[4/5] bg-gray-200"></div>
-                                        <div className="p-2 md:p-3 space-y-2 mt-1 -mb-1">
-                                            <div className="h-2 bg-gray-200 rounded w-1/3"></div>
-                                            <div className="h-3 bg-gray-200 rounded w-full"></div>
-                                            <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
-                                        </div>
-                                    </div>
+                                    <div key={i} className="h-56 bg-gray-200 rounded-xl animate-pulse" />
                                 ))}
                             </div>
                         )}
