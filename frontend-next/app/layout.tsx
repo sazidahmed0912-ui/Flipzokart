@@ -14,7 +14,7 @@ import { DelayedScripts } from "./components/DelayedScripts";
 const roboto = Roboto({
   weight: ['300', '400', '500', '700', '900'],
   subsets: ['latin'],
-  display: 'swap',
+  display: 'optional',
   variable: '--font-roboto',
 });
 

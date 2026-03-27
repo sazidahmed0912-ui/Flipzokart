@@ -56,6 +56,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
                 src={imgSrc || '/placeholder.png'}
                 alt={alt}
                 priority={priority}
+                fetchPriority={priority ? "high" : "auto"}
                 loading={priority ? undefined : "lazy"}
                 quality={60} // Aggressive compression for 13kb/s low bandwidth
                 sizes={sizes}
