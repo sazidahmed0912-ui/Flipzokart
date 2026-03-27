@@ -31,6 +31,7 @@ export class ProductController {
 
     getProduct = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const product = await productService.getProduct(req.params.slug as string);
+        res.setHeader("Cache-Control", "public, max-age=31536000");
         res.status(200).json({
             status: 'success',
             data: { product },
@@ -39,6 +40,7 @@ export class ProductController {
 
     getAllProducts = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const result = await productService.getAllProducts(req.query);
+        res.setHeader("Cache-Control", "public, max-age=31536000");
         res.status(200).json({
             status: 'success',
             ...result,

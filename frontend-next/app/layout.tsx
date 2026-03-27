@@ -9,6 +9,7 @@ import ClientLayout from "./ClientLayout";
 import FacebookPixel from "./components/analytics/FacebookPixel";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { DelayedScripts } from "./components/DelayedScripts";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700', '900'],
@@ -33,23 +34,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1922737502570845"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
       </head>
       <body className={`${roboto.className} font-roboto`}>
-        <Script id="gtm" strategy="afterInteractive">
-          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-5PBFNG4P');`}
-        </Script>
+        <DelayedScripts />
 
-        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5PBFNG4P" height="0" width="0" style={{ display: 'none', visibility: 'hidden' }}></iframe></noscript>
 
         <Providers>
           <React.Suspense fallback={null}>
