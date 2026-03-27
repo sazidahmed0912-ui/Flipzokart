@@ -65,10 +65,23 @@
 
     /* Buttons & Forms */
     button,
-    .btn {
+    .btn,
+    a {
         font-family: 'Roboto', sans-serif;
         font-weight: 500;
         letter-spacing: 0.3px;
+        /* Instant Click Feedback & GPU Blur prevention */
+        transition: transform 0.1s ease, opacity 0.1s ease;
+        will-change: transform, opacity;
+        transform: translateZ(0);
+        touch-action: manipulation;
+    }
+
+    /* Active state shrink effect */
+    button:active, 
+    a:active {
+        transform: scale(0.96) translateZ(0) !important;
+        opacity: 0.8;
     }
 
     input,
@@ -77,6 +90,7 @@
     label {
         font-family: 'Roboto', sans-serif;
         font-size: 14px;
+        touch-action: manipulation;
     }
 
     /* Custom Scrollbar */
