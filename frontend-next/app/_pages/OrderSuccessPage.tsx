@@ -103,6 +103,44 @@ const OrderSuccessPage = () => {
     }
   }, [order]);
 
+  // Google Customer Reviews Opt-In Integration
+  useEffect(() => {
+    if (typeof window !== "undefined" && order) {
+      // Setup the render function globally for Google platform.js to call
+      (window as any).renderOptIn = function() {
+        if ((window as any).gapi && (window as any).gapi.load) {
+          (window as any).gapi.load('surveyoptin', function() {
+            // Est delivery date
+            const estDate = new Date();
+            estDate.setDate(estDate.getDate() + 5);
+            
+            (window as any).gapi.surveyoptin.render({
+              "merchant_id": 5753470473,
+              "order_id": order.id,
+              "email": order.address.email || "customer@example.com",
+              "delivery_country": "IN",
+              "estimated_delivery_date": estDate.toISOString().split('T')[0],
+              "products": order.items.map(item => ({ "gtin": item.id }))
+            });
+          });
+        }
+      };
+
+      // Inject Google Platform JS
+      const script = document.createElement("script");
+      script.src = "https://apis.google.com/js/platform.js?onload=renderOptIn";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+
+      return () => {
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+      };
+    }
+  }, [order]);
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard!');

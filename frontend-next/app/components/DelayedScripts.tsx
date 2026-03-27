@@ -28,6 +28,21 @@ export const DelayedScripts: React.FC = () => {
         }
       })(window, document, 'script', 'dataLayer', 'GTM-5PBFNG4P');
 
+      // 3. Google Customer Reviews Badge (Global Rating)
+      const widgetScript = document.createElement('script');
+      widgetScript.id = 'merchantWidgetScript';
+      widgetScript.src = 'https://www.gstatic.com/shopping/merchant/merchantwidget.js';
+      widgetScript.defer = true;
+      widgetScript.addEventListener('load', () => {
+        if ((window as any).merchantwidget) {
+          (window as any).merchantwidget.start({
+            merchant_id: 5753470473,
+            position: 'BOTTOM_LEFT', // Can be BOTTOM_RIGHT
+          });
+        }
+      });
+      document.head.appendChild(widgetScript);
+
     }, 3000);
 
     return () => clearTimeout(timer);
