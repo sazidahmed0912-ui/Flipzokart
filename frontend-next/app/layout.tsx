@@ -49,6 +49,26 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_IS_CAPACITOR === 'true' ? (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com') : 'https://flipzokart-backend.onrender.com'} crossOrigin="anonymous" />
+        {/* OneSignal Push Notifications */}
+        <Script
+          src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+          defer
+          strategy="beforeInteractive"
+        />
+        <Script id="onesignal-init" strategy="afterInteractive">
+          {`
+            window.OneSignalDeferred = window.OneSignalDeferred || [];
+            OneSignalDeferred.push(async function(OneSignal) {
+              await OneSignal.init({
+                appId: "a9ac4952-87c5-4000-b1a7-fdb9de4d800e",
+                safari_web_id: "web.onesignal.auto.1b5ff574-1f63-4acf-ab26-dadb313db610",
+                notifyButton: {
+                  enable: true,
+                },
+              });
+            });
+          `}
+        </Script>
       </head>
       <body className={`${roboto.className} ${bebas.variable} ${dmMono.variable} font-roboto`}>
         <DelayedScripts />
