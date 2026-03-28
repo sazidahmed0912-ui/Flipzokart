@@ -52,8 +52,7 @@ export default function RootLayout({
         {/* OneSignal Push Notifications */}
         <Script
           src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
-          defer
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
         />
         <Script id="onesignal-init" strategy="afterInteractive">
           {`
@@ -66,6 +65,7 @@ export default function RootLayout({
                   enable: true,
                 },
               });
+              await OneSignal.Notifications.requestPermission();
             });
           `}
         </Script>
