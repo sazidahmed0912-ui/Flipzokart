@@ -10,6 +10,18 @@ export default function Page() {
 }
 
 
-export function generateStaticParams() {
-  return [{ trackingId: '1' }]; // Fallback ID for static export
+export async function generateStaticParams() {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com';
+    const res = await fetch(`${apiUrl}/api/order/admin/all`, { cache: 'no-store' });
+    if (!res.ok) return [{ trackingId: 'fallback' }];
+    const json = await res.json();
+    const items = Array.isArray(json) ? json : json.data || json.orders || [];
+    if (!items.length) return [{ trackingId: 'fallback' }];
+    // Some tracking systems use the order ID as tracking ID
+    return items.map((o: any) => ({ trackingId: String(o._id || o.id) }));
+  } catch {
+    return [{ trackingId: 'fallback' }];
+  }
 }
+
