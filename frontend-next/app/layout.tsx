@@ -50,6 +50,11 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_IS_CAPACITOR === 'true' ? (process.env.NEXT_PUBLIC_API_URL || 'https://flipzokart-backend.onrender.com') : 'https://flipzokart-backend.onrender.com'} crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://flipzokart-backend.onrender.com" />
+        <link rel="dns-prefetch" href="https://cdn.onesignal.com" />
+        <link rel="preconnect" href="https://cdn.onesignal.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://rukminim1.flixcart.com" />
         {/* OneSignal Push Notifications */}
         <Script
           src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"

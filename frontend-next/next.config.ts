@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
   compress: true, // 🟢 Enable Gzip compression
   poweredByHeader: false, // 🟢 Security & Performance (save bytes)
   reactStrictMode: false, // 🟢 Disable strict mode for production performance (optional)
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
+  },
   images: {
     unoptimized: isCapacitorBuild, // Required for static export
     formats: ['image/avif', 'image/webp'],
