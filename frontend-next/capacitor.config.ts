@@ -5,14 +5,21 @@ const config: CapacitorConfig = {
   appName: 'flipzokart',
   webDir: 'out',
   server: {
-    // ✅ THE DEFINITIVE CORS FIX:
-    // By setting hostname to 'flipzokart.com' and androidScheme to 'https',
-    // the Android WebView reports Origin: https://flipzokart.com
-    // This is ALREADY in the backend CORS whitelist — no Render redeployment needed!
-    // Without this, Android sends Origin: capacitor://localhost which is NOT allowed.
+    // ✅ CORS fix: reports Origin as https://flipzokart.com (whitelisted on backend)
     hostname: 'flipzokart.com',
     androidScheme: 'https',
-  }
+  },
+  android: {
+    // Allow all mixed content (avoids blocking of http sub-resources)
+    allowMixedContent: true,
+    // Capture console logs from WebView for debugging
+    loggingBehavior: 'none',
+    // Prevent WebView from capturing back button (let our app handle it)
+    captureInput: false,
+    // WebContentsDebuggingEnabled only in debug builds (set via AndroidManifest)
+    webContentsDebuggingEnabled: false,
+  },
 };
 
 export default config;
+

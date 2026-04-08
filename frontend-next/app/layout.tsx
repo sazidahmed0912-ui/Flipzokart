@@ -37,6 +37,7 @@ export const metadata: Metadata = {
   description: "A modern, high-performance e-commerce platform with a clean Indian marketplace aesthetic, featuring a full shopping experience and a robust admin dashboard.",
   other: {
     "google-adsense-account": "ca-pub-1922737502570845",
+    "p:domain_verify": "f1227fcbbb6c74fe14a91d9d078ed23a",
   },
 };
 
