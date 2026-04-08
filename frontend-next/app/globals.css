@@ -955,42 +955,17 @@
 /* ═══════════════════════════════════════════════════════════════════
    📱 ANDROID WEBVIEW — FPS & SMOOTHNESS OPTIMIZATIONS
    ─────────────────────────────────────────────────────────────────
-   Targets the Capacitor WebView running on Android devices.
-   Forces GPU compositing on scroll containers and reduces paint cost.
+   Safe rules only — no body/html transforms (breaks position:fixed).
    ═══════════════════════════════════════════════════════════════════ */
 
-/* Momentum scrolling + GPU-promoted layers for ALL scroll containers */
+/* Momentum scrolling + prevent font-size recalc during scroll */
 html, body {
   -webkit-overflow-scrolling: touch;
-  /* Prevent text-size adjustments during scroll (a common WebView FPS killer) */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
-/* Promote the entire page to its own compositor layer */
-body {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-/* ── Scroll containers: isolate paint so scroll doesn't repaint the world ── */
-main,
-[class*="overflow-y"],
-[class*="overflow-auto"],
-[class*="overflow-scroll"] {
-  -webkit-overflow-scrolling: touch;
-  will-change: scroll-position;
-}
-
-/* ── Images: prevent decode/paint jank on scroll ── */
-img {
-  /* Decode images eagerly so scroll doesn't trigger mid-scroll decode */
-  content-visibility: auto;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-}
-
-/* ── Animated elements: always isolate on GPU ── */
+/* ── Animated elements: isolate on GPU (safe — specific elements only) ── */
 [class*="animate-"],
 [class*="transition-"],
 [class*="motion-"],
@@ -1001,13 +976,5 @@ img {
   will-change: transform, opacity;
   transform: translateZ(0);
   backface-visibility: hidden;
-}
-
-/* ── High-refresh-rate hint (CSS) — works on Chrome/WebView M114+ ── */
-@media (prefers-reduced-motion: no-preference) {
-  * {
-    /* Hint to compositor: render at native display rate */
-    scroll-behavior: smooth;
-  }
 }
 
