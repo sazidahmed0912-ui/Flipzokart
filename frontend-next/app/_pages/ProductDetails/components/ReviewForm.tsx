@@ -2,8 +2,11 @@ import React, { useState, useRef } from 'react';
 import { Star, Loader, Upload, X, Image as ImageIcon, Video, PlayCircle } from 'lucide-react';
 import { useApp } from '@/app/store/Context'; // Adjust path as necessary
 import { useToast } from '@/app/components/toast';
-import API from '@/app/services/api'; // Corrected: Import API as default
+import API from '@/app/services/api';
 import { Review } from '@/app/types'; // Adjust path as necessary
+import { usePermission } from '@/app/components/Permission/PermissionProvider';
+import { Camera as CapCamera, CameraResultType } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
 
 interface ReviewFormProps {
   productId: string;
@@ -13,6 +16,7 @@ interface ReviewFormProps {
 export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmitted }) => {
   const { user } = useApp();
   const { addToast } = useToast();
+  const { requestSmartPermission } = usePermission();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [images, setImages] = useState<File[]>([]);
@@ -176,7 +180,36 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ productId, onReviewSubmi
               {/* Image Upload Button */}
               <button
                 type="button"
-                onClick={() => imageInputRef.current?.click()}
+                onClick={async () => {
+                    const granted = await requestSmartPermission('camera');
+                    if (granted && typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
+                        try {
+                            const image = await CapCamera.getPhoto({
+                                quality: 80,
+                                allowEditing: false,
+                                resultType: CameraResultType.Uri,
+                            });
+                            if (image && image.webPath) {
+                                const response = await fetch(image.webPath);
+                                const blob = await response.blob();
+                                const file = new File([blob], `review_img_${Date.now()}.jpg`, { type: "image/jpeg" });
+                                
+                                if (file.size <= 2 * 1024 * 1024) {
+                                    setImages(prev => {
+                                        const combined = [...prev, file];
+                                        return combined.slice(0, 5); 
+                                    });
+                                } else {
+                                    addToast('warning', 'Image must be less than 2MB');
+                                }
+                            }
+                        } catch (e) {
+                            console.log("User cancelled camera");
+                        }
+                    } else {
+                        imageInputRef.current?.click();
+                    }
+                }}
                 disabled={images.length >= 5 || isLoading}
                 className="flex flex-col items-center justify-center w-20 h-20 md:w-24 md:h-24 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >

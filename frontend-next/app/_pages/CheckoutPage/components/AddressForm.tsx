@@ -5,6 +5,8 @@ import { Address } from '@/app/types';
 import { AddressFormFields, AddressFormData } from '@/app/components/AddressFormFields';
 import API from '@/app/services/api';
 import { validateAddressForm } from '@/app/utils/addressValidation';
+import { usePermission } from '@/app/components/Permission/PermissionProvider';
+import { Geolocation } from '@capacitor/geolocation';
 
 interface AddressFormProps {
     addressToEdit?: Address | null;
@@ -13,6 +15,7 @@ interface AddressFormProps {
 }
 
 const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCancel }) => {
+    const { requestSmartPermission } = usePermission();
     const [formData, setFormData] = useState<AddressFormData>({
         name: addressToEdit?.fullName || '',
         email: (addressToEdit as any)?.email || '',
@@ -148,6 +151,30 @@ const AddressForm: React.FC<AddressFormProps> = ({ addressToEdit, onSave, onCanc
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+
+                    <div className="flex justify-end mb-2">
+                        <button
+                            type="button"
+                            onClick={async () => {
+                                const granted = await requestSmartPermission('location');
+                                if (granted) {
+                                    try {
+                                        const pos = await Geolocation.getCurrentPosition();
+                                        console.log("Location:", pos);
+                                        // Just notify user for now since full reverse geocoding requires Google Maps API Key
+                                        alert("Location detected securely! (" + pos.coords.latitude.toFixed(4) + ", " + pos.coords.longitude.toFixed(4) + ")");
+                                    } catch (err) {
+                                        console.error("Geo failed:", err);
+                                    }
+                                }
+                            }}
+                            id="detect-location-btn"
+                            className="text-white bg-[#2874F0] hover:bg-blue-600 px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-2 shadow-sm transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            Detect my Location
+                        </button>
+                    </div>
 
                     <div className="border-0 md:border md:border-gray-100 rounded-xl p-0 md:p-4 md:bg-gray-50/50">
                         <AddressFormFields

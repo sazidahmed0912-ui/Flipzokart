@@ -33,12 +33,16 @@ import { useLanguage } from '@/app/store/LanguageContext';
 import API from '@/app/services/api';
 import ProfileSidebar from '@/app/components/Profile/ProfileSidebar';
 import { useToast } from '@/app/components/toast';
+import { usePermission } from '@/app/components/Permission/PermissionProvider';
+import { Camera as CapCamera, CameraResultType } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
 
 const ProfilePage = () => {
   const router = useRouter();
   const { user, setUser } = useApp();
   const { t } = useLanguage();
   const { addToast } = useToast();
+  const { requestSmartPermission } = usePermission();
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [profileData, setProfileData] = useState<any>(user || {});
@@ -120,14 +124,7 @@ const ProfilePage = () => {
     return `${day}/${month}/${year}`;
   };
 
-  const handleAvatarClick = () => {
-    document.getElementById('avatar-input')?.click();
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const uploadAvatarFile = async (file: File) => {
     const formData = new FormData();
     formData.append('avatar', file);
 
@@ -147,6 +144,38 @@ const ProfilePage = () => {
       console.error("Avatar upload failed", error);
       addToast('error', "Failed to upload image");
     }
+  };
+
+  const handleAvatarClick = async () => {
+    const granted = await requestSmartPermission('camera');
+    
+    // Only use Capacitor Camera picker if on a native platform AND permission granted
+    if (granted && typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
+        try {
+            const image = await CapCamera.getPhoto({
+                quality: 90,
+                allowEditing: true,
+                resultType: CameraResultType.Uri,
+            });
+            if (image && image.webPath) {
+                const response = await fetch(image.webPath);
+                const blob = await response.blob();
+                const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
+                uploadAvatarFile(file);
+            }
+        } catch (e) {
+            console.log("Camera user cancelled action");
+        }
+    } else {
+        // Fallback to HTML input (Web, or if user denied native but we want to allow standard File explorer)
+        document.getElementById('avatar-input')?.click();
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadAvatarFile(file);
   };
 
   if (!user) {

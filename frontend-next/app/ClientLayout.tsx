@@ -12,6 +12,25 @@ import PageTransition from '@/app/components/ui/PageTransition';
 import ToastListener from '@/app/components/ToastListener';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { App as CapacitorApp } from '@capacitor/app';
+import { PermissionProvider, usePermission } from '@/app/components/Permission/PermissionProvider';
+
+const NotificationInitializer = () => {
+    const { requestSmartPermission } = usePermission();
+    const { user } = useApp();
+    const pathname = usePathname();
+
+    useEffect(() => {
+        // Trigger if logged in and on homepage, or simply on homepage
+        if (user && pathname === '/home') {
+            const timeout = setTimeout(() => {
+                requestSmartPermission('notification').catch(console.error);
+            }, 2000); // Wait 2s for a better UX
+            return () => clearTimeout(timeout);
+        }
+    }, [user, pathname, requestSmartPermission]);
+
+    return null;
+};
 
 /* ─── Offline Overlay ─────────────────────────────────────────── */
 const OFFLINE_CSS = `
@@ -209,15 +228,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     return (
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
-            <Layout>
-                <OfflineOverlay isOnline={isOnline} isSlowTimeout={isSlowTimeout} onDismiss={handleDismiss} />
-                <Suspense fallback={<CircularGlassSpinner />}>
-                    <PageTransition key={pathname} onSlowNetwork={handleSlowNetwork}>
-                        {children}
-                    </PageTransition>
-                    <ToastListener />
-                </Suspense>
-            </Layout>
+            <PermissionProvider>
+                <NotificationInitializer />
+                <Layout>
+                    <OfflineOverlay isOnline={isOnline} isSlowTimeout={isSlowTimeout} onDismiss={handleDismiss} />
+                    <Suspense fallback={<CircularGlassSpinner />}>
+                        <PageTransition key={pathname} onSlowNetwork={handleSlowNetwork}>
+                            {children}
+                        </PageTransition>
+                        <ToastListener />
+                    </Suspense>
+                </Layout>
+            </PermissionProvider>
         </GoogleOAuthProvider>
     );
 }
