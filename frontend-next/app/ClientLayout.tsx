@@ -11,6 +11,7 @@ import CircularGlassSpinner from '@/app/components/CircularGlassSpinner';
 import PageTransition from '@/app/components/ui/PageTransition';
 import ToastListener from '@/app/components/ToastListener';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { App as CapacitorApp } from '@capacitor/app';
 
 /* ─── Offline Overlay ─────────────────────────────────────────── */
 const OFFLINE_CSS = `
@@ -121,6 +122,21 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             window.removeEventListener('online',  handleOnline);
             window.removeEventListener('offline', handleOffline);
         };
+    }, []);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_IS_CAPACITOR === 'true') {
+            const listener = CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+                if (!canGoBack) {
+                    CapacitorApp.exitApp();
+                } else {
+                    window.history.back();
+                }
+            });
+            return () => {
+                listener.then(l => l.remove());
+            };
+        }
     }, []);
 
     const pathname = usePathname();

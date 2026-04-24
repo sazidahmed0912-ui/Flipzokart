@@ -17,10 +17,11 @@ import {
 import { useToast } from '@/app/components/toast';
 
 export const TrackOrderPage: React.FC = () => {
-    const { trackingId } = useParams<{ trackingId: string }>();
+    const params = useParams();
+    const searchParams = useSearchParams();
+    const trackingId = (params?.trackingId as string) || searchParams.get('id');
     const router = useRouter();
     const { addToast } = useToast();
-    const searchParams = useSearchParams();
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -630,7 +631,7 @@ export const TrackOrderPage: React.FC = () => {
 
                                     onClick={() => {
                                         const targetId = order.orderId || trackingId;
-                                        if (targetId) router.push(`/invoice/${targetId}`);
+                                        if (targetId) router.push(`/invoice?id=${targetId}`);
                                     }}
                                     disabled={!order.orderId && !trackingId}
                                     className={`w-full flex items-center justify-center gap-2 border border-gray-300 rounded-[2px] py-2 text-sm font-bold text-gray-700 transition-colors h-10 md:h-auto ${(!order.orderId && !trackingId) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}`}

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState, useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
@@ -248,7 +248,7 @@ const OrdersPage: React.FC = () => {
                                                         onClick={() => {
                                                             const idToTrack = order.trackingId || order.orderNumber || order.id || order._id;
                                                             if (idToTrack) {
-                                                                router.push(`/track/${idToTrack}`);
+                                                                router.push(`/track-order?id=${idToTrack}`);
                                                             } else {
                                                                 alert("Tracking not available");
                                                             }

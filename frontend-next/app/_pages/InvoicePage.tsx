@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import API from '@/app/services/api';
 import { normalizeOrder } from '@/app/utils/orderHelper';
 import { Printer, MapPin, Phone, Mail, Package } from 'lucide-react';
@@ -188,7 +188,9 @@ const MobileInvoiceLayout = ({ order }: { order: any }) => {
 
 
 export const InvoicePage: React.FC = () => {
-    const { orderId } = useParams<{ orderId: string }>();
+    const params = useParams();
+    const searchParams = useSearchParams();
+    const orderId = (params?.orderId as string) || searchParams.get('id');
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const componentRef = useRef<HTMLDivElement>(null);
