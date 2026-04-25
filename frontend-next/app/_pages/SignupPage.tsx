@@ -35,6 +35,7 @@ export const SignupPage: React.FC = () => {
 
   // Mobile Verification State
   const [isMobileVerified, setIsMobileVerified] = useState(false);
+  const [isNative, setIsNative] = useState(false);
 
   useEffect(() => {
     let interval: any;
@@ -47,6 +48,7 @@ export const SignupPage: React.FC = () => {
   }, [timer]);
 
   useEffect(() => {
+    setIsNative(Capacitor.isNativePlatform());
     if (Capacitor.isNativePlatform()) {
       GoogleAuth.initialize({
         clientId: '701543965311-3uuuebjk6vesbgjqpk5uhtiabolm2v9e.apps.googleusercontent.com',
@@ -442,7 +444,7 @@ export const SignupPage: React.FC = () => {
                       </div>
                       
                       <div className="flex justify-center mb-4">
-                        {Capacitor.isNativePlatform() ? (
+                        {isNative ? (
                           <button
                             type="button"
                             onClick={handleNativeGoogleSignup}

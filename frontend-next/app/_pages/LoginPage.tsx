@@ -30,6 +30,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(0);
+  const [isNative, setIsNative] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
@@ -46,6 +47,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
   }, [timer]);
 
   useEffect(() => {
+    setIsNative(Capacitor.isNativePlatform());
     if (Capacitor.isNativePlatform()) {
       GoogleAuth.initialize({
         clientId: '701543965311-3uuuebjk6vesbgjqpk5uhtiabolm2v9e.apps.googleusercontent.com',
@@ -392,7 +394,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
                   </div>
                   
                   <div className="flex justify-center mb-4">
-                    {Capacitor.isNativePlatform() ? (
+                    {isNative ? (
                       <button
                         type="button"
                         onClick={handleNativeGoogleLogin}
