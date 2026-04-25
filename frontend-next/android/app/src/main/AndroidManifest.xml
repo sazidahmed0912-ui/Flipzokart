@@ -1,6 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- ═══════════════════════════════════════════════════
+         INTERNET
+         ═══════════════════════════════════════════════════ -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- ═══════════════════════════════════════════════════
+         CAMERA
+         ═══════════════════════════════════════════════════ -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+
+    <!-- ═══════════════════════════════════════════════════
+         MEDIA / STORAGE (Android version-aware)
+         - READ_MEDIA_IMAGES        → Android 13+ (API 33+)
+         - READ_MEDIA_VISUAL_USER_SELECTED → Android 14+ (API 34+)
+         - READ_EXTERNAL_STORAGE    → Android 12 and below only
+         - WRITE_EXTERNAL_STORAGE is removed (no longer works on Android 11+)
+         ═══════════════════════════════════════════════════ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission
+        android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+        android:minSdkVersion="34" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- ═══════════════════════════════════════════════════
+         LOCATION
+         ═══════════════════════════════════════════════════ -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <uses-feature android:name="android.hardware.location.network" android:required="false" />
+
+    <!-- ═══════════════════════════════════════════════════
+         PUSH NOTIFICATIONS (Android 13+)
+         ═══════════════════════════════════════════════════ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- ═══════════════════════════════════════════════════
+         APPLICATION
+         ═══════════════════════════════════════════════════ -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -31,30 +75,9 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"></meta-data>
+                android:resource="@xml/file_paths" />
         </provider>
+
     </application>
 
-    <!-- Permissions -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    
-    <!-- Camera & Media Permissions -->
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    
-    <!-- Location Permissions -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
-    
-    <!-- Push Notifications Permission (Android 13+) -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    
-    <!-- SMS Permission (Optional, if using OTP auto-read) -->
-    <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <uses-permission android:name="android.permission.READ_SMS" />
 </manifest>
