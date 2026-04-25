@@ -12,7 +12,8 @@ import { useToast } from '@/app/components/toast';
 import { Eye, EyeOff, Smartphone, CheckCircle } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { GoogleLogin } from '@react-oauth/google';
-
+import { Capacitor } from '@capacitor/core';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 export const SignupPage: React.FC = () => {
   const { setUser, loginSequence } = useApp();
   const router = useRouter();
@@ -44,6 +45,68 @@ export const SignupPage: React.FC = () => {
     }
     return () => clearInterval(interval);
   }, [timer]);
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      GoogleAuth.initialize({
+        clientId: '701543965311-3uuuebjk6vesbgjqpk5uhtiabolm2v9e.apps.googleusercontent.com',
+        scopes: ['profile', 'email'],
+        grantOfflineAccess: true,
+      });
+    }
+  }, []);
+
+  const handleNativeGoogleSignup = async () => {
+    setIsLoading(true);
+    try {
+      const response = await GoogleAuth.signIn();
+      if (response && response.authentication && response.authentication.idToken) {
+        const user = await authService.googleLogin(response.authentication.idToken);
+        
+        const token = localStorage.getItem("token");
+        if (token && user) {
+          await loginSequence(token, user);
+        } else {
+          setUser(user);
+        }
+        addToast('success', '✅ Google Signup successful!');
+
+        const checkoutIntentStr = localStorage.getItem("checkout_intent");
+        if (checkoutIntentStr) {
+          try {
+            const intent = JSON.parse(checkoutIntentStr);
+            if (intent.fromCheckout && intent.paymentMethod) {
+              if (intent.paymentMethod === "COD") {
+                localStorage.removeItem("checkout_intent");
+                router.push("/checkout/place-order-cod");
+                return;
+              }
+              if (intent.paymentMethod === "RAZORPAY") {
+                localStorage.removeItem("checkout_intent");
+                router.push("/payment");
+                return;
+              }
+            }
+          } catch (e) {
+            console.error("Intent Parse Error", e);
+          }
+        }
+
+        const redirectPath = searchParams.get('redirect');
+        if (redirectPath && redirectPath !== 'place-order' && redirectPath !== 'checkout') {
+          router.push(decodeURIComponent(redirectPath));
+        } else {
+          router.push('/');
+        }
+      } else {
+        addToast('error', 'Google Sign-Up failed: No ID Token returned');
+      }
+    } catch (err: any) {
+      addToast('error', err.message || 'Google Signup failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // MSG91 Widget Configuration
   const widgetId = "3662616b7765363133313539";
@@ -379,60 +442,72 @@ export const SignupPage: React.FC = () => {
                       </div>
                       
                       <div className="flex justify-center mb-4">
-                        <GoogleLogin
-                          onSuccess={async (credentialResponse: any) => {
-                            if (credentialResponse.credential) {
-                              setIsLoading(true);
-                              try {
-                                const user = await authService.googleLogin(credentialResponse.credential);
-                                
-                                const token = localStorage.getItem("token");
-                                if (token && user) {
-                                  await loginSequence(token, user);
-                                } else {
-                                  setUser(user);
-                                }
-                                addToast('success', '✅ Google Signup successful!');
-
-                                const checkoutIntentStr = localStorage.getItem("checkout_intent");
-                                if (checkoutIntentStr) {
-                                  try {
-                                    const intent = JSON.parse(checkoutIntentStr);
-                                    if (intent.fromCheckout && intent.paymentMethod) {
-                                      if (intent.paymentMethod === "COD") {
-                                        localStorage.removeItem("checkout_intent");
-                                        router.push("/checkout/place-order-cod");
-                                        return;
-                                      }
-                                      if (intent.paymentMethod === "RAZORPAY") {
-                                        localStorage.removeItem("checkout_intent");
-                                        router.push("/payment");
-                                        return;
-                                      }
-                                    }
-                                  } catch (e) {
-                                    console.error("Intent Parse Error", e);
+                        {Capacitor.isNativePlatform() ? (
+                          <button
+                            type="button"
+                            onClick={handleNativeGoogleSignup}
+                            disabled={isLoading}
+                            className="flex items-center justify-center gap-3 w-full h-[40px] md:h-[44px] rounded-[10px] border border-gray-300 bg-white text-gray-700 font-medium text-[13px] md:text-[14px] hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                          >
+                            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4 md:w-5 md:h-5" />
+                            Continue with Google
+                          </button>
+                        ) : (
+                          <GoogleLogin
+                            onSuccess={async (credentialResponse: any) => {
+                              if (credentialResponse.credential) {
+                                setIsLoading(true);
+                                try {
+                                  const user = await authService.googleLogin(credentialResponse.credential);
+                                  
+                                  const token = localStorage.getItem("token");
+                                  if (token && user) {
+                                    await loginSequence(token, user);
+                                  } else {
+                                    setUser(user);
                                   }
+                                  addToast('success', '✅ Google Signup successful!');
+  
+                                  const checkoutIntentStr = localStorage.getItem("checkout_intent");
+                                  if (checkoutIntentStr) {
+                                    try {
+                                      const intent = JSON.parse(checkoutIntentStr);
+                                      if (intent.fromCheckout && intent.paymentMethod) {
+                                        if (intent.paymentMethod === "COD") {
+                                          localStorage.removeItem("checkout_intent");
+                                          router.push("/checkout/place-order-cod");
+                                          return;
+                                        }
+                                        if (intent.paymentMethod === "RAZORPAY") {
+                                          localStorage.removeItem("checkout_intent");
+                                          router.push("/payment");
+                                          return;
+                                        }
+                                      }
+                                    } catch (e) {
+                                      console.error("Intent Parse Error", e);
+                                    }
+                                  }
+  
+                                  const redirectPath = searchParams.get('redirect');
+                                  if (redirectPath && redirectPath !== 'place-order' && redirectPath !== 'checkout') {
+                                    router.push(decodeURIComponent(redirectPath));
+                                  } else {
+                                    router.push('/');
+                                  }
+                                } catch (err: any) {
+                                  addToast('error', err.message || 'Google Signup failed');
+                                } finally {
+                                  setIsLoading(false);
                                 }
-
-                                const redirectPath = searchParams.get('redirect');
-                                if (redirectPath && redirectPath !== 'place-order' && redirectPath !== 'checkout') {
-                                  router.push(decodeURIComponent(redirectPath));
-                                } else {
-                                  router.push('/');
-                                }
-                              } catch (err: any) {
-                                addToast('error', err.message || 'Google Signup failed');
-                              } finally {
-                                setIsLoading(false);
                               }
-                            }
-                          }}
-                          onError={() => {
-                            addToast('error', 'Google Signup Failed');
-                          }}
-                          useOneTap
-                        />
+                            }}
+                            onError={() => {
+                              addToast('error', 'Google Signup Failed');
+                            }}
+                            useOneTap
+                          />
+                        )}
                       </div>
 
                       <button

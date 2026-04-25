@@ -11,7 +11,8 @@ import { createOrder } from '@/app/services/api';
 import { Eye, EyeOff } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { GoogleLogin } from '@react-oauth/google';
-
+import { Capacitor } from '@capacitor/core';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 interface LoginPageProps {
   isAdmin?: boolean;
 }
@@ -43,6 +44,64 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
     }
     return () => clearInterval(interval);
   }, [timer]);
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      GoogleAuth.initialize({
+        clientId: '701543965311-3uuuebjk6vesbgjqpk5uhtiabolm2v9e.apps.googleusercontent.com',
+        scopes: ['profile', 'email'],
+        grantOfflineAccess: true,
+      });
+    }
+  }, []);
+
+  const handleNativeGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const response = await GoogleAuth.signIn();
+      if (response && response.authentication && response.authentication.idToken) {
+        const user = await authService.googleLogin(response.authentication.idToken);
+        
+        const token = localStorage.getItem("token");
+        if (token && user) {
+          await loginSequence(token, user);
+        } else {
+          setUser(user);
+        }
+        addToast('success', '✅ Google Login successful!');
+
+        const checkoutIntentStr = localStorage.getItem("checkout_intent");
+        if (checkoutIntentStr) {
+          try {
+            const intent = JSON.parse(checkoutIntentStr);
+            if (intent.fromCheckout && intent.paymentMethod) {
+              if (intent.paymentMethod === "COD") {
+                localStorage.removeItem("checkout_intent");
+                router.push("/checkout/place-order-cod");
+                return;
+              }
+              if (intent.paymentMethod === "RAZORPAY") {
+                localStorage.removeItem("checkout_intent");
+                router.push("/payment");
+                return;
+              }
+            }
+          } catch (e) {
+            console.error("Intent Parse Error", e);
+          }
+        }
+
+        const redirectPath = searchParams.get('redirect');
+        router.push(redirectPath ? decodeURIComponent(redirectPath) : (user.role === 'admin' ? '/admin' : '/profile'));
+      } else {
+        addToast('error', 'Google Sign-In failed: No ID Token returned');
+      }
+    } catch (err: any) {
+      addToast('error', err.message || 'Google Login failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // ✅ STEP 2: Login Guard
   useEffect(() => {
@@ -333,58 +392,70 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
                   </div>
                   
                   <div className="flex justify-center mb-4">
-                    <GoogleLogin
-                      onSuccess={async (credentialResponse: any) => {
-                        if (credentialResponse.credential) {
-                          setIsLoading(true);
-                          try {
-                            const user = await authService.googleLogin(credentialResponse.credential);
-                            
-                            // 🟢 ULTRA-LOCK SEQ
-                            const token = localStorage.getItem("token");
-                            if (token && user) {
-                              await loginSequence(token, user);
-                            } else {
-                              setUser(user);
-                            }
-                            addToast('success', '✅ Google Login successful!');
-
-                            // Check checkout intent
-                            const checkoutIntentStr = localStorage.getItem("checkout_intent");
-                            if (checkoutIntentStr) {
-                              try {
-                                const intent = JSON.parse(checkoutIntentStr);
-                                if (intent.fromCheckout && intent.paymentMethod) {
-                                  if (intent.paymentMethod === "COD") {
-                                    localStorage.removeItem("checkout_intent");
-                                    router.push("/checkout/place-order-cod");
-                                    return;
-                                  }
-                                  if (intent.paymentMethod === "RAZORPAY") {
-                                    localStorage.removeItem("checkout_intent");
-                                    router.push("/payment");
-                                    return;
-                                  }
-                                }
-                              } catch (e) {
-                                console.error("Intent Parse Error", e);
+                    {Capacitor.isNativePlatform() ? (
+                      <button
+                        type="button"
+                        onClick={handleNativeGoogleLogin}
+                        disabled={isLoading}
+                        className="flex items-center justify-center gap-3 w-full h-[40px] md:h-[44px] rounded-[10px] border border-gray-300 bg-white text-gray-700 font-medium text-[13px] md:text-[14px] hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4 md:w-5 md:h-5" />
+                        Continue with Google
+                      </button>
+                    ) : (
+                      <GoogleLogin
+                        onSuccess={async (credentialResponse: any) => {
+                          if (credentialResponse.credential) {
+                            setIsLoading(true);
+                            try {
+                              const user = await authService.googleLogin(credentialResponse.credential);
+                              
+                              // 🟢 ULTRA-LOCK SEQ
+                              const token = localStorage.getItem("token");
+                              if (token && user) {
+                                await loginSequence(token, user);
+                              } else {
+                                setUser(user);
                               }
+                              addToast('success', '✅ Google Login successful!');
+  
+                              // Check checkout intent
+                              const checkoutIntentStr = localStorage.getItem("checkout_intent");
+                              if (checkoutIntentStr) {
+                                try {
+                                  const intent = JSON.parse(checkoutIntentStr);
+                                  if (intent.fromCheckout && intent.paymentMethod) {
+                                    if (intent.paymentMethod === "COD") {
+                                      localStorage.removeItem("checkout_intent");
+                                      router.push("/checkout/place-order-cod");
+                                      return;
+                                    }
+                                    if (intent.paymentMethod === "RAZORPAY") {
+                                      localStorage.removeItem("checkout_intent");
+                                      router.push("/payment");
+                                      return;
+                                    }
+                                  }
+                                } catch (e) {
+                                  console.error("Intent Parse Error", e);
+                                }
+                              }
+  
+                              const redirectPath = searchParams.get('redirect');
+                              router.push(redirectPath ? decodeURIComponent(redirectPath) : (user.role === 'admin' ? '/admin' : '/profile'));
+                            } catch (err: any) {
+                              addToast('error', err.message || 'Google Login failed');
+                            } finally {
+                              setIsLoading(false);
                             }
-
-                            const redirectPath = searchParams.get('redirect');
-                            router.push(redirectPath ? decodeURIComponent(redirectPath) : (user.role === 'admin' ? '/admin' : '/profile'));
-                          } catch (err: any) {
-                            addToast('error', err.message || 'Google Login failed');
-                          } finally {
-                            setIsLoading(false);
                           }
-                        }
-                      }}
-                      onError={() => {
-                        addToast('error', 'Google Login Failed');
-                      }}
-                      useOneTap
-                    />
+                        }}
+                        onError={() => {
+                          addToast('error', 'Google Login Failed');
+                        }}
+                        useOneTap
+                      />
+                    )}
                   </div>
 
                   <p className="text-[10px] md:text-[11px] text-[#878787] mb-2 text-center">

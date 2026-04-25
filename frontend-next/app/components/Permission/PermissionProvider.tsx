@@ -29,53 +29,109 @@ export const PermissionProvider = ({ children }: { children: ReactNode }) => {
   const handleNativePermissionRequest = async (type: PermissionType): Promise<boolean> => {
     try {
       if (type === 'notification') {
-        const result = await PushNotifications.requestPermissions();
-        if (result.receive === 'granted') {
-          await PushNotifications.register();
-          return true;
+        if (Capacitor.isNativePlatform()) {
+          const result = await PushNotifications.requestPermissions();
+          if (result.receive === 'granted') {
+            await PushNotifications.register();
+            return true;
+          }
+          return false;
+        } else {
+          if (typeof window !== 'undefined' && 'Notification' in window) {
+            const permission = await Notification.requestPermission();
+            return permission === 'granted';
+          }
+          return false;
         }
-        return false;
       }
       
       if (type === 'location') {
-        const result = await Geolocation.requestPermissions({ permissions: ['location'] });
-        return result.location === 'granted' || result.coarseLocation === 'granted';
+        if (Capacitor.isNativePlatform()) {
+          const result = await Geolocation.requestPermissions({ permissions: ['location'] });
+          return result.location === 'granted' || result.coarseLocation === 'granted';
+        } else {
+          return new Promise((resolve) => {
+            if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+              navigator.geolocation.getCurrentPosition(
+                () => resolve(true),
+                () => resolve(false)
+              );
+            } else {
+              resolve(false);
+            }
+          });
+        }
       }
       
       if (type === 'camera') {
-        const result = await Camera.requestPermissions({ permissions: ['camera', 'photos'] });
-        return result.camera === 'granted' || result.photos === 'granted';
+        if (Capacitor.isNativePlatform()) {
+          const result = await Camera.requestPermissions({ permissions: ['camera', 'photos'] });
+          return result.camera === 'granted' || result.photos === 'granted';
+        } else {
+          if (typeof window !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            try {
+              const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+              stream.getTracks().forEach(track => track.stop());
+              return true;
+            } catch (e) {
+              return false;
+            }
+          }
+          return false;
+        }
       }
     } catch (err) {
-      console.error(`Error requesting natively for ${type}`, err);
+      console.error(`Error requesting permission for ${type}`, err);
     }
     return false;
   };
 
   const requestSmartPermission = useCallback(async (type: PermissionType): Promise<boolean> => {
-    // 1. If not native, bypass (for web fallback)
-    if (!Capacitor.isNativePlatform()) {
-      return true;
-    }
-
-    // 2. Check strict Native Permission Status First
+    // 1. Check strict Permission Status First
     try {
       if (type === 'notification') {
-        const status = await PushNotifications.checkPermissions();
-        if (status.receive === 'granted') return true;
-        if (status.receive === 'denied') return false; // Already explicitly denied OS-level
+        if (Capacitor.isNativePlatform()) {
+          const status = await PushNotifications.checkPermissions();
+          if (status.receive === 'granted') return true;
+          if (status.receive === 'denied') return false; 
+        } else {
+          if (typeof window !== 'undefined' && 'Notification' in window) {
+            if (Notification.permission === 'granted') return true;
+            if (Notification.permission === 'denied') return false;
+          }
+        }
       } else if (type === 'location') {
-        const status = await Geolocation.checkPermissions();
-        if (status.location === 'granted' || status.coarseLocation === 'granted') return true;
+        if (Capacitor.isNativePlatform()) {
+          const status = await Geolocation.checkPermissions();
+          if (status.location === 'granted' || status.coarseLocation === 'granted') return true;
+        } else {
+          if (typeof window !== 'undefined' && navigator.permissions) {
+             const status = await navigator.permissions.query({ name: 'geolocation' });
+             if (status.state === 'granted') return true;
+             if (status.state === 'denied') return false;
+          }
+        }
       } else if (type === 'camera') {
-        const status = await Camera.checkPermissions();
-        if (status.camera === 'granted' && status.photos === 'granted') return true;
+        if (Capacitor.isNativePlatform()) {
+          const status = await Camera.checkPermissions();
+          if (status.camera === 'granted' && status.photos === 'granted') return true;
+        } else {
+          if (typeof window !== 'undefined' && navigator.permissions) {
+             try {
+                const status = await navigator.permissions.query({ name: 'camera' as PermissionName });
+                if (status.state === 'granted') return true;
+                if (status.state === 'denied') return false;
+             } catch(e) {
+                 // Ignore if not supported
+             }
+          }
+        }
       }
     } catch (e) {
       console.warn("Could not check permissions: ", e);
     }
 
-    // 3. User localstorage dismissal lock (24 hr cooldown)
+    // 2. User localstorage dismissal lock (24 hr cooldown)
     const lastDismissed = localStorage.getItem(`perm_dismissed_${type}`);
     if (lastDismissed) {
       const timeSince = Date.now() - parseInt(lastDismissed, 10);
@@ -86,7 +142,7 @@ export const PermissionProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
-    // 4. Show the Soft Popup
+    // 3. Show the Soft Popup
     return new Promise<boolean>((resolve) => {
       setModalState({
         isOpen: true,

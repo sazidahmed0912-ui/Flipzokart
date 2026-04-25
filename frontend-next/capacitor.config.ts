@@ -9,6 +9,13 @@ const config: CapacitorConfig = {
     hostname: 'flipzokart.com',
     androidScheme: 'https',
   },
+  plugins: {
+    GoogleAuth: {
+      scopes: ['profile', 'email'],
+      serverClientId: '701543965311-3uuuebjk6vesbgjqpk5uhtiabolm2v9e.apps.googleusercontent.com',
+      forceCodeForRefreshToken: true,
+    },
+  },
   android: {
     // Allow all mixed content (avoids blocking of http sub-resources)
     allowMixedContent: true,
