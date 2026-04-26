@@ -47,8 +47,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
   }, [timer]);
 
   useEffect(() => {
-    setIsNative(Capacitor.isNativePlatform());
-    if (Capacitor.isNativePlatform()) {
+    const native = Capacitor.isNativePlatform();
+    setIsNative(native);
+    if (native) {
       GoogleAuth.initialize({
         clientId: '701543965311-3uuuebjk6vesbgjqpk5uhtiabolm2v9e.apps.googleusercontent.com',
         scopes: ['profile', 'email'],
@@ -394,7 +395,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
                   </div>
                   
                   <div className="flex justify-center mb-4">
-                    {isNative ? (
+                    {/* Always show native Google button on Android/iOS, web GoogleLogin for browser */}
+                    {(isNative || Capacitor.getPlatform() === 'android' || Capacitor.getPlatform() === 'ios') ? (
                       <button
                         type="button"
                         onClick={handleNativeGoogleLogin}
