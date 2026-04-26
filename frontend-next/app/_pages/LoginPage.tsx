@@ -31,6 +31,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(0);
   const [isNative, setIsNative] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
@@ -49,6 +50,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
   useEffect(() => {
     const native = Capacitor.isNativePlatform();
     setIsNative(native);
+    setMounted(true);
     if (native) {
       GoogleAuth.initialize({
         clientId: '701543965311-3uuuebjk6vesbgjqpk5uhtiabolm2v9e.apps.googleusercontent.com',
@@ -394,9 +396,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
                     OR CONTINUE WITH
                   </div>
                   
-                  <div className="flex justify-center mb-4">
-                    {/* Always show native Google button on Android/iOS, web GoogleLogin for browser */}
-                    {(isNative || Capacitor.getPlatform() === 'android' || Capacitor.getPlatform() === 'ios') ? (
+                  <div className="flex justify-center mb-4" suppressHydrationWarning>
+                    {/* mounted check: avoids SSR/hydration mismatch on Android */}
+                    {!mounted ? (
+                      // SSR placeholder – same size, invisible — no hydration conflict
+                      <button
+                        type="button"
+                        disabled
+                        aria-hidden="true"
+                        className="flex items-center justify-center gap-3 w-full h-[40px] md:h-[44px] rounded-[10px] border border-gray-200 bg-white text-gray-400 font-medium text-[13px] md:text-[14px] opacity-0 pointer-events-none"
+                      >
+                        <img src="https://www.google.com/favicon.ico" alt="" className="w-4 h-4 md:w-5 md:h-5" />
+                        Continue with Google
+                      </button>
+                    ) : isNative ? (
+                      // ✅ Android / iOS — native Capacitor Google Auth
                       <button
                         type="button"
                         onClick={handleNativeGoogleLogin}
@@ -407,6 +421,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isAdmin }) => {
                         Continue with Google
                       </button>
                     ) : (
+                      // ✅ Web browser — OAuth popup
                       <GoogleLogin
                         onSuccess={async (credentialResponse: any) => {
                           if (credentialResponse.credential) {
